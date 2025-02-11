@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { UserAuth } from '../contexts/AuthContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Legend, Cell} from "recharts";
 import { Col, Row, Card, Statistic, Tag, Table, List } from "antd"
 import { UserOutlined, ProjectOutlined, FileTextOutlined, ClockCircleOutlined } from '@ant-design/icons';
