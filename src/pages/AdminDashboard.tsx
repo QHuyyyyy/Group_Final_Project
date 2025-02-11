@@ -12,14 +12,11 @@ interface Claim {
   claimer: string;
 }
 
-interface Activity {
-  activity: string;
-  time: string;
-}
+
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = UserAuth();
+
 
   useEffect(() => {
     const role = localStorage.getItem('role');
@@ -189,7 +186,7 @@ const AdminDashboard: React.FC = () => {
                     fill="#8884d8"
                     label
                   >
-                    {claimCategories.map((entry, index) => (
+                    {claimCategories.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
