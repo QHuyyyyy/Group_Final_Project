@@ -24,7 +24,8 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
 
     const logOut = async () => {
         await signOut(auth);
-        localStorage.removeItem('role')
+        setUser(null);
+        localStorage.removeItem('role');
     };
 
     const logIn = async (username: string, password: string) => {
@@ -37,6 +38,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
         const user = mockUsers.find(user => user.username === username && user.password === password);
         if (user) {
             setUser(user); // Lưu thông tin người dùng vào trạng thái
+            localStorage.setItem('role', user.role);
             return { user };
         } else {
             throw new Error('Invalid username or password');
