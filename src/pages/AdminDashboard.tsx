@@ -1,7 +1,7 @@
 import React from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Legend, Cell} from "recharts";
 import { Col, Row, Card, Statistic, Tag, Table, List } from "antd"
-import { UserOutlined, ProjectOutlined, FileTextOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { UserOutlined, ProjectOutlined, FileTextOutlined, ClockCircleOutlined, CheckCircleOutlined, CheckOutlined } from '@ant-design/icons';
 import AdminSidebar from '../components/AdminSidebar';
 
 interface Claim {
@@ -83,7 +83,7 @@ const AdminDashboard: React.FC = () => {
         <h1 className="text-2xl font-bold mb-4">Dashboard Overview</h1>
         {/* Stats Section */}
         <Row gutter={[16, 16]}>
-          <Col span={6}>
+          <Col span={8}>
             <Card>
               <Statistic
                 title="Total Users"
@@ -94,18 +94,7 @@ const AdminDashboard: React.FC = () => {
             </Card>
           </Col>
 
-          <Col span={6}>
-            <Card>
-              <Statistic
-                title="Total Projects"
-                className="font-bold"
-                value={projectStats}
-                prefix={<ProjectOutlined style={{ color: "#4caf50" }} />}
-              />
-            </Card>
-          </Col>
-
-          <Col span={6}>
+          <Col span={8}>
             <Card>
               <Statistic
                 title="Total Claims"
@@ -116,7 +105,7 @@ const AdminDashboard: React.FC = () => {
             </Card>
           </Col>
 
-          <Col span={6}>
+          <Col span={8}>
             <Card>
               <Statistic
                 title="Pending Claims"
@@ -127,22 +116,6 @@ const AdminDashboard: React.FC = () => {
             </Card>
           </Col>
         </Row>
-
-        {/* Project Trends Chart */}
-        <div className="mt-4">
-          <Card title="Monthly Newly Started Project" className="text-3xl">
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={projectTrendData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#ccc" />
-                <XAxis dataKey="month" tick={{ fontSize: 14, fill: "#555" }} />
-                <YAxis tick={{ fontSize: 14, fill: "#555" }} />
-                <Tooltip contentStyle={{ backgroundColor: "#fff", borderRadius: 8 }} />
-                <Legend verticalAlign="top" height={36} />
-                <Bar dataKey="projects" fill="#4caf50" barSize={40} radius={[5, 5, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </Card>
-        </div>
 
         <div className="mt-4">
           <Row gutter={[16, 16]}>
@@ -184,23 +157,76 @@ const AdminDashboard: React.FC = () => {
             </Col>
           </Row>
           <Row gutter={[16, 16]} className="mt-4">
-            <Col md={12} xs={24}>
+            <Col md={24} xs={24}>
               <Card title="Recent Claims">
                 <Table dataSource={recentClaims} columns={columns} rowKey="id" pagination={false} />
               </Card>
-            </Col>
-            <Col md={12} xs={24}>
+            </Col>        
+          </Row>
+        </div>
+        <Row gutter={[16,16]}>
+        <Col xs={8}>
+        <Row gutter={[24,24]} className="mt-4">
+        <Col xs={24}>
+            <Card>
+              <Statistic
+                title="Total Projects"
+                className="font-bold"
+                value={projectStats}
+                prefix={<ProjectOutlined style={{ color: "#2196f3" }} />}
+              />
+            </Card>
+          </Col>
+          <Col xs={24}>
+            <Card>
+              <Statistic
+                title="Ongoing Projects"
+                className="font-bold"
+                value={projectStats}
+                prefix={<CheckCircleOutlined style={{ color: "#ded26a" }} />}
+              />
+            </Card>
+          </Col>
+          <Col xs={24}>
+            <Card>
+              <Statistic
+                title="Completed Projects"
+                className="font-bold"
+                value={projectStats}
+                prefix={<CheckOutlined style={{ color: "#53d459" }} />}
+              />
+            </Card>
+          </Col>
+        </Row>
+        </Col>
+        {/* Project Trends Chart */}
+        <Col xs={16}>
+        <div className="mt-4">
+          <Card title="Monthly Newly Started Project" className="text-3xl">
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={projectTrendData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#ccc" />
+                <XAxis dataKey="month" tick={{ fontSize: 14, fill: "#555" }} />
+                <YAxis tick={{ fontSize: 14, fill: "#555" }} />
+                <Tooltip contentStyle={{ backgroundColor: "#fff", borderRadius: 8 }} />
+                <Legend verticalAlign="top" height={36} />
+                <Bar dataKey="projects" fill="#4caf50" barSize={40} radius={[5, 5, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Card>
+        </div> 
+        </Col>
+        </Row> 
+        <div className="mt-4">
               <Card title="Recent Activities">
                 <List dataSource={recentActivities} renderItem={(item: any) => (
                   <List.Item><List.Item.Meta title={item.activity} description={item.time} />
                   </List.Item>
                 )} />
               </Card>
-            </Col>
-          </Row>
-        </div>
+            </div>
       </div>
-    </div>
+      </div>
   );
 };
 
