@@ -1,7 +1,7 @@
 import React from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Legend, Cell} from "recharts";
-import { Col, Row, Card, Statistic, Tag, Table, List } from "antd"
-import { UserOutlined, ProjectOutlined, FileTextOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { Col, Row, Card, Statistic, Tag, Table, List, Layout, Menu } from "antd"
+import { UserOutlined, ProjectOutlined, FileTextOutlined, ClockCircleOutlined, HomeOutlined, DashboardOutlined,SettingOutlined } from '@ant-design/icons';
 
 interface Claim {
   id: number;
@@ -9,7 +9,7 @@ interface Claim {
   status: "Pending" | "Approved" | "Rejected" | "Paid";
   claimer: string;
 }
-
+  const {Header, Sider, Content} = Layout
 
 
 const AdminDashboard: React.FC = () => {
@@ -78,7 +78,31 @@ const AdminDashboard: React.FC = () => {
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"]; // colors for pie chart
   return (
-    <div className="p-3 bg-blue-50 min-h-screen">
+    
+    <div className=" bg-blue-50 min-h-screen">
+      <Layout className="min-h-screen">
+      <Sider collapsible style={{
+        position:"fixed",
+        height: "100vh",
+          left: 0,
+          top: 0,
+          bottom: 0,
+          overflow: "auto",
+      }}>
+        <div className="logo p-4 text-white text-lg font-bold text-center">Admin Panel</div>
+        <Menu theme="dark" mode="inline" defaultSelectedKeys={["1"]}>
+          <Menu.Item key="1" icon={<HomeOutlined />}>Dashboard</Menu.Item>
+          <Menu.Item key="2" icon={<ProjectOutlined />}>Projects</Menu.Item>
+          <Menu.Item key="3" icon={<UserOutlined />}>Staff</Menu.Item>
+          <Menu.Item key="4" icon={<FileTextOutlined />}>Claims</Menu.Item>
+          <Menu.Item key="5" icon={<SettingOutlined />}>Settings</Menu.Item>
+        </Menu>
+      </Sider>
+      
+      <Layout className="p-3 bg-blue-50" style={{
+        marginLeft:200
+      }}>
+        <Content>
       <h4 className="font-bold text-xl">
         Admin Dashboard
       </h4>
@@ -128,7 +152,7 @@ const AdminDashboard: React.FC = () => {
           </Card>
         </Col>
       </Row>
-
+      
       {/* Project Trends Chart */}
       <div className="mt-4">
         <Card title="Monthly Newly Started Project" className="text-3xl">
@@ -200,7 +224,9 @@ const AdminDashboard: React.FC = () => {
           </Col>
         </Row>
       </div>
-
+      </Content>
+      </Layout>
+      </Layout>
     </div>
   );
 };
