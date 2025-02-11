@@ -33,7 +33,7 @@ const App = () => {
               </AdminRoute>
             } 
           />
-
+                  <Route path='/userdashboard' element={<UserDashBoard />} />
         </Routes>
       </Suspense>
     </Router>
