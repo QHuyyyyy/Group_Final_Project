@@ -1,11 +1,11 @@
 
 import UserDashBoard from "./pages/UserDashboard";
 
-import { BrowserRouter as Router,Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import AdminRoute from './routes/AdminRoute';
 export const Homepage = lazy(() => import('./pages/Homepage'));
-export const Login = lazy(() => import('./pages/Login')); 
+export const Login = lazy(() => import('./pages/Login'));
 export const Profile = lazy(() => import('./pages/Profile'));
 export const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 
@@ -25,13 +25,13 @@ const App = () => {
           <Route path='/' element={<Homepage />} />
           <Route path='/login' element={<Login />} />
           <Route path='/profile' element={<Profile />} />
-          <Route 
-            path='/dashboard' 
+          <Route
+            path='/dashboard'
             element={
               <AdminRoute>
                 <AdminDashboard />
               </AdminRoute>
-            } 
+            }
           />
 
         </Routes>
