@@ -7,7 +7,7 @@ const Banner: React.FC = () => {
       <div 
         className="absolute inset-0 w-full h-full"
         style={{
-          backgroundImage: 'url("https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80")',
+          backgroundImage: 'url("https://png.pngtree.com/thumb_back/fw800/background/20240321/pngtree-earth-view-from-space-background-image_15657499.jpg")',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           filter: 'brightness(0.5)'
