@@ -7,44 +7,44 @@ const ServicesSection: React.FC = () => {
 
   const services = [
     {
-      title: "Cloud & Data",
-      image: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80", 
+      title: "Cloud & Big Data",
+      image: "https://fptsoftware.com/-/media/project/fpt-software/fso/services/cloud/header-banner-desktop.webp?iar=0&extension=webp&modified=20231002171705&hash=7BC2B1A024FBDBBE8AD6F8B1F347D9EF", 
     },
     {
       title: "Artificial Intelligence",
-      image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80",
+      image: "https://itchronicles.com/wp-content/uploads/2020/11/where-is-ai-used.jpg",
     },
     {
       title: "Low-Code",
-      image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80",
+      image: "https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:quality(100)/2024_2_16_638437150397689400_low-code.png",
     },
     {
       title: "Hyper Automation",
-      image: "https://images.unsplash.com/photo-1584949091598-c31daaaa4aa9?q=80",
+      image: "https://fptsoftware.com/-/media/project/fpt-software/fso/services/banner/hyperautomation-background.webp?iar=0&extension=webp&modified=20240520094755&hash=436507CD30B6CB0FD58C18E70299EE6F",
     },
     {
       title: "ERP Modernization",
-      image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80",
+      image: "https://media.licdn.com/dms/image/v2/D5612AQEheTkQrxEs3Q/article-cover_image-shrink_600_2000/article-cover_image-shrink_600_2000/0/1687019563148?e=2147483647&v=beta&t=xe-DMr88HZw4hC0nbNahTPq3vp04xs-F9Ye7XXJbHUg",
     },
     {
       title: "Digital Commerce & Experience",
-      image: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?q=80",
+      image: "https://ecommercenews.com.au/uploads/story/2021/04/20/GettyImages-1206800961.webp",
     },
     {
       title: "Legacy Modernization",
-      image: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80",
+      image: "https://amzur.com/wp-content/uploads/2022/11/Successful-Approaches-For-Legacy-Application-Modernization-_Amzur.jpg",
     },
     {
       title: "Global Managed Services",
-      image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80",
+      image: "https://www.globalts.com/images/easyblog_shared/July_2023/07-19-23/managedServices_602834521_400.jpg",
     },
     {
       title: "Healthcare",
-      image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80",
+      image: "https://alsahlgroup.com/wp-content/uploads/2025/01/0379_638260706292671006.jpg",
     },
     {
       title: "BFSI",
-      image: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?q=80",
+      image: "https://img-cdn.thepublive.com/fit-in/1200x675/filters:format(webp)/socialsamosa/media/media_files/dmA116YlDIuKyPDerbqw.png",
     }
   ];
 
@@ -57,7 +57,7 @@ const ServicesSection: React.FC = () => {
     if (isAutoScrolling) {
       intervalId = setInterval(() => {
         handleNextSlide();
-      }, 3000); // Tăng thời gian interval lên 3s
+      }, 2000); // Tăng thời gian interval lên 3s
     }
 
     return () => {

@@ -4,22 +4,22 @@ const CultureSection: React.FC = () => {
   const cultureCards = [
     {
       title: "Thriving On Happiness",
-      image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80",
+      image: "https://bcp.cdnchinhphu.vn/334894974524682240/2023/1/4/dai-dien-tai-fpt-software-nhat-ban-chao-don-chi-watanabe-hirona-ky-su-he-thong-thu-ba-tu-phai-qua-16727987339341631106739.jpg",
       color: "bg-blue-600"
     },
     {
       title: "Learning & Innovation",
-      image: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80",
+      image: "https://vcdn1-kinhdoanh.vnecdn.net/2022/07/27/6g9a0577-jpg-1658905713-1882-1658905814.jpg?w=460&h=0&q=100&dpr=2&fit=crop&s=tJrRLV5axzvHmClFhmL0mw",
       color: "bg-green-500"
     },
     {
       title: "Culture Of Celebration",
-      image: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80",
+      image: "https://media.vov.vn/sites/default/files/styles/large/public/2022-03/1_96157.jpg.jpg",
       color: "bg-orange-500"
     },
     {
       title: "Diversity & Inclusion",
-      image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80",
+      image: "https://cms.thainguyen.vn/documents/11304592/17097194/dvt00019-3907.jpg.webp/edfaee14-0ccf-454d-9cf5-a792135b88b4",
       color: "bg-cyan-500"
     }
   ];
