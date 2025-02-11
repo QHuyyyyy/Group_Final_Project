@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Search, Download } from "lucide-react";
 import Info from '../components/Info'; 
 
 
@@ -120,7 +119,9 @@ const PaidClaimsPage = () => {
   
       <div className="flex justify-between items-center mb-6">
         <div className="relative w-72">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4a7 7 0 100 14 7 7 0 000-14zm0 0l6 6" />
+          </svg>
           <input
             type="text"
             placeholder="Search claims..."
@@ -187,7 +188,9 @@ const PaidClaimsPage = () => {
                             onClick={() => handleDownloadClaim(claim)}
                             title="Download Claim"
                           >
-                            <Download className="h-5 w-5" />
+                            <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 16v2a2 2 0 002 2h14a2 2 0 002-2v-2m-6-4l-3 3m0 0l-3-3m3 3V4" />
+                            </svg>
                           </button>
                         )}
                       </div>
