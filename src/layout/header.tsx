@@ -14,7 +14,7 @@ const Header = () => {
     if (role === 'admin') {
       setIsShow(true);
     }
-    if (role) {
+    if (role === "staff") {
       setIsShowUserD(true);
     }
   }, []);
