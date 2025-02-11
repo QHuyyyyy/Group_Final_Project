@@ -2,6 +2,7 @@ import React from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Legend, Cell} from "recharts";
 import { Col, Row, Card, Statistic, Tag, Table, List } from "antd"
 import { UserOutlined, ProjectOutlined, FileTextOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import AdminSidebar from '../components/AdminSidebar';
 
 interface Claim {
   id: number;
@@ -9,8 +10,6 @@ interface Claim {
   status: "Pending" | "Approved" | "Rejected" | "Paid";
   claimer: string;
 }
-
-
 
 const AdminDashboard: React.FC = () => {
   const userStats = 1534;
@@ -78,129 +77,129 @@ const AdminDashboard: React.FC = () => {
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"]; // colors for pie chart
   return (
-    <div className="p-3 bg-blue-50 min-h-screen">
-      <h4 className="font-bold text-xl">
-        Admin Dashboard
-      </h4>
-      {/* Stats Section */}
-      <Row gutter={[16, 16]}>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="Total Users"
-              className="font-bold"
-              value={userStats}
-              prefix={<UserOutlined style={{ color: "#2196f3" }} />}
-            />
-          </Card>
-        </Col>
-
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="Total Projects"
-              className="font-bold"
-              value={projectStats}
-              prefix={<ProjectOutlined style={{ color: "#4caf50" }} />}
-            />
-          </Card>
-        </Col>
-
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="Total Claims"
-              className="font-bold"
-              value={claimStats.total}
-              prefix={<FileTextOutlined style={{ color: "#ff9800" }} />}
-            />
-          </Card>
-        </Col>
-
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="Pending Claims"
-              className="font-bold"
-              value={claimStats.pending}
-              prefix={<ClockCircleOutlined style={{ color: "#f44336" }} />}
-            />
-          </Card>
-        </Col>
-      </Row>
-
-      {/* Project Trends Chart */}
-      <div className="mt-4">
-        <Card title="Monthly Newly Started Project" className="text-3xl">
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={projectTrendData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#ccc" />
-              <XAxis dataKey="month" tick={{ fontSize: 14, fill: "#555" }} />
-              <YAxis tick={{ fontSize: 14, fill: "#555" }} />
-              <Tooltip contentStyle={{ backgroundColor: "#fff", borderRadius: 8 }} />
-              <Legend verticalAlign="top" height={36} />
-              <Bar dataKey="projects" fill="#4caf50" barSize={40} radius={[5, 5, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </Card>
-      </div>
-
-      <div className="mt-4">
+    <div className="flex min-h-screen bg-gray-100">
+      <AdminSidebar />
+      <div className="flex-1 ml-64 p-8">
+        <h1 className="text-2xl font-bold mb-4">Dashboard Overview</h1>
+        {/* Stats Section */}
         <Row gutter={[16, 16]}>
-          <Col md={12} xs={24}>
-            <Card title="Claim Request Overview">
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={claimsData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="status" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#8884d8" />
-                </BarChart>
-              </ResponsiveContainer>
+          <Col span={6}>
+            <Card>
+              <Statistic
+                title="Total Users"
+                className="font-bold"
+                value={userStats}
+                prefix={<UserOutlined style={{ color: "#2196f3" }} />}
+              />
             </Card>
           </Col>
-          <Col md={12} xs={24}>
-            <Card title="Claims By Category">
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={claimCategories}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={100}
-                    fill="#8884d8"
-                    label
-                  >
-                    {claimCategories.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </Card>
-          </Col>
-        </Row>
-        <Row gutter={[16, 16]} className="mt-4">
-          <Col md={12} xs={24}>
-            <Card title="Recent Claims">
-              <Table dataSource={recentClaims} columns={columns} rowKey="id" pagination={false} />
-            </Card>
-          </Col>
-          <Col md={12} xs={24}>
-            <Card title="Recent Activities">
-              <List dataSource={recentActivities} renderItem={(item: any) => (
-                <List.Item><List.Item.Meta title={item.activity} description={item.time} />
-                </List.Item>
-              )} />
-            </Card>
-          </Col>
-        </Row>
-      </div>
 
+          <Col span={6}>
+            <Card>
+              <Statistic
+                title="Total Projects"
+                className="font-bold"
+                value={projectStats}
+                prefix={<ProjectOutlined style={{ color: "#4caf50" }} />}
+              />
+            </Card>
+          </Col>
+
+          <Col span={6}>
+            <Card>
+              <Statistic
+                title="Total Claims"
+                className="font-bold"
+                value={claimStats.total}
+                prefix={<FileTextOutlined style={{ color: "#ff9800" }} />}
+              />
+            </Card>
+          </Col>
+
+          <Col span={6}>
+            <Card>
+              <Statistic
+                title="Pending Claims"
+                className="font-bold"
+                value={claimStats.pending}
+                prefix={<ClockCircleOutlined style={{ color: "#f44336" }} />}
+              />
+            </Card>
+          </Col>
+        </Row>
+
+        {/* Project Trends Chart */}
+        <div className="mt-4">
+          <Card title="Monthly Newly Started Project" className="text-3xl">
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={projectTrendData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#ccc" />
+                <XAxis dataKey="month" tick={{ fontSize: 14, fill: "#555" }} />
+                <YAxis tick={{ fontSize: 14, fill: "#555" }} />
+                <Tooltip contentStyle={{ backgroundColor: "#fff", borderRadius: 8 }} />
+                <Legend verticalAlign="top" height={36} />
+                <Bar dataKey="projects" fill="#4caf50" barSize={40} radius={[5, 5, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Card>
+        </div>
+
+        <div className="mt-4">
+          <Row gutter={[16, 16]}>
+            <Col md={12} xs={24}>
+              <Card title="Claim Request Overview">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={claimsData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="status" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="count" fill="#8884d8" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </Card>
+            </Col>
+            <Col md={12} xs={24}>
+              <Card title="Claims By Category">
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={claimCategories}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={100}
+                      fill="#8884d8"
+                      label
+                    >
+                      {claimCategories.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </Card>
+            </Col>
+          </Row>
+          <Row gutter={[16, 16]} className="mt-4">
+            <Col md={12} xs={24}>
+              <Card title="Recent Claims">
+                <Table dataSource={recentClaims} columns={columns} rowKey="id" pagination={false} />
+              </Card>
+            </Col>
+            <Col md={12} xs={24}>
+              <Card title="Recent Activities">
+                <List dataSource={recentActivities} renderItem={(item: any) => (
+                  <List.Item><List.Item.Meta title={item.activity} description={item.time} />
+                  </List.Item>
+                )} />
+              </Card>
+            </Col>
+          </Row>
+        </div>
+      </div>
     </div>
   );
 };
