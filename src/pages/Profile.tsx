@@ -56,7 +56,7 @@ export default function Profile() {
           </div>
 
           <Row gutter={[24, 24]}>
-            {/* Thông tin cá nhân */}
+            {/* Personal Information */}
             <Col xs={24} md={8}>
               <Card className="shadow-lg rounded-2xl overflow-hidden border-0">
                 <div className="text-center mb-8">
@@ -101,12 +101,12 @@ export default function Profile() {
             {/* Cột bên phải */}
             <Col xs={24} md={16}>
               <div className="space-y-6">
-                {/* Thống kê */}
+                {/* Statistics */}
                 <Row gutter={[16, 16]}>
                   <Col span={12}>
                     <Card className="shadow-md rounded-xl border-0">
                       <Statistic 
-                        title="Tổng số yêu cầu" 
+                        title="Total Requests" 
                         value={claimStats.totalClaims}
                         prefix={<FileTextOutlined className="text-blue-500" />}
                       />
@@ -115,7 +115,7 @@ export default function Profile() {
                   <Col span={12}>
                     <Card className="shadow-md rounded-xl border-0">
                       <Statistic 
-                        title="Yêu cầu đang chờ" 
+                        title="Pending Requests" 
                         value={claimStats.pendingClaims}
                         prefix={<ClockCircleOutlined className="text-yellow-500" />}
                       />
@@ -123,35 +123,35 @@ export default function Profile() {
                   </Col>
                 </Row>
 
-                {/* Tài khoản */}
+                {/* Account */}
                 <Card 
-                  title="Tài khoản xPay" 
+                  title="Payment Method" 
                   className="shadow-md rounded-xl border-0"
-                  extra={<button className="text-blue-500 hover:text-blue-700">Chỉnh sửa</button>}
+                  extra={<button className="text-blue-500 hover:text-blue-700">Edit</button>}
                 >
                   <div className="p-4 bg-gray-50 rounded-lg">
                     <div className="flex justify-between items-center">
                       <div>
-                        <p className="font-medium text-gray-800">Tài khoản hoạt động</p>
+                        <p className="font-medium text-gray-800">Active Account</p>
                         <p className="text-gray-500 text-sm mt-1">{staffData.id}</p>
                       </div>
                       <button className="px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-full hover:from-red-600 hover:to-pink-600 transition-all duration-300">
-                        Khóa tài khoản
+                        Lock Account
                       </button>
                     </div>
                   </div>
                 </Card>
 
-                {/* Yêu cầu */}
+                {/* Requests */}
                 <Card 
-                  title="Yêu cầu của tôi" 
+                  title="My Requests" 
                   className="shadow-md rounded-xl border-0"
-                  extra={<button className="text-blue-500 hover:text-blue-700">Lọc</button>}
+                  extra={<button className="text-blue-500 hover:text-blue-700">Filter</button>}
                 >
                   <div className="space-y-4">
                     {Object.entries(claimStats).map(([key, value]) => (
                       <div key={key} className="flex justify-between items-center p-4 hover:bg-gray-50 rounded-lg transition-colors">
-                        <span className="capitalize text-gray-700">{key.replace('Claims', '')} yêu cầu</span>
+                        <span className="capitalize text-gray-700">{key.replace('Claims', '')} request</span>
                         <Badge 
                           count={value} 
                           className={`px-3 py-1 rounded-full ${
