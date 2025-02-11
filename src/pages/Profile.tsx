@@ -27,7 +27,7 @@ const staffData: Staff = {
   name: "John Doe",
   department: "Engineering",
   rank: "Senior Developer",
-  role: "Claimer",
+  role: "Staff",
   email: "john.doe@company.com",
   phone: "+84 123 456 789",
   salary: 2000,
