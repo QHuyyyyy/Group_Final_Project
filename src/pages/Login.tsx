@@ -18,7 +18,6 @@ export default function Login() {
     try {
       const result = await googleSignIn();
       if (result.user) {
-        localStorage.setItem('token', result.token);
         message.success('Login successfully!');
         navigate('/');
       }   

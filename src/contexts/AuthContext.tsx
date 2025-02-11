@@ -3,7 +3,7 @@ import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from
 import { auth } from "../config/firebase";
 
 interface AuthContextType {
-    googleSignIn: () => Promise<{ user: any; token: string }>;
+    googleSignIn: () => Promise<{ user: any }>;
     logOut: () => Promise<void>;
     user: any;
 }
@@ -16,16 +16,13 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     const googleSignIn = async () => {
         const provider = new GoogleAuthProvider();
         const result = await signInWithPopup(auth, provider);
-        const token = await result.user.getIdToken();
         return {
             user: result.user,
-            token: token
         };
     };
 
     const logOut = async () => {
         await signOut(auth);
-        localStorage.removeItem('token');
     };
 
     useEffect(() => {
