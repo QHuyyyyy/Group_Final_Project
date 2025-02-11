@@ -14,16 +14,6 @@ interface Claim {
 
 
 const AdminDashboard: React.FC = () => {
-  const navigate = useNavigate();
-
-
-  useEffect(() => {
-    const role = localStorage.getItem('role');
-    if (role !== 'admin') {
-      navigate('/'); // Chuyển hướng về trang chính nếu không phải admin
-    }
-  }, [navigate]);
-
   const userStats = 1534;
   const projectStats = 342;
   const claimStats = {
