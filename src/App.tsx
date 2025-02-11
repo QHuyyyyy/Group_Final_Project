@@ -1,3 +1,6 @@
+
+import UserDashBoard from "./pages/UserDashboard";
+
 import { BrowserRouter as Router,Route, Routes } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import AdminRoute from './routes/AdminRoute';
@@ -17,6 +20,8 @@ const App = () => {
     <Router>
       <Suspense fallback={<Loading />}>
         <Routes>
+
+          <Route path="/dashboard/*" element={<UserDashBoard />} />
           <Route path='/' element={<Homepage />} />
           <Route path='/login' element={<Login />} />
           <Route path='/profile' element={<Profile />} />
@@ -28,6 +33,7 @@ const App = () => {
               </AdminRoute>
             } 
           />
+
         </Routes>
       </Suspense>
     </Router>
