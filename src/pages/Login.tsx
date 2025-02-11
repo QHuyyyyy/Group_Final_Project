@@ -12,13 +12,12 @@ interface LoginForm {
 export default function Login() {
   const [form] = Form.useForm<LoginForm>();
   const navigate = useNavigate();
-  const { googleSignIn } = UserAuth();
+  const { googleSignIn, logIn } = UserAuth();
 
   const handleGoogleLogin = async () => {
     try {
       const result = await googleSignIn();
       if (result.user) {
-        localStorage.setItem('token', result.token);
         message.success('Login successfully!');
         navigate('/');
       }   
@@ -33,18 +32,17 @@ export default function Login() {
   };
   const handleSubmit = async (values: LoginForm) => {
     try {
-      console.log('Form values:', values);
-      message.success('Login successful!');
-    } 
-      catch (e: unknown) { 
-
-        if (typeof e === "string") {
-           console.log(e.toUpperCase()) 
-        } else if (e instanceof Error) {
-            console.log(e.message )
-        }
+      const { username, password } = values;
+      const result = await logIn(username, password);
+      if (result) {
+        message.success('Login successful!');
+        navigate('/');
+      }
+    } catch (e: unknown) {
+      message.error('Invalid username or password!');
+    }
   };
-}
+
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 to-white dark:from-slate-900 dark:to-slate-800 flex items-center justify-center p-4">

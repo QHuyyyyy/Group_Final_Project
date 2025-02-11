@@ -3,9 +3,10 @@ import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from
 import { auth } from "../config/firebase";
 
 interface AuthContextType {
-    googleSignIn: () => Promise<{ user: any; token: string }>;
+    googleSignIn: () => Promise<{ user: any }>;
     logOut: () => Promise<void>;
     user: any;
+    logIn: (username: string, password: string) => Promise<{ user: any } | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -16,16 +17,32 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     const googleSignIn = async () => {
         const provider = new GoogleAuthProvider();
         const result = await signInWithPopup(auth, provider);
-        const token = await result.user.getIdToken();
         return {
             user: result.user,
-            token: token
         };
     };
 
     const logOut = async () => {
         await signOut(auth);
-        localStorage.removeItem('token');
+        setUser(null);
+        localStorage.removeItem('role');
+    };
+
+    const logIn = async (username: string, password: string) => {
+        // Kiểm tra thông tin đăng nhập
+        const mockUsers = [
+            { username: 'admin', password: 'admin123', role: 'admin' },
+            { username: 'staff', password: 'staff123', role: 'staff' },
+            { username: 'huy', password: 'huy', role: 'admin' },
+          ];
+        const user = mockUsers.find(user => user.username === username && user.password === password);
+        if (user) {
+            setUser(user); // Lưu thông tin người dùng vào trạng thái
+            localStorage.setItem('role', user.role);
+            return { user };
+        } else {
+            throw new Error('Invalid username or password');
+        }
     };
 
     useEffect(() => {
@@ -39,7 +56,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     return (
-        <AuthContext.Provider value={{ googleSignIn, logOut, user }}>
+        <AuthContext.Provider value={{ googleSignIn, logOut, user, logIn }}>
             {children}
         </AuthContext.Provider>
     );
