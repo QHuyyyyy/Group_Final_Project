@@ -8,11 +8,14 @@ const Header = () => {
   const navigate = useNavigate();
   const { user, logOut } = UserAuth();
   const [isShow, setIsShow] = useState(false);
-
+  const [isShowUserD, setIsShowUserD] = useState(false);
   useEffect(() => {
     const role = localStorage.getItem('role');
     if (role === 'admin') {
       setIsShow(true);
+    }
+    if (role === "staff") {
+      setIsShowUserD(true);
     }
   }, []);
 
@@ -31,7 +34,9 @@ const Header = () => {
           <a href="#" className="text-white hover:text-amber-700">Careers</a>
           <a href="#" className="text-white hover:text-amber-700">Contact</a>
           {isShow && <Link to="/dashboard" className="text-white hover:text-amber-700">Dashboard</Link>}
-        </div>
+          {isShowUserD &&<Link to="/userdashboard" className="text-white hover:text-amber-700">UserDashboard</Link>
+} 
+</div>
         {/* Login Button */}
         <div>
           {user ? (
