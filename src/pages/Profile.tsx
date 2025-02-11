@@ -1,5 +1,6 @@
-import { Card, Descriptions, Badge, Statistic, Row, Col, Avatar } from 'antd';
-import { UserOutlined, ProjectOutlined, DollarOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { Card,  Badge, Statistic, Row, Col, Avatar } from 'antd';
+import { UserOutlined,  ClockCircleOutlined,FileTextOutlined } from '@ant-design/icons';
+import Header from '../layout/header';
 
 interface Staff {
   id: string;
@@ -44,101 +45,131 @@ const claimStats: ClaimStats = {
 
 export default function Profile() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-slate-900 dark:to-slate-800 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Basic Information Card */}
-        <Card 
-          className="shadow-lg dark:bg-slate-800"
-          title={
-            <div className="flex items-center space-x-4">
-              <Avatar size={64} icon={<UserOutlined />} className="bg-blue-500" />
-              <div>
-                <h2 className="text-2xl font-bold dark:text-white">{staffData.name}</h2>
-                <p className="text-slate-500 dark:text-slate-400">{staffData.rank}</p>
-              </div>
-            </div>
-          }
-        >
-          <Descriptions column={{ xs: 1, sm: 2, md: 3 }} bordered>
-            <Descriptions.Item label="Employee ID">{staffData.id}</Descriptions.Item>
-            <Descriptions.Item label="Department">{staffData.department}</Descriptions.Item>
-            <Descriptions.Item label="Role">
-              <Badge status="processing" text={staffData.role} />
-            </Descriptions.Item>
-            <Descriptions.Item label="Email">{staffData.email}</Descriptions.Item>
-            <Descriptions.Item label="Phone">{staffData.phone}</Descriptions.Item>
-          </Descriptions>
-        </Card>
+    <>
+      <Header/>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white p-8">
+        <div className="max-w-6xl mx-auto space-y-8">
+          {/* Profile Header */}
+          <div className="text-center mb-8 mt-20">
+            <h1 className="text-3xl font-bold text-gray-800">Staff Profile</h1>
+            <p className="text-gray-600">Manage your personal information and requests</p>
+          </div>
 
-        {/* Projects Card */}
-        <Card 
-          className="shadow-lg dark:bg-slate-800"
-          title={<span className="flex items-center"><ProjectOutlined className="mr-2" />Projects</span>}
-        >
-          <Row gutter={[16, 16]}>
-            {staffData.projects.map((project, index) => (
-              <Col xs={24} sm={12} key={project}>
-                <Card className="bg-blue-50 dark:bg-slate-700">
-                  <h3 className="font-semibold dark:text-white">{project}</h3>
-                  <p className="text-slate-500 dark:text-slate-400">{staffData.projectRoles[index]}</p>
+          <Row gutter={[24, 24]}>
+            {/* Thông tin cá nhân */}
+            <Col xs={24} md={8}>
+              <Card className="shadow-lg rounded-2xl overflow-hidden border-0">
+                <div className="text-center mb-8">
+                  <div className="relative inline-block">
+                    <Avatar 
+                      size={130} 
+                      icon={<UserOutlined />} 
+                      className="bg-gradient-to-r from-blue-500 to-purple-500 shadow-xl"
+                    />
+                    <span className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></span>
+                  </div>
+                  <h2 className="text-2xl font-bold mt-4 mb-1 text-gray-800">{staffData.name}</h2>
+                  <p className="text-gray-500 font-medium">{staffData.rank}</p>
+                  <Badge 
+                    status="processing" 
+                    text={staffData.role}
+                    className="mt-3 px-4 py-2 bg-blue-50 rounded-full text-blue-600 border border-blue-200" 
+                  />
+                </div>
+                
+                <div className="space-y-6">
+                  <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <span className="text-gray-500 w-24">Email:</span>
+                    <span className="text-gray-800 font-medium">{staffData.email}</span>
+                  </div>
+                  <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <span className="text-gray-500 w-24">Phone:</span>
+                    <span className="text-gray-800 font-medium">{staffData.phone}</span>
+                  </div>
+                  <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <span className="text-gray-500 w-24">Department:</span>
+                    <span className="text-gray-800 font-medium">{staffData.department}</span>
+                  </div>
+                  <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                    <span className="text-gray-500 w-24">ID:</span>
+                    <span className="text-gray-800 font-medium">{staffData.id}</span>
+                  </div>
+                </div>
+              </Card>
+            </Col>
+
+            {/* Cột bên phải */}
+            <Col xs={24} md={16}>
+              <div className="space-y-6">
+                {/* Thống kê */}
+                <Row gutter={[16, 16]}>
+                  <Col span={12}>
+                    <Card className="shadow-md rounded-xl border-0">
+                      <Statistic 
+                        title="Tổng số yêu cầu" 
+                        value={claimStats.totalClaims}
+                        prefix={<FileTextOutlined className="text-blue-500" />}
+                      />
+                    </Card>
+                  </Col>
+                  <Col span={12}>
+                    <Card className="shadow-md rounded-xl border-0">
+                      <Statistic 
+                        title="Yêu cầu đang chờ" 
+                        value={claimStats.pendingClaims}
+                        prefix={<ClockCircleOutlined className="text-yellow-500" />}
+                      />
+                    </Card>
+                  </Col>
+                </Row>
+
+                {/* Tài khoản */}
+                <Card 
+                  title="Tài khoản xPay" 
+                  className="shadow-md rounded-xl border-0"
+                  extra={<button className="text-blue-500 hover:text-blue-700">Chỉnh sửa</button>}
+                >
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="font-medium text-gray-800">Tài khoản hoạt động</p>
+                        <p className="text-gray-500 text-sm mt-1">{staffData.id}</p>
+                      </div>
+                      <button className="px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-full hover:from-red-600 hover:to-pink-600 transition-all duration-300">
+                        Khóa tài khoản
+                      </button>
+                    </div>
+                  </div>
                 </Card>
-              </Col>
-            ))}
+
+                {/* Yêu cầu */}
+                <Card 
+                  title="Yêu cầu của tôi" 
+                  className="shadow-md rounded-xl border-0"
+                  extra={<button className="text-blue-500 hover:text-blue-700">Lọc</button>}
+                >
+                  <div className="space-y-4">
+                    {Object.entries(claimStats).map(([key, value]) => (
+                      <div key={key} className="flex justify-between items-center p-4 hover:bg-gray-50 rounded-lg transition-colors">
+                        <span className="capitalize text-gray-700">{key.replace('Claims', '')} yêu cầu</span>
+                        <Badge 
+                          count={value} 
+                          className={`px-3 py-1 rounded-full ${
+                            key === 'pendingClaims' ? 'bg-yellow-500' :
+                            key === 'approvedClaims' ? 'bg-green-500' :
+                            key === 'rejectedClaims' ? 'bg-red-500' :
+                            'bg-blue-500'
+                          }`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              </div>
+            </Col>
           </Row>
-        </Card>
-
-        {/* Claims Statistics */}
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12} md={6}>
-            <Card className="text-center shadow-lg dark:bg-slate-800">
-              <Statistic 
-                title="Total Claims"
-                value={claimStats.totalClaims}
-                prefix={<ClockCircleOutlined />}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Card className="text-center shadow-lg dark:bg-slate-800">
-              <Statistic 
-                title="Pending Claims"
-                value={claimStats.pendingClaims}
-                valueStyle={{ color: '#faad14' }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Card className="text-center shadow-lg dark:bg-slate-800">
-              <Statistic 
-                title="Approved Claims"
-                value={claimStats.approvedClaims}
-                valueStyle={{ color: '#52c41a' }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Card className="text-center shadow-lg dark:bg-slate-800">
-              <Statistic 
-                title="Rejected Claims"
-                value={claimStats.rejectedClaims}
-                valueStyle={{ color: '#ff4d4f' }}
-              />
-            </Card>
-          </Col>
-        </Row>
-
-        {/* Salary Information (if visible) */}
-        <Card 
-          className="shadow-lg dark:bg-slate-800"
-          title={<span className="flex items-center"><DollarOutlined className="mr-2" />Salary Information</span>}
-        >
-          <Descriptions bordered>
-            <Descriptions.Item label="Base Salary">
-              ${staffData.salary.toLocaleString()}
-            </Descriptions.Item>
-          </Descriptions>
-        </Card>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
