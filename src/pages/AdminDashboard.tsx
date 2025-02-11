@@ -19,7 +19,6 @@ import {
   Grid,
   Typography,
   Box,
-  Button,
   Table,
   TableBody,
   TableCell,
@@ -34,7 +33,7 @@ import { People, Business, Receipt, AccountCircle } from "@mui/icons-material";
 
 const AdminDashboard = () => {
   const userStats = 1534;
-  const projectStats = 342; 
+  const projectStats = 342;
   const claimStats = {
     total: 298,
     pending: 124,
@@ -144,7 +143,7 @@ const AdminDashboard = () => {
         <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom sx={{
-              fontWeight:"bold"
+              fontWeight: "bold"
             }}>
               Project Trends
             </Typography>
@@ -169,7 +168,7 @@ const AdminDashboard = () => {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom sx={{
-                  fontWeight:"bold"
+                  fontWeight: "bold"
                 }}>
                   Claim Request Overview
                 </Typography>
@@ -190,7 +189,7 @@ const AdminDashboard = () => {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom sx={{
-                  fontWeight:"bold"
+                  fontWeight: "bold"
                 }}>
                   Claims by Category
                 </Typography>
@@ -219,99 +218,99 @@ const AdminDashboard = () => {
         </Grid>
       </Box>
       <Box
-  sx={{
-    display: "flex",
-    justifyContent: "center", // Centers horizontally
-    alignItems: "center", // Centers vertically
-    
-  }}
->
-  <Box
-    sx={{
-      display: "flex",
-      justifyItems: "center",
-      alignItems: "center",
-      gap: 5,
-    }}
-  >
-    {/* Recent Claims Section */}
-    <Box mt={4} sx={{
-      width:"60rem"
-    }}>
-      <Card>
-        <CardContent>
-          <Typography variant="h6" sx={{
-            fontWeight:"bold"
-          }}
-          gutterBottom>
-            Recent Claims
-          </Typography>
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>ID</TableCell>
-                  <TableCell>Claim Name</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Claimer</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {recentClaims.map((claim) => (
-                  <TableRow key={claim.id}>
-                    <TableCell>{claim.id}</TableCell>
-                    <TableCell>{claim.name}</TableCell>
-                    <TableCell>
-                      <Chip
-                        label={claim.status}
-                        sx={{
-                          backgroundColor:
-                            claim.status === "Pending"
-                              ? "#FFEB3B"
-                              : claim.status === "Approved"
-                              ? "#4CAF50"
-                              : claim.status === "Rejected"
-                              ? "#F44336"
-                              : claim.status === "Paid"
-                              ? "#2196F3"
-                              : "default",
-                          color: claim.status === "Pending" ? "black" : "white",
-                          fontWeight: "bold",
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell>{claim.claimer}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </CardContent>
-      </Card>
-    </Box>
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
 
-    <Box mt={4} sx={{
-      width:"28.5rem"
-    }}>
-      <Card>
-        <CardContent>
-          <Typography variant="h6" gutterBottom sx={{
-            fontWeight:"bold"
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            justifyItems: "center",
+            alignItems: "center",
+            gap: 5,
+          }}
+        >
+          {/* Recent Claims Section */}
+          <Box mt={4} sx={{
+            width: "60rem"
           }}>
-            Recent Activities
-          </Typography>
-          <List>
-            {recentActivities.map((activity, index) => (
-              <ListItem key={index} divider>
-                <ListItemText primary={activity.activity} secondary={activity.time} />
-              </ListItem>
-            ))}
-          </List>
-        </CardContent>
-      </Card>
-    </Box>
-  </Box>
-</Box>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" sx={{
+                  fontWeight: "bold"
+                }}
+                  gutterBottom>
+                  Recent Claims
+                </Typography>
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>ID</TableCell>
+                        <TableCell>Claim Name</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell>Claimer</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {recentClaims.map((claim) => (
+                        <TableRow key={claim.id}>
+                          <TableCell>{claim.id}</TableCell>
+                          <TableCell>{claim.name}</TableCell>
+                          <TableCell>
+                            <Chip
+                              label={claim.status}
+                              sx={{
+                                backgroundColor:
+                                  claim.status === "Pending"
+                                    ? "#FFEB3B"
+                                    : claim.status === "Approved"
+                                      ? "#4CAF50"
+                                      : claim.status === "Rejected"
+                                        ? "#F44336"
+                                        : claim.status === "Paid"
+                                          ? "#2196F3"
+                                          : "default",
+                                color: claim.status === "Pending" ? "black" : "white",
+                                fontWeight: "bold",
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>{claim.claimer}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            </Card>
+          </Box>
+
+          <Box mt={4} sx={{
+            width: "28.5rem"
+          }}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom sx={{
+                  fontWeight: "bold"
+                }}>
+                  Recent Activities
+                </Typography>
+                <List>
+                  {recentActivities.map((activity, index) => (
+                    <ListItem key={index} divider>
+                      <ListItemText primary={activity.activity} secondary={activity.time} />
+                    </ListItem>
+                  ))}
+                </List>
+              </CardContent>
+            </Card>
+          </Box>
+        </Box>
+      </Box>
 
     </Box>
   );
