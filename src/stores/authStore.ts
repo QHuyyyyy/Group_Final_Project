@@ -19,25 +19,27 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       set({ isLoading: true, error: null });
       const user = await authService.login(username, password);
+      if (!user) throw new Error('User not found');
       
-      if (user) {
-        set({ 
-          user: {
-            username: user.username,
-            password: user.password,
-            role: user.role
-          }, 
-          isLoading: false 
-        });
-        
-        if (user.role) {
-          localStorage.setItem('role', user.role);
-        }
-      } else {
-        set({ error: 'Thông tin đăng nhập không hợp lệ', isLoading: false });
+      set({ 
+        user: {
+          username: user.username,
+          password: user.password,
+          role: user.role
+        }, 
+        isLoading: false,
+        error: null
+      });
+      
+      if (user.role) {
+        localStorage.setItem('role', user.role);
       }
     } catch (error) {
-      set({ error: 'Đã xảy ra lỗi khi đăng nhập', isLoading: false });
+      set({ 
+        user: null,
+        error: 'Invalid login account',
+        isLoading: false 
+      });
     }
   },
 
