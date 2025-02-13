@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { Table, Tag, Space, Button } from 'antd';
 import SearchBar from '../../components/common/SearchBar';
+import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
 
 type Claim = {
   id: number;
@@ -18,7 +20,7 @@ type Claim = {
 const DUMMY_CLAIMS: Claim[] = [
   {
     id: 1,
-    amount: 2.5,
+    amount: 2.5, 
     status: "Pending",
     submittedBy: "John Doe",
     employeeId: "SE180000",
@@ -32,22 +34,93 @@ const DUMMY_CLAIMS: Claim[] = [
   {
     id: 2,
     amount: 3,
-    status: "Pending",
+    status: "Pending", 
     submittedBy: "Jane Smith",
-    employeeId: "SE180001", 
+    employeeId: "SE180001",
     submittedDate: "2025-02-09",
     description: "Monthly office supplies purchase",
     overtimeType: "Normal day",
     startTime: "18:00",
     endTime: "21:00",
     department: "IT",
-  }
+  },
+  {
+    id: 3,
+    amount: 4,
+    status: "Approved",
+    submittedBy: "Alice Johnson",
+    employeeId: "SE180002",
+    submittedDate: "2025-02-08",
+    description: "Extra work on project deadline",
+    overtimeType: "Weekend",
+    startTime: "14:00",
+    endTime: "18:00",
+    department: "HR"
+},
+{
+    id: 4,
+    amount: 2,
+    status: "Rejected",
+    submittedBy: "Michael Brown",
+    employeeId: "SE180003",
+    submittedDate: "2025-02-07",
+    description: "Business trip preparation",
+    overtimeType: "Holiday",
+    startTime: "19:00",
+    endTime: "21:00",
+    department: "Finance"
+},
+{
+    id: 5,
+    amount: 5,
+    status: "Pending",
+    submittedBy: "Emma Wilson",
+    employeeId: "SE180004",
+    submittedDate: "2025-02-06",
+    description: "Assisting in system migration",
+    overtimeType: "Normal day",
+    startTime: "17:30",
+    endTime: "22:30",
+    department: "IT"
+},
+{
+    id: 6,
+    amount: 3.5,
+    status: "Approved",
+    submittedBy: "Robert Davis",
+    employeeId: "SE180005",
+    submittedDate: "2025-02-05",
+    description: "Emergency server maintenance",
+    overtimeType: "Weekend",
+    startTime: "20:00",
+    endTime: "23:30",
+    department: "IT"
+},
+{
+    id: 7,
+    amount: 4.5,
+    status: "Pending",
+    submittedBy: "Sophia Miller",
+    employeeId: "SE180006",
+    submittedDate: "2025-02-04",
+    description: "Finalizing financial report",
+    overtimeType: "Normal day",
+    startTime: "18:00",
+    endTime: "22:30",
+    department: "Finance"
+}
+
 ];
 
 function ApprovalPage() {
   const [claims, setClaims] = useState<Claim[]>(DUMMY_CLAIMS);
+  const [, setSearchQuery] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5;
 
   const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1);
     const filteredClaims = DUMMY_CLAIMS.filter(claim => 
       claim.description.toLowerCase().includes(query.toLowerCase()) ||
       claim.submittedBy.toLowerCase().includes(query.toLowerCase()) ||
@@ -72,98 +145,112 @@ function ApprovalPage() {
     );
   };
 
+  const startIndex = (currentPage - 1) * pageSize;
+  const currentClaims = claims.slice(startIndex, startIndex + pageSize);
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Claim Approvals</h1>
       <SearchBar onSearch={handleSearch} />
-      
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-200">
-          <thead>
-            <tr className="bg-gray-50">
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Employee
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Employee ID
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Overtime Type
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Time
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Hours
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Reason
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {claims.map((claim) => (
-              <tr key={claim.id}>
-                <td className="px-6 py-4">
-                  <div className="flex items-center">
-                    <div className="ml-3">
-                      <div className="text-sm font-medium text-gray-900">{claim.submittedBy}</div>
-                      <div className="text-sm text-gray-500 text-center">{claim.department}</div>
-                    </div>
+
+      <Table
+        dataSource={currentClaims}
+        pagination={{
+          current: currentPage,
+          total: claims.length,
+          pageSize: pageSize,
+          onChange: (page) => setCurrentPage(page),
+          showSizeChanger: false,
+        }}
+        columns={[
+          {
+            title: 'Employee',
+            key: 'employee',
+            width: '15%',
+            render: (_, record) => (
+              <div className="flex items-center">
+                  <div className="">
+                    <div className="text-sm font-medium text-gray-900">{record.submittedBy}</div>
+                    <div className="text-sm text-gray-500 text-center">{record.department}</div>
                   </div>
-                </td>
-                <td className="px-4 py-4">{claim.employeeId}</td>
-                <td className="px-4 py-4">{claim.overtimeType}</td>
-                <td className="px-4 py-4">
-                  <div className="text-sm text-gray-900">{claim.startTime} - {claim.endTime}</div>
-                  <div className="text-sm text-gray-500 ml-1">{claim.submittedDate}</div>
-                </td>
-                <td className="px-4 py-4">{claim.amount.toFixed(1)}h</td>
-                <td className="px-4 py-4">
-                  <div className="text-sm text-gray-900 max-w-xs truncate">{claim.description}</div>
-                </td>
-                <td className="px-4 py-4 whitespace-nowrap">
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      claim.status === "Approved"
-                        ? "bg-green-100 text-green-800"
-                        : claim.status === "Rejected"
-                        ? "bg-red-100 text-red-800"
-                        : "bg-yellow-100 text-yellow-800"
-                    }`}
-                  >
-                    {claim.status}
-                  </span>
-                </td>
-                <td className="px-4 py-4 whitespace-nowrap">
-                  {claim.status === "Pending" && (
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => handleApprove(claim.id)}
-                        className="px-3 py-2 text-white bg-green-500 rounded-lg hover:bg-green-600 focus:ring-4 focus:ring-green-300 focus:outline-none transition-all shadow-sm hover:shadow-md active:transform"
-                      >
-                        ✔
-                      </button>
-                      <button
-                        onClick={() => handleReject(claim.id)}
-                        className="px-3 py-2 text-white bg-red-500 rounded-lg hover:bg-red-600 focus:ring-4 focus:ring-red-300 focus:outline-none transition-all shadow-sm hover:shadow-md"
-                      >
-                        ✖
-                      </button>
-                    </div>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                </div>
+            ),
+          },
+          {
+            title: 'Employee ID',
+            dataIndex: 'employeeId',
+            key: 'employeeId',
+            width: '10%',
+          },
+          {
+            title: 'Overtime Type',
+            dataIndex: 'overtimeType',
+            key: 'overtimeType',
+            width: '10%',
+          },
+          {
+            title: 'Time',
+            key: 'time',
+            width: '15%',
+            render: (_, record) => (
+              <div>
+                <div>{record.startTime} - {record.endTime}</div>
+                <div className="text-xs text-gray-500 ml-2">{record.submittedDate}</div>
+              </div>
+            ),
+          },
+          {
+            title: 'Hours',
+            key: 'hours',
+            width: '8%',
+            render: (_, record) => `${record.amount.toFixed(1)}h`,
+          },
+          {
+            title: 'Reason',
+            dataIndex: 'description',
+            key: 'description',
+            width: '20%',
+          },
+          {
+            title: 'Status',
+            key: 'status',
+            width: '10%',
+            render: (_, record) => (
+              <Tag color={
+                record.status === "Approved" ? "success" :
+                record.status === "Rejected" ? "error" : "warning"
+              }>
+                {record.status}
+              </Tag>
+            ),
+          },
+          {
+            title: 'Actions',
+            key: 'actions',
+            width: '12%',
+            render: (_, record) => (
+              record.status === "Pending" ? (
+                <Space>
+                  <Button
+                    type="primary"
+                    icon={<CheckOutlined />}
+                    onClick={() => handleApprove(record.id)}
+                    style={{ backgroundColor: '#52c41a' }}
+                  />
+                  <Button
+                    type="primary"
+                    danger
+                    icon={<CloseOutlined />}
+                    onClick={() => handleReject(record.id)}
+                  />
+                </Space>
+              ) : (
+                <span className="text-gray-500">Processed</span>
+              )
+            ),
+          },
+        ]}
+      />
     </div>
   );
 }
