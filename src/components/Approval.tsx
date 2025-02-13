@@ -14,19 +14,19 @@ type Claim = {
   submittedDate: string;
   amount: number;
   description: string;
-  status: "Chờ được duyệt" | "Đã duyệt" | "Từ chối";
+  status: "Pending" | "Approved" | "Rejected";
 };
 
 const DUMMY_CLAIMS: Claim[] = [
   {
     id: 1,
     amount: 2.5, 
-    status: "Chờ được duyệt",
+    status: "Pending",
     submittedBy: "John Doe",
     employeeId: "SE180000",
     submittedDate: "2025-02-10",
     description: "Travel expenses for client meeting",
-    overtimeType: "Ngày thường",
+    overtimeType: "Holiday",
     startTime: "18:00",
     endTime: "20:30",
     department: "IT",
@@ -34,12 +34,12 @@ const DUMMY_CLAIMS: Claim[] = [
   {
     id: 2,
     amount: 3,
-    status: "Chờ được duyệt", 
+    status: "Pending", 
     submittedBy: "Jane Smith",
     employeeId: "SE180001",
     submittedDate: "2025-02-09",
     description: "Monthly office supplies purchase",
-    overtimeType: "Ngày thường",
+    overtimeType: "Normal day",
     startTime: "18:00",
     endTime: "21:00",
     department: "IT",
@@ -63,7 +63,7 @@ function ApprovalPage() {
   const handleApprove = (id: number) => {
     setClaims(prevClaims => 
       prevClaims.map(claim => 
-        claim.id === id ? { ...claim, status: "Đã duyệt" } : claim
+        claim.id === id ? { ...claim, status: "Approved" } : claim
       )
     );
   };
@@ -71,7 +71,7 @@ function ApprovalPage() {
   const handleReject = (id: number) => {
     setClaims(prevClaims => 
       prevClaims.map(claim => 
-        claim.id === id ? { ...claim, status: "Từ chối" } : claim
+        claim.id === id ? { ...claim, status: "Rejected" } : claim
       )
     );
   };
