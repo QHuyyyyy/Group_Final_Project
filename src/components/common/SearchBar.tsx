@@ -26,7 +26,7 @@ const SearchBar: FC<SearchBarProps> = ({ onSearch }) => {
           </div>
           <input
             type="text"
-            placeholder="Tìm kiếm theo tên, mã nhân viên..."
+            placeholder="Search by name, employee ID..."
             onChange={(e) => onSearch(e.target.value)}
             className="w-full px-4 py-2.5 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />

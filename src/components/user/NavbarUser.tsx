@@ -1,7 +1,7 @@
 // import search from "../assets/search.png";
-import message from "../assets/message.png";
-import announcement from "../assets/announcement.png";
-import avatar from "../assets/avatar.png";
+import message from "../../assets/message.png";
+import announcement from "../../assets/announcement.png";
+import avatar from "../../assets/avatar.png";
 const Navbar = () => {
   return (
     <div className="flex items-center justify-between p-5">

@@ -1,7 +1,7 @@
 import { Button, Typography, Form, Input, message } from 'antd';
-import { GoogleOutlined, UserOutlined, LockOutlined } from '@ant-design/icons';
+import {  UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { UserAuth } from '../contexts/AuthContext'
+import { UserAuth } from '../../contexts/AuthContext'
 const { Title } = Typography;
 
 interface LoginForm {
@@ -37,7 +37,7 @@ export default function Login() {
               Welcome 
             </Title>
             <p className="text-slate-600 dark:text-slate-400">
-              Sign in to continue to your account
+              Sign in to continue to your account 
             </p>
           </div>
 
@@ -85,6 +85,15 @@ export default function Login() {
               </Button>
             </Form.Item>
           </Form>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-200 dark:border-slate-700"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white dark:bg-slate-800 text-slate-500">Or</span>
+            </div>
+          </div>
 
          
         </div>
