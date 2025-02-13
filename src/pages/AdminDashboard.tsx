@@ -12,8 +12,8 @@ interface Claim {
 }
 
 const AdminDashboard: React.FC = () => {
-  const userStats = 1534;
-  const projectStats = 342;
+  let userStats: number = 1534;
+  let projectStats: number = 342;
   const claimStats = {
     total: 298,
     pending: 124,
