@@ -9,8 +9,18 @@ const Header = () => {
   const { user, logOut } = UserAuth();
   const [isShow, setIsShow] = useState(false);
   const [isShowUserD, setIsShowUserD] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await logOut();
+      navigate('/login');
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+  const role = localStorage.getItem("role");
   useEffect(() => {
-    const role = localStorage.getItem("role");
+
     if (role === "admin") {
       setIsShow(true);
     }
@@ -61,7 +71,7 @@ const Header = () => {
             <div className="flex items-center">
               <div
                 onClick={() => navigate("/profile")}
-                className="flex items-center space-x-2"
+                className="flex items-center space-x-2 cursor-pointer"
               >
                 <Avatar
                   size={40}
@@ -73,7 +83,7 @@ const Header = () => {
                 </span>
               </div>
               <button
-                onClick={logOut}
+                onClick={handleLogout}
                 className="ml-4 bg-white text-black border px-4 py-2 rounded hover:bg-amber-700 hover:text-white transition-colors"
               >
                 Logout
