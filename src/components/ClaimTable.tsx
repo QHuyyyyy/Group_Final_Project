@@ -87,7 +87,7 @@ const ClaimTable: React.FC<ClaimTableProps> = ({ claims, onApprove, onReject }) 
                 </span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                {claim.status === "Pending" && (
+                {claim.status === "Pending" ? (
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => onApprove(claim.id)}
@@ -103,6 +103,8 @@ const ClaimTable: React.FC<ClaimTableProps> = ({ claims, onApprove, onReject }) 
                       ✖
                     </button>
                   </div>
+                ) : (
+                  <div className="w-[106px]"></div>
                 )}
               </td>
             </tr>
