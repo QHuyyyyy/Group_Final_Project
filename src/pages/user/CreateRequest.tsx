@@ -27,6 +27,7 @@ const CreateRequest: React.FC = () => {
             endDate: moment(values.endDate).format("YYYY-MM-DD"),
             status: "Draft",
         };
+        console.log('Request to be sent:', newRequest);
 
         setTimeout(() => {
 

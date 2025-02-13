@@ -1,6 +1,6 @@
 import { Card,  Badge, Statistic, Row, Col, Avatar } from 'antd';
 import { UserOutlined,  ClockCircleOutlined,FileTextOutlined } from '@ant-design/icons';
-import Header from '../layout/header';
+import Header from '../../layout/header';
 
 interface Staff {
   id: string;

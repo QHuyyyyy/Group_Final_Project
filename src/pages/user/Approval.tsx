@@ -114,7 +114,7 @@ const DUMMY_CLAIMS: Claim[] = [
 
 function ApprovalPage() {
   const [claims, setClaims] = useState<Claim[]>(DUMMY_CLAIMS);
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [, setSearchQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
 
