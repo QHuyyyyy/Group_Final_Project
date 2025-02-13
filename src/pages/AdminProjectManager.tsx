@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import NavbarAdminProject from '../components/NavbarAdminProject';
 import { Card, Table, Tag, Space, Button, Modal, Descriptions, Form, Input, Select, DatePicker } from 'antd';
-import { EditOutlined, DeleteOutlined, EyeOutlined, StarOutlined, StarFilled } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, EyeOutlined, StarOutlined, StarFilled, ArrowLeftOutlined, SearchOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
 // Cập nhật mock data
@@ -46,11 +47,13 @@ const mockProjects = [
 ];
 
 const AdminProjectManager: React.FC = () => {
+  const navigate = useNavigate();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [favoriteProjects, setFavoriteProjects] = useState<string[]>([]);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
+  const [searchText, setSearchText] = useState('');
 
   const columns = [
     {
@@ -146,6 +149,11 @@ const AdminProjectManager: React.FC = () => {
     },
   ];
 
+  // Lọc dự án theo project code
+  const filteredProjects = mockProjects.filter(project => 
+    project.code.toLowerCase().includes(searchText.toLowerCase())
+  );
+
   const handleViewDetails = (record: any) => {
     setSelectedProject(record);
     setIsModalVisible(true);
@@ -238,19 +246,39 @@ const AdminProjectManager: React.FC = () => {
         projects={mockProjects}
         onCreateProject={handleCreate}
       />
-      <div className="flex-1 ml-64 p-8 overflow-hidden">
-        <Card className="shadow-md h-[calc(100vh-4rem)]">
+      <div className="flex-1 ml-64 p-8">
+        <div className="flex items-center justify-between mb-6">
+          <Button 
+            type="default" 
+            icon={<ArrowLeftOutlined />}
+            onClick={() => navigate('/dashboard')}
+            className="flex items-center"
+          >
+            Back to Dashboard
+          </Button>
+          
+          <Input
+            placeholder="Search by project code..."
+            prefix={<SearchOutlined className="text-gray-400" />}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            style={{ width: 300 }}
+            className="ml-4"
+          />
+        </div>
+
+        <Card className="shadow-md">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-800">Projects Overview</h1>
           </div>
           <div className="overflow-auto custom-scrollbar">
             <Table 
               columns={columns} 
-              dataSource={mockProjects}
+              dataSource={filteredProjects}
               rowKey="id"
               pagination={{
                 pageSize: 10,
-                total: mockProjects.length,
+                total: filteredProjects.length,
                 showSizeChanger: true,
                 showQuickJumper: true,
               }}
