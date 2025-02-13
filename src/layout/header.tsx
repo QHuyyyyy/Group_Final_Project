@@ -1,26 +1,22 @@
 import { Link, useNavigate } from "react-router-dom";
-import { UserAuth } from "../contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { UserOutlined } from "@ant-design/icons";
 import { Avatar } from "antd";
+import { useAuthStore } from "../stores/authStore";
 
 const Header = () => {
   const navigate = useNavigate();
-  const { user, logOut } = UserAuth();
+  const { user, logout } = useAuthStore();
   const [isShow, setIsShow] = useState(false);
   const [isShowUserD, setIsShowUserD] = useState(false);
 
-  const handleLogout = async () => {
-    try {
-      await logOut();
-      navigate('/login');
-    } catch (error) {
-      console.error('Error:', error);
-    }
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
   };
+
   const role = localStorage.getItem("role");
   useEffect(() => {
-
     if (role === "admin") {
       setIsShow(true);
     }

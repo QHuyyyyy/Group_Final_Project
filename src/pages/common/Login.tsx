@@ -18,14 +18,16 @@ export default function Login() {
   const handleSubmit = async (values: LoginForm) => {
     try {
       await login(values.username, values.password);
-      if (!error) {
-        message.success('Đăng nhập thành công!');
+      const currentError = useAuthStore.getState().error;
+      
+      if (!currentError) {
+        message.success('Login successful!');
         navigate('/');
       } else {
-        message.error(error);
+        message.error(currentError);
       }
     } catch (e) {
-      message.error('Đăng nhập thất bại!');
+      message.error('Login failed!');
     }
   };
 
@@ -50,7 +52,7 @@ export default function Login() {
           >
             <Form.Item
               name="username"
-              rules={[{ required: true, message: 'Please enter your username!' }]}
+              rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập!' }]}
             >
               <Input 
                 prefix={<UserOutlined />}
@@ -62,7 +64,7 @@ export default function Login() {
 
             <Form.Item
               name="password"
-              rules={[{ required: true, message: 'Please enter your password!' }]}
+              rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
             >
               <Input.Password
                 prefix={<LockOutlined />}
@@ -71,6 +73,10 @@ export default function Login() {
                 className="h-12"
               />
             </Form.Item>
+
+            {error && (
+              <div className="text-red-500 text-sm">{error}</div>
+            )}
 
             <Form.Item>
               <Button
@@ -83,12 +89,10 @@ export default function Login() {
                   hover:to-blue-700 border-0 shadow-lg hover:shadow-xl 
                   transition-all duration-200 text-base font-medium"
               >
-                Sign in
+                Đăng nhập
               </Button>
             </Form.Item>
           </Form>
-
-         
         </div>
       </div>
     </div>

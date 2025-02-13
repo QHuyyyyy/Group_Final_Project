@@ -11,12 +11,15 @@ export const authService = {
     try {
       const response = await api.get('/users');
       const users: User[] = response.data;
-      
       const user = users.find(
         (u) => u.username === username && u.password === password
       );
       
-      return user || null;
+      if (!user) {
+        throw new Error('Thông tin đăng nhập không chính xác');
+      }
+      
+      return user;
     } catch (error) {
       console.error('Login error:', error);
       throw error;
