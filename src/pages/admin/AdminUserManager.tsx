@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, Table, Button, Form, Input, InputNumber, Modal, Popconfirm, DatePicker, Select } from 'antd';
+import { Card, Table, Button, Form, Input, InputNumber, Modal, Popconfirm, DatePicker, Select, Space, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import 'antd/dist/reset.css';
 import NavbarAdminUser from '../../components/admin/SideBarAdminUser';  
@@ -9,7 +9,9 @@ import {
   DeleteOutlined, 
   EyeOutlined, 
   LockOutlined,
-  UnlockOutlined
+  UnlockOutlined,
+  ArrowLeftOutlined,
+  SearchOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
@@ -136,70 +138,64 @@ const AdminUserManager: React.FC = () => {
     {
       title: 'Staff Name',
       dataIndex: 'staffName',
-      key: 'staffName'
+      key: 'staffName',
+      width: 200,
     },
     {
       title: 'Role',
       dataIndex: 'role',
       key: 'role',
+      width: 120,
       render: (role: string) => (
-        <span className={`
-          ${role === 'Admin' ? 'text-red-500' : ''}
-          ${role === 'Manager' ? 'text-blue-500' : ''}
-          ${role === 'Developer' ? 'text-green-500' : ''}
-          ${role === 'HR' ? 'text-purple-500' : ''}
-          ${role === 'Employee' ? 'text-gray-500' : ''}
-          font-medium
-        `}>
+        <Tag color={
+          role === 'Admin' ? 'red' :
+          role === 'Manager' ? 'blue' :
+          role === 'Developer' ? 'green' :
+          role === 'HR' ? 'purple' :
+          'default'
+        }>
           {role}
-        </span>
+        </Tag>
       )
     },
     {
       title: 'Department',
       dataIndex: 'department',
-      key: 'department'
+      key: 'department',
+      width: 150,
     },
     {
       title: 'Job Rank',
       dataIndex: 'jobRank',
-      key: 'jobRank'
-    },
-    {
-      title: 'Salary',
-      dataIndex: 'salary',
-      key: 'salary',
-      render: (salary: number) => (
-        <span>
-          {salary.toLocaleString('en-US', {
-            style: 'decimal',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })}
-        </span>
-      )
+      key: 'jobRank',
+      width: 150,
     },
     {
       title: 'Created At',
       dataIndex: 'createdAt',
       key: 'createdAt',
-      render: (date: string) => dayjs(date).format('DD/MM/YYYY')
+      width: 120,
+      render: (date: string) => dayjs(date).format('YYYY-MM-DD')
     },
     {
       title: 'Actions',
       key: 'actions',
+      fixed: 'right' as const,
+      width: 150,
       render: (_, record: StaffMember) => (
-        <div className="space-x-2">
+        <Space size="middle">
           <Button 
             type="text" 
-            icon={<EyeOutlined />} 
-            onClick={() => showDetails(record)} 
+            icon={<EyeOutlined />}
+            onClick={() => showDetails(record)}
+            className="text-blue-600 hover:text-blue-800"
           />
           <Button 
             type="text" 
-            icon={<EditOutlined />} 
-            onClick={() => handleEdit(record)} 
+            icon={<EditOutlined />}
+            onClick={() => handleEdit(record)}
             disabled={record.isLocked}
+            className="text-gray-600 hover:text-gray-800"
           />
           <Popconfirm
             title="Are you sure you want to delete this staff member?"
@@ -220,7 +216,7 @@ const AdminUserManager: React.FC = () => {
             onClick={() => handleLockToggle(record)}
             className={record.isLocked ? 'text-red-500' : 'text-green-500'}
           />
-        </div>
+        </Space>
       ),
     },
   ];
@@ -228,27 +224,36 @@ const AdminUserManager: React.FC = () => {
   return (
     <div className="flex min-h-screen bg-gray-100">
       <NavbarAdminUser onAddUser={handleAdd} />
-      <div className="flex-1 ml-64 p-8 overflow-hidden">
-        <Card className="shadow-md h-[calc(100vh-4rem)]">
-          <div className="flex justify-between mb-4 items-center">
-            <Button 
-              type="default"
-              onClick={() => navigate('/dashboard')}
-              className="bg-white hover:bg-gray-100 text-gray-800"
-            >
-              Back to Dashboard
-            </Button>
-            <Input.Search
-              placeholder="Search by name"
-              allowClear
-              onChange={(e) => setSearchText(e.target.value)}
-              style={{ width: 300 }}
-            />
+      <div className="flex-1 ml-64 p-8">
+        <div className="flex items-center justify-between mb-6">
+          <Button 
+            type="default" 
+            icon={<ArrowLeftOutlined />}
+            onClick={() => navigate('/dashboard')}
+            className="flex items-center"
+          >
+            Back to Dashboard
+          </Button>
+          
+          <Input
+            placeholder="Search by name..."
+            prefix={<SearchOutlined className="text-gray-400" />}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            style={{ width: 300 }}
+            className="ml-4"
+          />
+        </div>
+
+        <Card className="shadow-md">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-800">Staff Information</h1>
           </div>
           <div className="overflow-auto custom-scrollbar">
             <Table 
               columns={columns} 
               dataSource={filteredStaffData}
+              rowKey="key"
               pagination={{
                 pageSize: 10,
                 total: filteredStaffData.length,
@@ -256,6 +261,7 @@ const AdminUserManager: React.FC = () => {
                 showQuickJumper: true,
               }}
               className="overflow-hidden"
+              scroll={{ x: 1000 }}
             />
           </div>
         </Card>
