@@ -1,6 +1,5 @@
 import React from 'react';
 import { 
-  UserOutlined, 
   TeamOutlined,
   UserAddOutlined
 } from '@ant-design/icons';
@@ -18,15 +17,9 @@ const NavbarAdminUser: React.FC<NavbarAdminUserProps> = ({ onAddUser }) => {
 
         {/* Menu Items */}
         <div className="space-y-2">
-         
           <div className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-[#2E3754] transition-colors cursor-pointer">
             <TeamOutlined />
             <span>Staff Management</span>
-          </div>
-
-          <div className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-[#2E3754] transition-colors cursor-pointer">
-            <UserOutlined />
-            <span>User Management</span>
           </div>
 
           <div 
