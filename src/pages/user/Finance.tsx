@@ -1,5 +1,6 @@
 import { useState } from "react";
-import Info from "./Info";
+import Info from "../../components/user/Info";
+
 
 interface Claim {
   id: string;

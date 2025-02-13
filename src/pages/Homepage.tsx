@@ -2,9 +2,9 @@ import { lazy, Suspense } from 'react';
 import Header from '../layout/header';
 import Banner from '../layout/banner';
 
-const ServicesSection = lazy(() => import('../components/ServicesSection'));
-const GlobalPresence = lazy(() => import('../components/GlobalPresence')); 
-const CultureSection = lazy(() => import('../components/CultureSection'));
+const ServicesSection = lazy(() => import('../components/home/ServicesSection'));
+const GlobalPresence = lazy(() => import('../components/home/GlobalPresence')); 
+const CultureSection = lazy(() => import('../components/home/CultureSection'));
 const Footer = lazy(() => import('../layout/footer'));
 
 const LoadingSection = () => (

@@ -1,4 +1,4 @@
-import UserDashBoard from "./pages/UserDashboard";
+import UserDashBoard from "./pages/user/UserDashboard";
 
 import { BrowserRouter as Router,Route, Routes } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
@@ -6,11 +6,11 @@ import AdminRoute from './routes/AdminRoute';
 
 // Lazy load components
 const Homepage = lazy(() => import('./pages/Homepage'));
-const Login = lazy(() => import('./pages/Login')); 
-const Profile = lazy(() => import('./pages/Profile'));
-const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
-const AdminProjectManager = lazy(() => import('./pages/AdminProjectManager'));
-const AdminUserManager = lazy(() => import('./pages/AdminUserManager'));
+const Login = lazy(() => import('./pages/common/Login')); 
+const Profile = lazy(() => import('./pages/common/Profile'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const AdminProjectManager = lazy(() => import('./pages/admin/AdminProjectManager'));
+const AdminUserManager = lazy(() => import('./pages/admin/AdminUserManager'));
 
 const Loading = () => (
   <div className="h-screen w-screen flex items-center justify-center">

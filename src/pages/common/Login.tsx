@@ -1,7 +1,7 @@
 import { Button, Typography, Form, Input, message } from 'antd';
 import {  UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { UserAuth } from '../contexts/AuthContext'
+import { UserAuth } from '../../contexts/AuthContext'
 const { Title } = Typography;
 
 interface LoginForm {
