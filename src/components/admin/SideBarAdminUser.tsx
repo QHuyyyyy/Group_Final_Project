@@ -11,7 +11,7 @@ interface NavbarAdminUserProps {
 
 const NavbarAdminUser: React.FC<NavbarAdminUserProps> = ({ onAddUser }) => {
   return (
-    <div className="fixed left-0 top-0 h-screen w-64 bg-[#1F2937] text-white p-4">
+    <div className="fixed left-0 top-0 h-screen w-64 bg-[#1E2640] text-white p-4">
       <div className="h-full flex flex-col">
         {/* Logo or Brand */}
         <div className="text-xl font-bold mb-8">Admin Panel</div>
