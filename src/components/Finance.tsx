@@ -17,6 +17,7 @@ const Finance = () => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
   const [selectedClaimForInfo, setSelectedClaimForInfo] = useState<Claim | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("");
   
   const [claims, setClaims] = useState<Claim[]>([
     {
@@ -99,14 +100,33 @@ const Finance = () => {
     URL.revokeObjectURL(url);
   };
 
+  const filteredClaims = claims.filter(claim => {
+    const matchesStatus = statusFilter ? claim.status === statusFilter : true;
+    const matchesSearchTerm = claim.staffName.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesStatus && matchesSearchTerm;
+  });
+
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto bg-white">
       <div className="overflow-x-auto p-4">
         <div className="mb-6">
           <h1 className="text-4xl font-bold mb-2">Paid Claims</h1>
         </div>
 
         <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center">
+            <label htmlFor="statusFilter" className="mr-2">Status:</label>
+            <select
+              id="statusFilter"
+              className="ml-4 border border-gray-300 rounded-md"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="">All Statuses</option>
+              <option value="Approved">Approved</option>
+              <option value="Paid">Paid</option>
+            </select>
+          </div>
           <div className="relative w-72">
             <input
               type="text"
@@ -116,6 +136,7 @@ const Finance = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+         
         </div>
 
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
@@ -133,14 +154,14 @@ const Finance = () => {
               </tr>
             </thead>
             <tbody>
-              {claims.length === 0 ? (
+              {filteredClaims.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="text-center py-4 text-gray-400">
                     No claims found
                   </td>
                 </tr>
               ) : (
-                claims.map((claim) => (
+                filteredClaims.map((claim) => (
                   <tr key={claim.id} className="border-t border-gray-200 hover:bg-gray-50 transition-colors">
                     <td className="py-4 px-4">{claim.id}</td>
                     <td className="py-4 px-4">{claim.staffName}</td>
