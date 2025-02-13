@@ -1,15 +1,15 @@
-import search from "../assets/search.png";
+// import search from "../assets/search.png";
 import message from "../assets/message.png";
 import announcement from "../assets/announcement.png";
 import avatar from "../assets/avatar.png";
 const Navbar = () => {
   return (
     <div className="flex items-center justify-between p-5">
-      {/* Search Bar */}
+      {/* Search Bar
       <div className="hidden md:flex items-center gap-2 text-lg rounded-full ring-2 ring-gray-300 px-3 ">
         <img src={search} alt="" width={20} height={20} />
         <input type="text" placeholder="Search..." className="w-[200px] p-2 bg-transparent outline-none" />
-      </div>
+      </div> */}
       {/* Icon and user */}
       <div className="flex items-center gap-6 justify-end w-full">
         {/* icon1 */}

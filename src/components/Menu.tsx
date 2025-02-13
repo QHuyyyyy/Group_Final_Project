@@ -1,53 +1,66 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import document from "../assets/document.png";
 import settings from "../assets/settings.svg";
 import user from "../assets/user.png";
 import logout from "../assets/logout.png";
-import request from "../assets/send.png"
+import request from "../assets/send.png";
 import finance from "../assets/finance.png";
 
 const menuData = [
   {
     title: "Menu",
     items: [
-      { icon: request, label: "Requests", href: "/dashboard/claimrequest" },
-      { icon: document, label: "Approvals", href: "/dashboard/approvals" },
-      { icon: finance, label: "Finance", href: "/dashboard/finance" },
+      { icon: request, label: "Requests", href: "/userdashboard/claimrequest" },
+      { icon: document, label: "Approvals", href: "/userdashboard/approvals" },
+      { icon: finance, label: "Finance", href: "/userdashboard/finance" },
     ],
-    
   },
-  { 
+  {
     title: "Other",
     items: [
-      { icon: settings, label: "Settings", href: "/dashboard/settings" },
-      { icon: user, label: "Profile", href: "/dashboard/profile" },
-      { icon: logout, label: "Logout", href: "/dashboard/logout" },
+      { icon: settings, label: "Settings", href: "/userdashboard/settings" },
+      { icon: user, label: "Profile", href: "/userdashboard/profile" },
+      { icon: logout, label: "Logout", href: "/userdashboard/logout" },
     ],
-  }
+  },
 ];
 
 const Menu = () => {
+  const location = useLocation();
+
   return (
-    <div className="w-full bg-white rounded-lg shadow-lg p-5 ">
-      <h1 className="text-xl font-bold text-gray-900 mb-4 text-center">User Dashboard</h1>
-      <div className="space-y-6 ">
-        {menuData.map((section) => (
-          <div key={section.title}>
-            <span className="block text-lg font-semibold text-gray-700 mb-2">{section.title}</span>
-            <div className="flex flex-col gap-2">
-              {section.items.map((item, index) => (
-                <Link
-                  key={index}
-                  to={item.href}
-                  className="flex items-center space-x-3 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-lg transition-all"
-                >
-                  <img src={item.icon} alt={item.label} className="w-6 h-6" />
-                  <span className="text-lg">{item.label}</span>
-                </Link>
-              ))}
+    <div className="bg-[#1E2640] min-h-screen w-59 fixed left-0 top-0 text-white">
+      <div className="p-6">
+        <div className="text-xl font-bold mb-8 text-center">User Dashboard</div>
+        <div className="space-y-6">
+          {menuData.map((section) => (
+            <div key={section.title}>
+              <span className="block text-sm font-semibold text-gray-400 mb-2 uppercase">
+                {section.title}
+              </span>
+              <div className="flex flex-col">
+                {section.items.map((item, index) => (
+                  <Link
+                    key={index}
+                    to={item.href}
+                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                      location.pathname === item.href
+                        ? "bg-blue-600 text-white"
+                        : "hover:bg-[#2E3754] text-gray-300"
+                    }`}
+                  >
+                    <img
+                      src={item.icon}
+                      alt={item.label}
+                      className="w-5 h-5 filter invert brightness-10"
+                    />
+                    <span>{item.label}</span>
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
