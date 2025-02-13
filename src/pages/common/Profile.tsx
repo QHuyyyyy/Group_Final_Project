@@ -62,14 +62,14 @@ export default function Profile() {
                       icon={<UserOutlined />} 
                       className="bg-gradient-to-r from-blue-500 to-purple-500 shadow-xl"
                     />
-                    <span className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></span>
+                   
                   </div>
                   <h2 className="text-2xl font-bold mt-4 mb-1 text-gray-800">{staffData.name}</h2>
                   <p className="text-gray-500 font-medium">{staffData.rank}</p>
                   <Badge 
                     status="processing" 
                     text={staffData.role}
-                    className="mt-3 px-4 py-2 bg-blue-50 rounded-full text-blue-600 border border-blue-200" 
+                    className="mt-3  bg-blue-50 text-blue-600 " 
                   />
                 </div>
                 
