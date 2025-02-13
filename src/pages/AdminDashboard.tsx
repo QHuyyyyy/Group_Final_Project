@@ -84,34 +84,43 @@ const AdminDashboard: React.FC = () => {
         {/* Stats Section */}
         <Row gutter={[16, 16]}>
           <Col md={8} xs={24}>
-            <Card>
+            <Card style={{
+              backgroundColor:"#138dcf"
+            }}>
               <Statistic
-                title="Total Users"
+                title={<span style={{ color: "white" }}>Total Users</span>}
                 className="font-bold"
                 value={userStats}
-                prefix={<UserOutlined style={{ color: "#2196f3" }} />}
+                prefix={<UserOutlined style={{ color: "white" }} />}
+                valueStyle={{color:"white"}}
               />
             </Card>
           </Col>
 
           <Col md={8} xs={24}>
-            <Card>
+            <Card style={{
+              backgroundColor:"#ffb703"
+            }}>
               <Statistic
-                title="Total Claims"
+                title={<span style={{ color: "white" }}>Total Claims</span>}
                 className="font-bold"
                 value={claimStats.total}
-                prefix={<FileTextOutlined style={{ color: "#ff9800" }} />}
+                prefix={<FileTextOutlined style={{ color: "white" }} />}
+                valueStyle={{color:"white"}}
               />
             </Card>
           </Col>
 
           <Col md={8} xs={24}>
-            <Card>
+            <Card style={{
+              backgroundColor:"#f25050"
+            }}>
               <Statistic
-                title="Pending Claims"
+                title={<span style={{ color: "white" }}>Pending Claims</span>}
                 className="font-bold"
                 value={claimStats.pending}
-                prefix={<ClockCircleOutlined style={{ color: "#f44336" }} />}
+                prefix={<ClockCircleOutlined style={{ color: "white" }} />}
+                valueStyle={{color:"white"}}
               />
             </Card>
           </Col>
