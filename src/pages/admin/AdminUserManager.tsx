@@ -211,7 +211,7 @@ const AdminUserManager: React.FC = () => {
             className="text-gray-600 hover:text-gray-800"
           />
           <Popconfirm
-            title="Are you sure you want to delete this staff member?"
+            title="Do you want to delete this staff member?"
             onConfirm={() => handleDelete(record.key)}
             okText="Yes"
             cancelText="No"
