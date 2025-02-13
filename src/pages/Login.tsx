@@ -12,24 +12,8 @@ interface LoginForm {
 export default function Login() {
   const [form] = Form.useForm<LoginForm>();
   const navigate = useNavigate();
-  const { googleSignIn, logIn } = UserAuth();
+  const {  logIn } = UserAuth();
 
-  const handleGoogleLogin = async () => {
-    try {
-      const result = await googleSignIn();
-      if (result.user) {
-        message.success('Login successfully!');
-        navigate('/');
-      }   
-    } catch (e: unknown) { 
-
-      if (typeof e === "string") {
-         console.log(e.toUpperCase()) 
-      } else if (e instanceof Error) {
-          console.log(e.message )
-      }
-};
-  };
   const handleSubmit = async (values: LoginForm) => {
     try {
       const { username, password } = values;
@@ -102,29 +86,7 @@ export default function Login() {
             </Form.Item>
           </Form>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200 dark:border-slate-700"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white dark:bg-slate-800 text-slate-500">Or</span>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <Button
-              type="default"
-              icon={<GoogleOutlined />}
-              size="large"
-              block
-              onClick={handleGoogleLogin}
-              className="h-12 flex items-center justify-center bg-white hover:bg-slate-50 border-slate-200 
-                dark:bg-slate-700 dark:border-slate-600 dark:hover:bg-slate-600
-                dark:text-white transition-colors"
-            >
-              <span className="ml-2">Continue with Google</span>
-            </Button>
-          </div>
+         
         </div>
       </div>
     </div>
