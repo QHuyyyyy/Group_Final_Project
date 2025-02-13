@@ -1,7 +1,8 @@
 import { Button, Typography, Form, Input, message } from 'antd';
-import {  UserOutlined, LockOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { UserAuth } from '../../contexts/AuthContext'
+import { useAuthStore } from '../../stores/authStore';
+
 const { Title } = Typography;
 
 interface LoginForm {
@@ -12,22 +13,22 @@ interface LoginForm {
 export default function Login() {
   const [form] = Form.useForm<LoginForm>();
   const navigate = useNavigate();
-  const {  logIn } = UserAuth();
+  const { login, error, isLoading } = useAuthStore();
 
   const handleSubmit = async (values: LoginForm) => {
     try {
-      const { username, password } = values;
-      const result = await logIn(username, password);
-      if (result) {
-        message.success('Login successful!');
+      await login(values.username, values.password);
+      if (!error) {
+        message.success('Đăng nhập thành công!');
         navigate('/');
+      } else {
+        message.error(error);
       }
-    } catch (e: unknown) {
-      message.error('Invalid username or password!');
+    } catch (e) {
+      message.error('Đăng nhập thất bại!');
     }
   };
 
-  
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 to-white dark:from-slate-900 dark:to-slate-800 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
@@ -75,6 +76,7 @@ export default function Login() {
               <Button
                 type="primary"
                 htmlType="submit"
+                loading={isLoading}
                 size="large"
                 block
                 className="h-12 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 
@@ -85,15 +87,6 @@ export default function Login() {
               </Button>
             </Form.Item>
           </Form>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200 dark:border-slate-700"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white dark:bg-slate-800 text-slate-500">Or</span>
-            </div>
-          </div>
 
          
         </div>

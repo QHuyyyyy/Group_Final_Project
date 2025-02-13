@@ -31,8 +31,36 @@ const App = () => {
           <Route path='/' element={<Homepage />} />
           <Route path='/login' element={<Login />} />
           <Route path='/profile' element={<Profile />} />
-          <Route path='/userdashboard/*' element={<UserDashBoard />} />
           
+          {/* User Dashboard Routes */}
+          <Route path='/userdashboard' element={<UserRoute><UserDashBoard /></UserRoute>}>
+            <Route path="approvals" element={
+              <UserRoute>
+                <ApprovalPage />
+              </UserRoute>
+            } />
+            <Route path="claimrequest" element={
+                <UserRoute>
+                <Request />
+                </UserRoute>
+            } />
+            <Route path="finance" element={
+              <UserRoute>
+                <Finance />
+              </UserRoute>
+            } />
+            <Route path="request-detail/:id" element={
+              <UserRoute>
+                <RequestDetails />
+              </UserRoute>
+            } />
+            <Route path="create-request" element={
+              <UserRoute>
+                <CreateRequest />
+              </UserRoute>
+            } />
+          </Route>
+
           {/* Admin Routes */}
           <Route path='/dashboard' element={
             <AdminRoute>
@@ -48,31 +76,6 @@ const App = () => {
             <AdminRoute>
               <AdminUserManager />
             </AdminRoute>
-          } />
-          <Route path="/approvals" element={
-            <UserRoute>
-              <ApprovalPage />
-            </UserRoute>
-          } />
-          <Route path="/claimrequest" element={
-            <UserRoute>
-              <Request />
-            </UserRoute>
-          } />
-          <Route path="/finance" element={
-            <UserRoute>
-              <Finance />
-            </UserRoute>
-          } />
-          <Route path="/request-detail/:id" element={
-            <UserRoute>
-              <RequestDetails />
-            </UserRoute>
-          } />
-          <Route path="/create-request" element={
-            <UserRoute>
-              <CreateRequest />
-            </UserRoute>
           } />
         </Routes>
       </Suspense>
