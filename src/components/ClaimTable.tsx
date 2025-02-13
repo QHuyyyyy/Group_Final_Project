@@ -63,13 +63,13 @@ const ClaimTable: React.FC<ClaimTableProps> = ({ claims, onApprove, onReject }) 
                   </div>
                 </div>
               </td>
-              <td className="px-4 py-4">{claim.employeeId}</td>
-              <td className="px-4 py-4">{claim.overtimeType}</td>
-              <td className="px-4 py-4">
+              <td className="text-sm px-4 py-4">{claim.employeeId}</td>
+              <td className="text-sm px-4 py-4">{claim.overtimeType}</td>
+              <td className="text-sm px-4 py-4">
                 <div className="text-sm text-gray-900">{claim.startTime} - {claim.endTime}</div>
                 <div className="text-sm text-gray-500 ml-1">{claim.submittedDate}</div>
               </td>
-              <td className="px-4 py-4">{claim.amount.toFixed(1)}h</td>
+              <td className="text-sm px-4 py-4">{claim.amount.toFixed(1)}h</td>
               <td className="px-4 py-4">
                 <div className="text-sm text-gray-900 max-w-xs truncate">{claim.description}</div>
               </td>
