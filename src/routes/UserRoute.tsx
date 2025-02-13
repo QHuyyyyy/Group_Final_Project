@@ -1,13 +1,14 @@
 import { Navigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 interface UserRouteProps {
   children: React.ReactNode;
 }
 
 const UserRoute = ({ children }: UserRouteProps) => {
-  const role = localStorage.getItem('role');
+  const { user } = useAuth();
   
-  if (role !== 'staff') {
+  if (!user || user.role !== 'staff') {
     return <Navigate to="/" replace />;
   }
 

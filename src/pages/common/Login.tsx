@@ -1,33 +1,25 @@
 import { Button, Typography, Form, Input, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../../stores/authStore';
+import { useApiStore } from '../../stores/apiStore';
+import { useAuth } from '../../contexts/AuthContext';
 
 const { Title } = Typography;
 
-interface LoginForm {
-  username: string;
-  password: string;
-}
 
 export default function Login() {
-  const [form] = Form.useForm<LoginForm>();
+  const [form] = Form.useForm();
   const navigate = useNavigate();
-  const { login, error, isLoading } = useAuthStore();
+  const { login } = useAuth();
+  const { isLoading } = useApiStore();
 
-  const handleSubmit = async (values: LoginForm) => {
+  const handleSubmit = async (values: { username: string; password: string }) => {
     try {
       await login(values.username, values.password);
-      const currentError = useAuthStore.getState().error;
-      
-      if (!currentError) {
-        message.success('Login successful!');
-        navigate('/');
-      } else {
-        message.error(currentError);
-      }
+      message.success('Đăng nhập thành công!');
+      navigate('/');
     } catch (e) {
-      message.error('Login failed!');
+      message.error('Đăng nhập thất bại!');
     }
   };
 
@@ -52,7 +44,7 @@ export default function Login() {
           >
             <Form.Item
               name="username"
-              rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập!' }]}
+              rules={[{ required: true, message: 'Please enter your username!' }]}
             >
               <Input 
                 prefix={<UserOutlined />}
@@ -64,7 +56,7 @@ export default function Login() {
 
             <Form.Item
               name="password"
-              rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
+              rules={[{ required: true, message: 'Please enter your password!' }]}
             >
               <Input.Password
                 prefix={<LockOutlined />}
@@ -73,10 +65,6 @@ export default function Login() {
                 className="h-12"
               />
             </Form.Item>
-
-            {error && (
-              <div className="text-red-500 text-sm">{error}</div>
-            )}
 
             <Form.Item>
               <Button
@@ -89,10 +77,12 @@ export default function Login() {
                   hover:to-blue-700 border-0 shadow-lg hover:shadow-xl 
                   transition-all duration-200 text-base font-medium"
               >
-                Đăng nhập
+                Sign in
               </Button>
             </Form.Item>
           </Form>
+
+         
         </div>
       </div>
     </div>
