@@ -1,10 +1,10 @@
 import { Link, useLocation } from "react-router-dom";
-import document from "../assets/document.png";
-import settings from "../assets/settings.svg";
-import user from "../assets/user.png";
-import logout from "../assets/logout.png";
-import request from "../assets/send.png";
-import finance from "../assets/finance.png";
+import document from "../../assets/document.png";
+import settings from "../../assets/settings.svg";
+import user from "../../assets/user.png";
+import logout from "../../assets/logout.png";
+import request from "../../assets/send.png";
+import finance from "../../assets/finance.png";
 
 const menuData = [
   {

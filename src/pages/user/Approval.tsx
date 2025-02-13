@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Pagination } from 'antd';
-import SearchBar from './SearchBar';
-import ClaimTable from './ClaimTable';
-
+import { Table, Tag, Space, Button } from 'antd';
+import SearchBar from '../../components/common/SearchBar';
+import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
 
 type Claim = {
   id: number;
@@ -117,11 +116,11 @@ function ApprovalPage() {
   const [claims, setClaims] = useState<Claim[]>(DUMMY_CLAIMS);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 5; // Số items trên mỗi trang
+  const pageSize = 5;
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    setCurrentPage(1); // Reset về trang 1 khi search
+    setCurrentPage(1);
     const filteredClaims = DUMMY_CLAIMS.filter(claim => 
       claim.description.toLowerCase().includes(query.toLowerCase()) ||
       claim.submittedBy.toLowerCase().includes(query.toLowerCase()) ||
@@ -146,7 +145,6 @@ function ApprovalPage() {
     );
   };
 
-  // Tính toán các claims cho trang hiện tại
   const startIndex = (currentPage - 1) * pageSize;
   const currentClaims = claims.slice(startIndex, startIndex + pageSize);
 
@@ -154,20 +152,105 @@ function ApprovalPage() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Claim Approvals</h1>
       <SearchBar onSearch={handleSearch} />
-      <ClaimTable
-        claims={currentClaims}
-        onApprove={handleApprove}
-        onReject={handleReject}
+
+      <Table
+        dataSource={currentClaims}
+        pagination={{
+          current: currentPage,
+          total: claims.length,
+          pageSize: pageSize,
+          onChange: (page) => setCurrentPage(page),
+          showSizeChanger: false,
+        }}
+        columns={[
+          {
+            title: 'Employee',
+            key: 'employee',
+            width: '15%',
+            render: (_, record) => (
+              <div className="flex items-center">
+                  <div className="">
+                    <div className="text-sm font-medium text-gray-900">{record.submittedBy}</div>
+                    <div className="text-sm text-gray-500 text-center">{record.department}</div>
+                  </div>
+                </div>
+            ),
+          },
+          {
+            title: 'Employee ID',
+            dataIndex: 'employeeId',
+            key: 'employeeId',
+            width: '10%',
+          },
+          {
+            title: 'Overtime Type',
+            dataIndex: 'overtimeType',
+            key: 'overtimeType',
+            width: '10%',
+          },
+          {
+            title: 'Time',
+            key: 'time',
+            width: '15%',
+            render: (_, record) => (
+              <div>
+                <div>{record.startTime} - {record.endTime}</div>
+                <div className="text-xs text-gray-500 ml-2">{record.submittedDate}</div>
+              </div>
+            ),
+          },
+          {
+            title: 'Hours',
+            key: 'hours',
+            width: '8%',
+            render: (_, record) => `${record.amount.toFixed(1)}h`,
+          },
+          {
+            title: 'Reason',
+            dataIndex: 'description',
+            key: 'description',
+            width: '20%',
+          },
+          {
+            title: 'Status',
+            key: 'status',
+            width: '10%',
+            render: (_, record) => (
+              <Tag color={
+                record.status === "Approved" ? "success" :
+                record.status === "Rejected" ? "error" : "warning"
+              }>
+                {record.status}
+              </Tag>
+            ),
+          },
+          {
+            title: 'Actions',
+            key: 'actions',
+            width: '12%',
+            render: (_, record) => (
+              record.status === "Pending" ? (
+                <Space>
+                  <Button
+                    type="primary"
+                    icon={<CheckOutlined />}
+                    onClick={() => handleApprove(record.id)}
+                    style={{ backgroundColor: '#52c41a' }}
+                  />
+                  <Button
+                    type="primary"
+                    danger
+                    icon={<CloseOutlined />}
+                    onClick={() => handleReject(record.id)}
+                  />
+                </Space>
+              ) : (
+                <span className="text-gray-500">Processed</span>
+              )
+            ),
+          },
+        ]}
       />
-      <div className="mt-4 flex justify-end">
-        <Pagination
-          current={currentPage}
-          total={claims.length}
-          pageSize={pageSize}
-          onChange={(page) => setCurrentPage(page)}
-          showSizeChanger={false}
-        />
-      </div>
     </div>
   );
 }

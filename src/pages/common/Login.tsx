@@ -1,7 +1,7 @@
 import { Button, Typography, Form, Input, message } from 'antd';
-import { GoogleOutlined, UserOutlined, LockOutlined } from '@ant-design/icons';
+import {  UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { UserAuth } from '../contexts/AuthContext'
+import { UserAuth } from '../../contexts/AuthContext'
 const { Title } = Typography;
 
 interface LoginForm {
@@ -12,24 +12,8 @@ interface LoginForm {
 export default function Login() {
   const [form] = Form.useForm<LoginForm>();
   const navigate = useNavigate();
-  const { googleSignIn, logIn } = UserAuth();
+  const {  logIn } = UserAuth();
 
-  const handleGoogleLogin = async () => {
-    try {
-      const result = await googleSignIn();
-      if (result.user) {
-        message.success('Login successfully!');
-        navigate('/');
-      }   
-    } catch (e: unknown) { 
-
-      if (typeof e === "string") {
-         console.log(e.toUpperCase()) 
-      } else if (e instanceof Error) {
-          console.log(e.message )
-      }
-};
-  };
   const handleSubmit = async (values: LoginForm) => {
     try {
       const { username, password } = values;
@@ -53,7 +37,7 @@ export default function Login() {
               Welcome 
             </Title>
             <p className="text-slate-600 dark:text-slate-400">
-              Sign in to continue to your account
+              Sign in to continue to your account 
             </p>
           </div>
 
@@ -111,20 +95,7 @@ export default function Login() {
             </div>
           </div>
 
-          <div className="space-y-4">
-            <Button
-              type="default"
-              icon={<GoogleOutlined />}
-              size="large"
-              block
-              onClick={handleGoogleLogin}
-              className="h-12 flex items-center justify-center bg-white hover:bg-slate-50 border-slate-200 
-                dark:bg-slate-700 dark:border-slate-600 dark:hover:bg-slate-600
-                dark:text-white transition-colors"
-            >
-              <span className="ml-2">Continue with Google</span>
-            </Button>
-          </div>
+         
         </div>
       </div>
     </div>
