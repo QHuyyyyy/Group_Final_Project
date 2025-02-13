@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, Table, Button, Form, Input, InputNumber, Modal, Popconfirm, DatePicker, Select, Space, Tag } from 'antd';
+import { Card, Table, Button, Form, Input, InputNumber, Modal, Popconfirm, Select, Space, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import 'antd/dist/reset.css';
 import NavbarAdminUser from '../../components/admin/SideBarAdminUser';  
@@ -11,6 +11,7 @@ import {
   LockOutlined,
   UnlockOutlined,
   ArrowLeftOutlined,
+  
   SearchOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
@@ -79,18 +80,29 @@ const AdminUserManager: React.FC = () => {
   const handleEdit = (record: StaffMember) => {
     setIsAdding(false);
     setEditingRecord(record);
-    form.setFieldsValue(record);
+    form.setFieldsValue({
+      ...record,
+      createdAt: dayjs(record.createdAt)
+    });
     setIsModalVisible(true);
   };
 
   const handleSave = async (values: any) => {
+    const formattedValues = {
+      ...values,
+      createdAt: values.createdAt ? dayjs(values.createdAt).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
+      salary: Number(values.salary)
+    };
+
     if (editingRecord) {
       setStaffData(prev => prev.map(staff => 
-        staff.key === editingRecord.key ? { ...values, key: staff.key, isLocked: staff.isLocked } : staff
+        staff.key === editingRecord.key 
+          ? { ...formattedValues, key: staff.key, isLocked: staff.isLocked }
+          : staff
       ));
     } else {
       const newStaff = {
-        ...values,
+        ...formattedValues,
         key: Date.now().toString(),
         isLocked: false,
         createdAt: dayjs().format('YYYY-MM-DD')
@@ -98,6 +110,7 @@ const AdminUserManager: React.FC = () => {
       setStaffData(prev => [...prev, newStaff]);
     }
     setIsModalVisible(false);
+    setEditingRecord(null);
     form.resetFields();
   };
 
@@ -268,19 +281,21 @@ const AdminUserManager: React.FC = () => {
 
         {/* Edit/Add Modal */}
         <Modal
-          title={<h2 className="text-2xl font-bold">{isAdding ? "Add New User" : "Edit User Information"}</h2>}
+          title={<h2 className="text-2xl font-bold">{isAdding ? "Add New Staff Member" : "Edit Staff Member"}</h2>}
           open={isModalVisible}
+          onOk={form.submit}
           onCancel={handleCancel}
-          footer={null}
           width={800}
-          style={{ top: 20 }}
-               
         >
           <Form
             form={form}
             layout="vertical"
-            initialValues={editingRecord || {}}
             onFinish={handleSave}
+            initialValues={{
+              role: 'Employee',
+              salary: '',
+              createdAt: dayjs(),
+            }}
           >
             <div className="grid grid-cols-2 gap-4">
               <Form.Item
@@ -296,7 +311,7 @@ const AdminUserManager: React.FC = () => {
                 label="Role"
                 rules={[{ required: true, message: 'Please select a role!' }]}
               >
-                <Select placeholder="Select a role">
+                <Select>
                   {roles.map(role => (
                     <Option key={role} value={role}>{role}</Option>
                   ))}
@@ -326,11 +341,8 @@ const AdminUserManager: React.FC = () => {
               >
                 <InputNumber
                   style={{ width: '100%' }}
-                  formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                  formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                   parser={value => value!.replace(/\$\s?|(,*)/g, '')}
-                  precision={2}
-                  step={0.01}
-
                 />
               </Form.Item>
 
@@ -347,52 +359,20 @@ const AdminUserManager: React.FC = () => {
 
               <Form.Item
                 name="phone"
-                label="Phone Number"
-                rules={[
-                  { required: true, message: 'Please input phone number!' },
-                  { pattern: /^[0-9]{10,11}$/, message: 'Please enter a valid phone number!' }
-                ]}
+                label="Phone"
+                rules={[{ required: true, message: 'Please input phone number!' }]}
               >
                 <Input />
               </Form.Item>
 
               <Form.Item
-                name="createdAt"
-                label="Created At"
-                initialValue={dayjs()}
+                name="address"
+                label="Address"
+                rules={[{ required: true, message: 'Please input address!' }]}
               >
-                <DatePicker 
-                  style={{ width: '100%' }}
-                  format="DD/MM/YYYY"
-                  disabled={!!editingRecord}
-                />
+                <Input />
               </Form.Item>
             </div>
-
-            <Form.Item
-              name="address"
-              label="Address"
-              rules={[
-                { required: true, message: 'Please input address!' },
-                { min: 5, message: 'Address must be at least 5 characters!' }
-              ]}
-            >
-              <Input.TextArea 
-                rows={3} 
-                placeholder="Enter full address"
-                maxLength={200}
-                showCount
-              />
-            </Form.Item>
-
-            <Form.Item className="mb-0">
-              <div className="flex justify-end space-x-4">
-                <Button onClick={handleCancel}>Cancel</Button>
-                <Button type="primary" htmlType="submit">
-                  Save
-                </Button>
-              </div>
-            </Form.Item>
           </Form>
         </Modal>
 
