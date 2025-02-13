@@ -83,7 +83,7 @@ const AdminDashboard: React.FC = () => {
         <h1 className="text-2xl font-bold mb-4">Dashboard Overview</h1>
         {/* Stats Section */}
         <Row gutter={[16, 16]}>
-          <Col span={8}>
+          <Col md={8} xs={24}>
             <Card>
               <Statistic
                 title="Total Users"
@@ -94,7 +94,7 @@ const AdminDashboard: React.FC = () => {
             </Card>
           </Col>
 
-          <Col span={8}>
+          <Col md={8} xs={24}>
             <Card>
               <Statistic
                 title="Total Claims"
@@ -105,7 +105,7 @@ const AdminDashboard: React.FC = () => {
             </Card>
           </Col>
 
-          <Col span={8}>
+          <Col md={8} xs={24}>
             <Card>
               <Statistic
                 title="Pending Claims"
@@ -165,7 +165,7 @@ const AdminDashboard: React.FC = () => {
           </Row>
         </div>
         <Row gutter={[16,16]}>
-        <Col xs={8}>
+        <Col md={8} xs={24}>
         <Row gutter={[24,24]} className="mt-4">
         <Col xs={24}>
             <Card>
@@ -200,7 +200,7 @@ const AdminDashboard: React.FC = () => {
         </Row>
         </Col>
         {/* Project Trends Chart */}
-        <Col xs={16}>
+        <Col md={16} xs={24}>
         <div className="mt-4">
           <Card title="Monthly Newly Started Project" className="text-3xl">
             <ResponsiveContainer width="100%" height={300}>
