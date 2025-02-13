@@ -1,7 +1,7 @@
 import React from "react";
 
 type Claim = {
-  id: number;  // Đảm bảo kiểu này giống nhau ở mọi nơi
+  id: number;
   submittedBy: string;
   department: string;
   employeeId: string;
@@ -11,7 +11,7 @@ type Claim = {
   submittedDate: string;
   amount: number;
   description: string;
-  status: "Chờ được duyệt" | "Đã duyệt" | "Từ chối";
+  status: "Pending" | "Approved" | "Rejected";
 };
 
 type ClaimTableProps = {
@@ -27,28 +27,28 @@ const ClaimTable: React.FC<ClaimTableProps> = ({ claims, onApprove, onReject }) 
         <thead>
           <tr className="bg-gray-50">
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Nhân viên
+              Employee
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Mã nhân viên
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Employee ID
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Loại tăng ca
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Overtime Type
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Thời gian
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Time
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Số giờ
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Hours
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Lý do
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Reason
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Trạng thái
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Status
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Thao tác
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Actions
             </th>
           </tr>
         </thead>
@@ -57,28 +57,28 @@ const ClaimTable: React.FC<ClaimTableProps> = ({ claims, onApprove, onReject }) 
             <tr key={claim.id}>
               <td className="px-6 py-4">
                 <div className="flex items-center">
-                  <div className="ml-3">
+                  <div className="">
                     <div className="text-sm font-medium text-gray-900">{claim.submittedBy}</div>
-                    <div className="text-sm text-gray-500">{claim.department}</div>
+                    <div className="text-sm text-gray-500 text-center">{claim.department}</div>
                   </div>
                 </div>
               </td>
-              <td className="px-6 py-4">{claim.employeeId}</td>
-              <td className="px-6 py-4">{claim.overtimeType}</td>
-              <td className="px-6 py-4">
+              <td className="text-sm px-4 py-4">{claim.employeeId}</td>
+              <td className="text-sm px-4 py-4">{claim.overtimeType}</td>
+              <td className="text-sm px-4 py-4">
                 <div className="text-sm text-gray-900">{claim.startTime} - {claim.endTime}</div>
-                <div className="text-sm text-gray-500">{claim.submittedDate}</div>
+                <div className="text-sm text-gray-500 ml-1">{claim.submittedDate}</div>
               </td>
-              <td className="px-6 py-4">{claim.amount.toFixed(1)}h</td>
-              <td className="px-6 py-4">
+              <td className="text-sm px-4 py-4">{claim.amount.toFixed(1)}h</td>
+              <td className="px-4 py-4">
                 <div className="text-sm text-gray-900 max-w-xs truncate">{claim.description}</div>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
+              <td className="px-4 py-4 whitespace-nowrap">
                 <span
                   className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    claim.status === "Đã duyệt"
+                    claim.status === "Approved"
                       ? "bg-green-100 text-green-800"
-                      : claim.status === "Từ chối"
+                      : claim.status === "Rejected"
                       ? "bg-red-100 text-red-800"
                       : "bg-yellow-100 text-yellow-800"
                   }`}
@@ -87,7 +87,7 @@ const ClaimTable: React.FC<ClaimTableProps> = ({ claims, onApprove, onReject }) 
                 </span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                {claim.status === "Chờ được duyệt" && (
+                {claim.status === "Pending" ? (
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => onApprove(claim.id)}
@@ -103,6 +103,8 @@ const ClaimTable: React.FC<ClaimTableProps> = ({ claims, onApprove, onReject }) 
                       ✖
                     </button>
                   </div>
+                ) : (
+                  <div className="w-[106px]"></div>
                 )}
               </td>
             </tr>
