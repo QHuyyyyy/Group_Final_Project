@@ -1,8 +1,10 @@
-import React from "react";
+import React, {useState} from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Legend, Cell} from "recharts";
-import { Col, Row, Card, Statistic, Tag, Table, List } from "antd"
+import { Col, Row, Card, Statistic, Tag, Table, List, Pagination, DatePicker, Select } from "antd"
 import { UserOutlined, ProjectOutlined, FileTextOutlined, ClockCircleOutlined, CheckCircleOutlined, CheckOutlined } from '@ant-design/icons';
 import AdminSidebar from '../components/AdminSidebar';
+import dayjs from "dayjs"
+import Footer from "../layout/footer";
 
 interface Claim {
   id: number;
@@ -11,6 +13,8 @@ interface Claim {
   claimer: string;
 }
 
+const {RangePicker} = DatePicker
+const {Option} = Select
 const AdminDashboard: React.FC = () => {
   let userStats: number = 1534;
   let projectStats: number = 342;
@@ -76,6 +80,23 @@ const AdminDashboard: React.FC = () => {
   ];
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"]; // colors for pie chart
+
+  const [filteredData, setFilteredData] = useState(claimsData);
+  const [dates, setDates] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
+
+
+  const handleDateChange = (dates) => {
+    setDates(dates);
+    if (dates) {
+      const [startDate, endDate] = dates;
+      const filtered = claimsData.filter((item) =>
+        dayjs(item.date).isBetween(startDate, endDate, "day", "[]")
+      );
+      setFilteredData(filtered);
+    } else {
+      setFilteredData(claimsData);
+    }
+  };
   return (
     <div className="flex min-h-screen bg-gray-100">
       <AdminSidebar />
@@ -129,8 +150,8 @@ const AdminDashboard: React.FC = () => {
         <div className="mt-4">
           <Row gutter={[16, 16]}>
             <Col md={12} xs={24}>
-              <Card title="Claim Request Overview">
-                <ResponsiveContainer width="100%" height={300}>
+              <Card title="Claim Request Overview" extra={<RangePicker onChange={handleDateChange}/>}>
+                <ResponsiveContainer width="100%" height={300} >
                   <BarChart data={claimsData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="status" />
@@ -169,6 +190,9 @@ const AdminDashboard: React.FC = () => {
             <Col md={24} xs={24}>
               <Card title="Recent Claims">
                 <Table dataSource={recentClaims} columns={columns} rowKey="id" pagination={false} />
+                <Pagination align="center" defaultCurrent={1} total={50} style={{
+                  marginTop:"2%"
+                }}/>
               </Card>
             </Col>        
           </Row>
@@ -232,9 +256,15 @@ const AdminDashboard: React.FC = () => {
                   <List.Item><List.Item.Meta title={item.activity} description={item.time} />
                   </List.Item>
                 )} />
+                <Pagination align="center" defaultCurrent={1} total={50} style={{
+                  marginTop:"2%"
+                }}/>
               </Card>
+              
             </div>
+            
       </div>
+      
       </div>
   );
 };
