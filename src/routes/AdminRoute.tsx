@@ -5,11 +5,11 @@ interface AdminRouteProps {
 }
 
 const AdminRoute = ({ children }: AdminRouteProps) => {
-  // const role = localStorage.getItem('role');
+  const role = localStorage.getItem('role');
   
-  // if (role !== 'admin') {
-  //   return <Navigate to="/" replace />;
-  // }
+  if (role !== 'admin') {
+    return <Navigate to="/" replace />;
+  }
 
   return <>{children}</>;
 };
