@@ -52,7 +52,7 @@ const Request = () => {
           {
             title: "Actions",
             key: "actions",
-            render: (text: string, record: any) => (
+            render: ( record: any) => (
               <Link to={`/userdashboard/request-detail/${record.id}`}>
                 <Button type="primary">View Details</Button>
               </Link>
