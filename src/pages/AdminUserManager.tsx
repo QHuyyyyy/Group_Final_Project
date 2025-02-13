@@ -2,14 +2,15 @@ import React, { useState } from 'react';
 import { Card, Table, Button, Form, Input, InputNumber, Modal, Popconfirm, DatePicker, Select } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import 'antd/dist/reset.css';
-import NavbarAdminUser from '../components/NavbarAdminUser';  
+import NavbarAdminUser from '../components/SidebarAdminUser';  
 import { useNavigate } from 'react-router-dom';
 import { 
   EditOutlined, 
   DeleteOutlined, 
   EyeOutlined, 
   LockOutlined,
-  UnlockOutlined
+  UnlockOutlined,
+  ArrowLeftOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
@@ -229,23 +230,34 @@ const AdminUserManager: React.FC = () => {
     <div className="flex min-h-screen bg-gray-100">
       <NavbarAdminUser onAddUser={handleAdd} />
       <div className="flex-1 ml-64 p-8 overflow-hidden">
-        <Card className="shadow-md h-[calc(100vh-4rem)]">
-          <div className="flex justify-between mb-4 items-center">
-            <Button 
+        <div className="flex justify-between items-center mb-6">
+          <div className="text-sm">
+            <Button
+              icon={<ArrowLeftOutlined />}
               type="default"
               onClick={() => navigate('/dashboard')}
-              className="bg-white hover:bg-gray-100 text-gray-800"
+              className="bg-white hover:bg-gray-50 border-none shadow-sm"
             >
               Back to Dashboard
             </Button>
-            <Input.Search
-              placeholder="Search by name"
-              allowClear
-              onChange={(e) => setSearchText(e.target.value)}
-              style={{ width: 300 }}
-            />
           </div>
+
+          <Input.Search
+            placeholder="Search by name"
+            allowClear
+            onChange={(e) => setSearchText(e.target.value)}
+            style={{ width: 300 }}
+            className="shadow-sm"
+          />
+        </div>
+
+
+
+        <Card className="shadow-md h-[calc(100vh-4rem)]">
           <div className="overflow-auto custom-scrollbar">
+          <div className="mb-6">
+          <h1 className="text-2xl font-semibold">User Manager</h1>
+        </div>
             <Table 
               columns={columns} 
               dataSource={filteredStaffData}
