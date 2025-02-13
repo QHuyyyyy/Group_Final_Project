@@ -26,7 +26,7 @@ const ClaimTable: React.FC<ClaimTableProps> = ({ claims, onApprove, onReject }) 
       <table className="min-w-full bg-white border border-gray-200">
         <thead>
           <tr className="bg-gray-50">
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Employee
             </th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -57,7 +57,7 @@ const ClaimTable: React.FC<ClaimTableProps> = ({ claims, onApprove, onReject }) 
             <tr key={claim.id}>
               <td className="px-6 py-4">
                 <div className="flex items-center">
-                  <div className="ml-3">
+                  <div className="">
                     <div className="text-sm font-medium text-gray-900">{claim.submittedBy}</div>
                     <div className="text-sm text-gray-500 text-center">{claim.department}</div>
                   </div>
