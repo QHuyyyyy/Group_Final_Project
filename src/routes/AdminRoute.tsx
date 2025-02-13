@@ -1,15 +1,15 @@
 import { Navigate } from 'react-router-dom';
-
+import { useAuth } from '../contexts/AuthContext';
 interface AdminRouteProps {
   children: React.ReactNode;
 }
 
 const AdminRoute = ({ children }: AdminRouteProps) => {
-  // const role = localStorage.getItem('role');
+  const { user } = useAuth();
   
-  // if (role !== 'admin') {
-  //   return <Navigate to="/" replace />;
-  // }
+  if (!user || user.role !== 'admin') {
+    return <Navigate to="/" replace />;
+  }
 
   return <>{children}</>;
 };

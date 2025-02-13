@@ -67,12 +67,12 @@ const App = () => {
               <AdminDashboard />
             </AdminRoute>
           } />
-          <Route path='/admin/project-manager' element={
+          <Route path='/dashboard/project-manager' element={
             <AdminRoute>
               <AdminProjectManager />
             </AdminRoute>
           } />
-          <Route path='/admin/user-manager' element={
+          <Route path='/dashboard/user-manager' element={
             <AdminRoute>
               <AdminUserManager />
             </AdminRoute>

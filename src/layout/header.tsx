@@ -2,11 +2,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { UserOutlined } from "@ant-design/icons";
 import { Avatar } from "antd";
-import { useAuthStore } from "../stores/authStore";
+import { useAuth } from "../contexts/AuthContext";
 
 const Header = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuthStore();
+  const { user, logout } = useAuth();
   const [isShow, setIsShow] = useState(false);
   const [isShowUserD, setIsShowUserD] = useState(false);
 
