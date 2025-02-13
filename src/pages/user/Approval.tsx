@@ -46,10 +46,8 @@ const DUMMY_CLAIMS: Claim[] = [
 
 function ApprovalPage() {
   const [claims, setClaims] = useState<Claim[]>(DUMMY_CLAIMS);
-  const [searchQuery, setSearchQuery] = useState<string>("");
 
   const handleSearch = (query: string) => {
-    setSearchQuery(query);
     const filteredClaims = DUMMY_CLAIMS.filter(claim => 
       claim.description.toLowerCase().includes(query.toLowerCase()) ||
       claim.submittedBy.toLowerCase().includes(query.toLowerCase()) ||
