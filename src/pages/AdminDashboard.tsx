@@ -82,22 +82,57 @@ const AdminDashboard: React.FC = () => {
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"]; // colors for pie chart
 
+  // const [filteredData, setFilteredData] = useState(claimsData);
+  // const [dates, setDates] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
+
+
+  // const handleDateChange = (dates) => {
+  //   setDates(dates);
+  //   if (dates) {
+  //     const [startDate, endDate] = dates;
+  //     const filtered = claimsData.filter((item) =>
+  //       dayjs(item.date).isBetween(startDate, endDate, "day", "[]")
+  //     );
+  //     setFilteredData(filtered);
+  //   } else {
+  //     setFilteredData(claimsData);
+  //   }
+  // };
+
+
   const [filteredData, setFilteredData] = useState(claimsData);
-  const [dates, setDates] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
+  const [selectedRange, setSelectedRange] = useState<string | null>(null);
 
+  const handleFilterChange = (value: string) => {
+    setSelectedRange(value);
 
-  const handleDateChange = (dates) => {
-    setDates(dates);
-    if (dates) {
-      const [startDate, endDate] = dates;
-      const filtered = claimsData.filter((item) =>
-        dayjs(item.date).isBetween(startDate, endDate, "day", "[]")
-      );
-      setFilteredData(filtered);
-    } else {
-      setFilteredData(claimsData);
+    let startDate, endDate;
+    const today = dayjs();
+
+    switch (value) {
+      case "this_week":
+        startDate = today.startOf("week");
+        endDate = today.endOf("week");
+        break;
+      case "this_month":
+        startDate = today.startOf("month");
+        endDate = today.endOf("month");
+        break;
+      case "this_year":
+        startDate = today.startOf("year");
+        endDate = today.endOf("year");
+        break;
+      default:
+        setFilteredData(claimsData);
+        return;
     }
+
+    const filtered = claimsData.filter((item) =>
+      dayjs(item.date).isBetween(startDate, endDate, "day", "[]")
+    );
+    setFilteredData(filtered);
   };
+  
   return (
     <>
 
@@ -115,7 +150,8 @@ const AdminDashboard: React.FC = () => {
             <Row gutter={[16, 16]}>
               <Col md={8} xs={24}>
                 <Card style={{
-                  backgroundColor: "#138dcf"
+                  backgroundColor: "#138dcf",
+                  
                 }}
                 className="relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-12 h-12 bg-[#1a6b96] opacity-50 rounded-full transform translate-x-4 -translate-y-4"></div>
@@ -168,7 +204,16 @@ const AdminDashboard: React.FC = () => {
             <div className="mt-4">
               <Card
               title="Claim Request Charts"
-              extra={<RangePicker onChange={handleDateChange} />}>
+              extra={
+                <Select defaultValue="this_month" style={{ width: 150 }} onChange={handleFilterChange}>
+          <Option value="this_week">This Week</Option>
+          <Option value="this_month">This Month</Option>
+          <Option value="this_year">This Year</Option>
+        </Select>
+              }
+              style={{
+                boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
+              }}>
               <Row gutter={[16, 16]}>
                 <Col md={12} xs={24}>
                   <Card title="Claim Request Overview">
@@ -210,7 +255,10 @@ const AdminDashboard: React.FC = () => {
               </Card>
               <Row gutter={[16, 16]} className="mt-4">
                 <Col md={24} xs={24}>
-                  <Card title="Recent Claims">
+                  <Card title="Recent Claims"
+                  style={{
+                    boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
+                  }}>
                     <Table dataSource={recentClaims} columns={columns} rowKey="id" pagination={false} />
                     <Pagination align="center" defaultCurrent={1} total={50} style={{
                       marginTop: "2%"
@@ -223,7 +271,9 @@ const AdminDashboard: React.FC = () => {
               <Col md={8} xs={24}>
                 <Row gutter={[24, 24]} className="mt-4">
                   <Col xs={24}>
-                    <Card>
+                    <Card style={{
+                      boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
+                    }}>
                       <Statistic
                         title="Total Projects"
                         className="font-bold"
@@ -233,7 +283,9 @@ const AdminDashboard: React.FC = () => {
                     </Card>
                   </Col>
                   <Col xs={24}>
-                    <Card>
+                    <Card style={{
+                      boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
+                    }}>
                       <Statistic
                         title="Ongoing Projects"
                         className="font-bold"
@@ -243,7 +295,9 @@ const AdminDashboard: React.FC = () => {
                     </Card>
                   </Col>
                   <Col xs={24}>
-                    <Card>
+                    <Card style={{
+                      boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
+                    }}>
                       <Statistic
                         title="Completed Projects"
                         className="font-bold"
@@ -257,7 +311,15 @@ const AdminDashboard: React.FC = () => {
               {/* Project Trends Chart */}
               <Col md={16} xs={24}>
                 <div className="mt-4">
-                  <Card title="Monthly Newly Started Project" className="text-3xl" extra={<RangePicker onChange={handleDateChange} />}>
+                  <Card title="Monthly Newly Started Project" style={{
+                boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
+              }} className="text-3xl" extra={
+                <Select defaultValue="this_month" style={{ width: 150 }} onChange={handleFilterChange}>
+          <Option value="this_week">This Week</Option>
+          <Option value="this_month">This Month</Option>
+          <Option value="this_year">This Year</Option>
+        </Select>
+              }>
                     <ResponsiveContainer width="100%" height={300}>
                       <BarChart data={projectTrendData}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#ccc" />
@@ -273,7 +335,9 @@ const AdminDashboard: React.FC = () => {
               </Col>
             </Row>
             <div className="mt-4">
-              <Card title="Recent Activities">
+              <Card title="Recent Activities" style={{
+                boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
+              }}>
                 <List dataSource={recentActivities} renderItem={(item: any) => (
                   <List.Item><List.Item.Meta title={item.activity} description={item.time} />
                   </List.Item>
