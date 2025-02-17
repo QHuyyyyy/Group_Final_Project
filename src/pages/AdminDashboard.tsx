@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Legend, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Legend, Cell, LineChart, Line } from "recharts";
 import { Col, Row, Card, Statistic, Tag, Table, List, Pagination, DatePicker, Select } from "antd"
 import { UserOutlined, ProjectOutlined, FileTextOutlined, ClockCircleOutlined, CheckCircleOutlined, CheckOutlined } from '@ant-design/icons';
 import AdminSidebar from '../components/AdminSidebar';
@@ -33,10 +33,10 @@ const AdminDashboard: React.FC = () => {
     { status: "Paid", count: 58 },
   ];
   const claimCategories = [
-    { name: "Employment contracts", value: 40 },
-    { name: "Customer complaints", value: 30 },
-    { name: "Insurance policies", value: 20 },
-    { name: "Other", value: 10 },
+    { name: "HR", value: 40 },
+    { name: "IT", value: 30 },
+    { name: "Finance", value: 20 },
+    { name: "Sales", value: 10 },
   ];
   const recentClaims = [
     { id: 1, name: "Overtime Payment", status: "Pending", claimer: "John Doe" },
@@ -65,6 +65,15 @@ const AdminDashboard: React.FC = () => {
     Rejected: "red",
     Paid: "blue",
   };
+
+  const financialData = [
+    { month: "Jan", claimsPaid: 50000000 },
+    { month: "Feb", claimsPaid: 70000000 },
+    { month: "Mar", claimsPaid: 80000000 },
+    { month: "Apr", claimsPaid: 75000000 },
+    { month: "May", claimsPaid: 90000000 },
+    { month: "Jun", claimsPaid: 85000000 },
+  ];
 
   const columns = [
     { title: "ID", dataIndex: "id", key: "id" },
@@ -143,9 +152,7 @@ const AdminDashboard: React.FC = () => {
             <NavbarAdminDashboard />
           </div>
           <div className="p-8 mt-12">
-            <h1 className="text-2xl font-bold mb-4" style={{
-              fontWeight:"bold"
-            }}>Dashboard Overview</h1>
+            <p className="text-2xl font-bold mb-4 font-mono" >Dashboard Overview</p>
             {/* Stats Section */}
             <Row gutter={[16, 16]}>
               <Col md={8} xs={24}>
@@ -200,7 +207,7 @@ const AdminDashboard: React.FC = () => {
                 </Card>
               </Col>
             </Row>
-
+   
             <div className="mt-4">
               <Card
               title="Claim Request Charts"
@@ -229,7 +236,7 @@ const AdminDashboard: React.FC = () => {
                   </Card>
                 </Col>
                 <Col md={12} xs={24}>
-                  <Card title="Claims By Category">
+                  <Card title="Claims By Department">
                     <ResponsiveContainer width="100%" height={300}>
                       <PieChart>
                         <Pie
@@ -267,6 +274,8 @@ const AdminDashboard: React.FC = () => {
                 </Col>
               </Row>
             </div>
+
+            
             <Row gutter={[16, 16]}>
               <Col md={8} xs={24}>
                 <Row gutter={[24, 24]} className="mt-4">
@@ -308,7 +317,7 @@ const AdminDashboard: React.FC = () => {
                   </Col>
                 </Row>
               </Col>
-              {/* Project Trends Chart */}
+              {/* Monthly Newly Started Projects Chart */}
               <Col md={16} xs={24}>
                 <div className="mt-4">
                   <Card title="Monthly Newly Started Project" style={{
@@ -334,7 +343,32 @@ const AdminDashboard: React.FC = () => {
                 </div>
               </Col>
             </Row>
-            <div className="mt-4">
+<div className="mt-5">
+            <Card
+            title="Claims Payout Trends"
+            style={{
+              boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
+            }}
+            extra={
+              <Select defaultValue="this_month" style={{ width: 150 }} onChange={handleFilterChange}>
+        <Option value="this_week">This Week</Option>
+        <Option value="this_month">This Month</Option>
+        <Option value="this_year">This Year</Option>
+      </Select>
+            }>
+                       <ResponsiveContainer width="100%" height={300}>
+  <LineChart data={financialData}>
+    <CartesianGrid strokeDasharray="3 3" />
+    <XAxis dataKey="month" />
+    <YAxis tickFormatter={(value) => `${value / 1000000}M`} />
+    <Tooltip />
+    <Legend />
+    <Line type="monotone" dataKey="claimsPaid" stroke="#8884d8" name="Claims Paid" />
+  </LineChart>
+</ResponsiveContainer>
+            </Card>
+            </div>
+            <div className="mt-5">
               <Card title="Recent Activities" style={{
                 boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
               }}>
