@@ -155,7 +155,7 @@ const Request = () => {
           <thead>
             <tr className="text-left bg-gray-200">
               <th className="py-3 px-4 font-medium">ID</th>
-              <th className="py-3 px-4 font-medium">Employee Name</th>
+              <th className="py-3 px-4 font-medium">Create Date</th>
               <th className="py-3 px-4 font-medium">Project</th>
               <th className="py-3 px-4 font-medium">Total Hours Worked</th>
               <th className="py-3 px-4 font-medium">Status</th>
@@ -176,7 +176,7 @@ const Request = () => {
                   className="border-t border-gray-200 hover:bg-gray-50 transition-colors"
                 >
                   <td className="py-4 px-4">{request.id}</td>
-                  <td className="py-4 px-4">{request.name}</td>
+                  <td className="py-4 px-4">{request.createdDate}</td>
                   <td className="py-4 px-4">{request.project}</td>
                   <td className="py-4 px-4">{request.totalHours}</td>
                   <td className="py-4 px-4">
