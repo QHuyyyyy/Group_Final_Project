@@ -1,9 +1,7 @@
 import { useState } from "react";
-import { Table, Tag, Space, Button, Select } from "antd";
+import { Table, Tag, Space, Button } from "antd";
 import SearchBar from "../../components/common/SearchBar";
 import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
-
-const { Option } = Select;
 
 type Claim = {
   id: number;
