@@ -41,6 +41,7 @@ const menuData: MenuSection[] = [
       { icon: settings, label: "Settings", href: "/userdashboard/settings" },
       { icon: user, label: "Profile", href: "/userdashboard/profile" },
       { icon: logout, label: "Logout", href: "/userdashboard/logout" },
+
     ],
   },
 ];
