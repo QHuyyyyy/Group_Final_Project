@@ -1,10 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
 import document from "../../assets/document.png";
 import user from "../../assets/user.png";
-
 import request from "../../assets/send.png";
 import finance from "../../assets/finance.png";
 import home from "../../assets/home.png";
+import transaction from "../../assets/transaction.png";
+
 
 interface MenuItem {
   icon?: string;
@@ -26,6 +27,7 @@ const menuData: MenuSection[] = [
       { icon: request, label: "Requests", href: "/userdashboard/claimrequest" },
       { icon: document, label: "Approvals", href: "/userdashboard/approvals" },
       { icon: finance, label: "Finance", href: "/userdashboard/finance" },
+      { icon: transaction, label: "Transaction", href: "/userdashboard/transaction" },
     ],
   },
   {

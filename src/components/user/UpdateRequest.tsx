@@ -24,11 +24,11 @@ interface Request {
 }
 
 const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, request, onClose }) => {
-    const [formData, setFormData] = useState<Request>({
+    const [formData, setFormData] = useState<Request>(() => ({
         ...request,
         startDate: moment(request.startDate).format("YYYY-MM-DD"),
         endDate: moment(request.endDate).format("YYYY-MM-DD"),
-    });
+    }));
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -61,18 +61,27 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, request, onClose
             cancelText="Cancel"
         >
             <div className="grid gap-4">
+                {/* Employee Name - Không thể thay đổi */}
                 <label>
                     <strong>Employee Name:</strong>
-                    <Input name="name" value={formData.name} onChange={handleChange} />
+                    <Input name="name" value={formData.name} disabled />
                 </label>
+
+                {/* Project */}
                 <label>
                     <strong>Project:</strong>
-                    <Select value={formData.project} onChange={(value) => handleSelectChange(value, "project")} style={{ width: "100%" }}>
+                    <Select
+                        value={formData.project}
+                        onChange={(value) => handleSelectChange(value, "project")}
+                        style={{ width: "100%" }}
+                    >
                         <Option value="Project A">Project A</Option>
                         <Option value="Project B">Project B</Option>
                         <Option value="Project C">Project C</Option>
                     </Select>
                 </label>
+
+                {/* Start Date */}
                 <label>
                     <strong>Start Date:</strong>
                     <DatePicker
@@ -81,6 +90,8 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, request, onClose
                         onChange={(date) => handleDateChange(date, "startDate")}
                     />
                 </label>
+
+                {/* End Date */}
                 <label>
                     <strong>End Date:</strong>
                     <DatePicker
@@ -89,19 +100,20 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, request, onClose
                         onChange={(date) => handleDateChange(date, "endDate")}
                     />
                 </label>
+
+                {/* Total Hours Worked */}
                 <label>
                     <strong>Total Hours Worked:</strong>
                     <Input type="number" name="totalHours" value={formData.totalHours} onChange={handleChange} />
                 </label>
+
+                {/* Status - Không thể thay đổi */}
                 <label>
                     <strong>Status:</strong>
-                    <Select value={formData.status} onChange={(value) => handleSelectChange(value, "status")} style={{ width: "100%" }}>
-                        <Option value="Draft">Draft</Option>
-                        <Option value="Pending">Pending</Option>
-                        <Option value="Approved">Approved</Option>
-                        <Option value="Rejected">Rejected</Option>
-                    </Select>
+                    <Input value={formData.status} disabled />
                 </label>
+
+                {/* Description */}
                 <label>
                     <strong>Description:</strong>
                     <TextArea name="description" value={formData.description} onChange={handleChange} />
