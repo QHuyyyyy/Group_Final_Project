@@ -1,12 +1,10 @@
 import React from "react";
-import { Input, Avatar, Badge, Dropdown, Menu, Row, Col } from "antd";
+import { Avatar, Badge, Dropdown, Menu, Row, Col } from "antd";
 import {
-  MenuOutlined,
-  SearchOutlined,
+ 
   BellOutlined,
   MailOutlined,
   SettingOutlined,
-  GlobalOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 

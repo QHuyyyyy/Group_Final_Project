@@ -9,12 +9,12 @@ const AdminSidebar = () => {
     {
       title: "Project Management",
       icon: <ProjectOutlined />,
-      path: "/admin/project-manager"
+      path: "/dashboard/project-manager"
     },
     {
       title: "User Management", 
       icon: <UserOutlined />,
-      path: "/admin/user-manager"
+      path: "/dashboard/user-manager"
     },
   ];
 

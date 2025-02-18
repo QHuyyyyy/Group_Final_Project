@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Legend, Cell, LineChart, Line } from "recharts";
-import { Col, Row, Card, Statistic, Tag, Table, List, Pagination, DatePicker, Select } from "antd"
+import { Col, Row, Card, Statistic, Tag, Table, List, Pagination,  Select } from "antd"
 import { UserOutlined, ProjectOutlined, FileTextOutlined, ClockCircleOutlined, CheckCircleOutlined, CheckOutlined } from '@ant-design/icons';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import dayjs from "dayjs"
 import NavbarAdminDashboard from "../../components/NavbarAdminDashboard";
-
 
 interface Claim {
   id: number;
@@ -14,7 +13,12 @@ interface Claim {
   claimer: string;
 }
 
-const { RangePicker } = DatePicker
+interface ClaimData {
+  status: string;
+  count: number;
+  date?: string;
+}
+
 const { Option } = Select
 const AdminDashboard: React.FC = () => {
   let userStats: number = 1534;
@@ -26,11 +30,11 @@ const AdminDashboard: React.FC = () => {
     rejected: 32,
     paid: 58,
   };
-  const claimsData = [
-    { status: "Pending", count: 124 },
-    { status: "Approved", count: 84 },
-    { status: "Rejected", count: 32 },
-    { status: "Paid", count: 58 },
+  const claimsData: ClaimData[] = [
+    { status: "Pending", count: 124, date: "2024-03-25" },
+    { status: "Approved", count: 84, date: "2024-03-24" },
+    { status: "Rejected", count: 32, date: "2024-03-23" },
+    { status: "Paid", count: 58, date: "2024-03-22" },
   ];
   const claimCategories = [
     { name: "HR", value: 40 },
@@ -91,25 +95,7 @@ const AdminDashboard: React.FC = () => {
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"]; // colors for pie chart
 
-  // const [filteredData, setFilteredData] = useState(claimsData);
-  // const [dates, setDates] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
-
-
-  // const handleDateChange = (dates) => {
-  //   setDates(dates);
-  //   if (dates) {
-  //     const [startDate, endDate] = dates;
-  //     const filtered = claimsData.filter((item) =>
-  //       dayjs(item.date).isBetween(startDate, endDate, "day", "[]")
-  //     );
-  //     setFilteredData(filtered);
-  //   } else {
-  //     setFilteredData(claimsData);
-  //   }
-  // };
-
-
-  const [filteredData, setFilteredData] = useState(claimsData);
+  const [filteredClaimData, setFilteredClaimData] = useState<ClaimData[]>(claimsData);
   const [selectedRange, setSelectedRange] = useState<string | null>(null);
 
   const handleFilterChange = (value: string) => {
@@ -132,14 +118,17 @@ const AdminDashboard: React.FC = () => {
         endDate = today.endOf("year");
         break;
       default:
-        setFilteredData(claimsData);
+        setFilteredClaimData(claimsData);
         return;
     }
 
-    const filtered = claimsData.filter((item) =>
-      dayjs(item.date).isBetween(startDate, endDate, "day", "[]")
-    );
-    setFilteredData(filtered);
+    const filtered = claimsData.filter((item) => {
+      if (!item.date) return false;
+      const itemDate = dayjs(item.date);
+      return itemDate.isAfter(startDate) && itemDate.isBefore(endDate);
+    });
+    
+    setFilteredClaimData(filtered);
   };
   
   return (
@@ -210,13 +199,27 @@ const AdminDashboard: React.FC = () => {
    
             <div className="mt-4">
               <Card
-              title="Claim Request Charts"
+              title={
+                <div className="flex justify-between items-center">
+                  <span>Claim Request Charts</span>
+                  <span className="text-sm text-gray-500">
+                    {selectedRange === 'this_week' ? 'This Week' :
+                     selectedRange === 'this_month' ? 'This Month' :
+                     selectedRange === 'this_year' ? 'This Year' : 'All Time'}
+                  </span>
+                </div>
+              }
               extra={
-                <Select defaultValue="this_month" style={{ width: 150 }} onChange={handleFilterChange}>
-          <Option value="this_week">This Week</Option>
-          <Option value="this_month">This Month</Option>
-          <Option value="this_year">This Year</Option>
-        </Select>
+                <Select 
+                  defaultValue="this_month" 
+                  style={{ width: 150 }} 
+                  onChange={handleFilterChange}
+                  value={selectedRange}
+                >
+                  <Option value="this_week">This Week</Option>
+                  <Option value="this_month">This Month</Option>
+                  <Option value="this_year">This Year</Option>
+                </Select>
               }
               style={{
                 boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
@@ -225,7 +228,7 @@ const AdminDashboard: React.FC = () => {
                 <Col md={12} xs={24}>
                   <Card title="Claim Request Overview">
                     <ResponsiveContainer width="100%" height={300} >
-                      <BarChart data={claimsData}>
+                      <BarChart data={filteredClaimData}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="status" />
                         <YAxis />
