@@ -20,7 +20,7 @@ const Header = () => {
     if (role === "admin") {
       setIsShow(true);
     }
-    if (role === "staff") {
+    if (role === "staff" || role === "approver" || role === "finance") {
       setIsShowUserD(true);
     }
   }, []);

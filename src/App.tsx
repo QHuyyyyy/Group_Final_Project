@@ -2,6 +2,8 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import AdminRoute from './routes/AdminRoute';
 import UserRoute from './routes/UserRoute';
+import RoleBasedRoute from './routes/RoleBasedRoute';
+import TransactionPage from './pages/user/Transaction';
 
 // Lazy load components
 const Homepage = lazy(() => import('./pages/Homepage'));
@@ -30,7 +32,7 @@ const App = () => {
         <Routes>
           <Route path='/' element={<Homepage />} />
           <Route path='/login' element={<Login />} />
-
+          <Route path='/transaction' element={<TransactionPage/>}/>
           {/* User Dashboard Routes */}
           <Route path='/userdashboard/' element={<UserRoute><UserDashBoard /></UserRoute>}>
             <Route path="profile" element={
@@ -40,7 +42,9 @@ const App = () => {
             } />
             <Route path="approvals" element={
               <UserRoute>
+                <RoleBasedRoute allowedRoles={['approver']}>
                 <ApprovalPage />
+                </RoleBasedRoute>
               </UserRoute>
             } />
             <Route path="claimrequest" element={
@@ -50,7 +54,9 @@ const App = () => {
             } />
             <Route path="finance" element={
               <UserRoute>
+                <RoleBasedRoute allowedRoles={['finance']}>
                 <Finance />
+                </RoleBasedRoute>
               </UserRoute>
             } />
             <Route path="request-detail/:id" element={
