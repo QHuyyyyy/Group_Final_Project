@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import { HomeOutlined } from '@ant-design/icons';
 import document from "../../assets/document.png";
 import settings from "../../assets/settings.svg";
 import user from "../../assets/user.png";
@@ -18,6 +19,13 @@ const menuData = [
   {
     title: "Other",
     items: [
+      { 
+        icon: null,
+        label: "Home",
+        href: "/",
+        isAntIcon: true,
+        antIcon: <HomeOutlined />
+      },
       { icon: settings, label: "Settings", href: "/userdashboard/settings" },
       { icon: user, label: "Profile", href: "/userdashboard/profile" },
       { icon: logout, label: "Logout", href: "/userdashboard/logout" },
@@ -49,11 +57,15 @@ const Menu = () => {
                         : "hover:bg-[#2E3754] text-gray-300"
                     }`}
                   >
-                    <img
-                      src={item.icon}
-                      alt={item.label}
-                      className="w-5 h-5 filter invert brightness-10"
-                    />
+                    {item.isAntIcon ? (
+                      <span className="text-xl">{item.antIcon}</span>
+                    ) : (
+                      <img
+                        src={item.icon}
+                        alt={item.label}
+                        className="w-5 h-5 filter invert brightness-10"
+                      />
+                    )}
                     <span>{item.label}</span>
                   </Link>
                 ))}
