@@ -1,34 +1,71 @@
-// import search from "../assets/search.png";
-import message from "../../assets/message.png";
-import announcement from "../../assets/announcement.png";
+
+import { Badge, Dropdown, MenuProps } from "antd";
+import {
+  BellOutlined,
+  LogoutOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import avatar from "../../assets/avatar.png";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+
 const Navbar = () => {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  const menu: MenuProps["items"] = [
+    {
+      key: "1",
+      label: (
+        <Link to="/userdashboard/profile">
+          <UserOutlined className="pr-2" />
+          Profile
+        </Link>
+      ),
+    },
+    {
+      key: "22",
+      label: (
+        <span onClick={handleLogout} className="cursor-pointer">
+          <LogoutOutlined className="pr-2" />
+          Logout
+        </span>
+      ),
+    },
+  ];
+
+  const notifications: MenuProps["items"] = [
+    { key: "1", label: "There are 2 requests waiting for your approval!!!" },
+  ];
+
   return (
     <div className="flex items-center justify-between p-5">
-      {/* Search Bar
-      <div className="hidden md:flex items-center gap-2 text-lg rounded-full ring-2 ring-gray-300 px-3 ">
-        <img src={search} alt="" width={20} height={20} />
-        <input type="text" placeholder="Search..." className="w-[200px] p-2 bg-transparent outline-none" />
-      </div> */}
       {/* Icon and user */}
-      <div className="flex items-center gap-6 justify-end w-full">
-        {/* icon1 */}
-        <div className="bg-white rounded-full w-7 h-7 flex items-center justify-center cursor-pointer">
-          <img src={message} alt="" width={30} height={30} />
-        </div>
-        {/* icon2 */}
-        <div className="bg-white rounded-full w-7 h-7 flex items-center justify-center cursor-pointer relative">
-          <img src={announcement} alt="" width={30} height={30} />
-          <div className="absolute -top-3 -right-3 w-5 h-5 flex items-center justify-center bg-red-500 text-white rounded-full text-xs">1</div>
-        </div>
+      <div className="flex items-center gap-5 justify-end w-full">
+        {/* Notifications */}
+        <Dropdown menu={{ items: notifications }} trigger={["click"]}>
+          <Badge count={2} className="cursor-pointer">
+            <BellOutlined className="text-2xl" />
+          </Badge>
+        </Dropdown>
 
-        <div className="flex flex-col ">
-          <span className="text-sm leading-2 font-medium">John Wick</span>
-          <span className="text-sm text-black text-right">User</span>
-        </div>
-        <div className="">
-          <img src={avatar} alt="" width={40} height={40} />
-        </div>
+        {/* User Dropdown */}
+        <Dropdown menu={{ items: menu }} trigger={["click"]}>
+          <div>
+            <img
+              src={avatar}
+              alt="User Avatar"
+              width={40}
+              height={40}
+              className="cursor-pointer"
+            />
+          </div>
+        </Dropdown>
       </div>
     </div>
   );
