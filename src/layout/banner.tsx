@@ -2,7 +2,7 @@ import React from 'react';
 
 const Banner: React.FC = () => {
   return (
-    <div className="relative h-[calc(100vh-64px)] mt-16">
+    <div className="relative h-[calc(100vh-64px)]">
       {/* Ảnh nền */}
       <div 
         className="absolute inset-0 w-full h-full"
