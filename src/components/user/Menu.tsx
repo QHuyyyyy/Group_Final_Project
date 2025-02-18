@@ -7,7 +7,20 @@ import logout from "../../assets/logout.png";
 import request from "../../assets/send.png";
 import finance from "../../assets/finance.png";
 
-const menuData = [
+interface MenuItem {
+  icon?: string;
+  label: string;
+  href: string;
+  isAntIcon?: boolean;
+  antIcon?: React.ReactNode;
+}
+
+interface MenuSection {
+  title: string;
+  items: MenuItem[];
+}
+
+const menuData: MenuSection[] = [
   {
     title: "Menu",
     items: [
@@ -20,7 +33,6 @@ const menuData = [
     title: "Other",
     items: [
       { 
-        icon: null,
         label: "Home",
         href: "/",
         isAntIcon: true,
@@ -60,11 +72,13 @@ const Menu = () => {
                     {item.isAntIcon ? (
                       <span className="text-xl">{item.antIcon}</span>
                     ) : (
-                      <img
-                        src={item.icon}
-                        alt={item.label}
-                        className="w-5 h-5 filter invert brightness-10"
-                      />
+                      item.icon && (
+                        <img
+                          src={item.icon}
+                          alt={item.label}
+                          className="w-5 h-5 filter invert brightness-10"
+                        />
+                      )
                     )}
                     <span>{item.label}</span>
                   </Link>
