@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Legend, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Legend, Cell, LineChart, Line } from "recharts";
 import { Col, Row, Card, Statistic, Tag, Table, List, Pagination, DatePicker, Select } from "antd"
 import { UserOutlined, ProjectOutlined, FileTextOutlined, ClockCircleOutlined, CheckCircleOutlined, CheckOutlined } from '@ant-design/icons';
 import AdminSidebar from '../../components/admin/AdminSidebar';
@@ -33,10 +33,10 @@ const AdminDashboard: React.FC = () => {
     { status: "Paid", count: 58 },
   ];
   const claimCategories = [
-    { name: "Employment contracts", value: 40 },
-    { name: "Customer complaints", value: 30 },
-    { name: "Insurance policies", value: 20 },
-    { name: "Other", value: 10 },
+    { name: "HR", value: 40 },
+    { name: "IT", value: 30 },
+    { name: "Finance", value: 20 },
+    { name: "Sales", value: 10 },
   ];
   const recentClaims = [
     { id: 1, name: "Overtime Payment", status: "Pending", claimer: "John Doe" },
@@ -66,6 +66,15 @@ const AdminDashboard: React.FC = () => {
     Paid: "blue",
   };
 
+  const financialData = [
+    { month: "Jan", claimsPaid: 50000000 },
+    { month: "Feb", claimsPaid: 70000000 },
+    { month: "Mar", claimsPaid: 80000000 },
+    { month: "Apr", claimsPaid: 75000000 },
+    { month: "May", claimsPaid: 90000000 },
+    { month: "Jun", claimsPaid: 85000000 },
+  ];
+
   const columns = [
     { title: "ID", dataIndex: "id", key: "id" },
     { title: "Claim Name", dataIndex: "name", key: "name" },
@@ -82,22 +91,57 @@ const AdminDashboard: React.FC = () => {
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"]; // colors for pie chart
 
+  // const [filteredData, setFilteredData] = useState(claimsData);
+  // const [dates, setDates] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
+
+
+  // const handleDateChange = (dates) => {
+  //   setDates(dates);
+  //   if (dates) {
+  //     const [startDate, endDate] = dates;
+  //     const filtered = claimsData.filter((item) =>
+  //       dayjs(item.date).isBetween(startDate, endDate, "day", "[]")
+  //     );
+  //     setFilteredData(filtered);
+  //   } else {
+  //     setFilteredData(claimsData);
+  //   }
+  // };
+
+
   const [filteredData, setFilteredData] = useState(claimsData);
-  const [dates, setDates] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
+  const [selectedRange, setSelectedRange] = useState<string | null>(null);
 
+  const handleFilterChange = (value: string) => {
+    setSelectedRange(value);
 
-  const handleDateChange = (dates) => {
-    setDates(dates);
-    if (dates) {
-      const [startDate, endDate] = dates;
-      const filtered = claimsData.filter((item) =>
-        dayjs(item.date).isBetween(startDate, endDate, "day", "[]")
-      );
-      setFilteredData(filtered);
-    } else {
-      setFilteredData(claimsData);
+    let startDate, endDate;
+    const today = dayjs();
+
+    switch (value) {
+      case "this_week":
+        startDate = today.startOf("week");
+        endDate = today.endOf("week");
+        break;
+      case "this_month":
+        startDate = today.startOf("month");
+        endDate = today.endOf("month");
+        break;
+      case "this_year":
+        startDate = today.startOf("year");
+        endDate = today.endOf("year");
+        break;
+      default:
+        setFilteredData(claimsData);
+        return;
     }
+
+    const filtered = claimsData.filter((item) =>
+      dayjs(item.date).isBetween(startDate, endDate, "day", "[]")
+    );
+    setFilteredData(filtered);
   };
+  
   return (
     <>
 
@@ -108,14 +152,13 @@ const AdminDashboard: React.FC = () => {
             <NavbarAdminDashboard />
           </div>
           <div className="p-8 mt-12">
-            <h1 className="text-2xl font-bold mb-4" style={{
-              fontWeight:"bold"
-            }}>Dashboard Overview</h1>
+            <p className="text-2xl font-bold mb-4 font-mono" >Dashboard Overview</p>
             {/* Stats Section */}
             <Row gutter={[16, 16]}>
               <Col md={8} xs={24}>
                 <Card style={{
-                  backgroundColor: "#138dcf"
+                  backgroundColor: "#138dcf",
+                  
                 }}
                 className="relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-12 h-12 bg-[#1a6b96] opacity-50 rounded-full transform translate-x-4 -translate-y-4"></div>
@@ -164,11 +207,20 @@ const AdminDashboard: React.FC = () => {
                 </Card>
               </Col>
             </Row>
-
+   
             <div className="mt-4">
               <Card
               title="Claim Request Charts"
-              extra={<RangePicker onChange={handleDateChange} />}>
+              extra={
+                <Select defaultValue="this_month" style={{ width: 150 }} onChange={handleFilterChange}>
+          <Option value="this_week">This Week</Option>
+          <Option value="this_month">This Month</Option>
+          <Option value="this_year">This Year</Option>
+        </Select>
+              }
+              style={{
+                boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
+              }}>
               <Row gutter={[16, 16]}>
                 <Col md={12} xs={24}>
                   <Card title="Claim Request Overview">
@@ -184,7 +236,7 @@ const AdminDashboard: React.FC = () => {
                   </Card>
                 </Col>
                 <Col md={12} xs={24}>
-                  <Card title="Claims By Category">
+                  <Card title="Claims By Department">
                     <ResponsiveContainer width="100%" height={300}>
                       <PieChart>
                         <Pie
@@ -210,7 +262,10 @@ const AdminDashboard: React.FC = () => {
               </Card>
               <Row gutter={[16, 16]} className="mt-4">
                 <Col md={24} xs={24}>
-                  <Card title="Recent Claims">
+                  <Card title="Recent Claims"
+                  style={{
+                    boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
+                  }}>
                     <Table dataSource={recentClaims} columns={columns} rowKey="id" pagination={false} />
                     <Pagination align="center" defaultCurrent={1} total={50} style={{
                       marginTop: "2%"
@@ -219,11 +274,15 @@ const AdminDashboard: React.FC = () => {
                 </Col>
               </Row>
             </div>
+
+            
             <Row gutter={[16, 16]}>
               <Col md={8} xs={24}>
                 <Row gutter={[24, 24]} className="mt-4">
                   <Col xs={24}>
-                    <Card>
+                    <Card style={{
+                      boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
+                    }}>
                       <Statistic
                         title="Total Projects"
                         className="font-bold"
@@ -233,7 +292,9 @@ const AdminDashboard: React.FC = () => {
                     </Card>
                   </Col>
                   <Col xs={24}>
-                    <Card>
+                    <Card style={{
+                      boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
+                    }}>
                       <Statistic
                         title="Ongoing Projects"
                         className="font-bold"
@@ -243,7 +304,9 @@ const AdminDashboard: React.FC = () => {
                     </Card>
                   </Col>
                   <Col xs={24}>
-                    <Card>
+                    <Card style={{
+                      boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
+                    }}>
                       <Statistic
                         title="Completed Projects"
                         className="font-bold"
@@ -254,10 +317,18 @@ const AdminDashboard: React.FC = () => {
                   </Col>
                 </Row>
               </Col>
-              {/* Project Trends Chart */}
+              {/* Monthly Newly Started Projects Chart */}
               <Col md={16} xs={24}>
                 <div className="mt-4">
-                  <Card title="Monthly Newly Started Project" className="text-3xl" extra={<RangePicker onChange={handleDateChange} />}>
+                  <Card title="Monthly Newly Started Project" style={{
+                boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
+              }} className="text-3xl" extra={
+                <Select defaultValue="this_month" style={{ width: 150 }} onChange={handleFilterChange}>
+          <Option value="this_week">This Week</Option>
+          <Option value="this_month">This Month</Option>
+          <Option value="this_year">This Year</Option>
+        </Select>
+              }>
                     <ResponsiveContainer width="100%" height={300}>
                       <BarChart data={projectTrendData}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#ccc" />
@@ -272,8 +343,35 @@ const AdminDashboard: React.FC = () => {
                 </div>
               </Col>
             </Row>
-            <div className="mt-4">
-              <Card title="Recent Activities">
+<div className="mt-5">
+            <Card
+            title="Claims Payout Trends"
+            style={{
+              boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
+            }}
+            extra={
+              <Select defaultValue="this_month" style={{ width: 150 }} onChange={handleFilterChange}>
+        <Option value="this_week">This Week</Option>
+        <Option value="this_month">This Month</Option>
+        <Option value="this_year">This Year</Option>
+      </Select>
+            }>
+                       <ResponsiveContainer width="100%" height={300}>
+  <LineChart data={financialData}>
+    <CartesianGrid strokeDasharray="3 3" />
+    <XAxis dataKey="month" />
+    <YAxis tickFormatter={(value) => `${value / 1000000}M`} />
+    <Tooltip />
+    <Legend />
+    <Line type="monotone" dataKey="claimsPaid" stroke="#8884d8" name="Claims Paid" />
+  </LineChart>
+</ResponsiveContainer>
+            </Card>
+            </div>
+            <div className="mt-5">
+              <Card title="Recent Activities" style={{
+                boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
+              }}>
                 <List dataSource={recentActivities} renderItem={(item: any) => (
                   <List.Item><List.Item.Meta title={item.activity} description={item.time} />
                   </List.Item>
