@@ -30,10 +30,14 @@ const App = () => {
         <Routes>
           <Route path='/' element={<Homepage />} />
           <Route path='/login' element={<Login />} />
-          <Route path='/profile' element={<Profile />} />
           
           {/* User Dashboard Routes */}
-          <Route path='/userdashboard' element={<UserRoute><UserDashBoard /></UserRoute>}>
+          <Route path='/userdashboard/' element={<UserRoute><UserDashBoard /></UserRoute>}>
+            <Route path="profile" element={
+              <UserRoute>
+                <Profile />
+              </UserRoute>
+            } />
             <Route path="approvals" element={
               <UserRoute>
                 <ApprovalPage />
