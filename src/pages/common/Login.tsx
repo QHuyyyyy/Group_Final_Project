@@ -1,49 +1,28 @@
 import { Button, Typography, Form, Input, message } from 'antd';
-import { GoogleOutlined, UserOutlined, LockOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { UserAuth } from '../contexts/AuthContext'
+import { useApiStore } from '../../stores/apiStore';
+import { useAuth } from '../../contexts/AuthContext';
+
 const { Title } = Typography;
 
-interface LoginForm {
-  username: string;
-  password: string;
-}
 
 export default function Login() {
-  const [form] = Form.useForm<LoginForm>();
+  const [form] = Form.useForm();
   const navigate = useNavigate();
-  const { googleSignIn, logIn } = UserAuth();
+  const { login } = useAuth();
+  const { isLoading } = useApiStore();
 
-  const handleGoogleLogin = async () => {
+  const handleSubmit = async (values: { username: string; password: string }) => {
     try {
-      const result = await googleSignIn();
-      if (result.user) {
-        message.success('Login successfully!');
-        navigate('/');
-      }   
-    } catch (e: unknown) { 
-
-      if (typeof e === "string") {
-         console.log(e.toUpperCase()) 
-      } else if (e instanceof Error) {
-          console.log(e.message )
-      }
-};
-  };
-  const handleSubmit = async (values: LoginForm) => {
-    try {
-      const { username, password } = values;
-      const result = await logIn(username, password);
-      if (result) {
-        message.success('Login successful!');
-        navigate('/');
-      }
-    } catch (e: unknown) {
-      message.error('Invalid username or password!');
+      await login(values.username, values.password);
+      message.success('Đăng nhập thành công!');
+      navigate('/');
+    } catch (e) {
+      message.error('Đăng nhập thất bại!');
     }
   };
 
-  
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 to-white dark:from-slate-900 dark:to-slate-800 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
@@ -53,7 +32,7 @@ export default function Login() {
               Welcome 
             </Title>
             <p className="text-slate-600 dark:text-slate-400">
-              Sign in to continue to your account
+              Sign in to continue to your account 
             </p>
           </div>
 
@@ -91,6 +70,7 @@ export default function Login() {
               <Button
                 type="primary"
                 htmlType="submit"
+                loading={isLoading}
                 size="large"
                 block
                 className="h-12 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 
@@ -102,29 +82,7 @@ export default function Login() {
             </Form.Item>
           </Form>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200 dark:border-slate-700"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white dark:bg-slate-800 text-slate-500">Or</span>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <Button
-              type="default"
-              icon={<GoogleOutlined />}
-              size="large"
-              block
-              onClick={handleGoogleLogin}
-              className="h-12 flex items-center justify-center bg-white hover:bg-slate-50 border-slate-200 
-                dark:bg-slate-700 dark:border-slate-600 dark:hover:bg-slate-600
-                dark:text-white transition-colors"
-            >
-              <span className="ml-2">Continue with Google</span>
-            </Button>
-          </div>
+         
         </div>
       </div>
     </div>

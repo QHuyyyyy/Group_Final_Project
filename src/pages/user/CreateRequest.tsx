@@ -28,6 +28,9 @@ const CreateRequest: React.FC = () => {
             status: "Draft",
         };
 
+        console.log('Request to be sent:', newRequest);
+
+
         setTimeout(() => {
 
             notification.success({
