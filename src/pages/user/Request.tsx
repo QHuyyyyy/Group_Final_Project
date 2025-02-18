@@ -1,15 +1,15 @@
-import { Link } from "react-router-dom";
 import { useState } from "react";
 import { Input } from "antd";
 
 
 
-import { EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
-import DeleteRequest from "../../components/user/DeleteRequest";
+import { EditOutlined, EyeOutlined, ReloadOutlined, CloudUploadOutlined } from '@ant-design/icons';
+// import DeleteRequest from "../../components/user/DeleteRequest";
 import RequestDetails from "../../components/user/RequestDetails";
 import UpdateRequest from "../../components/user/UpdateRequest";
-
-
+import CreateRequest from "../../pages/user/CreateRequest"
+import SendRequest from "../../components/user/SendRequest";
+import ReturnRequest from "../../components/user/ReturnRequest";
 interface Request {
   id: number;
   name: string;
@@ -50,16 +50,21 @@ const initialRequests = [
 ];
 
 const Request = () => {
+  const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
+
   const [filteredRequests, setFilteredRequests] = useState(initialRequests);
 
-  const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  // const [deleteId, setDeleteId] = useState<number | null>(null);
+  // const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
 
   const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
   const [updateRequest, setUpdateRequest] = useState<Request | null>(null);
 
   const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
+
+  const [sendRequestId, setSendRequestId] = useState<number | null>(null);
+  const [isSendModalVisible, setIsSendModalVisible] = useState(false);
 
   ////////////////////////////////////////////////////////////////////////////
   const handleSearch = (value: string) => {
@@ -69,18 +74,18 @@ const Request = () => {
     setFilteredRequests(filteredData);
   };
 
-  const showDeleteModal = (id: number) => {
-    setDeleteId(id);
-    setIsDeleteModalVisible(true);
-  };
+  // const showDeleteModal = (id: number) => {
+  //   setDeleteId(id);
+  //   setIsDeleteModalVisible(true);
+  // };
 
-  const handleConfirmDelete = () => {
-    if (deleteId !== null) {
-      setFilteredRequests(filteredRequests.filter((req) => req.id !== deleteId));
-    }
-    setIsDeleteModalVisible(false);
-    setDeleteId(null);
-  };
+  // const handleConfirmDelete = () => {
+  //   if (deleteId !== null) {
+  //     setFilteredRequests(filteredRequests.filter((req) => req.id !== deleteId));
+  //   }
+  //   setIsDeleteModalVisible(false);
+  //   setDeleteId(null);
+  // };
 
   const showUpdateModal = (request: Request) => {
     setUpdateRequest(request);
@@ -92,15 +97,51 @@ const Request = () => {
     setIsDetailModalVisible(true);
   };
 
+  const showSendModal = (id: number) => {
+    setSendRequestId(id);
+    setIsSendModalVisible(true);
+  };
+
+
+  const handleSendRequest = (id: number) => {
+    setFilteredRequests(prevRequests =>
+      prevRequests.map(req =>
+        req.id === id ? { ...req, status: "Pending Approval" } : req
+      )
+    );
+    setIsSendModalVisible(false);
+    setSendRequestId(null);
+  };
+
+  const [returnRequestId, setReturnRequestId] = useState<number | null>(null);
+  const [isReturnModalVisible, setIsReturnModalVisible] = useState(false);
+
+  const showReturnModal = (id: number) => {
+    setReturnRequestId(id);
+    setIsReturnModalVisible(true);
+  };
+  const handleReturnRequest = (id: number) => {
+    setFilteredRequests(prevRequests =>
+      prevRequests.map(req =>
+        req.id === id ? { ...req, status: "Draft" } : req
+      )
+    );
+    setIsReturnModalVisible(false);
+    setReturnRequestId(null);
+  };
+
+
   return (
     <div className="p-6">
       <h2 className="text-4xl font-bold mb-4">My Requests</h2>
       <div className="mb-6 flex items-center gap-4">
-        <Link to="/userdashboard/create-request">
-          <button className="px-4 py-2 bg-orange-300 hover:bg-gray-400 text-white rounded-md">
-            Create Request
-          </button>
-        </Link>
+        <button
+          onClick={() => setIsCreateModalVisible(true)}
+          className="px-4 py-2 bg-orange-300 hover:bg-gray-400 text-white rounded-md"
+        >
+          Create Request
+        </button>
+
         <Search
           placeholder="Search by Employee Name"
           allowClear
@@ -157,11 +198,25 @@ const Request = () => {
                     <button onClick={() => showUpdateModal(request)}>
                       <EditOutlined />
                     </button>
-                    <button onClick={() => showDeleteModal(request.id)}>
+                    {/* <button onClick={() => showDeleteModal(request.id)}>
                       <DeleteOutlined />
-                    </button>
+                    </button> */}
+                    {request.status === "Draft" && (
+                      <button onClick={() => showSendModal(request.id)} className="">
+                        <CloudUploadOutlined />
+                      </button>
+                    )}
+                    {request.status === "Pending Approval" && (
+                      <button onClick={() => showReturnModal(request.id)} className="">
+                        <ReloadOutlined />
+                      </button>
+                    )}
                   </td>
 
+                  <CreateRequest
+                    visible={isCreateModalVisible}
+                    onClose={() => setIsCreateModalVisible(false)}
+                  />
                 </tr>
               ))
             )}
@@ -169,13 +224,13 @@ const Request = () => {
         </table>
       </div>
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Confirmation Modal
       <DeleteRequest
         id={deleteId}
         visible={isDeleteModalVisible}
         onConfirm={handleConfirmDelete}
         onCancel={() => setIsDeleteModalVisible(false)}
-      />
+      /> */}
 
       {/* Request Details Modal */}
       <RequestDetails
@@ -191,6 +246,20 @@ const Request = () => {
           onClose={() => setIsUpdateModalVisible(false)}
         />
       )}
+
+      <SendRequest
+        id={sendRequestId}
+        visible={isSendModalVisible}
+        onSend={handleSendRequest}
+        onCancel={() => setIsSendModalVisible(false)}
+      />
+
+      <ReturnRequest
+        id={returnRequestId}
+        visible={isReturnModalVisible}
+        onReturn={handleReturnRequest}
+        onCancel={() => setIsReturnModalVisible(false)}
+      />
 
     </div>
   );
