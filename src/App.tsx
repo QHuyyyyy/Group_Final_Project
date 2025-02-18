@@ -15,7 +15,7 @@ const ApprovalPage = lazy(() => import('./pages/user/Approval'));
 const Request = lazy(() => import('./pages/user/Request'));
 const Finance = lazy(() => import('./pages/user/Finance'));
 const RequestDetails = lazy(() => import('./pages/user/RequestDetails'));
-const CreateRequest = lazy(() => import('./pages/user/CreateRequest'));
+
 
 const Loading = () => (
   <div className="h-screen w-screen flex items-center justify-center">
@@ -30,7 +30,7 @@ const App = () => {
         <Routes>
           <Route path='/' element={<Homepage />} />
           <Route path='/login' element={<Login />} />
-          
+
           {/* User Dashboard Routes */}
           <Route path='/userdashboard/' element={<UserRoute><UserDashBoard /></UserRoute>}>
             <Route path="profile" element={
@@ -44,9 +44,9 @@ const App = () => {
               </UserRoute>
             } />
             <Route path="claimrequest" element={
-                <UserRoute>
+              <UserRoute>
                 <Request />
-                </UserRoute>
+              </UserRoute>
             } />
             <Route path="finance" element={
               <UserRoute>
@@ -58,11 +58,11 @@ const App = () => {
                 <RequestDetails />
               </UserRoute>
             } />
-            <Route path="create-request" element={
+            {/* <Route path="create-request" element={
               <UserRoute>
                 <CreateRequest />
               </UserRoute>
-            } />
+            } /> */}
           </Route>
 
           {/* Admin Routes */}
