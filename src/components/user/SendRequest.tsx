@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Modal, Button, notification } from "antd";
+import { Modal, notification } from "antd";
 
 interface SendRequestProps {
     id: number | null;
@@ -15,9 +15,9 @@ const SendRequest: React.FC<SendRequestProps> = ({ id, visible, onSend, onCancel
         if (id === null) return;
         setLoading(true);
 
-        // Giả lập API gửi request (bạn có thể thay bằng API thực tế)
+
         setTimeout(() => {
-            onSend(id); // Gửi request
+            onSend(id);
             setLoading(false);
             notification.success({
                 message: "Request Sent",
@@ -35,7 +35,7 @@ const SendRequest: React.FC<SendRequestProps> = ({ id, visible, onSend, onCancel
             okText="Yes, Send"
             okType="primary"
             cancelText="Cancel"
-            confirmLoading={loading} // Hiển thị loading khi gửi
+            confirmLoading={loading}
         >
             <p>Are you sure you want to send request {id ? `ID ${id}` : "this request"} for approval?</p>
             <p>Once sent, the status will change to "Pending Approval".</p>

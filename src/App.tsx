@@ -15,7 +15,7 @@ const ApprovalPage = lazy(() => import('./pages/user/Approval'));
 const Request = lazy(() => import('./pages/user/Request'));
 const Finance = lazy(() => import('./pages/user/Finance'));
 const RequestDetails = lazy(() => import('./pages/user/RequestDetails'));
-const CreateRequest = lazy(() => import('./pages/user/CreateRequest'));
+
 
 const Loading = () => (
   <div className="h-screen w-screen flex items-center justify-center">
