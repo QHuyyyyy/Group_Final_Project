@@ -12,8 +12,8 @@ const mockProjects = [
     code: 'PRJ001',
     name: 'Project Alpha',
     status: 'In Progress',
-    from: '2024-01-01',
-    to: '2024-04-01',
+    from: dayjs().format('YYYY-MM-DD'),
+    to: dayjs().add(3, 'month').format('YYYY-MM-DD'),
     priority: 'High',
     // Giữ lại thông tin chi tiết để dùng trong modal
     details: {
@@ -31,8 +31,8 @@ const mockProjects = [
     code: 'PRJ002',
     name: 'Project Beta',
     status: 'Completed',
-    from: '2024-01-15',
-    to: '2024-03-15',
+    from: dayjs().add(1, 'week').format('YYYY-MM-DD'),
+    to: dayjs().add(2, 'month').format('YYYY-MM-DD'),
     priority: 'Medium',
     details: {
       pm: 'Trần Văn X',
@@ -46,6 +46,39 @@ const mockProjects = [
   },
 ];
 
+// Cập nhật lại danh sách nhân viên mẫu (chỉ có tên)
+const mockEmployees = [
+  { id: 1, name: 'Nguyễn Văn An' },
+  { id: 2, name: 'Trần Thị Bình' },
+  { id: 3, name: 'Lê Văn Cường' },
+  { id: 4, name: 'Phạm Thị Dung' },
+  { id: 5, name: 'Hoàng Văn Em' },
+  { id: 6, name: 'Đỗ Thị Phương' },
+  { id: 7, name: 'Vũ Đình Quang' },
+  { id: 8, name: 'Ngô Thị Hương' },
+  { id: 9, name: 'Bùi Văn Kiên' },
+  { id: 10, name: 'Trịnh Thị Lan' },
+];
+
+// Thêm hàm disabledDate để kiểm tra ngày
+const disabledDate = (current: dayjs.Dayjs) => {
+  return current && current < dayjs().startOf('day');
+};
+
+// Thêm các hàm helper này vào trước component AdminProjectManager
+const commonSelectProps = (role: string) => ({
+  filterOption: (input: string, option: any) => 
+    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0,
+  style: { width: '100%' },
+  'data-role': role,
+  className: `select-${role}`
+});
+
+// Thêm interface để định nghĩa kiểu dữ liệu
+interface SelectedEmployees {
+  [key: string]: string[];
+}
+
 const AdminProjectManager: React.FC = () => {
   const navigate = useNavigate();
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -54,6 +87,15 @@ const AdminProjectManager: React.FC = () => {
   const [favoriteProjects, setFavoriteProjects] = useState<string[]>([]);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [selectedEmployees, setSelectedEmployees] = useState<SelectedEmployees>({
+    pm: [],
+    qa: [],
+    ba: [],
+    technicalLead: [],
+    technicalConsultant: [],
+    developers: [],
+    testers: []
+  });
 
   const columns = [
     {
@@ -172,6 +214,15 @@ const AdminProjectManager: React.FC = () => {
   const handleEditModalClose = () => {
     setIsEditModalVisible(false);
     setSelectedProject(null);
+    setSelectedEmployees({
+      pm: [],
+      qa: [],
+      ba: [],
+      technicalLead: [],
+      technicalConsultant: [],
+      developers: [],
+      testers: []
+    });
   };
 
   const handleEditSubmit = (values: any) => {
@@ -212,6 +263,15 @@ const AdminProjectManager: React.FC = () => {
 
   const handleCreateModalClose = () => {
     setIsCreateModalVisible(false);
+    setSelectedEmployees({
+      pm: [],
+      qa: [],
+      ba: [],
+      technicalLead: [],
+      technicalConsultant: [],
+      developers: [],
+      testers: []
+    });
   };
 
   const handleCreateSubmit = (values: any) => {
@@ -237,6 +297,42 @@ const AdminProjectManager: React.FC = () => {
     // TODO: Thực hiện thêm dự án mới
     console.log('New project:', newProject);
     setIsCreateModalVisible(false);
+  };
+
+  const handleEmployeeSelect = (value: string | string[], role: string) => {
+    if (role === 'pm' || role === 'qa') {
+      // Single select cho PM và QA
+      const newValue = typeof value === 'string' ? [value] : [value[value.length - 1]];
+      setSelectedEmployees(prev => ({
+        ...prev,
+        [role]: newValue
+      }));
+    } else {
+      // Multiple select cho các role khác
+      setSelectedEmployees(prev => ({
+        ...prev,
+        [role]: Array.isArray(value) ? value : [value]
+      }));
+    }
+  };
+
+  const renderEmployeeOptions = (role: string) => {
+    return mockEmployees.map(emp => {
+      const isDisabled = Object.entries(selectedEmployees).some(([currentRole, employees]) => 
+        currentRole !== role && 
+        employees.includes(emp.name)
+      );
+      
+      return (
+        <Select.Option 
+          key={emp.id} 
+          value={emp.name}
+          disabled={isDisabled}
+        >
+          {emp.name} {isDisabled ? '(Đã được phân công)' : ''}
+        </Select.Option>
+      );
+    });
   };
 
   return (
@@ -346,17 +442,12 @@ const AdminProjectManager: React.FC = () => {
 
         {/* Modal Edit Project */}
         <Modal
-          title={<h2 className="text-2xl font-bold">Edit Project</h2>}
+          title={<h2 className="text-2xl font-semibold text-gray-800 mb-4">Edit Project</h2>}
           open={isEditModalVisible}
           onCancel={handleEditModalClose}
           footer={null}
           width={800}
-          style={{ top: 20 }}
-          bodyStyle={{ 
-            maxHeight: 'calc(100vh - 200px)',
-            overflowY: 'auto',
-            paddingRight: '20px'
-          }}
+          className="custom-modal"
         >
           {selectedProject && (
             <Form
@@ -377,14 +468,243 @@ const AdminProjectManager: React.FC = () => {
               }}
               onFinish={handleEditSubmit}
               layout="vertical"
+              className="bg-white p-4"
             >
-              <div className="grid grid-cols-2 gap-4">
+              {/* Project Information */}
+              <div className="mb-8">
+                <h3 className="text-lg font-medium text-gray-700 mb-4 pb-2 border-b">Project Information</h3>
+                <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                  <Form.Item
+                    name="code"
+                    label="Project Code"
+                    rules={[{ required: true, message: 'Please input project code!' }]}
+                  >
+                    <Input placeholder="Enter project code" className="rounded-md" />
+                  </Form.Item>
+
+                  <Form.Item
+                    name="name"
+                    label="Project Name"
+                    rules={[{ required: true, message: 'Please input project name!' }]}
+                  >
+                    <Input placeholder="Enter project name" className="rounded-md" />
+                  </Form.Item>
+
+                  <Form.Item
+                    name="status"
+                    label="Status"
+                    rules={[{ required: true, message: 'Please select status!' }]}
+                  >
+                    <Select placeholder="Select status" className="rounded-md">
+                      <Select.Option value="In Progress">In Progress</Select.Option>
+                      <Select.Option value="Completed">Completed</Select.Option>
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item
+                    name="priority"
+                    label="Priority"
+                    rules={[{ required: true, message: 'Please select priority!' }]}
+                  >
+                    <Select placeholder="Select priority" className="rounded-md">
+                      <Select.Option value="High">High</Select.Option>
+                      <Select.Option value="Medium">Medium</Select.Option>
+                      <Select.Option value="Low">Low</Select.Option>
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item
+                    name="from"
+                    label="Start Date"
+                    rules={[{ required: true, message: 'Please select start date!' }]}
+                  >
+                    <DatePicker 
+                      className="w-full rounded-md" 
+                      disabledDate={disabledDate}
+                      placeholder="Select start date"
+                    />
+                  </Form.Item>
+
+                  <Form.Item
+                    name="to"
+                    label="End Date"
+                    rules={[{ required: true, message: 'Please select end date!' }]}
+                  >
+                    <DatePicker 
+                      className="w-full rounded-md" 
+                      disabledDate={disabledDate}
+                      placeholder="Select end date"
+                    />
+                  </Form.Item>
+                </div>
+              </div>
+
+              {/* Team Members */}
+              <div className="mb-8">
+                <h3 className="text-lg font-medium text-gray-700 mb-4 pb-2 border-b">Team Members</h3>
+                <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                  {/* Project Manager - Single select */}
+                  <Form.Item
+                    name="pm"
+                    label="Project Manager"
+                    rules={[{ required: true, message: 'Please select Project Manager!' }]}
+                  >
+                    <Select
+                      showSearch
+                      placeholder="Select project manager"
+                      {...commonSelectProps('pm')}
+                      onChange={(value) => handleEmployeeSelect(value, 'pm')}
+                    >
+                      {renderEmployeeOptions('pm')}
+                    </Select>
+                  </Form.Item>
+
+                  {/* QA - Single select */}
+                  <Form.Item
+                    name="qa"
+                    label="Quality Assurance"
+                    rules={[{ required: true, message: 'Please select QA!' }]}
+                  >
+                    <Select
+                      showSearch
+                      placeholder="Select QA"
+                      {...commonSelectProps('qa')}
+                      onChange={(value) => handleEmployeeSelect(value, 'qa')}
+                    >
+                      {renderEmployeeOptions('qa')}
+                    </Select>
+                  </Form.Item>
+
+                  {/* Technical Lead - Multiple select */}
+                  <Form.Item
+                    name="technicalLead"
+                    label="Technical Lead"
+                    rules={[{ required: true, message: 'Please select Technical Lead!' }]}
+                  >
+                    <Select
+                      mode="multiple"
+                      showSearch
+                      placeholder="Select technical lead"
+                      {...commonSelectProps('technicalLead')}
+                      onChange={(value) => handleEmployeeSelect(value, 'technicalLead')}
+                    >
+                      {renderEmployeeOptions('technicalLead')}
+                    </Select>
+                  </Form.Item>
+
+                  {/* BA - Multiple select */}
+                  <Form.Item
+                    name="ba"
+                    label="Business Analyst"
+                    rules={[{ required: true, message: 'Please select BA!' }]}
+                  >
+                    <Select
+                      mode="multiple"
+                      showSearch
+                      placeholder="Select business analyst"
+                      {...commonSelectProps('ba')}
+                      onChange={(value) => handleEmployeeSelect(value, 'ba')}
+                    >
+                      {renderEmployeeOptions('ba')}
+                    </Select>
+                  </Form.Item>
+
+                  {/* Developers - Multiple select */}
+                  <Form.Item
+                    name="developers"
+                    label="Developers"
+                    rules={[{ required: true, message: 'Please select developers!' }]}
+                  >
+                    <Select
+                      mode="multiple"
+                      showSearch
+                      placeholder="Select developers"
+                      {...commonSelectProps('developers')}
+                      onChange={(value) => handleEmployeeSelect(value, 'developers')}
+                    >
+                      {renderEmployeeOptions('developers')}
+                    </Select>
+                  </Form.Item>
+
+                  {/* Testers - Multiple select */}
+                  <Form.Item
+                    name="testers"
+                    label="Testers"
+                    rules={[{ required: true, message: 'Please select testers!' }]}
+                  >
+                    <Select
+                      mode="multiple"
+                      showSearch
+                      placeholder="Select testers"
+                      {...commonSelectProps('testers')}
+                      onChange={(value) => handleEmployeeSelect(value, 'testers')}
+                    >
+                      {renderEmployeeOptions('testers')}
+                    </Select>
+                  </Form.Item>
+
+                  {/* Technical Consultant - Multiple select */}
+                  <Form.Item
+                    name="technicalConsultant"
+                    label="Technical Consultancy"
+                    rules={[{ required: true, message: 'Please select technical consultant!' }]}
+                  >
+                    <Select
+                      mode="multiple"
+                      showSearch
+                      placeholder="Select technical consultant"
+                      {...commonSelectProps('technicalConsultant')}
+                      onChange={(value) => handleEmployeeSelect(value, 'technicalConsultant')}
+                    >
+                      {renderEmployeeOptions('technicalConsultant')}
+                    </Select>
+                  </Form.Item>
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-4 pt-6 border-t">
+                <Button 
+                  onClick={handleEditModalClose}
+                  className="px-6 rounded-md"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="primary" 
+                  htmlType="submit"
+                  className="px-6 rounded-md"
+                >
+                  Update Project
+                </Button>
+              </div>
+            </Form>
+          )}
+        </Modal>
+
+        {/* Modal Create Project */}
+        <Modal
+          title={<h2 className="text-2xl font-semibold text-gray-800 mb-4">Create New Project</h2>}
+          open={isCreateModalVisible}
+          onCancel={handleCreateModalClose}
+          footer={null}
+          width={800}
+          className="custom-modal"
+        >
+          <Form
+            layout="vertical"
+            onFinish={handleCreateSubmit}
+            className="bg-white p-4"
+          >
+            {/* Project Information */}
+            <div className="mb-8">
+              <h3 className="text-lg font-medium text-gray-700 mb-4 pb-2 border-b">Project Information</h3>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-4">
                 <Form.Item
                   name="code"
                   label="Project Code"
                   rules={[{ required: true, message: 'Please input project code!' }]}
                 >
-                  <Input />
+                  <Input placeholder="Enter project code" className="rounded-md" />
                 </Form.Item>
 
                 <Form.Item
@@ -392,7 +712,7 @@ const AdminProjectManager: React.FC = () => {
                   label="Project Name"
                   rules={[{ required: true, message: 'Please input project name!' }]}
                 >
-                  <Input />
+                  <Input placeholder="Enter project name" className="rounded-md" />
                 </Form.Item>
 
                 <Form.Item
@@ -400,7 +720,7 @@ const AdminProjectManager: React.FC = () => {
                   label="Status"
                   rules={[{ required: true, message: 'Please select status!' }]}
                 >
-                  <Select>
+                  <Select placeholder="Select status" className="rounded-md">
                     <Select.Option value="In Progress">In Progress</Select.Option>
                     <Select.Option value="Completed">Completed</Select.Option>
                   </Select>
@@ -411,7 +731,7 @@ const AdminProjectManager: React.FC = () => {
                   label="Priority"
                   rules={[{ required: true, message: 'Please select priority!' }]}
                 >
-                  <Select>
+                  <Select placeholder="Select priority" className="rounded-md">
                     <Select.Option value="High">High</Select.Option>
                     <Select.Option value="Medium">Medium</Select.Option>
                     <Select.Option value="Low">Low</Select.Option>
@@ -420,232 +740,168 @@ const AdminProjectManager: React.FC = () => {
 
                 <Form.Item
                   name="from"
-                  label="From"
+                  label="Start Date"
                   rules={[{ required: true, message: 'Please select start date!' }]}
                 >
-                  <DatePicker className="w-full" />
+                  <DatePicker 
+                    className="w-full rounded-md" 
+                    disabledDate={disabledDate}
+                    placeholder="Select start date"
+                  />
                 </Form.Item>
 
                 <Form.Item
                   name="to"
-                  label="To"
+                  label="End Date"
                   rules={[{ required: true, message: 'Please select end date!' }]}
                 >
-                  <DatePicker className="w-full" />
+                  <DatePicker 
+                    className="w-full rounded-md" 
+                    disabledDate={disabledDate}
+                    placeholder="Select end date"
+                  />
                 </Form.Item>
               </div>
+            </div>
 
-              <div className="grid grid-cols-1 gap-4">
+            {/* Team Members */}
+            <div className="mb-8">
+              <h3 className="text-lg font-medium text-gray-700 mb-4 pb-2 border-b">Team Members</h3>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                {/* Project Manager - Single select */}
                 <Form.Item
                   name="pm"
                   label="Project Manager"
-                  rules={[{ required: true, message: 'Please input project manager!' }]}
+                  rules={[{ required: true, message: 'Please select Project Manager!' }]}
                 >
-                  <Input />
+                  <Select
+                    showSearch
+                    placeholder="Select project manager"
+                    {...commonSelectProps('pm')}
+                    onChange={(value) => handleEmployeeSelect(value, 'pm')}
+                  >
+                    {renderEmployeeOptions('pm')}
+                  </Select>
                 </Form.Item>
 
+                {/* QA - Single select */}
                 <Form.Item
                   name="qa"
                   label="Quality Assurance"
-                  rules={[{ required: true, message: 'Please input QA!' }]}
+                  rules={[{ required: true, message: 'Please select QA!' }]}
                 >
-                  <Input />
+                  <Select
+                    showSearch
+                    placeholder="Select QA"
+                    {...commonSelectProps('qa')}
+                    onChange={(value) => handleEmployeeSelect(value, 'qa')}
+                  >
+                    {renderEmployeeOptions('qa')}
+                  </Select>
                 </Form.Item>
 
-                <Form.Item
-                  name="ba"
-                  label="Business Analyst"
-                  rules={[{ required: true, message: 'Please input BA!' }]}
-                >
-                  <Input />
-                </Form.Item>
-
+                {/* Technical Lead - Multiple select */}
                 <Form.Item
                   name="technicalLead"
                   label="Technical Lead"
-                  rules={[{ required: true, message: 'Please input technical lead!' }]}
+                  rules={[{ required: true, message: 'Please select Technical Lead!' }]}
                 >
-                  <Input />
+                  <Select
+                    mode="multiple"
+                    showSearch
+                    placeholder="Select technical lead"
+                    {...commonSelectProps('technicalLead')}
+                    onChange={(value) => handleEmployeeSelect(value, 'technicalLead')}
+                  >
+                    {renderEmployeeOptions('technicalLead')}
+                  </Select>
                 </Form.Item>
 
+                {/* BA - Multiple select */}
                 <Form.Item
-                  name="technicalConsultant"
-                  label="Technical Consultant"
-                  rules={[{ required: true, message: 'Please input technical consultant!' }]}
+                  name="ba"
+                  label="Business Analyst"
+                  rules={[{ required: true, message: 'Please select BA!' }]}
                 >
-                  <Input />
+                  <Select
+                    mode="multiple"
+                    showSearch
+                    placeholder="Select business analyst"
+                    {...commonSelectProps('ba')}
+                    onChange={(value) => handleEmployeeSelect(value, 'ba')}
+                  >
+                    {renderEmployeeOptions('ba')}
+                  </Select>
                 </Form.Item>
 
+                {/* Developers - Multiple select */}
                 <Form.Item
                   name="developers"
                   label="Developers"
-                  rules={[{ required: true, message: 'Please input developers!' }]}
+                  rules={[{ required: true, message: 'Please select developers!' }]}
                 >
-                  <Input.TextArea placeholder="Separate developers with commas" />
+                  <Select
+                    mode="multiple"
+                    showSearch
+                    placeholder="Select developers"
+                    {...commonSelectProps('developers')}
+                    onChange={(value) => handleEmployeeSelect(value, 'developers')}
+                  >
+                    {renderEmployeeOptions('developers')}
+                  </Select>
                 </Form.Item>
 
+                {/* Testers - Multiple select */}
                 <Form.Item
                   name="testers"
                   label="Testers"
-                  rules={[{ required: true, message: 'Please input testers!' }]}
+                  rules={[{ required: true, message: 'Please select testers!' }]}
                 >
-                  <Input.TextArea placeholder="Separate testers with commas" />
+                  <Select
+                    mode="multiple"
+                    showSearch
+                    placeholder="Select testers"
+                    {...commonSelectProps('testers')}
+                    onChange={(value) => handleEmployeeSelect(value, 'testers')}
+                  >
+                    {renderEmployeeOptions('testers')}
+                  </Select>
+                </Form.Item>
+
+                {/* Technical Consultant - Multiple select */}
+                <Form.Item
+                  name="technicalConsultant"
+                  label="Technical Consultancy"
+                  rules={[{ required: true, message: 'Please select technical consultant!' }]}
+                >
+                  <Select
+                    mode="multiple"
+                    showSearch
+                    placeholder="Select technical consultant"
+                    {...commonSelectProps('technicalConsultant')}
+                    onChange={(value) => handleEmployeeSelect(value, 'technicalConsultant')}
+                  >
+                    {renderEmployeeOptions('technicalConsultant')}
+                  </Select>
                 </Form.Item>
               </div>
-
-              <Form.Item className="mb-0">
-                <div className="flex justify-end space-x-4">
-                  <Button onClick={handleEditModalClose}>Cancel</Button>
-                  <Button type="primary" htmlType="submit">
-                    Save Changes
-                  </Button>
-                </div>
-              </Form.Item>
-            </Form>
-          )}
-        </Modal>
-
-        {/* Modal Create Project */}
-        <Modal
-          title={<h2 className="text-2xl font-bold">Create New Project</h2>}
-          open={isCreateModalVisible}
-          onCancel={handleCreateModalClose}
-          footer={null}
-          width={800}
-          style={{ top: 20 }}
-          bodyStyle={{ 
-            maxHeight: 'calc(100vh - 200px)',
-            overflowY: 'auto',
-            paddingRight: '20px'
-          }}
-        >
-          <Form
-            onFinish={handleCreateSubmit}
-            layout="vertical"
-          >
-            <div className="grid grid-cols-2 gap-4">
-              <Form.Item
-                name="code"
-                label="Project Code"
-                rules={[{ required: true, message: 'Please input project code!' }]}
-              >
-                <Input />
-              </Form.Item>
-
-              <Form.Item
-                name="name"
-                label="Project Name"
-                rules={[{ required: true, message: 'Please input project name!' }]}
-              >
-                <Input />
-              </Form.Item>
-
-              <Form.Item
-                name="status"
-                label="Status"
-                rules={[{ required: true, message: 'Please select status!' }]}
-              >
-                <Select>
-                  <Select.Option value="In Progress">In Progress</Select.Option>
-                  <Select.Option value="Completed">Completed</Select.Option>
-                </Select>
-              </Form.Item>
-
-              <Form.Item
-                name="priority"
-                label="Priority"
-                rules={[{ required: true, message: 'Please select priority!' }]}
-              >
-                <Select>
-                  <Select.Option value="High">High</Select.Option>
-                  <Select.Option value="Medium">Medium</Select.Option>
-                  <Select.Option value="Low">Low</Select.Option>
-                </Select>
-              </Form.Item>
-
-              <Form.Item
-                name="from"
-                label="From"
-                rules={[{ required: true, message: 'Please select start date!' }]}
-              >
-                <DatePicker className="w-full" />
-              </Form.Item>
-
-              <Form.Item
-                name="to"
-                label="To"
-                rules={[{ required: true, message: 'Please select end date!' }]}
-              >
-                <DatePicker className="w-full" />
-              </Form.Item>
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
-              <Form.Item
-                name="pm"
-                label="Project Manager"
-                rules={[{ required: true, message: 'Please input project manager!' }]}
+            <div className="flex justify-end space-x-4 pt-6 border-t">
+              <Button 
+                onClick={handleCreateModalClose}
+                className="px-6 rounded-md"
               >
-                <Input />
-              </Form.Item>
-
-              <Form.Item
-                name="qa"
-                label="Quality Assurance"
-                rules={[{ required: true, message: 'Please input QA!' }]}
+                Cancel
+              </Button>
+              <Button 
+                type="primary" 
+                htmlType="submit"
+                className="px-6 rounded-md"
               >
-                <Input />
-              </Form.Item>
-
-              <Form.Item
-                name="ba"
-                label="Business Analyst"
-                rules={[{ required: true, message: 'Please input BA!' }]}
-              >
-                <Input />
-              </Form.Item>
-
-              <Form.Item
-                name="technicalLead"
-                label="Technical Lead"
-                rules={[{ required: true, message: 'Please input technical lead!' }]}
-              >
-                <Input />
-              </Form.Item>
-
-              <Form.Item
-                name="technicalConsultant"
-                label="Technical Consultant"
-                rules={[{ required: true, message: 'Please input technical consultant!' }]}
-              >
-                <Input />
-              </Form.Item>
-
-              <Form.Item
-                name="developers"
-                label="Developers"
-                rules={[{ required: true, message: 'Please input developers!' }]}
-              >
-                <Input.TextArea placeholder="Separate developers with commas" />
-              </Form.Item>
-
-              <Form.Item
-                name="testers"
-                label="Testers"
-                rules={[{ required: true, message: 'Please input testers!' }]}
-              >
-                <Input.TextArea placeholder="Separate testers with commas" />
-              </Form.Item>
+                Create Project
+              </Button>
             </div>
-
-            <Form.Item className="mb-0">
-              <div className="flex justify-end space-x-4">
-                <Button onClick={handleCreateModalClose}>Cancel</Button>
-                <Button type="primary" htmlType="submit">
-                  Create Project
-                </Button>
-              </div>
-            </Form.Item>
           </Form>
         </Modal>
       </div>
