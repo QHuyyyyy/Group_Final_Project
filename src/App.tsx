@@ -4,6 +4,7 @@ import AdminRoute from './routes/AdminRoute';
 import UserRoute from './routes/UserRoute';
 import RoleBasedRoute from './routes/RoleBasedRoute';
 import TransactionPage from './pages/user/Transaction';
+import AboutUs from './pages/AboutUs';
 
 // Lazy load components
 const Homepage = lazy(() => import('./pages/Homepage'));
@@ -31,6 +32,7 @@ const App = () => {
       <Suspense fallback={<Loading />}>
         <Routes>
           <Route path='/' element={<Homepage />} />
+          <Route path='/aboutus' element={<AboutUs/>} />
           <Route path='/login' element={<Login />} />
           {/* User Dashboard Routes */}
           <Route path='/userdashboard/' element={<UserRoute><UserDashBoard /></UserRoute>}>
@@ -97,4 +99,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default App; 
