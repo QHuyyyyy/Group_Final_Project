@@ -458,6 +458,10 @@ const AdminUserManager: React.FC = () => {
                 <p className="text-lg">{selectedRecord.username}</p>
               </div>
               <div>
+                <p className="font-bold text-gray-600">Staff Name:</p>
+                <p className="text-lg">{selectedRecord.staffName}</p>
+              </div>
+              <div>
                 <p className="font-bold text-gray-600">Role:</p>
                 <p className={`text-lg ${
                   selectedRecord.role === 'Manager' ? 'text-blue-500' :
