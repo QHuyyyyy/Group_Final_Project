@@ -15,6 +15,7 @@ import {
   SearchOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import StaffDetails from '../../components/admin/StaffDetails';
 
 interface StaffMember {
   key: string;
@@ -76,7 +77,7 @@ const AdminUserManager: React.FC = () => {
   ]);
   const [isAdding, setIsAdding] = useState(false);
   const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
-  const [selectedRecord, setSelectedRecord] = useState<StaffMember | null>(null);
+  const [selectedStaff, setSelectedStaff] = useState<any>(null);
   const [searchText, setSearchText] = useState('');
 
   const handleAdd = () => {
@@ -149,14 +150,14 @@ const AdminUserManager: React.FC = () => {
     setStaffData(newData);
   };
 
-  const showDetails = (record: StaffMember) => {
-    setSelectedRecord(record);
+  const handleViewDetails = (staff: any) => {
+    setSelectedStaff(staff);
     setIsDetailsModalVisible(true);
   };
 
   const handleDetailsModalClose = () => {
     setIsDetailsModalVisible(false);
-    setSelectedRecord(null);
+    setSelectedStaff(null);
   };
 
   const filteredStaffData = staffData.filter(staff => 
@@ -215,7 +216,7 @@ const AdminUserManager: React.FC = () => {
           <Button 
             type="text" 
             icon={<EyeOutlined />}
-            onClick={() => showDetails(record)}
+            onClick={() => handleViewDetails(record)}
             className="text-blue-600 hover:text-blue-800"
           />
           <Button 
@@ -444,69 +445,11 @@ const AdminUserManager: React.FC = () => {
         </Modal>
 
         {/* Details Modal */}
-        <Modal
-          title={<h2 className="text-2xl font-bold">Staff Details</h2>}
-          open={isDetailsModalVisible}
-          onCancel={handleDetailsModalClose}
-          footer={null}
-          width={800}
-        >
-          {selectedRecord && (
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="font-bold text-gray-600">Username:</p>
-                <p className="text-lg">{selectedRecord.username}</p>
-              </div>
-              <div>
-                <p className="font-bold text-gray-600">Staff Name:</p>
-                <p className="text-lg">{selectedRecord.staffName}</p>
-              </div>
-              <div>
-                <p className="font-bold text-gray-600">Role:</p>
-                <p className={`text-lg ${
-                  selectedRecord.role === 'Manager' ? 'text-blue-500' :
-                  selectedRecord.role === 'Developer' ? 'text-green-500' :
-                  selectedRecord.role === 'HR' ? 'text-purple-500' :
-                  'text-gray-500'
-                } font-medium`}>
-                  {selectedRecord.role}
-                </p>
-              </div>
-              <div>
-                <p className="font-bold text-gray-600">Email:</p>
-                <p className="text-lg">{selectedRecord.email}</p>
-              </div>
-              <div>
-                <p className="font-bold text-gray-600">Phone:</p>
-                <p className="text-lg">{selectedRecord.phone}</p>
-              </div>
-              <div>
-                <p className="font-bold text-gray-600">Department:</p>
-                <p className="text-lg">{selectedRecord.department}</p>
-              </div>
-              <div>
-                <p className="font-bold text-gray-600">Job Rank:</p>
-                <p className="text-lg">{selectedRecord.jobRank}</p>
-              </div>
-              <div>
-                <p className="font-bold text-gray-600">Salary:</p>
-                <p className="text-lg">{selectedRecord.salary.toLocaleString('en-US', {
-                  style: 'decimal',
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}</p>
-              </div>
-              <div>
-                <p className="font-bold text-gray-600">Created At:</p>
-                <p className="text-lg">{dayjs(selectedRecord.createdAt).format('DD/MM/YYYY')}</p>
-              </div>
-              <div className="col-span-2">
-                <p className="font-bold text-gray-600">Address:</p>
-                <p className="text-lg">{selectedRecord.address}</p>
-              </div>
-            </div>
-          )}
-        </Modal>
+        <StaffDetails 
+          visible={isDetailsModalVisible}
+          staff={selectedStaff}
+          onClose={handleDetailsModalClose}
+        />
       </div>
     </div>
   );
