@@ -18,7 +18,10 @@ import dayjs from 'dayjs';
 
 interface StaffMember {
   key: string;
+  username: string;
   staffName: string;
+  password: string;
+  confirmPassword: string;
   department: string;
   jobRank: string;
   salary: number;
@@ -36,11 +39,14 @@ const AdminUserManager: React.FC = () => {
   const [form] = Form.useForm();
   const [editingRecord, setEditingRecord] = useState<StaffMember | null>(null);
   const { Option } = Select;
-  const roles = ['Admin', 'Manager', 'Employee', 'HR', 'Developer'];
+  const roles = ['Manager', 'Employee', 'HR', 'Developer'];
   const [staffData, setStaffData] = useState<StaffMember[]>([
     {
       key: '1',
+      username: 'johndoe',
       staffName: 'John Doe',
+      password: 'password123',
+      confirmPassword: 'password123',
       department: 'IT',
       jobRank: 'Senior Developer',
       salary: 5000,
@@ -53,7 +59,10 @@ const AdminUserManager: React.FC = () => {
     },
     {
       key: '2',
+      username: 'janesmith',
       staffName: 'Jane Smith',
+      password: 'password456',
+      confirmPassword: 'password456',
       department: 'HR',
       jobRank: 'Manager',
       salary: 6000,
@@ -90,8 +99,15 @@ const AdminUserManager: React.FC = () => {
   const handleSave = async (values: any) => {
     const formattedValues = {
       ...values,
+      department: isAdding ? '' : values.department,
+      jobRank: isAdding ? '' : values.jobRank,
+      salary: isAdding ? 0 : Number(values.salary),
+      email: isAdding ? '' : values.email,
+      phone: isAdding ? '' : values.phone,
+      address: isAdding ? '' : values.address,
+      role: isAdding ? 'Employee' : values.role,
       createdAt: values.createdAt ? dayjs(values.createdAt).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
-      salary: Number(values.salary)
+      confirmPassword: values.confirmPassword
     };
 
     if (editingRecord) {
@@ -144,15 +160,15 @@ const AdminUserManager: React.FC = () => {
   };
 
   const filteredStaffData = staffData.filter(staff => 
-    staff.staffName.toLowerCase().includes(searchText.toLowerCase())
+    staff.username.toLowerCase().includes(searchText.toLowerCase())
   );
 
   const columns: ColumnsType<StaffMember> = [
     {
-      title: 'Staff Name',
-      dataIndex: 'staffName',
-      key: 'staffName',
-      width: 200,
+      title: 'Username',
+      dataIndex: 'username',
+      key: 'username',
+      width: 130,
     },
     {
       title: 'Role',
@@ -161,7 +177,6 @@ const AdminUserManager: React.FC = () => {
       width: 120,
       render: (role: string) => (
         <Tag color={
-          role === 'Admin' ? 'red' :
           role === 'Manager' ? 'blue' :
           role === 'Developer' ? 'green' :
           role === 'HR' ? 'purple' :
@@ -281,11 +296,18 @@ const AdminUserManager: React.FC = () => {
 
         {/* Edit/Add Modal */}
         <Modal
-          title={<h2 className="text-2xl font-bold">{isAdding ? "Add New Staff Member" : "Edit Staff Member"}</h2>}
+          title={<h2 className="text-2xl font-bold">{isAdding ? "Add Account Staff" : "Complete Staff Information"}</h2>}
           open={isModalVisible}
-          onOk={form.submit}
           onCancel={handleCancel}
           width={800}
+          footer={[
+            <Button key="cancel" onClick={handleCancel}>
+              Cancel
+            </Button>,
+            <Button key="submit" type="primary" onClick={form.submit}>
+              Save
+            </Button>
+          ]}
         >
           <Form
             form={form}
@@ -297,82 +319,131 @@ const AdminUserManager: React.FC = () => {
               createdAt: dayjs(),
             }}
           >
-            <div className="grid grid-cols-2 gap-4">
-              <Form.Item
-                name="staffName"
-                label="Staff Name"
-                rules={[{ required: true, message: 'Please input staff name!' }]}
-              >
-                <Input />
-              </Form.Item>
+            {isAdding ? (
+              <div className="grid grid-cols-2 gap-4">
+                <Form.Item
+                  name="username"
+                  label="Username"
+                  rules={[{ required: true, message: 'Please input username!' }]}
+                >
+                  <Input />
+                </Form.Item>
 
-              <Form.Item
-                name="role"
-                label="Role"
-                rules={[{ required: true, message: 'Please select a role!' }]}
-              >
-                <Select>
-                  {roles.map(role => (
-                    <Option key={role} value={role}>{role}</Option>
-                  ))}
-                </Select>
-              </Form.Item>
+                <Form.Item
+                  name="password"
+                  label="Password"
+                  rules={[
+                    { required: true, message: 'Please input password!' },
+                    { min: 6, message: 'Password must be at least 6 characters!' }
+                  ]}
+                >
+                  <Input.Password />
+                </Form.Item>
 
-              <Form.Item
-                name="department"
-                label="Department"
-                rules={[{ required: true, message: 'Please input department!' }]}
-              >
-                <Input />
-              </Form.Item>
+                <Form.Item
+                  name="confirmPassword"
+                  label="Confirm Password"
+                  dependencies={['password']}
+                  rules={[
+                    { required: true, message: 'Please confirm your password!' },
+                    ({ getFieldValue }) => ({
+                      validator(_, value) {
+                        if (!value || getFieldValue('password') === value) {
+                          return Promise.resolve();
+                        }
+                        return Promise.reject(new Error('The passwords do not match!'));
+                      },
+                    }),
+                  ]}
+                >
+                  <Input.Password />
+                </Form.Item>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4">
+                <Form.Item
+                  name="username"
+                  label="Username"
+                >
+                  <Input disabled className="bg-gray-100" />
+                </Form.Item>
 
-              <Form.Item
-                name="jobRank"
-                label="Job Rank"
-                rules={[{ required: true, message: 'Please input job rank!' }]}
-              >
-                <Input />
-              </Form.Item>
+                <Form.Item
+                  name="staffName"
+                  label="Staff Name"
+                  rules={[{ required: true, message: 'Please input staff name!' }]}
+                >
+                  <Input />
+                </Form.Item>
 
-              <Form.Item
-                name="salary"
-                label="Salary"
-                rules={[{ required: true, message: 'Please input salary!' }]}
-              >
-                <InputNumber
-                  style={{ width: '100%' }}
-                  formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                  parser={value => value!.replace(/\$\s?|(,*)/g, '')}
-                />
-              </Form.Item>
+                <Form.Item
+                  name="role"
+                  label="Role"
+                  rules={[{ required: true, message: 'Please select a role!' }]}
+                >
+                  <Select>
+                    {roles.map(role => (
+                      <Option key={role} value={role}>{role}</Option>
+                    ))}
+                  </Select>
+                </Form.Item>
 
-              <Form.Item
-                name="email"
-                label="Email"
-                rules={[
-                  { required: true, message: 'Please input email!' },
-                  { type: 'email', message: 'Please enter a valid email!' }
-                ]}
-              >
-                <Input />
-              </Form.Item>
+                <Form.Item
+                  name="department"
+                  label="Department"
+                  rules={[{ required: true, message: 'Please input department!' }]}
+                >
+                  <Input />
+                </Form.Item>
 
-              <Form.Item
-                name="phone"
-                label="Phone"
-                rules={[{ required: true, message: 'Please input phone number!' }]}
-              >
-                <Input />
-              </Form.Item>
+                <Form.Item
+                  name="jobRank"
+                  label="Job Rank"
+                  rules={[{ required: true, message: 'Please input job rank!' }]}
+                >
+                  <Input />
+                </Form.Item>
 
-              <Form.Item
-                name="address"
-                label="Address"
-                rules={[{ required: true, message: 'Please input address!' }]}
-              >
-                <Input />
-              </Form.Item>
-            </div>
+                <Form.Item
+                  name="salary"
+                  label="Salary"
+                  rules={[{ required: true, message: 'Please input salary!' }]}
+                >
+                  <InputNumber
+                    style={{ width: '100%' }}
+                    formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={value => value!.replace(/\$\s?|(,*)/g, '')}
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  name="email"
+                  label="Email"
+                  rules={[
+                    { required: true, message: 'Please input email!' },
+                    { type: 'email', message: 'Please enter a valid email!' }
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+
+                <Form.Item
+                  name="phone"
+                  label="Phone"
+                  rules={[{ required: true, message: 'Please input phone number!' }]}
+                >
+                  <Input />
+                </Form.Item>
+
+                <Form.Item
+                  name="address"
+                  label="Address"
+                  rules={[{ required: true, message: 'Please input address!' }]}
+                >
+                  <Input />
+                </Form.Item>
+              </div>
+            )}
           </Form>
         </Modal>
 
@@ -387,13 +458,12 @@ const AdminUserManager: React.FC = () => {
           {selectedRecord && (
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="font-bold text-gray-600">Staff Name:</p>
-                <p className="text-lg">{selectedRecord.staffName}</p>
+                <p className="font-bold text-gray-600">Username:</p>
+                <p className="text-lg">{selectedRecord.username}</p>
               </div>
               <div>
                 <p className="font-bold text-gray-600">Role:</p>
                 <p className={`text-lg ${
-                  selectedRecord.role === 'Admin' ? 'text-red-500' : 
                   selectedRecord.role === 'Manager' ? 'text-blue-500' :
                   selectedRecord.role === 'Developer' ? 'text-green-500' :
                   selectedRecord.role === 'HR' ? 'text-purple-500' :
@@ -443,3 +513,4 @@ const AdminUserManager: React.FC = () => {
 };
 
 export default AdminUserManager;
+            
