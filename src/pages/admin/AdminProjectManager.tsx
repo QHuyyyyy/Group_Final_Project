@@ -4,7 +4,6 @@ import NavbarAdminProject from '../../components/admin/SideBarAdminProject';
 import { Card, Table, Tag, Space, Button, Modal, Descriptions, Form, Input, Select, DatePicker } from 'antd';
 import { EditOutlined, DeleteOutlined, EyeOutlined, StarOutlined, StarFilled, ArrowLeftOutlined, SearchOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import moment from 'moment';
 
 // Cập nhật mock data
 const mockProjects = [
@@ -62,7 +61,7 @@ const mockEmployees = [
 ];
 
 // Thêm hàm disabledDate để kiểm tra ngày
-const disabledDate = (current: moment.Moment) => {
+const disabledDate = (current: dayjs.Dayjs) => {
   return current && current < dayjs().startOf('day');
 };
 
@@ -70,7 +69,9 @@ const disabledDate = (current: moment.Moment) => {
 const commonSelectProps = (role: string) => ({
   filterOption: (input: string, option: any) => 
     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0,
-  style: { width: '100%' }
+  style: { width: '100%' },
+  'data-role': role,
+  className: `select-${role}`
 });
 
 // Thêm interface để định nghĩa kiểu dữ liệu
@@ -315,12 +316,6 @@ const AdminProjectManager: React.FC = () => {
     }
   };
 
-  const isEmployeeSelected = (employeeName: string, currentRole: string) => {
-    return Object.entries(selectedEmployees).some(([role, employees]) => 
-      role !== currentRole && employees.includes(employeeName)
-    );
-  };
-
   const renderEmployeeOptions = (role: string) => {
     return mockEmployees.map(emp => {
       const isDisabled = Object.entries(selectedEmployees).some(([currentRole, employees]) => 
@@ -557,7 +552,6 @@ const AdminProjectManager: React.FC = () => {
                     <Select
                       showSearch
                       placeholder="Select project manager"
-                      className="rounded-md"
                       {...commonSelectProps('pm')}
                       onChange={(value) => handleEmployeeSelect(value, 'pm')}
                     >
@@ -574,7 +568,6 @@ const AdminProjectManager: React.FC = () => {
                     <Select
                       showSearch
                       placeholder="Select QA"
-                      className="rounded-md"
                       {...commonSelectProps('qa')}
                       onChange={(value) => handleEmployeeSelect(value, 'qa')}
                     >
@@ -592,7 +585,6 @@ const AdminProjectManager: React.FC = () => {
                       mode="multiple"
                       showSearch
                       placeholder="Select technical lead"
-                      className="rounded-md"
                       {...commonSelectProps('technicalLead')}
                       onChange={(value) => handleEmployeeSelect(value, 'technicalLead')}
                     >
@@ -610,7 +602,6 @@ const AdminProjectManager: React.FC = () => {
                       mode="multiple"
                       showSearch
                       placeholder="Select business analyst"
-                      className="rounded-md"
                       {...commonSelectProps('ba')}
                       onChange={(value) => handleEmployeeSelect(value, 'ba')}
                     >
@@ -628,7 +619,6 @@ const AdminProjectManager: React.FC = () => {
                       mode="multiple"
                       showSearch
                       placeholder="Select developers"
-                      className="rounded-md"
                       {...commonSelectProps('developers')}
                       onChange={(value) => handleEmployeeSelect(value, 'developers')}
                     >
@@ -646,7 +636,6 @@ const AdminProjectManager: React.FC = () => {
                       mode="multiple"
                       showSearch
                       placeholder="Select testers"
-                      className="rounded-md"
                       {...commonSelectProps('testers')}
                       onChange={(value) => handleEmployeeSelect(value, 'testers')}
                     >
@@ -664,7 +653,6 @@ const AdminProjectManager: React.FC = () => {
                       mode="multiple"
                       showSearch
                       placeholder="Select technical consultant"
-                      className="rounded-md"
                       {...commonSelectProps('technicalConsultant')}
                       onChange={(value) => handleEmployeeSelect(value, 'technicalConsultant')}
                     >
@@ -789,7 +777,6 @@ const AdminProjectManager: React.FC = () => {
                   <Select
                     showSearch
                     placeholder="Select project manager"
-                    className="rounded-md"
                     {...commonSelectProps('pm')}
                     onChange={(value) => handleEmployeeSelect(value, 'pm')}
                   >
@@ -806,7 +793,6 @@ const AdminProjectManager: React.FC = () => {
                   <Select
                     showSearch
                     placeholder="Select QA"
-                    className="rounded-md"
                     {...commonSelectProps('qa')}
                     onChange={(value) => handleEmployeeSelect(value, 'qa')}
                   >
@@ -824,7 +810,6 @@ const AdminProjectManager: React.FC = () => {
                     mode="multiple"
                     showSearch
                     placeholder="Select technical lead"
-                    className="rounded-md"
                     {...commonSelectProps('technicalLead')}
                     onChange={(value) => handleEmployeeSelect(value, 'technicalLead')}
                   >
@@ -842,7 +827,6 @@ const AdminProjectManager: React.FC = () => {
                     mode="multiple"
                     showSearch
                     placeholder="Select business analyst"
-                    className="rounded-md"
                     {...commonSelectProps('ba')}
                     onChange={(value) => handleEmployeeSelect(value, 'ba')}
                   >
@@ -860,7 +844,6 @@ const AdminProjectManager: React.FC = () => {
                     mode="multiple"
                     showSearch
                     placeholder="Select developers"
-                    className="rounded-md"
                     {...commonSelectProps('developers')}
                     onChange={(value) => handleEmployeeSelect(value, 'developers')}
                   >
@@ -878,7 +861,6 @@ const AdminProjectManager: React.FC = () => {
                     mode="multiple"
                     showSearch
                     placeholder="Select testers"
-                    className="rounded-md"
                     {...commonSelectProps('testers')}
                     onChange={(value) => handleEmployeeSelect(value, 'testers')}
                   >
@@ -896,7 +878,6 @@ const AdminProjectManager: React.FC = () => {
                     mode="multiple"
                     showSearch
                     placeholder="Select technical consultant"
-                    className="rounded-md"
                     {...commonSelectProps('technicalConsultant')}
                     onChange={(value) => handleEmployeeSelect(value, 'technicalConsultant')}
                   >
