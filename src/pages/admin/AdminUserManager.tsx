@@ -320,44 +320,46 @@ const AdminUserManager: React.FC = () => {
             }}
           >
             {isAdding ? (
-              <div className="grid grid-cols-2 gap-4">
-                <Form.Item
-                  name="username"
-                  label="Username"
-                  rules={[{ required: true, message: 'Please input username!' }]}
-                >
-                  <Input />
-                </Form.Item>
+              <div className="flex flex-col items-center gap-4 w-full">
+                <div className="w-full max-w-md">
+                  <Form.Item
+                    name="username"
+                    label="Username"
+                    rules={[{ required: true, message: 'Please input username!' }]}
+                  >
+                    <Input />
+                  </Form.Item>
 
-                <Form.Item
-                  name="password"
-                  label="Password"
-                  rules={[
-                    { required: true, message: 'Please input password!' },
-                    { min: 6, message: 'Password must be at least 6 characters!' }
-                  ]}
-                >
-                  <Input.Password />
-                </Form.Item>
+                  <Form.Item
+                    name="password"
+                    label="Password"
+                    rules={[
+                      { required: true, message: 'Please input password!' },
+                      { min: 6, message: 'Password must be at least 6 characters!' }
+                    ]}
+                  >
+                    <Input.Password />
+                  </Form.Item>
 
-                <Form.Item
-                  name="confirmPassword"
-                  label="Confirm Password"
-                  dependencies={['password']}
-                  rules={[
-                    { required: true, message: 'Please confirm your password!' },
-                    ({ getFieldValue }) => ({
-                      validator(_, value) {
-                        if (!value || getFieldValue('password') === value) {
-                          return Promise.resolve();
-                        }
-                        return Promise.reject(new Error('The passwords do not match!'));
-                      },
-                    }),
-                  ]}
-                >
-                  <Input.Password />
-                </Form.Item>
+                  <Form.Item
+                    name="confirmPassword"
+                    label="Confirm Password"
+                    dependencies={['password']}
+                    rules={[
+                      { required: true, message: 'Please confirm your password!' },
+                      ({ getFieldValue }) => ({
+                        validator(_, value) {
+                          if (!value || getFieldValue('password') === value) {
+                            return Promise.resolve();
+                          }
+                          return Promise.reject(new Error('The passwords do not match!'));
+                        },
+                      }),
+                    ]}
+                  >
+                    <Input.Password />
+                  </Form.Item>
+                </div>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-4">
@@ -371,7 +373,6 @@ const AdminUserManager: React.FC = () => {
                 <Form.Item
                   name="staffName"
                   label="Staff Name"
-                  rules={[{ required: true, message: 'Please input staff name!' }]}
                 >
                   <Input />
                 </Form.Item>
@@ -379,7 +380,6 @@ const AdminUserManager: React.FC = () => {
                 <Form.Item
                   name="role"
                   label="Role"
-                  rules={[{ required: true, message: 'Please select a role!' }]}
                 >
                   <Select>
                     {roles.map(role => (
@@ -391,7 +391,6 @@ const AdminUserManager: React.FC = () => {
                 <Form.Item
                   name="department"
                   label="Department"
-                  rules={[{ required: true, message: 'Please input department!' }]}
                 >
                   <Input />
                 </Form.Item>
@@ -399,7 +398,6 @@ const AdminUserManager: React.FC = () => {
                 <Form.Item
                   name="jobRank"
                   label="Job Rank"
-                  rules={[{ required: true, message: 'Please input job rank!' }]}
                 >
                   <Input />
                 </Form.Item>
@@ -407,7 +405,7 @@ const AdminUserManager: React.FC = () => {
                 <Form.Item
                   name="salary"
                   label="Salary"
-                  rules={[{ required: true, message: 'Please input salary!' }]}
+                  
                 >
                   <InputNumber
                     style={{ width: '100%' }}
@@ -419,10 +417,10 @@ const AdminUserManager: React.FC = () => {
                 <Form.Item
                   name="email"
                   label="Email"
-                  rules={[
-                    { required: true, message: 'Please input email!' },
-                    { type: 'email', message: 'Please enter a valid email!' }
-                  ]}
+                  // rules={[
+                  //   { required: true, message: 'Please input email!' },
+                  //   { type: 'email', message: 'Please enter a valid email!' }
+                  // ]}
                 >
                   <Input />
                 </Form.Item>
@@ -430,7 +428,6 @@ const AdminUserManager: React.FC = () => {
                 <Form.Item
                   name="phone"
                   label="Phone"
-                  rules={[{ required: true, message: 'Please input phone number!' }]}
                 >
                   <Input />
                 </Form.Item>
@@ -438,7 +435,6 @@ const AdminUserManager: React.FC = () => {
                 <Form.Item
                   name="address"
                   label="Address"
-                  rules={[{ required: true, message: 'Please input address!' }]}
                 >
                   <Input />
                 </Form.Item>
