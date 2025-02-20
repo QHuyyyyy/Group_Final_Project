@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { Table, Tag, Space, Button, Modal, Card } from "antd";
-import SearchBar from "../../components/common/SearchBar";
-import { CheckOutlined, CloseOutlined, UndoOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+import { Table, Tag, Space, Button, Modal, Card, Input } from "antd";
+import { CheckOutlined, CloseOutlined, UndoOutlined, ArrowLeftOutlined, SearchOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
 type Claim = {
@@ -120,7 +119,7 @@ function ApprovalPage() {
   const [claims, setClaims] = useState<Claim[]>(initialClaims);
   const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
   const [confirmationType, setConfirmationType] = useState<"approve" | "reject" | "return" | null>(null);
-  const [, setSearchQuery] = useState<string>("");
+  const [searchText, setSearchText] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
   const navigate = useNavigate();
@@ -143,10 +142,10 @@ function ApprovalPage() {
     return filtered;
   };
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
+  const handleSearch = (value: string) => {
+    setSearchText(value);
     setCurrentPage(1);
-    const filteredClaims = filterClaims(query, "");
+    const filteredClaims = filterClaims(value, "");
     setClaims(filteredClaims);
   };
 
@@ -222,10 +221,13 @@ function ApprovalPage() {
         
         <div className="overflow-auto custom-scrollbar">
           <div className="flex flex-wrap gap-4 items-center mb-5 mx-2">
-            <SearchBar 
-              onSearch={handleSearch} 
-              style={{ width: 250 }}
+            <Input.Search
               placeholder="Search by Employee or Request ID"
+              allowClear
+              onSearch={handleSearch}
+              onChange={(e) => handleSearch(e.target.value)}
+              style={{ width: 250 }}
+              prefix={<SearchOutlined />}
             />
           </div>
 
