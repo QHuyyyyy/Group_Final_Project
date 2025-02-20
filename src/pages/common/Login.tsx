@@ -7,7 +7,7 @@ import loginBackground from '../../assets/login-background.png';
 
 const { Title } = Typography;
 
-
+  
 export default function Login() {
   const [form] = Form.useForm();
   const navigate = useNavigate();

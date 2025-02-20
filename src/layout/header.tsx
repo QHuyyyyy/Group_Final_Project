@@ -41,7 +41,7 @@ const Header = () => {
           <a href="/" className="text-white hover:text-amber-700">
             Industries
           </a>        
-          <a href="/" className="text-white hover:text-amber-700">
+          <a href="/contactus" className="text-white hover:text-amber-700">
             Contact
           </a>
           {isShow && (

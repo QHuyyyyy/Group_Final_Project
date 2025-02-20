@@ -5,6 +5,7 @@ import UserRoute from './routes/UserRoute';
 import RoleBasedRoute from './routes/RoleBasedRoute';
 import TransactionPage from './pages/user/Transaction';
 import AboutUs from './pages/AboutUs';
+import ContactUs from './pages/Contactus';
 
 // Lazy load components
 const Homepage = lazy(() => import('./pages/Homepage'));
@@ -33,6 +34,7 @@ const App = () => {
         <Routes>
           <Route path='/' element={<Homepage />} />
           <Route path='/aboutus' element={<AboutUs/>} />
+          <Route path='/contactus' element={<ContactUs/>} />
           <Route path='/login' element={<Login />} />
           {/* User Dashboard Routes */}
           <Route path='/userdashboard/' element={<UserRoute><UserDashBoard /></UserRoute>}>
