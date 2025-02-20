@@ -39,7 +39,6 @@ const AdminSidebar = () => {
         </div>
 
         <div className="space-y-4">
-          <p>Management</p>
           {menuItems.map((item, index) => (
             <Link
               key={index}
@@ -54,7 +53,6 @@ const AdminSidebar = () => {
               <span>{item.title}</span>
             </Link>
           ))}
-          <p>Other</p>
           {otherItems.map((item, index) => (
             <Link
               key={index}
