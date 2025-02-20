@@ -181,7 +181,7 @@ const AdminDashboard: React.FC = () => {
       <div className="flex min-h-screen bg-gray-100">
         <AdminSidebar />
         <div className="flex-1 ml-64  bg-sky-50">
-          <div className="p-8 mt-12">
+          <div className="p-8 mt-1">
             <p className="text-2xl font-bold mb-4 font-mono" >Dashboard Overview</p>
             {/* Stats Section */}
             <Row gutter={[16, 16]}>
