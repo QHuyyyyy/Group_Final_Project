@@ -5,7 +5,10 @@ import UserRoute from './routes/UserRoute';
 import RoleBasedRoute from './routes/RoleBasedRoute';
 import TransactionPage from './pages/user/Transaction';
 import AboutUs from './pages/AboutUs';
+
+import Services from './pages/user/Services';
 import ContactUs from './pages/Contactus';
+
 
 // Lazy load components
 const Homepage = lazy(() => import('./pages/Homepage'));
@@ -33,13 +36,24 @@ const App = () => {
       <Suspense fallback={<Loading />}>
         <Routes>
           <Route path='/' element={<Homepage />} />
-          <Route path='/aboutus' element={<AboutUs/>} />
-          <Route path='/contactus' element={<ContactUs/>} />
+
+          <Route path='/aboutus' element={<AboutUs />} />
+          <Route path='/services' element={<Services />} />
           <Route path='/login' element={<Login />} />
+          <Route path='/contactus' element={<ContactUs />} />
           {/* User Dashboard Routes */}
           <Route path='/userdashboard/' element={<UserRoute><UserDashBoard /></UserRoute>}>
-    
-             <Route path="transaction" element={
+            <Route path="profile" element={
+              <UserRoute>
+                <Profile />
+              </UserRoute>
+            } />
+          </Route>
+          {/* User Dashboard Routes */}
+          <Route path='/userdashboard/' element={<UserRoute><UserDashBoard /></UserRoute>}>
+
+            <Route path="transaction" element={
+
               <UserRoute>
                 <TransactionPage />
               </UserRoute>
@@ -47,7 +61,7 @@ const App = () => {
             <Route path="approvals" element={
               <UserRoute>
                 <RoleBasedRoute allowedRoles={['approver']}>
-                <ApprovalPage />
+                  <ApprovalPage />
                 </RoleBasedRoute>
               </UserRoute>
             } />
@@ -59,7 +73,7 @@ const App = () => {
             <Route path="finance" element={
               <UserRoute>
                 <RoleBasedRoute allowedRoles={['finance']}>
-                <Finance />
+                  <Finance />
                 </RoleBasedRoute>
               </UserRoute>
             } />
@@ -70,9 +84,9 @@ const App = () => {
             } />
             <Route path="profile" element={
               <UserRoute>
-       
-                  <Profile />
-            
+
+                <Profile />
+
               </UserRoute>
             } />
             {/* <Route path="create-request" element={
@@ -87,8 +101,8 @@ const App = () => {
             <AdminRoute>
               <AdminDashboard />
             </AdminRoute>
-          }/>
-    
+          } />
+
           <Route path='/dashboard/project-manager' element={
             <AdminRoute>
               <AdminProjectManager />
