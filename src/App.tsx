@@ -5,6 +5,7 @@ import UserRoute from './routes/UserRoute';
 import RoleBasedRoute from './routes/RoleBasedRoute';
 import TransactionPage from './pages/user/Transaction';
 import AboutUs from './pages/AboutUs';
+import Services from './pages/user/Services';
 
 // Lazy load components
 const Homepage = lazy(() => import('./pages/Homepage'));
@@ -32,7 +33,8 @@ const App = () => {
       <Suspense fallback={<Loading />}>
         <Routes>
           <Route path='/' element={<Homepage />} />
-          <Route path='/aboutus' element={<AboutUs/>} />
+          <Route path='/aboutus' element={<AboutUs />} />
+          <Route path='/services' element={<Services />} />
           <Route path='/login' element={<Login />} />
           {/* User Dashboard Routes */}
           <Route path='/userdashboard/' element={<UserRoute><UserDashBoard /></UserRoute>}>
@@ -41,7 +43,7 @@ const App = () => {
                 <Profile />
               </UserRoute>
             } />
-             <Route path="transaction" element={
+            <Route path="transaction" element={
               <UserRoute>
                 <TransactionPage />
               </UserRoute>
@@ -49,7 +51,7 @@ const App = () => {
             <Route path="approvals" element={
               <UserRoute>
                 <RoleBasedRoute allowedRoles={['approver']}>
-                <ApprovalPage />
+                  <ApprovalPage />
                 </RoleBasedRoute>
               </UserRoute>
             } />
@@ -61,7 +63,7 @@ const App = () => {
             <Route path="finance" element={
               <UserRoute>
                 <RoleBasedRoute allowedRoles={['finance']}>
-                <Finance />
+                  <Finance />
                 </RoleBasedRoute>
               </UserRoute>
             } />
