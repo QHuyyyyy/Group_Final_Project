@@ -33,7 +33,7 @@ const Header = () => {
         {/* Navigation Links */}
         <div className="flex space-x-4">
 
-          <a href="/" className="text-white hover:text-amber-700">
+          <a href="/" className="text-white hover:text-amber-700"/>
 
           <a href="/aboutus" className="text-white hover:text-amber-700">
 
