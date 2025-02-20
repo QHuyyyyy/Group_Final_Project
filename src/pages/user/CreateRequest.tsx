@@ -3,6 +3,7 @@ import { Form, Input, Button, Select, DatePicker, notification } from "antd";
 import moment, { Moment } from "moment";
 import { useNavigate } from "react-router-dom";
 import { Modal } from "antd";
+import dayjs from 'dayjs';
 
 interface CreateRequestProps {
     visible: boolean;
@@ -18,10 +19,40 @@ interface RequestFormValues {
     totalHours: number;
     description: string;
 }
+
+// Thêm hàm disabledDate
+// const disabledDate = (current: dayjs.Dayjs) => {
+//   return current && current < dayjs().startOf('day');
+// };
+
 const CreateRequest: React.FC<CreateRequestProps> = ({ visible, onClose }) => {
     const [form] = Form.useForm<RequestFormValues>();
     const [loading, setLoading] = useState<boolean>(false);
+    const [startDate, setStartDate] = useState<dayjs.Dayjs | null>(null);
     const navigate = useNavigate();
+
+    // Hàm disabledStartDate
+    const disabledStartDate = (current: dayjs.Dayjs) => {
+        return current && current < dayjs().startOf('day');
+    };
+
+    // Hàm disabledEndDate
+    const disabledEndDate = (current: dayjs.Dayjs) => {
+        if (!startDate) {
+            return current && current < dayjs().startOf('day');
+        }
+        return current && (current < dayjs().startOf('day') || current < startDate);
+    };
+
+    // Xử lý khi startDate thay đổi
+    const handleStartDateChange = (date: dayjs.Dayjs | null) => {
+        setStartDate(date);
+        // Reset end date nếu end date nhỏ hơn start date mới
+        const endDate = form.getFieldValue('endDate');
+        if (date && endDate && endDate < date) {
+            form.setFieldValue('endDate', null);
+        }
+    };
 
     const handleSubmit = async (values: RequestFormValues) => {
         setLoading(true);
@@ -77,7 +108,11 @@ const CreateRequest: React.FC<CreateRequestProps> = ({ visible, onClose }) => {
                         name="startDate"
                         rules={[{ required: true, message: "Please select the start date!" }]}
                     >
-                        <DatePicker style={{ width: "100%" }} />
+                        <DatePicker 
+                            style={{ width: "100%" }}
+                            disabledDate={disabledStartDate}
+                            onChange={handleStartDateChange}
+                        />
                     </Form.Item>
 
                     <Form.Item
@@ -85,7 +120,10 @@ const CreateRequest: React.FC<CreateRequestProps> = ({ visible, onClose }) => {
                         name="endDate"
                         rules={[{ required: true, message: "Please select the end date!" }]}
                     >
-                        <DatePicker style={{ width: "100%" }} />
+                        <DatePicker 
+                            style={{ width: "100%" }}
+                            disabledDate={disabledEndDate}
+                        />
                     </Form.Item>
 
                     <Form.Item

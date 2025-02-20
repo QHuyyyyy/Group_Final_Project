@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Modal, Input, Select, DatePicker } from "antd";
-import moment from "moment";
+import { Modal, Input, Select, DatePicker, Form, Button } from "antd";
+import dayjs from 'dayjs';
+import React from "react";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -24,31 +25,62 @@ interface Request {
 }
 
 const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, request, onClose }) => {
-    const [formData, setFormData] = useState<Request>(() => ({
-        ...request,
-        startDate: moment(request.startDate).format("YYYY-MM-DD"),
-        endDate: moment(request.endDate).format("YYYY-MM-DD"),
-    }));
+    const [form] = Form.useForm();
+    const [loading, setLoading] = useState(false);
+    const [startDate, setStartDate] = useState<dayjs.Dayjs | null>(null);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+    // Sửa lại cách khởi tạo form
+    React.useEffect(() => {
+        const start = dayjs(request.startDate);
+        setStartDate(start);
+        form.setFieldsValue({
+            name: request.name,
+            project: request.project,
+            startDate: start,
+            endDate: dayjs(request.endDate),
+            totalHours: request.totalHours,
+            status: request.status,
+            description: request.description
+        });
+    }, [request, form]);
+
+    // Hàm disabledStartDate
+    const disabledStartDate = (current: dayjs.Dayjs) => {
+        return current && current < dayjs().startOf('day');
     };
 
-    const handleDateChange = (date: moment.Moment | null, field: keyof Request) => {
-        if (date) {
-            setFormData({ ...formData, [field]: date.format("YYYY-MM-DD") });
+    // Hàm disabledEndDate
+    const disabledEndDate = (current: dayjs.Dayjs) => {
+        if (!startDate) {
+            return current && current < dayjs().startOf('day');
+        }
+        return current && (current < dayjs().startOf('day') || current < startDate);
+    };
+
+    // Xử lý khi startDate thay đổi
+    const handleStartDateChange = (date: dayjs.Dayjs | null) => {
+        setStartDate(date);
+        // Reset end date nếu end date nhỏ hơn start date mới
+        const endDate = form.getFieldValue('endDate');
+        if (date && endDate && endDate < date) {
+            form.setFieldValue('endDate', null);
         }
     };
 
-    const handleSelectChange = (value: string, field: keyof Request) => {
-        setFormData({ ...formData, [field]: value });
-    };
+    const handleSubmit = async (values: any) => {
+        setLoading(true);
+        const updatedRequest = {
+            ...values,
+            startDate: values.startDate.format("YYYY-MM-DD"), // Sử dụng dayjs format
+            endDate: values.endDate.format("YYYY-MM-DD"), // Sử dụng dayjs format
+        };
 
-    const handleSave = () => {
-        console.log("Updated Request:", formData);
-        alert("Changes saved successfully!");
-        onClose();
+        console.log("Updated Request:", updatedRequest);
+        
+        setTimeout(() => {
+            setLoading(false);
+            onClose();
+        }, 1000);
     };
 
     return (
@@ -56,69 +88,86 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, request, onClose
             title="Update Request"
             open={visible}
             onCancel={onClose}
-            onOk={handleSave}
-            okText="Save Changes"
-            cancelText="Cancel"
+            footer={null}
         >
-            <div className="grid gap-4">
-                {/* Employee Name - Không thể thay đổi */}
-                <label>
-                    <strong>Employee Name:</strong>
-                    <Input name="name" value={formData.name} disabled />
-                </label>
+            <Form 
+                form={form} 
+                layout="vertical" 
+                onFinish={handleSubmit}
+            >
+                <Form.Item
+                    label="Employee Name"
+                    name="name"
+                >
+                    <Input disabled />
+                </Form.Item>
 
-                {/* Project */}
-                <label>
-                    <strong>Project:</strong>
-                    <Select
-                        value={formData.project}
-                        onChange={(value) => handleSelectChange(value, "project")}
-                        style={{ width: "100%" }}
-                    >
+                <Form.Item
+                    label="Project"
+                    name="project"
+                    rules={[{ required: true, message: "Please select the project!" }]}
+                >
+                    <Select>
                         <Option value="Project A">Project A</Option>
                         <Option value="Project B">Project B</Option>
                         <Option value="Project C">Project C</Option>
                     </Select>
-                </label>
+                </Form.Item>
 
-                {/* Start Date */}
-                <label>
-                    <strong>Start Date:</strong>
-                    <DatePicker
+                <Form.Item
+                    label="Start Date"
+                    name="startDate"
+                    rules={[{ required: true, message: "Please select the start date!" }]}
+                >
+                    <DatePicker 
                         style={{ width: "100%" }}
-                        value={formData.startDate ? moment(formData.startDate) : null}
-                        onChange={(date) => handleDateChange(date, "startDate")}
+                        disabledDate={disabledStartDate}
+                        format="YYYY-MM-DD"
+                        onChange={handleStartDateChange}
                     />
-                </label>
+                </Form.Item>
 
-                {/* End Date */}
-                <label>
-                    <strong>End Date:</strong>
-                    <DatePicker
+                <Form.Item
+                    label="End Date"
+                    name="endDate"
+                    rules={[{ required: true, message: "Please select the end date!" }]}
+                >
+                    <DatePicker 
                         style={{ width: "100%" }}
-                        value={formData.endDate ? moment(formData.endDate) : null}
-                        onChange={(date) => handleDateChange(date, "endDate")}
+                        disabledDate={disabledEndDate}
+                        format="YYYY-MM-DD"
                     />
-                </label>
+                </Form.Item>
 
-                {/* Total Hours Worked */}
-                <label>
-                    <strong>Total Hours Worked:</strong>
-                    <Input type="number" name="totalHours" value={formData.totalHours} onChange={handleChange} />
-                </label>
+                <Form.Item
+                    label="Total Hours Worked"
+                    name="totalHours"
+                    rules={[{ required: true, message: "Please enter total hours worked!" }]}
+                >
+                    <Input type="number" />
+                </Form.Item>
 
-                {/* Status - Không thể thay đổi */}
-                <label>
-                    <strong>Status:</strong>
-                    <Input value={formData.status} disabled />
-                </label>
+                <Form.Item
+                    label="Status"
+                    name="status"
+                >
+                    <Input disabled />
+                </Form.Item>
 
-                {/* Description */}
-                <label>
-                    <strong>Description:</strong>
-                    <TextArea name="description" value={formData.description} onChange={handleChange} />
-                </label>
-            </div>
+                <Form.Item
+                    label="Description"
+                    name="description"
+                    rules={[{ required: true, message: "Please enter a description!" }]}
+                >
+                    <TextArea rows={4} />
+                </Form.Item>
+
+                <Form.Item>
+                    <Button type="primary" htmlType="submit" loading={loading}>
+                        Save Changes
+                    </Button>
+                </Form.Item>
+            </Form>
         </Modal>
     );
 };
