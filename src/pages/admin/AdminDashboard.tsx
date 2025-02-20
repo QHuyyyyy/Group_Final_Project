@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Legend, Cell, LineChart, Line } from "recharts";
-import { Col, Row, Card, Statistic, Tag, Table, List, Pagination,  Select } from "antd"
-import { UserOutlined, ProjectOutlined, FileTextOutlined, ClockCircleOutlined, CheckCircleOutlined, CheckOutlined } from '@ant-design/icons';
+import { Col, Row, Card, Statistic, Tag, Table, List, Pagination,  Select, Dropdown } from "antd"
+import { UserOutlined, ProjectOutlined, FileTextOutlined, ClockCircleOutlined, CheckCircleOutlined, CheckOutlined, LogoutOutlined } from '@ant-design/icons';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import dayjs from "dayjs"
-import NavbarAdminDashboard from "../../components/NavbarAdminDashboard";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import avatar from "../../assets/avatar.png";
 
 interface Claim {
   id: number;
@@ -95,7 +97,37 @@ const AdminDashboard: React.FC = () => {
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"]; // colors for pie chart
 
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+  const menu = [
+    {
+      key: "1",
+      label: (
+        <Link to="/profile">
+          <UserOutlined className="pr-2" />
+          Profile
+        </Link>
+      ),
+    },
+    {
+      key: "2",
+      label: (
+        <span onClick={handleLogout} className="cursor-pointer">
+          <LogoutOutlined className="pr-2" />
+          Logout
+        </span>
+      ),
+    },
+  ];
+
+  
+
   const [filteredClaimData, setFilteredClaimData] = useState<ClaimData[]>(claimsData);
+  console.log(filteredClaimData)
   const [selectedRange, setSelectedRange] = useState<string | null>(null);
 
   const handleFilterChange = (value: string) => {
@@ -133,18 +165,27 @@ const AdminDashboard: React.FC = () => {
   
   return (
     <>
-
+    <div className="flex items-center justify-between p-5">
+    <div className="flex items-center gap-5 justify-end w-full">
+    <Dropdown menu={{ items: menu }} trigger={["click"]}>
+            <img
+              src={avatar}
+              alt="User Avatar"
+              width={40}
+              height={40}
+              className="cursor-pointer"
+            />
+        </Dropdown>
+        </div>
+        </div>
       <div className="flex min-h-screen bg-gray-100">
         <AdminSidebar />
         <div className="flex-1 ml-64  bg-sky-50">
-          <div className="fixed top-0 left-64 w-[calc(100%-16rem)] bg-white shadow-md z-50">
-            <NavbarAdminDashboard />
-          </div>
           <div className="p-8 mt-12">
             <p className="text-2xl font-bold mb-4 font-mono" >Dashboard Overview</p>
             {/* Stats Section */}
             <Row gutter={[16, 16]}>
-              <Col md={8} xs={24}>
+              <Col lg={8} md={24} xs={24}>
                 <Card style={{
                   backgroundColor: "#138dcf",
                   
@@ -156,13 +197,17 @@ const AdminDashboard: React.FC = () => {
                     title={<span style={{ color: "white" }}>Total Users</span>}
                     className="font-bold"
                     value={userStats}
-                    prefix={<UserOutlined style={{ color: "white" }} />}
+                    prefix={<UserOutlined style={{ color: "white", 
+                      backgroundColor:"#126896",
+                      padding:"8px",
+                      borderRadius:"50%"
+                     }} />}
                     valueStyle={{ color: "white" }}
                   />
                 </Card>
               </Col>
 
-              <Col md={8} xs={24}>
+              <Col lg={8} md={24} xs={24}>
                 <Card style={{
                   backgroundColor: "#f2b00c"
                 }}
@@ -173,13 +218,16 @@ const AdminDashboard: React.FC = () => {
                     title={<span style={{ color: "white" }}>Total Claims</span>}
                     className="font-bold"
                     value={claimStats.total}
-                    prefix={<FileTextOutlined style={{ color: "white" }} />}
+                    prefix={<FileTextOutlined style={{ color: "white", 
+                      backgroundColor:"#c7920e",
+                      padding:"9px",
+                      borderRadius:"50%" }} />}
                     valueStyle={{ color: "white" }}
                   />
                 </Card>
               </Col>
 
-              <Col md={8} xs={24}>
+              <Col lg={8} md={24} xs={24}>
                 <Card style={{
                   backgroundColor: "#f25050"
                 }}
@@ -190,7 +238,10 @@ const AdminDashboard: React.FC = () => {
                     title={<span style={{ color: "white" }}>Pending Claims</span>}
                     className="font-bold"
                     value={claimStats.pending}
-                    prefix={<ClockCircleOutlined style={{ color: "white" }} />}
+                    prefix={<ClockCircleOutlined style={{ color: "white", 
+                      backgroundColor:"#ba3a3a",
+                      padding:"9px",
+                      borderRadius:"50%" }} />}
                     valueStyle={{ color: "white" }}
                   />
                 </Card>
@@ -202,11 +253,6 @@ const AdminDashboard: React.FC = () => {
               title={
                 <div className="flex justify-between items-center">
                   <span>Claim Request Charts</span>
-                  <span className="text-sm text-gray-500">
-                    {selectedRange === 'this_week' ? 'This Week' :
-                     selectedRange === 'this_month' ? 'This Month' :
-                     selectedRange === 'this_year' ? 'This Year' : 'All Time'}
-                  </span>
                 </div>
               }
               extra={
@@ -225,10 +271,10 @@ const AdminDashboard: React.FC = () => {
                 boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
               }}>
               <Row gutter={[16, 16]}>
-                <Col md={12} xs={24}>
+                <Col lg={12} md={24}>
                   <Card title="Claim Request Overview">
                     <ResponsiveContainer width="100%" height={300} >
-                      <BarChart data={filteredClaimData}>
+                      <BarChart data={claimsData}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="status" />
                         <YAxis />
@@ -238,7 +284,7 @@ const AdminDashboard: React.FC = () => {
                     </ResponsiveContainer>
                   </Card>
                 </Col>
-                <Col md={12} xs={24}>
+                <Col lg={12} md={24}>
                   <Card title="Claims By Department">
                     <ResponsiveContainer width="100%" height={300}>
                       <PieChart>
@@ -280,7 +326,7 @@ const AdminDashboard: React.FC = () => {
 
             
             <Row gutter={[16, 16]}>
-              <Col md={8} xs={24}>
+              <Col lg={8} md={24}>
                 <Row gutter={[24, 24]} className="mt-4">
                   <Col xs={24}>
                     <Card style={{
@@ -321,7 +367,7 @@ const AdminDashboard: React.FC = () => {
                 </Row>
               </Col>
               {/* Monthly Newly Started Projects Chart */}
-              <Col md={16} xs={24}>
+              <Col lg={16} md={24}>
                 <div className="mt-4">
                   <Card title="Monthly Newly Started Project" style={{
                 boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"

@@ -2,6 +2,10 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import AdminRoute from './routes/AdminRoute';
 import UserRoute from './routes/UserRoute';
+import RoleBasedRoute from './routes/RoleBasedRoute';
+import TransactionPage from './pages/user/Transaction';
+import AboutUs from './pages/AboutUs';
+import ContactUs from './pages/Contactus';
 
 // Lazy load components
 const Homepage = lazy(() => import('./pages/Homepage'));
@@ -15,7 +19,7 @@ const ApprovalPage = lazy(() => import('./pages/user/Approval'));
 const Request = lazy(() => import('./pages/user/Request'));
 const Finance = lazy(() => import('./pages/user/Finance'));
 const RequestDetails = lazy(() => import('./pages/user/RequestDetails'));
-const CreateRequest = lazy(() => import('./pages/user/CreateRequest'));
+
 
 const Loading = () => (
   <div className="h-screen w-screen flex items-center justify-center">
@@ -29,24 +33,34 @@ const App = () => {
       <Suspense fallback={<Loading />}>
         <Routes>
           <Route path='/' element={<Homepage />} />
+          <Route path='/aboutus' element={<AboutUs/>} />
+          <Route path='/contactus' element={<ContactUs/>} />
           <Route path='/login' element={<Login />} />
-          <Route path='/profile' element={<Profile />} />
-          
           {/* User Dashboard Routes */}
-          <Route path='/userdashboard' element={<UserRoute><UserDashBoard /></UserRoute>}>
+          <Route path='/userdashboard/' element={<UserRoute><UserDashBoard /></UserRoute>}>
+    
+             <Route path="transaction" element={
+              <UserRoute>
+                <TransactionPage />
+              </UserRoute>
+            } />
             <Route path="approvals" element={
               <UserRoute>
+                <RoleBasedRoute allowedRoles={['approver']}>
                 <ApprovalPage />
+                </RoleBasedRoute>
               </UserRoute>
             } />
             <Route path="claimrequest" element={
-                <UserRoute>
+              <UserRoute>
                 <Request />
-                </UserRoute>
+              </UserRoute>
             } />
             <Route path="finance" element={
               <UserRoute>
+                <RoleBasedRoute allowedRoles={['finance']}>
                 <Finance />
+                </RoleBasedRoute>
               </UserRoute>
             } />
             <Route path="request-detail/:id" element={
@@ -54,11 +68,18 @@ const App = () => {
                 <RequestDetails />
               </UserRoute>
             } />
-            <Route path="create-request" element={
+            <Route path="profile" element={
+              <UserRoute>
+       
+                  <Profile />
+            
+              </UserRoute>
+            } />
+            {/* <Route path="create-request" element={
               <UserRoute>
                 <CreateRequest />
               </UserRoute>
-            } />
+            } /> */}
           </Route>
 
           {/* Admin Routes */}
@@ -66,7 +87,8 @@ const App = () => {
             <AdminRoute>
               <AdminDashboard />
             </AdminRoute>
-          } />
+          }/>
+    
           <Route path='/dashboard/project-manager' element={
             <AdminRoute>
               <AdminProjectManager />
@@ -77,10 +99,17 @@ const App = () => {
               <AdminUserManager />
             </AdminRoute>
           } />
+          <Route path='/dashboard/profile' element={
+            <AdminRoute>
+              <AdminRoute>
+                <Profile />
+              </AdminRoute>
+            </AdminRoute>
+          } />
         </Routes>
       </Suspense>
     </Router>
   );
 };
 
-export default App;
+export default App; 

@@ -8,7 +8,7 @@ interface UserRouteProps {
 const UserRoute = ({ children }: UserRouteProps) => {
   const { user } = useAuth();
   
-  if (!user || user.role !== 'staff') {
+  if (!user || (user.role !== 'staff' && user.role !== 'finance' && user.role !== 'approver')) {
     return <Navigate to="/" replace />;
   }
 

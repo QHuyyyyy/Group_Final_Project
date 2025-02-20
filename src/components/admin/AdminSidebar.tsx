@@ -27,7 +27,7 @@ const AdminSidebar = () => {
     {
       title:"Profile",
       icon: <ProfileOutlined />,
-      path:"/"
+      path:"/dashboard/profile"
     }
   ]
 

@@ -1,11 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
-import { HomeOutlined } from '@ant-design/icons';
 import document from "../../assets/document.png";
-import settings from "../../assets/settings.svg";
 import user from "../../assets/user.png";
-import logout from "../../assets/logout.png";
 import request from "../../assets/send.png";
 import finance from "../../assets/finance.png";
+import home from "../../assets/home.png";
+import transaction from "../../assets/transaction.png";
+
 
 interface MenuItem {
   icon?: string;
@@ -27,20 +27,14 @@ const menuData: MenuSection[] = [
       { icon: request, label: "Requests", href: "/userdashboard/claimrequest" },
       { icon: document, label: "Approvals", href: "/userdashboard/approvals" },
       { icon: finance, label: "Finance", href: "/userdashboard/finance" },
+      { icon: transaction, label: "Transaction", href: "/userdashboard/transaction" },
     ],
   },
   {
     title: "Other",
     items: [
-      { 
-        label: "Home",
-        href: "/",
-        isAntIcon: true,
-        antIcon: <HomeOutlined />
-      },
-      { icon: settings, label: "Settings", href: "/userdashboard/settings" },
+       {icon: home, label: "Home", href: "/"},
       { icon: user, label: "Profile", href: "/userdashboard/profile" },
-      { icon: logout, label: "Logout", href: "/userdashboard/logout" },
     ],
   },
 ];
