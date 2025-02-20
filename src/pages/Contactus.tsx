@@ -137,56 +137,57 @@ const Contactus: React.FC = () => {
           allowFullScreen
         ></iframe>
       </div>
-      <div className="w-screen bg-black text-white py-16">
+      
+      <div className="w-screen bg-white text-black py-16">
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-4xl font-bold mb-12">Headquarter</h2>
           
           <div className="space-y-8">
             {/* Head Office */}
             <div className="flex items-center gap-6">
-              <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
               </div>
               <div>
                 <h3 className="font-semibold mb-1">Head Office</h3>
-                <p className="text-gray-400">FPT Tower, No.10 Pham Van Bach Street, Dich Vong Ward, Cau Giay District, Hanoi City, Vietnam.</p>
+                <p className="text-gray-600">FPT Tower, No.10 Pham Van Bach Street, Dich Vong Ward, Cau Giay District, Hanoi City, Vietnam.</p>
               </div>
             </div>
 
             {/* Registered Office */}
             <div className="flex items-center gap-6">
-              <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
                 </svg>
               </div>
               <div>
                 <h3 className="font-semibold mb-1">Registered Office</h3>
-                <p className="text-gray-400">FPT Cau Giay Building, Duy Tan Street, Dich Vong Hau Ward, Cau Giay District, Hanoi City, Vietnam.</p>
+                <p className="text-gray-600">FPT Cau Giay Building, Duy Tan Street, Dich Vong Hau Ward, Cau Giay District, Hanoi City, Vietnam.</p>
               </div>
             </div>
 
             {/* Phone */}
             <div className="flex items-center gap-6">
-              <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
               </div>
               <div>
                 <h3 className="font-semibold mb-1">Phone</h3>
-                <p className="text-gray-400">(+84) 243 768 9048</p>
+                <p className="text-gray-600">(+84) 243 768 9048</p>
               </div>
             </div>
 
             {/* Action Buttons */}
             <div className="flex gap-4 mt-8">
-              <button className="px-6 py-3 border border-white rounded-full hover:bg-white hover:text-black">
+              <button className="px-6 py-3 border border-black rounded-full hover:bg-black hover:text-white">
                 Contact Us
               </button>
-              <button className="px-6 py-3 border border-white rounded-full hover:bg-white hover:text-black">
+              <button className="px-6 py-3 border border-black rounded-full hover:bg-black hover:text-white">
                 Learn More
               </button>
             </div>
