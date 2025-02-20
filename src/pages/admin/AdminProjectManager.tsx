@@ -96,6 +96,31 @@ const AdminProjectManager: React.FC = () => {
     developers: [],
     testers: []
   });
+  const [form] = Form.useForm();
+  const [startDate, setStartDate] = useState<dayjs.Dayjs | null>(null);
+
+  // Hàm disabledStartDate
+  const disabledStartDate = (current: dayjs.Dayjs) => {
+    return current && current < dayjs().startOf('day');
+  };
+
+  // Hàm disabledEndDate
+  const disabledEndDate = (current: dayjs.Dayjs) => {
+    if (!startDate) {
+      return current && current < dayjs().startOf('day');
+    }
+    return current && (current < dayjs().startOf('day') || current < startDate);
+  };
+
+  // Xử lý khi startDate thay đổi
+  const handleStartDateChange = (date: dayjs.Dayjs | null) => {
+    setStartDate(date);
+    // Reset end date nếu end date nhỏ hơn start date mới
+    const endDate = form.getFieldValue('endDate');
+    if (date && endDate && endDate < date) {
+      form.setFieldValue('endDate', null);
+    }
+  };
 
   const columns = [
     {
@@ -451,20 +476,11 @@ const AdminProjectManager: React.FC = () => {
         >
           {selectedProject && (
             <Form
+              form={form}
               initialValues={{
-                code: selectedProject.code,
-                name: selectedProject.name,
-                status: selectedProject.status,
-                priority: selectedProject.priority,
-                from: dayjs(selectedProject.from),
-                to: dayjs(selectedProject.to),
-                pm: selectedProject.details.pm,
-                qa: selectedProject.details.qa,
-                ba: selectedProject.details.ba,
-                technicalLead: selectedProject.details.technicalLead,
-                technicalConsultant: selectedProject.details.technicalConsultant,
-                developers: selectedProject.details.developers.join(', '),
-                testers: selectedProject.details.testers.join(', ')
+                ...selectedProject,
+                startDate: selectedProject?.from ? dayjs(selectedProject.from) : null,
+                endDate: selectedProject?.to ? dayjs(selectedProject.to) : null,
               }}
               onFinish={handleEditSubmit}
               layout="vertical"
@@ -514,26 +530,25 @@ const AdminProjectManager: React.FC = () => {
                   </Form.Item>
 
                   <Form.Item
-                    name="from"
                     label="Start Date"
+                    name="startDate"
                     rules={[{ required: true, message: 'Please select start date!' }]}
                   >
                     <DatePicker 
-                      className="w-full rounded-md" 
-                      disabledDate={disabledDate}
-                      placeholder="Select start date"
+                      style={{ width: '100%' }}
+                      disabledDate={disabledStartDate}
+                      onChange={handleStartDateChange}
                     />
                   </Form.Item>
 
                   <Form.Item
-                    name="to"
                     label="End Date"
+                    name="endDate"
                     rules={[{ required: true, message: 'Please select end date!' }]}
                   >
                     <DatePicker 
-                      className="w-full rounded-md" 
-                      disabledDate={disabledDate}
-                      placeholder="Select end date"
+                      style={{ width: '100%' }}
+                      disabledDate={disabledEndDate}
                     />
                   </Form.Item>
                 </div>
@@ -691,6 +706,7 @@ const AdminProjectManager: React.FC = () => {
           className="custom-modal"
         >
           <Form
+            form={form}
             layout="vertical"
             onFinish={handleCreateSubmit}
             className="bg-white p-4"
@@ -739,26 +755,25 @@ const AdminProjectManager: React.FC = () => {
                 </Form.Item>
 
                 <Form.Item
-                  name="from"
                   label="Start Date"
+                  name="startDate"
                   rules={[{ required: true, message: 'Please select start date!' }]}
                 >
                   <DatePicker 
-                    className="w-full rounded-md" 
-                    disabledDate={disabledDate}
-                    placeholder="Select start date"
+                    style={{ width: '100%' }}
+                    disabledDate={disabledStartDate}
+                    onChange={handleStartDateChange}
                   />
                 </Form.Item>
 
                 <Form.Item
-                  name="to"
                   label="End Date"
+                  name="endDate"
                   rules={[{ required: true, message: 'Please select end date!' }]}
                 >
                   <DatePicker 
-                    className="w-full rounded-md" 
-                    disabledDate={disabledDate}
-                    placeholder="Select end date"
+                    style={{ width: '100%' }}
+                    disabledDate={disabledEndDate}
                   />
                 </Form.Item>
               </div>

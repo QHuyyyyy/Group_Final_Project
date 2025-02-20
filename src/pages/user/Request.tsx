@@ -1,15 +1,15 @@
 import { useState } from "react";
-import { Input } from "antd";
-
-
-
-import { EditOutlined, EyeOutlined, ReloadOutlined, CloudUploadOutlined } from '@ant-design/icons';
+import { Input, Button, Card, Table, Tag, Space } from "antd";
+import { useNavigate } from "react-router-dom";
+import { EditOutlined, EyeOutlined, ReloadOutlined, CloudUploadOutlined, SearchOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 // import DeleteRequest from "../../components/user/DeleteRequest";
 import RequestDetails from "../../components/user/RequestDetails";
 import UpdateRequest from "../../components/user/UpdateRequest";
 import CreateRequest from "../../pages/user/CreateRequest"
 import SendRequest from "../../components/user/SendRequest";
 import ReturnRequest from "../../components/user/ReturnRequest";
+import NavbarAdminProject from '../../components/admin/SideBarAdminProject';
+
 interface Request {
   id: number;
   name: string;
@@ -65,6 +65,8 @@ const Request = () => {
 
   const [sendRequestId, setSendRequestId] = useState<number | null>(null);
   const [isSendModalVisible, setIsSendModalVisible] = useState(false);
+
+  const navigate = useNavigate();
 
   ////////////////////////////////////////////////////////////////////////////
   const handleSearch = (value: string) => {
@@ -132,135 +134,158 @@ const Request = () => {
 
 
   return (
-    <div className="p-6">
-      <h2 className="text-4xl font-bold mb-4">My Requests</h2>
-      <div className="mb-6 flex items-center gap-4">
-        <button
-          onClick={() => setIsCreateModalVisible(true)}
-          className="px-4 py-2 bg-orange-300 hover:bg-gray-400 text-white rounded-md"
-        >
-          Create Request
-        </button>
+    <div className="flex min-h-screen bg-gray-100">
+      <div className="flex-1 p-8">
+        <div className="flex items-center justify-between mb-6">
+          <Search
+            placeholder="Search by Employee Name"
+            allowClear
+            onSearch={handleSearch}
+            style={{ width: 300 }}
+            className="ml-0"
+          />
+          <Button
+            onClick={() => setIsCreateModalVisible(true)}
+            type="primary"
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            Create Request
+          </Button>
+        </div>
 
-        <Search
-          placeholder="Search by Employee Name"
-          allowClear
-          onSearch={handleSearch}
-          style={{ width: "300px" }}
+        <Card className="shadow-md">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-800">My Requests</h1>
+          </div>
+          <div className="overflow-auto custom-scrollbar">
+            <Table 
+              dataSource={filteredRequests}
+              columns={[
+                { 
+                  title: "ID",
+                  dataIndex: "id",
+                  key: "id",
+                  width: 80
+                },
+                {
+                  title: "Create Date",
+                  dataIndex: "createdDate",
+                  key: "createdDate",
+                  width: 120
+                },
+                {
+                  title: "Project",
+                  dataIndex: "project",
+                  key: "project",
+                  width: 150
+                },
+                {
+                  title: "Total Hours Worked",
+                  dataIndex: "totalHours",
+                  key: "totalHours",
+                  width: 150
+                },
+                {
+                  title: "Status",
+                  dataIndex: "status",
+                  key: "status",
+                  width: 150,
+                  render: (status: string) => (
+                    <Tag color={
+                      status === "Draft" ? "gold" :
+                      status === "Pending Approval" ? "blue" :
+                      status === "Approved" ? "green" :
+                      "red"
+                    }>
+                      {status}
+                    </Tag>
+                  )
+                },
+                {
+                  title: "Actions",
+                  key: "actions",
+                  fixed: "right" as const,
+                  width: 150,
+                  render: (_: any, record: any) => (
+                    <Space size="middle">
+                      <Button 
+                        type="text" 
+                        icon={<EyeOutlined />}
+                        onClick={() => showDetailModal(record)}
+                        className="text-blue-600 hover:text-blue-800"
+                      />
+                      <Button 
+                        type="text" 
+                        icon={<EditOutlined />}
+                        onClick={() => showUpdateModal(record)}
+                        className="text-gray-600 hover:text-gray-800"
+                      />
+                      {record.status === "Draft" && (
+                        <Button 
+                          type="text" 
+                          icon={<CloudUploadOutlined />}
+                          onClick={() => showSendModal(record.id)}
+                          className="text-green-600 hover:text-green-800"
+                        />
+                      )}
+                      {record.status === "Pending Approval" && (
+                        <Button 
+                          type="text" 
+                          icon={<ReloadOutlined />}
+                          onClick={() => showReturnModal(record.id)}
+                          className="text-orange-600 hover:text-orange-800"
+                        />
+                      )}
+                    </Space>
+                  )
+                }
+              ]}
+              rowKey="id"
+              pagination={{
+                pageSize: 10,
+                total: filteredRequests.length,
+                showSizeChanger: true,
+                showQuickJumper: true,
+              }}
+              className="overflow-hidden w-full"
+              scroll={{ x: true }}
+            />
+          </div>
+        </Card>
+
+        <CreateRequest
+          visible={isCreateModalVisible}
+          onClose={() => setIsCreateModalVisible(false)}
+        />
+
+        <RequestDetails
+          visible={isDetailModalVisible}
+          request={selectedRequest}
+          onClose={() => setIsDetailModalVisible(false)}
+        />
+
+        {isUpdateModalVisible && updateRequest && (
+          <UpdateRequest
+            visible={isUpdateModalVisible}
+            request={updateRequest}
+            onClose={() => setIsUpdateModalVisible(false)}
+          />
+        )}
+
+        <SendRequest
+          id={sendRequestId}
+          visible={isSendModalVisible}
+          onSend={handleSendRequest}
+          onCancel={() => setIsSendModalVisible(false)}
+        />
+
+        <ReturnRequest
+          id={returnRequestId}
+          visible={isReturnModalVisible}
+          onReturn={handleReturnRequest}
+          onCancel={() => setIsReturnModalVisible(false)}
         />
       </div>
-
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-        <table className="min-w-full">
-          <thead>
-            <tr className="text-left bg-gray-200">
-              <th className="py-3 px-4 font-medium">ID</th>
-              <th className="py-3 px-4 font-medium">Create Date</th>
-              <th className="py-3 px-4 font-medium">Project</th>
-              <th className="py-3 px-4 font-medium">Total Hours Worked</th>
-              <th className="py-3 px-4 font-medium">Status</th>
-              <th className="py-3 px-4 font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredRequests.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="text-center py-4 text-gray-400">
-                  No requests found
-                </td>
-              </tr>
-            ) : (
-              filteredRequests.map((request) => (
-                <tr
-                  key={request.id}
-                  className="border-t border-gray-200 hover:bg-gray-50 transition-colors"
-                >
-                  <td className="py-4 px-4">{request.id}</td>
-                  <td className="py-4 px-4">{request.createdDate}</td>
-                  <td className="py-4 px-4">{request.project}</td>
-                  <td className="py-4 px-4">{request.totalHours}</td>
-                  <td className="py-4 px-4">
-                    <span
-                      className={`px-3 py-1 text-sm rounded-full ${request.status === "Draft"
-                        ? "bg-yellow-300 text-yellow-800"
-                        : request.status === "Pending Approval"
-                          ? "bg-blue-300 text-blue-800"
-                          : "bg-green-300 text-green-800"
-                        }`}
-                    >
-                      {request.status}
-                    </span>
-                  </td>
-                  <td className="py-4 px-4 flex gap-2">
-                    <button onClick={() => showDetailModal(request)}>
-                      <EyeOutlined />
-                    </button>
-                    <button onClick={() => showUpdateModal(request)}>
-                      <EditOutlined />
-                    </button>
-                    {/* <button onClick={() => showDeleteModal(request.id)}>
-                      <DeleteOutlined />
-                    </button> */}
-                    {request.status === "Draft" && (
-                      <button onClick={() => showSendModal(request.id)} className="">
-                        <CloudUploadOutlined />
-                      </button>
-                    )}
-                    {request.status === "Pending Approval" && (
-                      <button onClick={() => showReturnModal(request.id)} className="">
-                        <ReloadOutlined />
-                      </button>
-                    )}
-                  </td>
-
-                  <CreateRequest
-                    visible={isCreateModalVisible}
-                    onClose={() => setIsCreateModalVisible(false)}
-                  />
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Delete Confirmation Modal
-      <DeleteRequest
-        id={deleteId}
-        visible={isDeleteModalVisible}
-        onConfirm={handleConfirmDelete}
-        onCancel={() => setIsDeleteModalVisible(false)}
-      /> */}
-
-      {/* Request Details Modal */}
-      <RequestDetails
-        visible={isDetailModalVisible}
-        request={selectedRequest}
-        onClose={() => setIsDetailModalVisible(false)}
-      />
-
-      {isUpdateModalVisible && updateRequest && (
-        <UpdateRequest
-          visible={isUpdateModalVisible}
-          request={updateRequest}
-          onClose={() => setIsUpdateModalVisible(false)}
-        />
-      )}
-
-      <SendRequest
-        id={sendRequestId}
-        visible={isSendModalVisible}
-        onSend={handleSendRequest}
-        onCancel={() => setIsSendModalVisible(false)}
-      />
-
-      <ReturnRequest
-        id={returnRequestId}
-        visible={isReturnModalVisible}
-        onReturn={handleReturnRequest}
-        onCancel={() => setIsReturnModalVisible(false)}
-      />
-
     </div>
   );
 };
