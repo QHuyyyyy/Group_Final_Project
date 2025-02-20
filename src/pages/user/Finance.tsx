@@ -155,8 +155,6 @@ const Finance = () => {
                 <th className="py-3 px-4 font-medium">Claim ID</th>
                 <th className="py-3 px-4 font-medium">Staff Name</th>
                 <th className="py-3 px-4 font-medium">Project</th>
-                <th className="py-3 px-4 font-medium">From</th>
-                <th className="py-3 px-4 font-medium">To</th>
                 <th className="py-3 px-4 font-medium">Total Hours</th>
                 <th className="py-3 px-4 font-medium">Amount ($)</th>
                 <th className="py-3 px-4 font-medium">Status</th>
@@ -176,8 +174,6 @@ const Finance = () => {
                     <td className="py-4 px-4">{claim.id}</td>
                     <td className="py-4 px-4">{claim.staffName}</td>
                     <td className="py-4 px-4">{claim.projectName}</td>
-                    <td className="py-4 px-4">{claim.from}</td>
-                    <td className="py-4 px-4">{claim.to}</td>
                     <td className="py-4 px-4">{claim.totalHours}</td>
                     <td className="py-4 px-4">${claim.amount}</td>
                     <td className="py-4 px-4">
@@ -212,7 +208,7 @@ const Finance = () => {
                         </button>
                         <button
                           type="button"
-                          className={`px-4 py-2 text-sm bg-transparent text-black hover:${claim.status === "Paid" ? 'bg-gray-200' : 'bg-green-200'} transition-colors rounded-md`}
+                          className={`px-4 py-2 text-sm bg-transparent text-black transition-colors rounded-md ${claim.status === "Paid" ? 'hover:bg-gray-200' : 'hover:bg-green-200'}`}
                           onClick={claim.status === "Paid" ? undefined : () => handleMarkAsPaid(claim)}
                           aria-label={claim.status === "Paid" ? "Claim already paid" : "Mark as Paid"}
                           disabled={claim.status === "Paid"}
@@ -231,17 +227,24 @@ const Finance = () => {
 
       {showConfirmDialog && (
         <Modal
-          title={<h2 className="text-2xl font-bold">Confirm Payment</h2>}
+          title={<h2 className="text-2xl font-bold text-center">Confirm Payment</h2>}
           visible={showConfirmDialog}
           onCancel={() => setShowConfirmDialog(false)}
           footer={null}
-          width={800}
+          width={600}
           className="rounded-lg shadow-lg"
+          style={{ zIndex: 1000, backgroundColor: '#f9f9f9' }}
         >
-          <p className="mb-6">Are you sure you want to mark this claim as paid? This action cannot be undone.</p>
+          <div className="flex items-center justify-center mb-4">
+            <DollarOutlined style={{ color: 'green' }} className="text-5xl mr-2" />
+            <p className="text-lg text-center">
+              Are you sure you want to mark this claim as paid? <br />
+              This action cannot be undone.
+            </p>
+          </div>
           <div className="flex justify-end gap-4">
-            <button className="px-4 py-2 text-sm rounded bg-red-600 hover:bg-red-700 text-white" onClick={() => setShowConfirmDialog(false)}>Cancel</button>
-            <button className="px-4 py-2 text-sm rounded bg-green-600 hover:bg-green-700 text-white" onClick={handleConfirmPayment}>OK</button>
+            <button className="w-24 px-6 py-3 text-lg font-semibold rounded-lg bg-red-500 hover:bg-red-600 text-white transition duration-200 shadow-md" onClick={() => setShowConfirmDialog(false)} aria-label="Cancel payment">Cancel</button>
+            <button className="w-24 px-6 py-3 text-lg font-semibold rounded-lg bg-green-500 hover:bg-green-600 text-white transition duration-200 shadow-md" onClick={handleConfirmPayment} aria-label="Confirm payment">OK</button>
           </div>
         </Modal>
       )}

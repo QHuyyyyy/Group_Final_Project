@@ -5,7 +5,10 @@ import UserRoute from './routes/UserRoute';
 import RoleBasedRoute from './routes/RoleBasedRoute';
 import TransactionPage from './pages/user/Transaction';
 import AboutUs from './pages/AboutUs';
+
 import Services from './pages/user/Services';
+import ContactUs from './pages/Contactus';
+
 
 // Lazy load components
 const Homepage = lazy(() => import('./pages/Homepage'));
@@ -33,6 +36,7 @@ const App = () => {
       <Suspense fallback={<Loading />}>
         <Routes>
           <Route path='/' element={<Homepage />} />
+
           <Route path='/aboutus' element={<AboutUs />} />
           <Route path='/services' element={<Services />} />
           <Route path='/login' element={<Login />} />
@@ -44,6 +48,15 @@ const App = () => {
               </UserRoute>
             } />
             <Route path="transaction" element={
+
+          <Route path='/aboutus' element={<AboutUs/>} />
+          <Route path='/contactus' element={<ContactUs/>} />
+          <Route path='/login' element={<Login />} />
+          {/* User Dashboard Routes */}
+          <Route path='/userdashboard/' element={<UserRoute><UserDashBoard /></UserRoute>}>
+    
+             <Route path="transaction" element={
+
               <UserRoute>
                 <TransactionPage />
               </UserRoute>
@@ -72,6 +85,13 @@ const App = () => {
                 <RequestDetails />
               </UserRoute>
             } />
+            <Route path="profile" element={
+              <UserRoute>
+       
+                  <Profile />
+            
+              </UserRoute>
+            } />
             {/* <Route path="create-request" element={
               <UserRoute>
                 <CreateRequest />
@@ -84,7 +104,8 @@ const App = () => {
             <AdminRoute>
               <AdminDashboard />
             </AdminRoute>
-          } />
+          }/>
+    
           <Route path='/dashboard/project-manager' element={
             <AdminRoute>
               <AdminProjectManager />
@@ -93,6 +114,13 @@ const App = () => {
           <Route path='/dashboard/user-manager' element={
             <AdminRoute>
               <AdminUserManager />
+            </AdminRoute>
+          } />
+          <Route path='/dashboard/profile' element={
+            <AdminRoute>
+              <AdminRoute>
+                <Profile />
+              </AdminRoute>
             </AdminRoute>
           } />
         </Routes>
