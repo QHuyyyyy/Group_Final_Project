@@ -13,14 +13,19 @@ export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const { isLoading } = useApiStore();
-
-  const handleSubmit = async (values: { username: string; password: string }) => {
+  const [messageApi, contextHolder] = message.useMessage(); 
+ 
+  const handleSubmit = async (values: { email: string; password: string }) => {
     try {
-      await login(values.username, values.password);
-      message.success('Đăng nhập thành công!');
+      await login(values.email, values.password);
+      messageApi.success('Login successful!'); // Thay đổi này
       navigate('/');
-    } catch (e) {
-      message.error('Đăng nhập thất bại!');
+    } catch (error: any) {
+      if (error.response?.data) {
+        messageApi.error(error.response.data.message); // Thay đổi này
+      } else {
+        messageApi.error(error.message); // Thay đổi này
+      }
     }
   };
 
@@ -33,6 +38,7 @@ export default function Login() {
         backgroundPosition: 'center'
       }}
     >
+      {contextHolder}
       <div className="max-w-md w-full">
         <div className="bg-white/30 backdrop-blur-md rounded-2xl shadow-2xl p-8 space-y-8 border border-white/20">
           <div className="text-center space-y-2">
@@ -51,12 +57,12 @@ export default function Login() {
             className="space-y-6"
           >
             <Form.Item
-              name="username"
-              rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập!' }]}
+              name="email"
+              rules={[{ required: true, message: 'Vui lòng nhập email!' }]}
             >
               <Input 
                 prefix={<UserOutlined className="text-white/60" />}
-                placeholder="Username"
+                placeholder="Email"
                 size="large"
                 className="h-12 bg-white/20 border-white/30 text-white placeholder:text-white/60
                   focus:bg-white/30 hover:bg-white/30 transition-all"

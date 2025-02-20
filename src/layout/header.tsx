@@ -6,10 +6,10 @@ import { useAuth } from "../contexts/AuthContext";
 
 const Header = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const [isShow, setIsShow] = useState(false);
   const [isShowUserD, setIsShowUserD] = useState(false);
-
+  const token=localStorage.getItem('token')
   const handleLogout = () => {
     logout();
     navigate('/login');
@@ -66,7 +66,7 @@ const Header = () => {
         </div>
         {/* Login Button */}
         <div>
-          {user ? (
+          {token ? (
             <div className="flex items-center">
               <div
                 onClick={() => navigate("/userdashboard/profile")}
@@ -78,7 +78,7 @@ const Header = () => {
                   className="border-2 border-white shadow-md"
                 />
                 <span className="text-white font-semibold text-lg mr-4">
-                  {user.username}
+                  cc
                 </span>
               </div>
               <button

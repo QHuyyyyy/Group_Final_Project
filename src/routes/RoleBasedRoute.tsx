@@ -11,7 +11,7 @@ const RoleBasedRoute = ({ children, allowedRoles }: RoleBasedRouteProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  if (!user || !allowedRoles.includes(user.role)) {
+  if (!user || !allowedRoles.includes(user)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col items-center justify-start p-4 pt-32 mt-40">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full space-y-8 relative overflow-hidden">
