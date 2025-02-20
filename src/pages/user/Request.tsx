@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Input, Button, Card, Table, Tag, Space } from "antd";
-
-import { EditOutlined, EyeOutlined, ReloadOutlined, CloudUploadOutlined } from '@ant-design/icons';
+import { EditOutlined, EyeOutlined, CloudUploadOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import RequestDetails from "../../components/user/RequestDetails";
 import UpdateRequest from "../../components/user/UpdateRequest";
 import CreateRequest from "../../pages/user/CreateRequest"
 import SendRequest from "../../components/user/SendRequest";
-import ReturnRequest from "../../components/user/ReturnRequest";
+// import ReturnRequest from "../../components/user/ReturnRequest";
+import CancelRequest from "../../components/user/CancelRequest";
 
 interface Request {
   id: number;
@@ -49,20 +49,19 @@ const initialRequests = [
 
 const Request = () => {
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
-
   const [filteredRequests, setFilteredRequests] = useState(initialRequests);
-
   const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
   const [updateRequest, setUpdateRequest] = useState<Request | null>(null);
-
   const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
-
   const [sendRequestId, setSendRequestId] = useState<number | null>(null);
   const [isSendModalVisible, setIsSendModalVisible] = useState(false);
+  // const [returnRequestId, setReturnRequestId] = useState<number | null>(null);
+  // const [isReturnModalVisible, setIsReturnModalVisible] = useState(false);
 
-  const [returnRequestId, setReturnRequestId] = useState<number | null>(null);
-  const [isReturnModalVisible, setIsReturnModalVisible] = useState(false);
+  // New state for CancelRequest modal
+  const [cancelRequestId, setCancelRequestId] = useState<number | null>(null);
+  const [isCancelModalVisible, setIsCancelModalVisible] = useState(false);
 
   ////////////////////////////////////////////////////////////////////////////
   const handleSearch = (value: string) => {
@@ -97,18 +96,34 @@ const Request = () => {
     setSendRequestId(null);
   };
 
-  const showReturnModal = (id: number) => {
-    setReturnRequestId(id);
-    setIsReturnModalVisible(true);
+  // const showReturnModal = (id: number) => {
+  //   setReturnRequestId(id);
+  //   setIsReturnModalVisible(true);
+  // };
+  // const handleReturnRequest = (id: number) => {
+  //   setFilteredRequests(prevRequests =>
+  //     prevRequests.map(req =>
+  //       req.id === id ? { ...req, status: "Draft" } : req
+  //     )
+  //   );
+  //   setIsReturnModalVisible(false);
+  //   setReturnRequestId(null);
+  // };
+
+  // Show CancelRequest modal
+  const showCancelModal = (id: number) => {
+    setCancelRequestId(id);
+    setIsCancelModalVisible(true);
   };
-  const handleReturnRequest = (id: number) => {
+
+  const handleCancelRequest = (id: number) => {
     setFilteredRequests(prevRequests =>
       prevRequests.map(req =>
-        req.id === id ? { ...req, status: "Draft" } : req
+        req.id === id ? { ...req, status: "Cancelled" } : req
       )
     );
-    setIsReturnModalVisible(false);
-    setReturnRequestId(null);
+    setIsCancelModalVisible(false);
+    setCancelRequestId(null);
   };
 
   return (
@@ -136,10 +151,10 @@ const Request = () => {
             <h1 className="text-2xl font-bold text-gray-800">My Requests</h1>
           </div>
           <div className="overflow-auto custom-scrollbar">
-            <Table 
+            <Table
               dataSource={filteredRequests}
               columns={[
-                { 
+                {
                   title: "ID",
                   dataIndex: "id",
                   key: "id",
@@ -171,9 +186,9 @@ const Request = () => {
                   render: (status: string) => (
                     <Tag color={
                       status === "Draft" ? "gold" :
-                      status === "Pending Approval" ? "blue" :
-                      status === "Approved" ? "green" :
-                      "red"
+                        status === "Pending Approval" ? "blue" :
+                          status === "Approved" ? "green" :
+                            "red"
                     }>
                       {status}
                     </Tag>
@@ -186,32 +201,43 @@ const Request = () => {
                   width: 150,
                   render: (_: any, record: any) => (
                     <Space size="middle">
-                      <Button 
-                        type="text" 
+                      <Button
+                        type="text"
                         icon={<EyeOutlined />}
                         onClick={() => showDetailModal(record)}
                         className="text-blue-600 hover:text-blue-800"
                       />
-                      <Button 
-                        type="text" 
-                        icon={<EditOutlined />}
-                        onClick={() => showUpdateModal(record)}
-                        className="text-gray-600 hover:text-gray-800"
-                      />
                       {record.status === "Draft" && (
-                        <Button 
-                          type="text" 
+                        <Button
+                          type="text"
+                          icon={<EditOutlined />}
+                          onClick={() => showUpdateModal(record)}
+                          className="text-gray-600 hover:text-gray-800"
+
+                        />
+                      )}
+                      {record.status === "Draft" && (
+                        <Button
+                          type="text"
                           icon={<CloudUploadOutlined />}
                           onClick={() => showSendModal(record.id)}
                           className="text-green-600 hover:text-green-800"
                         />
                       )}
-                      {record.status === "Pending Approval" && (
-                        <Button 
-                          type="text" 
+                      {/* {record.status === "Pending Approval" && (
+                        <Button
+                          type="text"
                           icon={<ReloadOutlined />}
                           onClick={() => showReturnModal(record.id)}
                           className="text-orange-600 hover:text-orange-800"
+                        />
+                      )} */}
+                      {(record.status === "Draft" || record.status === "Pending Approval") && (
+                        <Button
+                          type="text"
+                          icon={<CloseCircleOutlined />}
+                          onClick={() => showCancelModal(record.id)}
+                          className="text-red-600 hover:text-red-800"
                         />
                       )}
                     </Space>
@@ -257,11 +283,20 @@ const Request = () => {
           onCancel={() => setIsSendModalVisible(false)}
         />
 
-        <ReturnRequest
+        {/* <ReturnRequest
           id={returnRequestId}
           visible={isReturnModalVisible}
           onReturn={handleReturnRequest}
           onCancel={() => setIsReturnModalVisible(false)}
+        /> */}
+
+        {/* CancelRequest modal */}
+        <CancelRequest
+          id={cancelRequestId}
+          status="Draft" // or "Pending Approval" based on your state
+          visible={isCancelModalVisible}
+          onCancelRequest={handleCancelRequest}
+          onClose={() => setIsCancelModalVisible(false)}
         />
       </div>
     </div>

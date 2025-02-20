@@ -241,8 +241,8 @@ function ApprovalPage() {
                     record.status === "Approved"
                       ? "success"
                       : record.status === "Rejected"
-                      ? "error"
-                      : "warning"
+                        ? "error"
+                        : "warning"
                   }
                 >
                   {record.status}
