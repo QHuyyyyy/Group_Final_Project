@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Table, Tag, Space, Button } from "antd";
 import SearchBar from "../../components/common/SearchBar";
-import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
+import { CheckOutlined, CloseOutlined, UndoOutlined  } from "@ant-design/icons";
 
 type Claim = {
   id: number;
@@ -14,7 +14,7 @@ type Claim = {
   submittedDate: string;
   amount: number;
   description: string;
-  status: "Pending" | "Approved" | "Rejected";
+  status: "Pending" | "Approved" | "Rejected" | "Draft";
 };
 
 const DUMMY_CLAIMS: Claim[] = [
@@ -112,20 +112,37 @@ const DUMMY_CLAIMS: Claim[] = [
 ];
 
 function ApprovalPage() {
-  const [claims, setClaims] = useState<Claim[]>(DUMMY_CLAIMS);
+  const initialClaims = DUMMY_CLAIMS.filter(claim => 
+    claim.status !== "Draft"
+  );
+  
+  const [claims, setClaims] = useState<Claim[]>(initialClaims);
   const [, setSearchQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    setCurrentPage(1);
-    const filteredClaims = DUMMY_CLAIMS.filter(
-      (claim) =>
+  const filterClaims = (query: string, status: string) => {
+    let filtered = DUMMY_CLAIMS.filter(claim => claim.status !== "Draft");
+    
+    if (query) {
+      filtered = filtered.filter(claim => 
         claim.description.toLowerCase().includes(query.toLowerCase()) ||
         claim.submittedBy.toLowerCase().includes(query.toLowerCase()) ||
         claim.employeeId.toLowerCase().includes(query.toLowerCase())
-    );
+      );
+    }
+    
+    if (status) {
+      filtered = filtered.filter(claim => claim.status === status);
+    }
+    
+    return filtered;
+  };
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1);
+    const filteredClaims = filterClaims(query, "");
     setClaims(filteredClaims);
   };
 
@@ -143,6 +160,10 @@ function ApprovalPage() {
         claim.id === id ? { ...claim, status: "Rejected" } : claim
       )
     );
+  };
+
+  const handleReturn = (id: number) => {
+    setClaims(prevClaims => prevClaims.filter(claim => claim.id !== id));
   };
 
   const startIndex = (currentPage - 1) * pageSize;
@@ -252,26 +273,37 @@ function ApprovalPage() {
             {
               title: <span className="font-bold">Actions</span>,
               key: "actions",
-              width: "10%",
-              render: (_, record) =>
-                record.status === "Pending" ? (
-                  <Space>
-                    <Button
-                      type="primary"
-                      icon={<CheckOutlined />}
-                      onClick={() => handleApprove(record.id)}
-                      style={{ backgroundColor: "#52c41a" }}
-                    />
-                    <Button
-                      type="primary"
-                      danger
-                      icon={<CloseOutlined />}
-                      onClick={() => handleReject(record.id)}
-                    />
-                  </Space>
-                ) : (
-                  <span className="text-gray-500">Processed</span>
-                ),
+              width: "15%",
+              render: (_, record) => {
+                if (record.status === "Pending") {
+                  return (
+                    <Space>
+                      <Button
+                        type="primary"
+                        icon={<CheckOutlined />}
+                        onClick={() => handleApprove(record.id)}
+                        style={{ backgroundColor: '#52c41a' }}
+                        className="hover:!bg-[#52c41a]"
+                      />
+                      <Button
+                        type="primary"
+                        danger
+                        icon={<CloseOutlined />}
+                        onClick={() => handleReject(record.id)}
+                      />
+                      <Button
+                        type="primary"
+                        icon={<UndoOutlined />}
+                        onClick={() => handleReturn(record.id)}
+                        style={{ backgroundColor: '#faad14' }}
+                        className="hover:!bg-[#ffeb29]"
+                      />
+                    </Space>
+                  );
+                }
+                
+                return <span className="text-gray-500">Processed</span>;
+              },
             },
           ]}
         />
