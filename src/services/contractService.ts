@@ -16,6 +16,7 @@ export const contractService = {
         const response = await api.get('/api/contracts/get-all', {
             params: { keyword }
         });
+        console.log("fetch data:",response.data.success)
         return response.data.data;
     },
 
