@@ -24,7 +24,7 @@ const NavbarAdminDashboard: React.FC = () => {
   const menu = (
     <Menu>
       <Menu.Item key="1" onClick={() =>{
-        navigate("/profile")
+        navigate("/userdashboard/profile")
       }}>
         <UserOutlined /> Profile
       </Menu.Item>

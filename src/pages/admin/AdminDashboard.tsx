@@ -294,7 +294,7 @@ const AdminDashboard: React.FC = () => {
                     <YAxis tickFormatter={(value) => `${value / 1000000}M`} />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey="claimsPaid" stroke="#8884d8" name="Claims Paid" />
+                    <Line type="monotone" dataKey="claimsPaid" stroke="#8884d8" name="Expenditure of Claims" />
                   </LineChart>
                 </ResponsiveContainer>
               </Card>
