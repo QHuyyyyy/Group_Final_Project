@@ -200,9 +200,9 @@ const Profile = () => {
         </>
       ) : (
         <>
-          <div className="w-[18%] md:w-[14%] lg:w-[16%] xl:w-[14%] bg-white p-6 shadow-xl">
+  
             <Menu />
-          </div>
+        
           <div className="w-[82%] md:w-[90%] lg:w-[82%] xl:w-[82%] flex-1 bg-[#F7F8FA]">
             <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
               <div className="max-w-6xl mx-auto space-y-8">
