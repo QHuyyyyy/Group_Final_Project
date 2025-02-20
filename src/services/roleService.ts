@@ -18,7 +18,7 @@ export const roleService = {
       params: { keyword }
     });
     console.log("fetch data:",response.data.success)
-    return response.data.data;
+    return response.data;
   },
 
 };

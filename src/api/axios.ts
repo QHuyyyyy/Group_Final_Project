@@ -9,48 +9,30 @@ const api = axios.create({
   }
 });
 
-// Request interceptor
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Response interceptor 
 api.interceptors.response.use(
   (response) => {
-    return response;
-  },
-  async (error) => {
-    const originalRequest = error.config;
-
-    // Xử lý token hết hạn
-    if (error.response.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      
-      try {
-        const response = await api.post('/api/auth/resend-token');
-        const newToken = response.data.token;
-        
-        localStorage.setItem('token', newToken);
-        
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
-        return api(originalRequest);
-        
-      } catch (err) {
-        localStorage.removeItem('token');
-        window.location.href = '/login';
-        return Promise.reject(err);
-      }
+    if (response.data.success) {
+      return response.data; // Trả về data trực tiếp nếu success = true
+    } else {
+      return Promise.reject(response.data); // Ném lỗi nếu success = false
     }
-
+  },
+  (error) => {
+    // if (error.response?.status === 401) {
+    //   localStorage.removeItem("token");
+    //   window.location.href = "/login";
+    // }
     return Promise.reject(error);
   }
 );

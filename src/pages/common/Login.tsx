@@ -1,4 +1,4 @@
-import { Button, Typography, Form, Input, message } from 'antd';
+import { Button, Typography, Form, Input, App } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useApiStore } from '../../stores/apiStore';
@@ -7,25 +7,20 @@ import loginBackground from '../../assets/login-background.png';
 
 const { Title } = Typography;
 
-  
 export default function Login() {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const { login } = useAuth();
   const { isLoading } = useApiStore();
-  const [messageApi, contextHolder] = message.useMessage(); 
- 
+  const { message } = App.useApp();
+
   const handleSubmit = async (values: { email: string; password: string }) => {
     try {
       await login(values.email, values.password);
-      messageApi.success('Login successful!'); // Thay đổi này
+      message.success('Login successful!');
       navigate('/');
     } catch (error: any) {
-      if (error.response?.data) {
-        messageApi.error(error.response.data.message); // Thay đổi này
-      } else {
-        messageApi.error(error.message); // Thay đổi này
-      }
+      message.error(error.response?.data?.message || 'Login error');
     }
   };
 
@@ -38,7 +33,6 @@ export default function Login() {
         backgroundPosition: 'center'
       }}
     >
-      {contextHolder}
       <div className="max-w-md w-full">
         <div className="bg-white/30 backdrop-blur-md rounded-2xl shadow-2xl p-8 space-y-8 border border-white/20">
           <div className="text-center space-y-2">
@@ -75,7 +69,7 @@ export default function Login() {
             >
               <Input.Password
                 prefix={<LockOutlined className="text-white/60" />}
-                placeholder="Password" 
+                placeholder="Mật khẩu" 
                 size="large"
                 className="h-12 bg-white/20 border-white/30 text-white placeholder:text-white/60
                   focus:bg-white/30 hover:bg-white/30 transition-all"

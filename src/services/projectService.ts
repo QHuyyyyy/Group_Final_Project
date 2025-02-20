@@ -41,7 +41,7 @@ export const projectService = {
   createProject: async (projectData: ProjectData) => {
     const response = await api.post('/api/projects', projectData);
     console.log("fetch data:", response.data.success);
-    return response.data.data;
+    return response.data;
   },
 
   // Tìm kiếm dự án với phân trang
@@ -59,28 +59,28 @@ export const projectService = {
       }
     });
     console.log("fetch data:", response.data.success);
-    return response.data.data;
+    return response.data;
   },
 
   // Lấy thông tin dự án theo ID
   getProjectById: async (id: string) => {
     const response = await api.get(`/api/projects/${id}`);
     console.log("fetch data:", response.data.success);
-    return response.data.data;
+    return response.data;
   },
 
   // Cập nhật thông tin dự án
   updateProject: async (id: string, projectData: ProjectData) => {
     const response = await api.put(`/api/projects/${id}`, projectData);
     console.log("fetch data:", response.data.success);
-    return response.data.data;
+    return response.data;
   },
 
   // Xóa dự án
   deleteProject: async (id: string): Promise<void> => {
     const response = await api.delete(`/api/projects/${id}`);
     console.log("fetch data:", response.data.success);
-    return response.data.data;
+    return response.data;
   },
 
   // Thay đổi trạng thái dự án
@@ -91,6 +91,6 @@ export const projectService = {
       project_comment
     });
     console.log("fetch data:", response.data.success);
-    return response.data.data;
+    return response.data;
   }
 };
