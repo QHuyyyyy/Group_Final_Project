@@ -60,11 +60,6 @@ const mockEmployees = [
   { id: 10, name: 'Trịnh Thị Lan' },
 ];
 
-// Thêm hàm disabledDate để kiểm tra ngày
-const disabledDate = (current: dayjs.Dayjs) => {
-  return current && current < dayjs().startOf('day');
-};
-
 // Thêm các hàm helper này vào trước component AdminProjectManager
 const commonSelectProps = (role: string) => ({
   filterOption: (input: string, option: any) => 

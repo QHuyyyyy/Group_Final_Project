@@ -21,9 +21,9 @@ interface RequestFormValues {
 }
 
 // Thêm hàm disabledDate
-const disabledDate = (current: dayjs.Dayjs) => {
-  return current && current < dayjs().startOf('day');
-};
+// const disabledDate = (current: dayjs.Dayjs) => {
+//   return current && current < dayjs().startOf('day');
+// };
 
 const CreateRequest: React.FC<CreateRequestProps> = ({ visible, onClose }) => {
     const [form] = Form.useForm<RequestFormValues>();

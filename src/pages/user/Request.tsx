@@ -1,14 +1,12 @@
 import { useState } from "react";
 import { Input, Button, Card, Table, Tag, Space } from "antd";
-import { useNavigate } from "react-router-dom";
-import { EditOutlined, EyeOutlined, ReloadOutlined, CloudUploadOutlined, SearchOutlined, ArrowLeftOutlined } from '@ant-design/icons';
-// import DeleteRequest from "../../components/user/DeleteRequest";
+
+import { EditOutlined, EyeOutlined, ReloadOutlined, CloudUploadOutlined } from '@ant-design/icons';
 import RequestDetails from "../../components/user/RequestDetails";
 import UpdateRequest from "../../components/user/UpdateRequest";
 import CreateRequest from "../../pages/user/CreateRequest"
 import SendRequest from "../../components/user/SendRequest";
 import ReturnRequest from "../../components/user/ReturnRequest";
-import NavbarAdminProject from '../../components/admin/SideBarAdminProject';
 
 interface Request {
   id: number;
@@ -54,9 +52,6 @@ const Request = () => {
 
   const [filteredRequests, setFilteredRequests] = useState(initialRequests);
 
-  // const [deleteId, setDeleteId] = useState<number | null>(null);
-  // const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
-
   const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
   const [updateRequest, setUpdateRequest] = useState<Request | null>(null);
 
@@ -66,7 +61,8 @@ const Request = () => {
   const [sendRequestId, setSendRequestId] = useState<number | null>(null);
   const [isSendModalVisible, setIsSendModalVisible] = useState(false);
 
-  const navigate = useNavigate();
+  const [returnRequestId, setReturnRequestId] = useState<number | null>(null);
+  const [isReturnModalVisible, setIsReturnModalVisible] = useState(false);
 
   ////////////////////////////////////////////////////////////////////////////
   const handleSearch = (value: string) => {
@@ -75,19 +71,6 @@ const Request = () => {
     );
     setFilteredRequests(filteredData);
   };
-
-  // const showDeleteModal = (id: number) => {
-  //   setDeleteId(id);
-  //   setIsDeleteModalVisible(true);
-  // };
-
-  // const handleConfirmDelete = () => {
-  //   if (deleteId !== null) {
-  //     setFilteredRequests(filteredRequests.filter((req) => req.id !== deleteId));
-  //   }
-  //   setIsDeleteModalVisible(false);
-  //   setDeleteId(null);
-  // };
 
   const showUpdateModal = (request: Request) => {
     setUpdateRequest(request);
@@ -104,7 +87,6 @@ const Request = () => {
     setIsSendModalVisible(true);
   };
 
-
   const handleSendRequest = (id: number) => {
     setFilteredRequests(prevRequests =>
       prevRequests.map(req =>
@@ -114,9 +96,6 @@ const Request = () => {
     setIsSendModalVisible(false);
     setSendRequestId(null);
   };
-
-  const [returnRequestId, setReturnRequestId] = useState<number | null>(null);
-  const [isReturnModalVisible, setIsReturnModalVisible] = useState(false);
 
   const showReturnModal = (id: number) => {
     setReturnRequestId(id);
@@ -131,7 +110,6 @@ const Request = () => {
     setIsReturnModalVisible(false);
     setReturnRequestId(null);
   };
-
 
   return (
     <div className="flex min-h-screen bg-gray-100">
