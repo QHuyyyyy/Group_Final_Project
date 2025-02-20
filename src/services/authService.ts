@@ -1,28 +1,34 @@
+// src/services/authService.ts
 import api from '../api/axios';
 
-interface User {
-  username: string;
-  password: string;
-  role: string;
-}
-
 export const authService = {
-  async login(username: string, password: string): Promise<User | null> {
-    try {
-      const response = await api.get('/users');
-      const users: User[] = response.data;
-      const user = users.find(
-        (u) => u.username === username && u.password === password
-      );
-      
-      if (!user) {
-        throw new Error('Thông tin đăng nhập không chính xác');
-      }
-      
-      return user;
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
-    }
+  login: async (credentials: { username: string; password: string }) => {
+    const response = await api.post('/api/auth', credentials);
+    console.log(response.data.success);
+    return response.data.data;
+  },
+
+  logout: async () => {
+    const response = await api.post('/api/auth/logout');
+    console.log(response.data.success);
+    return response.data.data;
+  },
+
+  verifyToken: async (token: string) => {
+    const response = await api.post('/api/auth/verify-token', { token });
+    console.log(response.data.success);
+    return response.data.data;
+  },
+
+  resendToken: async (email: string) => {
+    const response = await api.post('/api/auth/resend-token', { email });
+    console.log(response.data.success);
+    return response.data.data;
+  },
+
+  forgotPassword: async (email: string) => {
+    const response = await api.put('/api/auth/forgot-password', { email });
+    console.log(response.data.success);
+    return response.data.data;
   }
 };
