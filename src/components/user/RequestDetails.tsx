@@ -1,4 +1,4 @@
-import { Modal } from "antd";
+import { Modal, Descriptions, Tag } from "antd";
 
 interface RequestDetailsProps {
     visible: boolean;
@@ -21,54 +21,47 @@ const RequestDetails: React.FC<RequestDetailsProps> = ({ visible, request, onClo
 
     return (
         <Modal
-            title={`Request Details - ID: ${request.id}`}
+            title={<h2 className="text-2xl font-bold">Request Details</h2>}
             open={visible}
             onCancel={onClose}
             footer={null}
-            width={600}
+            width={800}
         >
-            <div className="grid grid-cols-2 text-sm border border-gray-300 rounded-md">
-                {/* Employee Name */}
-                <div className="bg-gray-200 font-semibold text-gray-800 border-b border-gray-300 py-2 px-4">Employee Name:</div>
-                <div className="bg-white border-b border-gray-300 py-2 px-4">{request.name}</div>
-
-                {/* Project */}
-                <div className=" font-semibold text-gray-800 border-b border-gray-300 py-2 px-4">Project:</div>
-                <div className="bg-white border-b border-gray-300 py-2 px-4">{request.project}</div>
-
-                {/* Total Hours Worked */}
-                <div className="bg-gray-200 font-semibold text-gray-800 border-b border-gray-300 py-2 px-4">Total Hours Worked:</div>
-                <div className="bg-white border-b border-gray-300 py-2 px-4">{request.totalHours}</div>
-
-                {/* Status */}
-                <div className=" font-semibold text-gray-800 border-b border-gray-300 py-2 px-4">Status:</div>
-                <div className="bg-white border-b border-gray-300 py-2 px-4">
-                    <span className={`px-3 py-1 text-sm rounded-full ${request.status === "Draft"
-                        ? "bg-yellow-300 text-yellow-800"
-                        : request.status === "Pending Approval"
-                            ? "bg-blue-300 text-blue-800"
-                            : "bg-green-300 text-green-800"
-                        }`}>
+            <Descriptions bordered column={2} className="mt-4">
+                <Descriptions.Item label="Request ID" span={1}>
+                    {request.id}
+                </Descriptions.Item>
+                <Descriptions.Item label="Employee Name" span={1}>
+                    {request.name}
+                </Descriptions.Item>
+                <Descriptions.Item label="Project" span={1}>
+                    {request.project}
+                </Descriptions.Item>
+                <Descriptions.Item label="Status" span={1}>
+                    <Tag color={
+                        request.status === "Draft" ? "gold" :
+                        request.status === "Pending Approval" ? "blue" :
+                        request.status === "Approved" ? "green" : "red"
+                    }>
                         {request.status}
-                    </span>
-                </div>
-
-                {/* Created Date */}
-                <div className="bg-gray-200 font-semibold text-gray-800 border-b border-gray-300 py-2 px-4">Created Date:</div>
-                <div className="bg-white border-b border-gray-300 py-2 px-4">{request.createdDate}</div>
-
-                {/* Start Date */}
-                <div className="font-semibold text-gray-800 border-b border-gray-300 py-2 px-4">Start Date:</div>
-                <div className="bg-white border-b border-gray-300 py-2 px-4">{request.startDate}</div>
-
-                {/* End Date */}
-                <div className="bg-gray-200 font-semibold text-gray-800 border-b border-gray-300 py-2 px-4">End Date:</div>
-                <div className="bg-white border-b border-gray-300 py-2 px-4">{request.endDate}</div>
-
-                {/* Description */}
-                <div className=" font-semibold text-gray-800 py-2 px-4">Description:</div>
-                <div className="bg-white py-2 px-4">{request.description}</div>
-            </div>
+                    </Tag>
+                </Descriptions.Item>
+                <Descriptions.Item label="Created Date" span={1}>
+                    {request.createdDate}
+                </Descriptions.Item>
+                <Descriptions.Item label="Total Hours Worked" span={1}>
+                    {request.totalHours}
+                </Descriptions.Item>
+                <Descriptions.Item label="Start Date" span={1}>
+                    {request.startDate}
+                </Descriptions.Item>
+                <Descriptions.Item label="End Date" span={1}>
+                    {request.endDate}
+                </Descriptions.Item>
+                <Descriptions.Item label="Description" span={2}>
+                    {request.description}
+                </Descriptions.Item>
+            </Descriptions>
         </Modal>
     );
 };

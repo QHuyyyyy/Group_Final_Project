@@ -1,6 +1,11 @@
 import React from 'react';
 
-const Banner: React.FC = () => {
+interface BannerProps {
+  title: string;
+  description: string;
+}
+
+const Banner: React.FC<BannerProps> = ({ title, description }) => {
   return (
     <div className="relative h-[calc(100vh-64px)]">
       {/* Ảnh nền */}
@@ -18,12 +23,10 @@ const Banner: React.FC = () => {
       <div className="relative z-10 h-full flex items-center justify-center">
         <div className="text-center text-white px-4 max-w-4xl">
           <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
-            We Are A Comprehensive
-            <br />
-            Technology Enabler
+            {title}
           </h1>
           <p className="text-xl md:text-2xl">
-            For complex business challenges and opportunities
+            {description}
           </p>
         </div>
       </div>
