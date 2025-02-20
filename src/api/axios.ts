@@ -1,7 +1,7 @@
 import axios from 'axios';
-
+const apiUrl = import.meta.env.VITE_API_URL;
 const api = axios.create({
-  baseURL: 'https://6727111d302d03037e6f3df4.mockapi.io/',
+  baseURL: apiUrl,
 });
 
 api.interceptors.request.use((config) => {
