@@ -22,6 +22,7 @@ const ApprovalPage = lazy(() => import('./pages/user/Approval'));
 const Request = lazy(() => import('./pages/user/Request'));
 const Finance = lazy(() => import('./pages/user/Finance'));
 const RequestDetails = lazy(() => import('./pages/user/RequestDetails'));
+const IndustriesPage = lazy(() => import('./pages/InductriesPage'));
 
 
 const Loading = () => (
@@ -37,8 +38,12 @@ const App = () => {
         <Routes>
           <Route path='/' element={<Homepage />} />
 
+          <Route path='/industries' element={<IndustriesPage />} />
+
+
           <Route path='/aboutus' element={<AboutUs />} />
           <Route path='/services' element={<Services />} />
+
           <Route path='/login' element={<Login />} />
           <Route path='/contactus' element={<ContactUs />} />
           {/* User Dashboard Routes */}

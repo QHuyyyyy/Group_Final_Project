@@ -32,21 +32,22 @@ const Header = () => {
         <div className="text-xl font-bold text-white">ClaimRequest</div>
         {/* Navigation Links */}
         <div className="flex space-x-4">
+
+          <a href="/" className="text-white hover:text-amber-700">
+
           <a href="/aboutus" className="text-white hover:text-amber-700">
+
             About
           </a>
           <a href="/services" className="text-white hover:text-amber-700">
             Services
           </a>
-          <a href="/" className="text-white hover:text-amber-700">
+
+          <a href="/industries" className="text-white hover:text-amber-700">
             Industries
-
           </a>
-          <a href="/" className="text-white hover:text-amber-700">
-
-          </a>        
+                 
           <a href="/contactus" className="text-white hover:text-amber-700">
-
             Contact
           </a>
           {isShow && (
