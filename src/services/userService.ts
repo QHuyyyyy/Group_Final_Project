@@ -1,7 +1,13 @@
 // src/services/userService.ts
 import api from '../api/axios';
+interface createUser {
+  email: string;
+  password: string;
+  user_name: string;
+  role_code: string;
+}
 export const userService = {
-  createUser: async (userData: any) => {
+  createUser: async (userData: createUser) => {
     const response = await api.post('/api/users', userData);
     return response.data;
   },
