@@ -17,7 +17,9 @@ const Homepage = () => {
   return (
     <div className="min-h-screen">
       <Header />
-      <Banner />
+      <Banner 
+       title="We Are A Comprehensive Technology Enabler" 
+       description="For complex business challenges and opportunitie" />
       <Suspense fallback={<LoadingSection />}>
         <ServicesSection />
       </Suspense>

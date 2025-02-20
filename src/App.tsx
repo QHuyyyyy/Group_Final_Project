@@ -17,6 +17,7 @@ const ApprovalPage = lazy(() => import('./pages/user/Approval'));
 const Request = lazy(() => import('./pages/user/Request'));
 const Finance = lazy(() => import('./pages/user/Finance'));
 const RequestDetails = lazy(() => import('./pages/user/RequestDetails'));
+const IndustriesPage = lazy(() => import('./pages/InductriesPage'));
 
 
 const Loading = () => (
@@ -31,6 +32,7 @@ const App = () => {
       <Suspense fallback={<Loading />}>
         <Routes>
           <Route path='/' element={<Homepage />} />
+          <Route path='/industries' element={<IndustriesPage />} />
           <Route path='/login' element={<Login />} />
           {/* User Dashboard Routes */}
           <Route path='/userdashboard/' element={<UserRoute><UserDashBoard /></UserRoute>}>
