@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { DollarOutlined, EyeOutlined, DownloadOutlined } from '@ant-design/icons';
+import { DollarOutlined, EyeOutlined, DownloadOutlined,FileExcelOutlined } from '@ant-design/icons';
 import { Modal, Descriptions } from 'antd';
+import { exportToExcel } from '../../utils/xlsxUtils';
 
 
 interface Claim {
@@ -86,27 +87,37 @@ const Finance = () => {
   };
 
   const handleDownloadClaim = (claim: Claim) => {
-    const claimData = `
-      Claim ID: ${claim.id}
-      Staff Name: ${claim.staffName}
-      Project: ${claim.projectName}
-      From: ${claim.from}
-      To: ${claim.to}
-      Total Hours: ${claim.totalHours}
-      Amount: $${claim.amount}
-      Status: ${claim.status}
-      Audit Trail: ${claim.auditTrail.join(", ")}
-    `;
+    const claimData = [
+        {
+            "Claim ID": claim.id,
+            "Staff Name": claim.staffName,
+            "Project": claim.projectName,
+            "From": claim.from,
+            "To": claim.to,
+            "Total Hours": claim.totalHours,
+            "Amount": claim.amount,
+            "Status": claim.status,
+            "Audit Trail": claim.auditTrail.join(", ")
+        }
+    ];
 
-    const blob = new Blob([claimData], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `claim_${claim.id}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    exportToExcel(claimData, `Claim_${claim.id}`,  `${claim.id}`);
+  };
+
+  const handleDownloadAllClaims = () => {
+    const allClaimsData = claims.map(claim => ({
+        "Claim ID": claim.id,
+        "Staff Name": claim.staffName,
+        "Project": claim.projectName,
+        "From": claim.from,
+        "To": claim.to,
+        "Total Hours": claim.totalHours,
+        "Amount": claim.amount,
+        "Status": claim.status,
+        "Audit Trail": claim.auditTrail.join(", ")
+    }));
+
+    exportToExcel(allClaimsData, 'ListClaims', 'List Claims');
   };
 
   const filteredClaims = claims.filter(claim => {
@@ -124,7 +135,17 @@ const Finance = () => {
 
         <div className="flex justify-between items-center mb-6">
         <div className="flex items-center">
-            <label htmlFor="statusFilter" className="mr-2">Status:</label>
+        <div className="relative w-72 mr-2">
+            <input
+              type="text"
+              placeholder="Search claims..."
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div>
+          <label htmlFor="statusFilter" className="mr-2">Status:</label>
             <select
               id="statusFilter"
               className="ml-4 border border-gray-300 rounded-md"
@@ -136,16 +157,20 @@ const Finance = () => {
               <option value="Paid">Paid</option>
             </select>
           </div>
-          <div className="relative w-72">
-            <input
-              type="text"
-              placeholder="Search claims..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
          
+          </div>
+           
+          <button
+            type="button"
+            className="px-4 py-2 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+            onClick={handleDownloadAllClaims}
+            title="Download All Claims"
+            aria-label="Download All Claims"
+          >
+             <span className="text-white mr-1">Download</span>
+            <FileExcelOutlined style={{ color: 'white', marginRight: '8px' }} />
+           
+          </button>
         </div>
 
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
