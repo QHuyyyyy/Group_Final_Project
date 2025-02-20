@@ -40,6 +40,7 @@ const App = () => {
           <Route path='/aboutus' element={<AboutUs />} />
           <Route path='/services' element={<Services />} />
           <Route path='/login' element={<Login />} />
+          <Route path='/contactus' element={<ContactUs />} />
           {/* User Dashboard Routes */}
           <Route path='/userdashboard/' element={<UserRoute><UserDashBoard /></UserRoute>}>
             <Route path="profile" element={
@@ -47,15 +48,11 @@ const App = () => {
                 <Profile />
               </UserRoute>
             } />
-            <Route path="transaction" element={
-
-          <Route path='/aboutus' element={<AboutUs/>} />
-          <Route path='/contactus' element={<ContactUs/>} />
-          <Route path='/login' element={<Login />} />
+          </Route>
           {/* User Dashboard Routes */}
           <Route path='/userdashboard/' element={<UserRoute><UserDashBoard /></UserRoute>}>
-    
-             <Route path="transaction" element={
+
+            <Route path="transaction" element={
 
               <UserRoute>
                 <TransactionPage />
@@ -87,9 +84,9 @@ const App = () => {
             } />
             <Route path="profile" element={
               <UserRoute>
-       
-                  <Profile />
-            
+
+                <Profile />
+
               </UserRoute>
             } />
             {/* <Route path="create-request" element={
@@ -104,8 +101,8 @@ const App = () => {
             <AdminRoute>
               <AdminDashboard />
             </AdminRoute>
-          }/>
-    
+          } />
+
           <Route path='/dashboard/project-manager' element={
             <AdminRoute>
               <AdminProjectManager />
