@@ -36,11 +36,7 @@ const App = () => {
           <Route path='/login' element={<Login />} />
           {/* User Dashboard Routes */}
           <Route path='/userdashboard/' element={<UserRoute><UserDashBoard /></UserRoute>}>
-            <Route path="profile" element={
-              <UserRoute>
-                <Profile />
-              </UserRoute>
-            } />
+    
              <Route path="transaction" element={
               <UserRoute>
                 <TransactionPage />
@@ -70,6 +66,13 @@ const App = () => {
                 <RequestDetails />
               </UserRoute>
             } />
+            <Route path="profile" element={
+              <UserRoute>
+       
+                  <Profile />
+            
+              </UserRoute>
+            } />
             {/* <Route path="create-request" element={
               <UserRoute>
                 <CreateRequest />
@@ -82,7 +85,8 @@ const App = () => {
             <AdminRoute>
               <AdminDashboard />
             </AdminRoute>
-          } />
+          }/>
+    
           <Route path='/dashboard/project-manager' element={
             <AdminRoute>
               <AdminProjectManager />
@@ -91,6 +95,13 @@ const App = () => {
           <Route path='/dashboard/user-manager' element={
             <AdminRoute>
               <AdminUserManager />
+            </AdminRoute>
+          } />
+          <Route path='/dashboard/profile' element={
+            <AdminRoute>
+              <AdminRoute>
+                <Profile />
+              </AdminRoute>
             </AdminRoute>
           } />
         </Routes>
