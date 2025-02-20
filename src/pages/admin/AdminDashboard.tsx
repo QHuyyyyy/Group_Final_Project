@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Legend, Cell, LineChart, Line } from "recharts";
-import { Col, Row, Card, Statistic, Tag, Table, List, Pagination,  Select } from "antd"
-import { UserOutlined, ProjectOutlined, FileTextOutlined, ClockCircleOutlined, CheckCircleOutlined, CheckOutlined } from '@ant-design/icons';
+import { Col, Row, Card, Statistic, Tag, Table, List, Pagination,  Select, Dropdown } from "antd"
+import { UserOutlined, ProjectOutlined, FileTextOutlined, ClockCircleOutlined, CheckCircleOutlined, CheckOutlined, LogoutOutlined } from '@ant-design/icons';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import dayjs from "dayjs"
-import NavbarAdminDashboard from "../../components/NavbarAdminDashboard";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import avatar from "../../assets/avatar.png";
 
 interface Claim {
   id: number;
@@ -95,6 +97,35 @@ const AdminDashboard: React.FC = () => {
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"]; // colors for pie chart
 
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+  const menu = [
+    {
+      key: "1",
+      label: (
+        <Link to="/profile">
+          <UserOutlined className="pr-2" />
+          Profile
+        </Link>
+      ),
+    },
+    {
+      key: "2",
+      label: (
+        <span onClick={handleLogout} className="cursor-pointer">
+          <LogoutOutlined className="pr-2" />
+          Logout
+        </span>
+      ),
+    },
+  ];
+
+  
+
   const [filteredClaimData, setFilteredClaimData] = useState<ClaimData[]>(claimsData);
   console.log(filteredClaimData)
   const [selectedRange, setSelectedRange] = useState<string | null>(null);
@@ -134,13 +165,22 @@ const AdminDashboard: React.FC = () => {
   
   return (
     <>
-
+    <div className="flex items-center justify-between p-5">
+    <div className="flex items-center gap-5 justify-end w-full">
+    <Dropdown menu={{ items: menu }} trigger={["click"]}>
+            <img
+              src={avatar}
+              alt="User Avatar"
+              width={40}
+              height={40}
+              className="cursor-pointer"
+            />
+        </Dropdown>
+        </div>
+        </div>
       <div className="flex min-h-screen bg-gray-100">
         <AdminSidebar />
         <div className="flex-1 ml-64  bg-sky-50">
-          <div className="fixed top-0 left-64 w-[calc(100%-16rem)] bg-white shadow-md z-50">
-            <NavbarAdminDashboard />
-          </div>
           <div className="p-8 mt-12">
             <p className="text-2xl font-bold mb-4 font-mono" >Dashboard Overview</p>
             {/* Stats Section */}

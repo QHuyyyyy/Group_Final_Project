@@ -3,10 +3,11 @@ import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useApiStore } from '../../stores/apiStore';
 import { useAuth } from '../../contexts/AuthContext';
+import loginBackground from '../../assets/login-background.png';
 
 const { Title } = Typography;
 
-
+  
 export default function Login() {
   const [form] = Form.useForm();
   const navigate = useNavigate();
@@ -24,14 +25,21 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-white dark:from-slate-900 dark:to-slate-800 flex items-center justify-center p-4">
+    <div 
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{
+        backgroundImage: `url(${loginBackground})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}
+    >
       <div className="max-w-md w-full">
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8 space-y-8">
+        <div className="bg-white/30 backdrop-blur-md rounded-2xl shadow-2xl p-8 space-y-8 border border-white/20">
           <div className="text-center space-y-2">
-            <Title level={2} className="!text-slate-900 dark:!text-white !m-0">
-              Welcome 
+            <Title level={2} className="!text-white !m-0 !font-bold tracking-wide">
+              Welcome Back
             </Title>
-            <p className="text-slate-600 dark:text-slate-400">
+            <p className="text-white/80 text-lg font-medium">
               Sign in to continue to your account 
             </p>
           </div>
@@ -40,29 +48,31 @@ export default function Login() {
             form={form}
             onFinish={handleSubmit}
             layout="vertical"
-            className="space-y-4"
+            className="space-y-6"
           >
             <Form.Item
               name="username"
-              rules={[{ required: true, message: 'Please enter your username!' }]}
+              rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập!' }]}
             >
               <Input 
-                prefix={<UserOutlined />}
+                prefix={<UserOutlined className="text-white/60" />}
                 placeholder="Username"
                 size="large"
-                className="h-12"
+                className="h-12 bg-white/20 border-white/30 text-white placeholder:text-white/60
+                  focus:bg-white/30 hover:bg-white/30 transition-all"
               />
             </Form.Item>
 
             <Form.Item
               name="password"
-              rules={[{ required: true, message: 'Please enter your password!' }]}
+              rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
             >
               <Input.Password
-                prefix={<LockOutlined />}
-                placeholder="Password"
+                prefix={<LockOutlined className="text-white/60" />}
+                placeholder="Password" 
                 size="large"
-                className="h-12"
+                className="h-12 bg-white/20 border-white/30 text-white placeholder:text-white/60
+                  focus:bg-white/30 hover:bg-white/30 transition-all"
               />
             </Form.Item>
 
@@ -73,16 +83,14 @@ export default function Login() {
                 loading={isLoading}
                 size="large"
                 block
-                className="h-12 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 
-                  hover:to-blue-700 border-0 shadow-lg hover:shadow-xl 
-                  transition-all duration-200 text-base font-medium"
+                className="h-12 bg-[#1a4f95] hover:bg-[#0d3d7a] border-0 
+                  shadow-lg hover:shadow-xl transition-all duration-200 
+                  text-base font-semibold tracking-wide"
               >
                 Sign in
               </Button>
             </Form.Item>
           </Form>
-
-         
         </div>
       </div>
     </div>
