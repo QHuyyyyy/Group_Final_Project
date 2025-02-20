@@ -46,7 +46,11 @@ const AboutUs: React.FC = () => {
   return (
     <div className="min-h-screen">
       <Header />
-      <Banner />
+      <Banner
+                title="Services & Industries"
+                description="We empower enterprises to achieve highest potential with extensive capabilities,
+domain expertise and cutting-edge AI solutions."
+            />
       <div className="text-center mb-10">
         <div className="mt-10">
           <h2 className="text-4xl font-bold text-gray-900 text-center mb-8">

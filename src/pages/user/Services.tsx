@@ -38,7 +38,11 @@ const Services: React.FC = () => {
     return (
         <div className="min-h-screen">
             <Header />
-            <Banner />
+            <Banner
+                title="Services & Industries"
+                description="We empower enterprises to achieve highest potential with extensive capabilities,
+domain expertise and cutting-edge AI solutions."
+            />
             <div className="text-center my-12">
                 <Title level={2} style={{ color: "#f57c00" }}>Industries</Title>
                 <Paragraph className="text-gray-600 text-lg max-w-3xl mx-auto">
