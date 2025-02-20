@@ -1,6 +1,5 @@
 import { Card,  Badge, Statistic, Row, Col, Avatar } from 'antd';
 import { UserOutlined,  ClockCircleOutlined,FileTextOutlined } from '@ant-design/icons';
-import Header from '../../layout/header';
 
 interface Staff {
   id: string;
@@ -46,8 +45,7 @@ const claimStats: ClaimStats = {
 export default function Profile() {
   return (
     <>
-      <Header/>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white p-8 mt-12">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
         <div className="max-w-6xl mx-auto space-y-8">
          
 

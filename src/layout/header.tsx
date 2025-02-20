@@ -20,7 +20,7 @@ const Header = () => {
     if (role === "admin") {
       setIsShow(true);
     }
-    if (role === "staff") {
+    if (role === "staff" || role === "approver" || role === "finance") {
       setIsShowUserD(true);
     }
   }, []);
@@ -32,19 +32,16 @@ const Header = () => {
         <div className="text-xl font-bold text-white">ClaimRequest</div>
         {/* Navigation Links */}
         <div className="flex space-x-4">
-          <a href="#" className="text-white hover:text-amber-700">
+          <a href="/aboutus" className="text-white hover:text-amber-700">
             About
           </a>
-          <a href="#" className="text-white hover:text-amber-700">
+          <a href="/" className="text-white hover:text-amber-700">
             Services
           </a>
-          <a href="#" className="text-white hover:text-amber-700">
+          <a href="/" className="text-white hover:text-amber-700">
             Industries
-          </a>
-          <a href="#" className="text-white hover:text-amber-700">
-            Careers
-          </a>
-          <a href="#" className="text-white hover:text-amber-700">
+          </a>        
+          <a href="/" className="text-white hover:text-amber-700">
             Contact
           </a>
           {isShow && (
@@ -54,7 +51,7 @@ const Header = () => {
           )}
           {isShowUserD && (
             <Link
-              to="/userdashboard"
+              to="/userdashboard/profile"
               className="text-white hover:text-amber-700"
             >
               UserDashboard
@@ -66,7 +63,7 @@ const Header = () => {
           {user ? (
             <div className="flex items-center">
               <div
-                onClick={() => navigate("/profile")}
+                onClick={() => navigate("/userdashboard/profile")}
                 className="flex items-center space-x-2 cursor-pointer"
               >
                 <Avatar

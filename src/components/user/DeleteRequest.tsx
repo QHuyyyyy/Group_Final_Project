@@ -18,7 +18,7 @@ const DeleteRequest: React.FC<DeleteRequestProps> = ({ id, visible, onConfirm, o
             okType="danger"
             cancelText="Cancel"
         >
-            <p>Are you sure you want to delete request ID {id}?</p>
+            <p>Are you sure you want to SEND request ID {id}?</p>
             <p>This action cannot be undone.</p>
         </Modal>
     );

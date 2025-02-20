@@ -1,12 +1,14 @@
 import { useState } from "react";
-import Info from "../../components/user/Info";
+import { DollarOutlined, EyeOutlined, DownloadOutlined } from '@ant-design/icons';
+import { Modal, Descriptions } from 'antd';
 
 
 interface Claim {
   id: string;
   staffName: string;
   projectName: string;
-  duration: string;
+  from: string;
+  to: string;
   totalHours: number;
   amount: number;
   status: string;
@@ -18,13 +20,16 @@ const Finance = () => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
   const [selectedClaimForInfo, setSelectedClaimForInfo] = useState<Claim | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [isViewModalVisible, setIsViewModalVisible] = useState(false);
   
   const [claims, setClaims] = useState<Claim[]>([
     {
       id: "CLM-001",
       staffName: "John Smith",
       projectName: "Project Alpha",
-      duration: "Jan 2024",
+      from: "2024-01-01",
+      to: "2024-04-01",
       totalHours: 45,
       amount: 2250,
       status: "Approved",
@@ -34,7 +39,8 @@ const Finance = () => {
       id: "CLM-002",
       staffName: "Jane Doe", 
       projectName: "Project Beta",
-      duration: "Jan 2024",
+      from: "2024-01-15",
+      to: "2024-03-15",
       totalHours: 38,
       amount: 1900,
       status: "Approved",
@@ -71,9 +77,11 @@ const Finance = () => {
 
   const handleViewClaim = (claim: Claim) => {
     setSelectedClaimForInfo(claim);
+    setIsViewModalVisible(true);
   };
 
-  const handleCloseInfo = () => {
+  const handleViewModalClose = () => {
+    setIsViewModalVisible(false);
     setSelectedClaimForInfo(null);
   };
 
@@ -82,7 +90,8 @@ const Finance = () => {
       Claim ID: ${claim.id}
       Staff Name: ${claim.staffName}
       Project: ${claim.projectName}
-      Duration: ${claim.duration}
+      From: ${claim.from}
+      To: ${claim.to}
       Total Hours: ${claim.totalHours}
       Amount: $${claim.amount}
       Status: ${claim.status}
@@ -100,14 +109,33 @@ const Finance = () => {
     URL.revokeObjectURL(url);
   };
 
+  const filteredClaims = claims.filter(claim => {
+    const matchesStatus = statusFilter ? claim.status === statusFilter : true;
+    const matchesSearchTerm = claim.staffName.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesStatus && matchesSearchTerm;
+  });
+
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto bg-white">
       <div className="overflow-x-auto p-4">
         <div className="mb-6">
           <h1 className="text-4xl font-bold mb-2">Paid Claims</h1>
         </div>
 
         <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center">
+            <label htmlFor="statusFilter" className="mr-2">Status:</label>
+            <select
+              id="statusFilter"
+              className="ml-4 border border-gray-300 rounded-md"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="">All Statuses</option>
+              <option value="Approved">Approved</option>
+              <option value="Paid">Paid</option>
+            </select>
+          </div>
           <div className="relative w-72">
             <input
               type="text"
@@ -117,6 +145,7 @@ const Finance = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+         
         </div>
 
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
@@ -126,7 +155,8 @@ const Finance = () => {
                 <th className="py-3 px-4 font-medium">Claim ID</th>
                 <th className="py-3 px-4 font-medium">Staff Name</th>
                 <th className="py-3 px-4 font-medium">Project</th>
-                <th className="py-3 px-4 font-medium">Duration</th>
+                <th className="py-3 px-4 font-medium">From</th>
+                <th className="py-3 px-4 font-medium">To</th>
                 <th className="py-3 px-4 font-medium">Total Hours</th>
                 <th className="py-3 px-4 font-medium">Amount ($)</th>
                 <th className="py-3 px-4 font-medium">Status</th>
@@ -134,19 +164,20 @@ const Finance = () => {
               </tr>
             </thead>
             <tbody>
-              {claims.length === 0 ? (
+              {filteredClaims.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-4 text-gray-400">
+                  <td colSpan={9} className="text-center py-4 text-gray-400">
                     No claims found
                   </td>
                 </tr>
               ) : (
-                claims.map((claim) => (
+                filteredClaims.map((claim) => (
                   <tr key={claim.id} className="border-t border-gray-200 hover:bg-gray-50 transition-colors">
                     <td className="py-4 px-4">{claim.id}</td>
                     <td className="py-4 px-4">{claim.staffName}</td>
                     <td className="py-4 px-4">{claim.projectName}</td>
-                    <td className="py-4 px-4">{claim.duration}</td>
+                    <td className="py-4 px-4">{claim.from}</td>
+                    <td className="py-4 px-4">{claim.to}</td>
                     <td className="py-4 px-4">{claim.totalHours}</td>
                     <td className="py-4 px-4">${claim.amount}</td>
                     <td className="py-4 px-4">
@@ -163,24 +194,31 @@ const Finance = () => {
                     <td className="py-4 px-4">
                       <div className="flex gap-2">
                         <button
-                          className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                            claim.status === "Paid"
-                              ? "bg-blue-500 hover:bg-blue-600"
-                              : "bg-green-600 hover:bg-green-700"
-                          } text-white`}
-                          onClick={claim.status === "Paid" ? () => handleViewClaim(claim) : () => handleMarkAsPaid(claim)}
+                          type="button"
+                          className="px-4 py-2 text-sm bg-transparent text-black hover:bg-gray-200 transition-colors rounded-md"
+                          onClick={() => handleViewClaim(claim)}
+                          title="View Claim"
                         >
-                          {claim.status === "Paid" ? "View" : "Pay"}
+                          <EyeOutlined />
                         </button>
-                        {claim.status === "Paid" && (
-                          <button
-                            className="px-3 py-1 text-sm bg-blue-600 rounded-md hover:bg-blue-700 transition-colors text-white"
-                            onClick={() => handleDownloadClaim(claim)}
-                            title="Download Claim"
-                          >
-                            ⬇️
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          className="px-4 py-2 text-sm bg-transparent text-black hover:bg-blue-200 transition-colors rounded-md"
+                          onClick={() => handleDownloadClaim(claim)}
+                          title="Download Claim"
+                          aria-label="Download Claim"
+                        >
+                          <DownloadOutlined style={{ color: 'blue' }} />
+                        </button>
+                        <button
+                          type="button"
+                          className={`px-4 py-2 text-sm bg-transparent text-black hover:${claim.status === "Paid" ? 'bg-gray-200' : 'bg-green-200'} transition-colors rounded-md`}
+                          onClick={claim.status === "Paid" ? undefined : () => handleMarkAsPaid(claim)}
+                          aria-label={claim.status === "Paid" ? "Claim already paid" : "Mark as Paid"}
+                          disabled={claim.status === "Paid"}
+                        >
+                          <DollarOutlined style={{ color: claim.status === "Paid" ? 'gray' : 'green' }} />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -192,19 +230,52 @@ const Finance = () => {
       </div>
 
       {showConfirmDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
-            <h3 className="text-xl font-medium mb-4">Confirm Payment</h3>
-            <p className="mb-6">Are you sure you want to mark this claim as paid? This action cannot be undone.</p>
-            <div className="flex justify-end gap-4">
-              <button className="px-4 py-2 text-sm rounded bg-red-600 hover:bg-red-700 text-white" onClick={() => setShowConfirmDialog(false)}>Cancel</button>
-              <button className="px-4 py-2 text-sm rounded bg-green-600 hover:bg-green-700 text-white" onClick={handleConfirmPayment}>OK</button>
-            </div>
+        <Modal
+          title={<h2 className="text-2xl font-bold">Confirm Payment</h2>}
+          visible={showConfirmDialog}
+          onCancel={() => setShowConfirmDialog(false)}
+          footer={null}
+          width={800}
+          className="rounded-lg shadow-lg"
+        >
+          <p className="mb-6">Are you sure you want to mark this claim as paid? This action cannot be undone.</p>
+          <div className="flex justify-end gap-4">
+            <button className="px-4 py-2 text-sm rounded bg-red-600 hover:bg-red-700 text-white" onClick={() => setShowConfirmDialog(false)}>Cancel</button>
+            <button className="px-4 py-2 text-sm rounded bg-green-600 hover:bg-green-700 text-white" onClick={handleConfirmPayment}>OK</button>
           </div>
-        </div>
+        </Modal>
       )}
 
-      {selectedClaimForInfo && <Info claim={selectedClaimForInfo} onClose={handleCloseInfo} />}
+      <Modal
+        title={<h2 className="text-2xl font-bold">Claim Details</h2>}
+        visible={isViewModalVisible}
+        onCancel={handleViewModalClose}
+        footer={null}
+        width={800}
+        className="rounded-lg shadow-lg"
+      >
+        {selectedClaimForInfo && (
+          <Descriptions bordered column={2} className="p-6 text-gray-700">
+            <Descriptions.Item label="Claim ID" span={1}>{selectedClaimForInfo.id}</Descriptions.Item>
+            <Descriptions.Item label="Status" span={1}>
+              <span className={`px-3 py-1 text-sm rounded-full ${
+                selectedClaimForInfo.status === "Approved"
+                  ? "bg-yellow-300 text-yellow-800"
+                  : "bg-green-300 text-green-800"
+              }`}>
+                {selectedClaimForInfo.status}
+              </span>
+            </Descriptions.Item>
+            <Descriptions.Item label="Staff Name" span={1}>{selectedClaimForInfo.staffName}</Descriptions.Item>
+            <Descriptions.Item label="Project" span={1}>{selectedClaimForInfo.projectName}</Descriptions.Item>
+            <Descriptions.Item label="From" span={1}>{selectedClaimForInfo.from}</Descriptions.Item>
+            <Descriptions.Item label="To" span={1}>{selectedClaimForInfo.to}</Descriptions.Item>
+            <Descriptions.Item label="Total Hours" span={2}>{selectedClaimForInfo.totalHours}</Descriptions.Item>
+            <Descriptions.Item label="Amount" span={2}>${selectedClaimForInfo.amount}</Descriptions.Item>
+            <Descriptions.Item label="Audit Trail" span={2}>{selectedClaimForInfo.auditTrail.join(", ")}</Descriptions.Item>
+          </Descriptions>
+        )}
+      </Modal>
     </div>
   );
 };

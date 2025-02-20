@@ -1,26 +1,40 @@
 import { Link, useLocation } from "react-router-dom";
 import document from "../../assets/document.png";
-import settings from "../../assets/settings.svg";
 import user from "../../assets/user.png";
-import logout from "../../assets/logout.png";
 import request from "../../assets/send.png";
 import finance from "../../assets/finance.png";
+import home from "../../assets/home.png";
+import transaction from "../../assets/transaction.png";
 
-const menuData = [
+
+interface MenuItem {
+  icon?: string;
+  label: string;
+  href: string;
+  isAntIcon?: boolean;
+  antIcon?: React.ReactNode;
+}
+
+interface MenuSection {
+  title: string;
+  items: MenuItem[];
+}
+
+const menuData: MenuSection[] = [
   {
     title: "Menu",
     items: [
       { icon: request, label: "Requests", href: "/userdashboard/claimrequest" },
       { icon: document, label: "Approvals", href: "/userdashboard/approvals" },
       { icon: finance, label: "Finance", href: "/userdashboard/finance" },
+      { icon: transaction, label: "Transaction", href: "/userdashboard/transaction" },
     ],
   },
   {
     title: "Other",
     items: [
-      { icon: settings, label: "Settings", href: "/userdashboard/settings" },
+       {icon: home, label: "Home", href: "/"},
       { icon: user, label: "Profile", href: "/userdashboard/profile" },
-      { icon: logout, label: "Logout", href: "/userdashboard/logout" },
     ],
   },
 ];
@@ -49,11 +63,17 @@ const Menu = () => {
                         : "hover:bg-[#2E3754] text-gray-300"
                     }`}
                   >
-                    <img
-                      src={item.icon}
-                      alt={item.label}
-                      className="w-5 h-5 filter invert brightness-10"
-                    />
+                    {item.isAntIcon ? (
+                      <span className="text-xl">{item.antIcon}</span>
+                    ) : (
+                      item.icon && (
+                        <img
+                          src={item.icon}
+                          alt={item.label}
+                          className="w-5 h-5 filter invert brightness-10"
+                        />
+                      )
+                    )}
                     <span>{item.label}</span>
                   </Link>
                 ))}
