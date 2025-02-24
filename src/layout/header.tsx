@@ -10,8 +10,6 @@ const Header = () => {
   const { logout } = useAuth();
   const [isShow, setIsShow] = useState(false);
   const [isShowUserD, setIsShowUserD] = useState(false);
-
-  const token=localStorage.getItem('token')
   const handleLogout = () => {
     logout();
     navigate('/login');
@@ -21,13 +19,13 @@ const Header = () => {
 
   const role = user.role_code;
   useEffect(() => {
-    if (role === "A001") {
+    if (role == "A001") {
       setIsShow(true);
     }
     if (role === "A002" || role === "A003" || role === "A004") {
       setIsShowUserD(true);
     }
-  }, []);
+  }, [role]);
 
   return (
     <div className="bg-black shadow-md w-full fixed top-0 z-50">
@@ -70,10 +68,9 @@ const Header = () => {
         </div>
         {/* Login Button */}
         <div>
-          {token ? (
+          {user ? (
             <div className="flex items-center">
               <div
-                onClick={() => navigate("/userdashboard/profile")}
                 className="flex items-center space-x-2 cursor-pointer"
               >
                 <Avatar

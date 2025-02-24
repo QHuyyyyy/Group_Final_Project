@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext } from "react";
+import React, { createContext, useState, useContext, useEffect } from "react";
 import { useApiStore } from '../stores/apiStore';
 import { authService } from '../services/authService';
 import { useUserStore } from "../stores/userStore";
@@ -15,7 +15,26 @@ export const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
   const { setLoading, setError } = useApiStore();
 
+  useEffect(() => {
+    const initializeAuth = async () => {
 
+      if (token) {
+        try {
+          setLoading(true);
+          const userInfo = await authService.getinfo();
+          useUserStore.getState().setUser(userInfo);
+        } catch (error) {
+          console.error("Lỗi khi khôi phục phiên đăng nhập:", error);
+          localStorage.removeItem("token");
+          useUserStore.getState().clearUser();
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    initializeAuth();
+  }, []);
 
   const login = async (email: string, password: string): Promise<void> => {
     try {
@@ -25,7 +44,7 @@ export const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
       localStorage.setItem("token", response.token); 
 
       const userInfo = await authService.getinfo();
-      console.log(userInfo)
+      
       useUserStore.getState().setUser(userInfo);
     } catch (error: any) {
       setError(error.message);
