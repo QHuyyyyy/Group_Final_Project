@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext } from "react";
 import { useApiStore } from '../stores/apiStore';
 import { authService } from '../services/authService';
+import { useUserStore } from "../stores/userStore";
 
 
 interface AuthContextType {
@@ -23,9 +24,12 @@ export const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
     try {
       setLoading(true);
       const response = await authService.login({ email, password });
-      console.log(response.token)
       setToken(response.token);
-      localStorage.setItem("token", response.token);
+      localStorage.setItem("token", response.token); 
+
+      const userInfo = await authService.getinfo();
+      console.log(userInfo)
+      useUserStore.getState().setUser(userInfo);
     } catch (error: any) {
       setError(error.message);
       throw error;
@@ -35,9 +39,9 @@ export const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
   };
 
   const logout = () => {
-
     setToken(null);
     localStorage.removeItem("token");
+    useUserStore.getState().clearUser();
     window.location.href = "/login";
   };
 

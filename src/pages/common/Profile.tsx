@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import Menu from '../../components/user/Menu';
 import NavbarAdminDashboard from '../../components/NavbarAdminDashboard';
+import { useUserStore } from '../../stores/userStore';
 
 interface Staff {
   id: string;
@@ -49,7 +50,7 @@ const claimStats: ClaimStats = {
 const Profile = () => {
   const location = useLocation();
   const isAdminDashboard = location.pathname === '/dashboard/profile';
-
+  const user = useUserStore((state) => state);
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
@@ -77,8 +78,8 @@ const Profile = () => {
                             />
                            
                           </div>
-                          <h2 className="text-2xl font-bold mt-4 mb-1 text-gray-800">{staffData.name}</h2>
-                          <p className="text-gray-500 font-medium">{staffData.rank}</p>
+                          <h2 className="text-2xl font-bold mt-4 mb-1 text-gray-800">{user.user_name}</h2>
+                          <p className="text-gray-500 font-medium">{user.email}</p>
                           <Badge 
                             status="processing" 
                             text={staffData.role}

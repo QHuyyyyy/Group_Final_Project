@@ -3,24 +3,28 @@ import { useEffect, useState } from "react";
 import { UserOutlined } from "@ant-design/icons";
 import { Avatar } from "antd";
 import { useAuth } from "../contexts/AuthContext";
+import { useUserStore } from "../stores/userStore";
 
 const Header = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
   const [isShow, setIsShow] = useState(false);
   const [isShowUserD, setIsShowUserD] = useState(false);
+
   const token=localStorage.getItem('token')
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
+  
+  const user = useUserStore((state) => state);
 
-  const role = localStorage.getItem("role");
+  const role = user.role_code;
   useEffect(() => {
-    if (role === "admin") {
+    if (role === "A001") {
       setIsShow(true);
     }
-    if (role === "staff" || role === "approver" || role === "finance") {
+    if (role === "A002" || role === "A003" || role === "A004") {
       setIsShowUserD(true);
     }
   }, []);
@@ -78,7 +82,7 @@ const Header = () => {
                   className="border-2 border-white shadow-md"
                 />
                 <span className="text-white font-semibold text-lg mr-4">
-                  cc
+                  {user.user_name}
                 </span>
               </div>
               <button
