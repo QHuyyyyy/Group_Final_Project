@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 
 interface UserState {
-  id: string | null;
-  email: string | null;
-  user_name: string | null;
-  role_code: string | null;
+  id: string;
+  email: string;
+  user_name: string;
+  role_code: string;
   is_verified: boolean;
   is_blocked: boolean;
   setUser: (userData: any) => void;
@@ -12,10 +12,10 @@ interface UserState {
 }
 
 export const useUserStore = create<UserState>((set) => ({
-  id: null,
-  email: null,
-  user_name: null, 
-  role_code: null,
+  id: '',
+  email: '',
+  user_name: '', 
+  role_code: '',
   is_verified: false,
   is_blocked: false,
   
@@ -29,10 +29,10 @@ export const useUserStore = create<UserState>((set) => ({
   }),
   
   clearUser: () => set({
-    id: null,
-    email: null,
-    user_name: null,
-    role_code: null, 
+    id: '',
+    email: '',
+    user_name: '',
+    role_code: '', 
     is_verified: false,
     is_blocked: false
   })
