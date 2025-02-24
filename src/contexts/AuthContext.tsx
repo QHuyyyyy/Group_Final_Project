@@ -3,9 +3,7 @@ import { useApiStore } from '../stores/apiStore';
 import { authService } from '../services/authService';
 import { useUserStore } from "../stores/userStore";
 
-
 interface AuthContextType {
-
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
@@ -14,7 +12,6 @@ interface AuthContextType {
 export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-
   const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
   const { setLoading, setError } = useApiStore();
 
@@ -38,11 +35,14 @@ export const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
   };
 
-  const logout = () => {
-    setToken(null);
-    localStorage.removeItem("token");
-    useUserStore.getState().clearUser();
-    window.location.href = "/login";
+  const logout  = async () => {
+    try {
+      await authService.logout(); 
+      localStorage.removeItem("token");
+      useUserStore.getState().clearUser(); 
+    } catch (error) {
+      console.error("Lỗi khi đăng xuất:", error);
+    }
   };
 
   return (

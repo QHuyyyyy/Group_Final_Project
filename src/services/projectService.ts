@@ -40,7 +40,7 @@ export const projectService = {
   // Tạo dự án mới
   createProject: async (projectData: ProjectData) => {
     const response = await api.post('/api/projects', projectData);
-    console.log("fetch data:", response.data.success);
+    console.log("fetch data:", response.data);
     return response.data;
   },
 
@@ -58,28 +58,28 @@ export const projectService = {
         pageSize: params.pageInfo.pageSize
       }
     });
-    console.log("fetch data:", response.data.success);
+    console.log("fetch data:", response.data);
     return response.data;
   },
 
   // Lấy thông tin dự án theo ID
   getProjectById: async (id: string) => {
     const response = await api.get(`/api/projects/${id}`);
-    console.log("fetch data:", response.data.success);
+    console.log("fetch data:", response.data);
     return response.data;
   },
 
   // Cập nhật thông tin dự án
   updateProject: async (id: string, projectData: ProjectData) => {
     const response = await api.put(`/api/projects/${id}`, projectData);
-    console.log("fetch data:", response.data.success);
+    console.log("fetch data:", response.data);
     return response.data;
   },
 
   // Xóa dự án
   deleteProject: async (id: string): Promise<void> => {
     const response = await api.delete(`/api/projects/${id}`);
-    console.log("fetch data:", response.data.success);
+    console.log("fetch data:", response.data);
     return response.data;
   },
 
@@ -90,7 +90,7 @@ export const projectService = {
       project_status,
       project_comment
     });
-    console.log("fetch data:", response.data.success);
+    console.log("fetch data:", response.data);
     return response.data;
   }
 };

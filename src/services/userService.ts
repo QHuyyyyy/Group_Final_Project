@@ -26,19 +26,19 @@ interface UpdateUserData {
 export const userService = {
   createUser: async (userData: createUser) => {
     const response = await api.post('/api/users', userData);
-    console.log("fetch data:",response.data.success)
+    console.log("fetch data:",response.data)
     return response.data;
   },
 
   searchUsers: async (params: SearchParams) => {
     const response = await api.post('/api/users/search', params);
-    console.log("fetch data:",response.data.success)
+    console.log("fetch data:",response.data)
     return response.data;
   },
 
   getUserById: async (id: string) => {
     const response = await api.get(`/api/users/${id}`);
-    console.log("fetch data:",response.data.success)
+    console.log("fetch data:",response.data)
     return response.data;
   },
 
