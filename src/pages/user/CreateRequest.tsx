@@ -31,13 +31,14 @@ const CreateRequest: React.FC<CreateRequestProps> = ({ visible, onClose }) => {
     const [startDate, setStartDate] = useState<dayjs.Dayjs | null>(null);
 
 
-    // Hàm disabledEndDate
+    // Hàm disabledStartDate - Cho phép chọn ngày trong quá khứ
+
+
+    // Hàm disabledEndDate - Ngày kết thúc phải >= ngày bắt đầu
     const disabledEndDate = (current: dayjs.Dayjs) => {
-        if (!startDate) {
-            return false;
-        }
-        return current && current < startDate;
+        return startDate ? current.isBefore(startDate, "day") : false;
     };
+
 
 
     // Xử lý khi startDate thay đổi
@@ -106,7 +107,7 @@ const CreateRequest: React.FC<CreateRequestProps> = ({ visible, onClose }) => {
                     >
                         <DatePicker
                             style={{ width: "100%" }}
-
+                            format="YYYY-MM-DD"
                             onChange={handleStartDateChange}
                         />
                     </Form.Item>
@@ -118,9 +119,11 @@ const CreateRequest: React.FC<CreateRequestProps> = ({ visible, onClose }) => {
                     >
                         <DatePicker
                             style={{ width: "100%" }}
-                            disabledDate={disabledEndDate}
+                            disabledDate={disabledEndDate} // Áp dụng điều kiện cho ngày kết thúc
+                            format="YYYY-MM-DD"
                         />
                     </Form.Item>
+
 
                     <Form.Item
                         label="Total Hours Worked"

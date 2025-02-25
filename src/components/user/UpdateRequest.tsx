@@ -45,17 +45,19 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, request, onClose
     }, [request, form]);
 
     // Hàm disabledStartDate
-    const disabledStartDate = (current: dayjs.Dayjs) => {
-        return current && current < dayjs().startOf('day');
-    };
+    // const disabledStartDate = (current: dayjs.Dayjs) => {
+    //     return current && current < dayjs().startOf('day');
+    // };
 
     // Hàm disabledEndDate
+    // Hàm disabledStartDate - Cho phép chọn ngày trong quá khứ
+
+
+    // Hàm disabledEndDate - Ngày kết thúc phải >= ngày bắt đầu
     const disabledEndDate = (current: dayjs.Dayjs) => {
-        if (!startDate) {
-            return current && current < dayjs().startOf('day');
-        }
-        return current && (current < dayjs().startOf('day') || current < startDate);
+        return startDate ? current.isBefore(startDate, "day") : false;
     };
+
 
     // Xử lý khi startDate thay đổi
     const handleStartDateChange = (date: dayjs.Dayjs | null) => {
@@ -76,7 +78,7 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, request, onClose
         };
 
         console.log("Updated Request:", updatedRequest);
-        
+
         setTimeout(() => {
             setLoading(false);
             onClose();
@@ -90,9 +92,9 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, request, onClose
             onCancel={onClose}
             footer={null}
         >
-            <Form 
-                form={form} 
-                layout="vertical" 
+            <Form
+                form={form}
+                layout="vertical"
                 onFinish={handleSubmit}
             >
                 <Form.Item
@@ -119,9 +121,8 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, request, onClose
                     name="startDate"
                     rules={[{ required: true, message: "Please select the start date!" }]}
                 >
-                    <DatePicker 
+                    <DatePicker
                         style={{ width: "100%" }}
-                        disabledDate={disabledStartDate}
                         format="YYYY-MM-DD"
                         onChange={handleStartDateChange}
                     />
@@ -132,12 +133,13 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, request, onClose
                     name="endDate"
                     rules={[{ required: true, message: "Please select the end date!" }]}
                 >
-                    <DatePicker 
+                    <DatePicker
                         style={{ width: "100%" }}
-                        disabledDate={disabledEndDate}
+                        disabledDate={disabledEndDate} // Áp dụng điều kiện cho ngày kết thúc
                         format="YYYY-MM-DD"
                     />
                 </Form.Item>
+
 
                 <Form.Item
                     label="Total Hours Worked"

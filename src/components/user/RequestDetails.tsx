@@ -40,8 +40,8 @@ const RequestDetails: React.FC<RequestDetailsProps> = ({ visible, request, onClo
                 <Descriptions.Item label="Status" span={1}>
                     <Tag color={
                         request.status === "Draft" ? "gold" :
-                        request.status === "Pending Approval" ? "blue" :
-                        request.status === "Approved" ? "green" : "red"
+                            request.status === "Pending Approval" ? "blue" :
+                                request.status === "Approved" ? "green" : "red"
                     }>
                         {request.status}
                     </Tag>

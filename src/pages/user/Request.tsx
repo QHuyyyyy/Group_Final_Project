@@ -5,7 +5,6 @@ import RequestDetails from "../../components/user/RequestDetails";
 import UpdateRequest from "../../components/user/UpdateRequest";
 import CreateRequest from "../../pages/user/CreateRequest"
 import SendRequest from "../../components/user/SendRequest";
-// import ReturnRequest from "../../components/user/ReturnRequest";
 import CancelRequest from "../../components/user/CancelRequest";
 
 interface Request {
@@ -56,10 +55,6 @@ const Request = () => {
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
   const [sendRequestId, setSendRequestId] = useState<number | null>(null);
   const [isSendModalVisible, setIsSendModalVisible] = useState(false);
-  // const [returnRequestId, setReturnRequestId] = useState<number | null>(null);
-  // const [isReturnModalVisible, setIsReturnModalVisible] = useState(false);
-
-  // New state for CancelRequest modal
   const [cancelRequestId, setCancelRequestId] = useState<number | null>(null);
   const [isCancelModalVisible, setIsCancelModalVisible] = useState(false);
 
@@ -96,21 +91,7 @@ const Request = () => {
     setSendRequestId(null);
   };
 
-  // const showReturnModal = (id: number) => {
-  //   setReturnRequestId(id);
-  //   setIsReturnModalVisible(true);
-  // };
-  // const handleReturnRequest = (id: number) => {
-  //   setFilteredRequests(prevRequests =>
-  //     prevRequests.map(req =>
-  //       req.id === id ? { ...req, status: "Draft" } : req
-  //     )
-  //   );
-  //   setIsReturnModalVisible(false);
-  //   setReturnRequestId(null);
-  // };
 
-  // Show CancelRequest modal
   const showCancelModal = (id: number) => {
     setCancelRequestId(id);
     setIsCancelModalVisible(true);
@@ -224,15 +205,8 @@ const Request = () => {
                           className="text-green-600 hover:text-green-800"
                         />
                       )}
-                      {/* {record.status === "Pending Approval" && (
-                        <Button
-                          type="text"
-                          icon={<ReloadOutlined />}
-                          onClick={() => showReturnModal(record.id)}
-                          className="text-orange-600 hover:text-orange-800"
-                        />
-                      )} */}
-                      {(record.status === "Draft" || record.status === "Pending Approval") && (
+
+                      {(record.status === "Draft") && (
                         <Button
                           type="text"
                           icon={<CloseCircleOutlined />}
@@ -283,17 +257,11 @@ const Request = () => {
           onCancel={() => setIsSendModalVisible(false)}
         />
 
-        {/* <ReturnRequest
-          id={returnRequestId}
-          visible={isReturnModalVisible}
-          onReturn={handleReturnRequest}
-          onCancel={() => setIsReturnModalVisible(false)}
-        /> */}
 
         {/* CancelRequest modal */}
         <CancelRequest
           id={cancelRequestId}
-          status="Draft" // or "Pending Approval" based on your state
+          status="Draft"
           visible={isCancelModalVisible}
           onCancelRequest={handleCancelRequest}
           onClose={() => setIsCancelModalVisible(false)}
