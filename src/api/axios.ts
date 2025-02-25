@@ -1,28 +1,40 @@
 import axios from 'axios';
 
+const apiUrl = import.meta.env.VITE_API_URL;
+
 const api = axios.create({
-  baseURL: 'https://6727111d302d03037e6f3df4.mockapi.io/',
+  baseURL: apiUrl,
+  headers: {
+    'Content-Type': 'application/json'
+  }
 });
 
-api.interceptors.request.use((config) => {
-  // handle before request is sent
-  return config;
-}, (error) => {
-  // handle request error
-  return Promise.reject(error);
-});
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 api.interceptors.response.use(
   (response) => {
-     // handle response data
-     return response;
-    }, (error) => {
-      // handle response un-authen error
-    //   if (error.response.status === 401) {
-    //     navigate("/");
-    //   }
-      return Promise.reject(error);
-    });
-
+    if (response.data.success) {
+      return response.data; // Trả về data trực tiếp nếu success = true
+    } else {
+      return Promise.reject(response.data); // Ném lỗi nếu success = false
+    }
+  },
+  (error) => {
+    // if (error.response?.status === 401) {
+    //   localStorage.removeItem("token");
+    //   window.location.href = "/login";
+    // }
+    return Promise.reject(error);
+  }
+);
 
 export default api;

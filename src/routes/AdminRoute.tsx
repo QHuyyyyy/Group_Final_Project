@@ -1,13 +1,13 @@
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useUserStore } from '../stores/userStore';
 interface AdminRouteProps {
   children: React.ReactNode;
 }
 
 const AdminRoute = ({ children }: AdminRouteProps) => {
-  const { user } = useAuth();
+  const user = useUserStore((state) => state);
   
-  if (!user || user.role !== 'admin') {
+  if (!user || user.role_code !== 'A001') {
     return <Navigate to="/" replace />;
   }
 

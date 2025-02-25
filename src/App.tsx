@@ -8,6 +8,7 @@ import AboutUs from './pages/AboutUs';
 
 import Services from './pages/user/Services';
 import ContactUs from './pages/Contactus';
+import ForgotPassword from './components/common/ForgotPassword';
 
 
 // Lazy load components
@@ -43,7 +44,7 @@ const App = () => {
 
           <Route path='/aboutus' element={<AboutUs />} />
           <Route path='/services' element={<Services />} />
-
+          <Route path='/forgot-password' element={<ForgotPassword />} />
           <Route path='/login' element={<Login />} />
           <Route path='/contactus' element={<ContactUs />} />
           {/* User Dashboard Routes */}
