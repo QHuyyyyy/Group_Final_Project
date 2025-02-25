@@ -2,12 +2,12 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import AdminRoute from './routes/AdminRoute';
 import UserRoute from './routes/UserRoute';
-import RoleBasedRoute from './routes/RoleBasedRoute';
 import TransactionPage from './pages/user/Transaction';
 import AboutUs from './pages/AboutUs';
 import Services from './pages/user/Services';
 import ContactUs from './pages/Contactus';
 import ForgotPassword from './components/common/ForgotPassword';
+import NotFound from './pages/NotFound';
 import { RoutePermissions } from './routes/RoutePermissions';
 
 // Lazy load components
@@ -43,55 +43,36 @@ const App = () => {
           <Route path='/forgot-password' element={<ForgotPassword />} />
           <Route path='/login' element={<Login />} />
           <Route path='/contactus' element={<ContactUs />} />
+
           {/* User Dashboard Routes */}
           <Route path='/userdashboard/' element={<UserRoute><UserDashBoard /></UserRoute>}>
             <Route path="profile" element={
-              <UserRoute>
+              <UserRoute allowedRoles={RoutePermissions.profile}>
                 <Profile />
               </UserRoute>
             } />
-          </Route>
-          {/* User Dashboard Routes */}
-          <Route path='/userdashboard/' element={<UserRoute><UserDashBoard /></UserRoute>}>
             <Route path="transaction" element={
-              <UserRoute>
-                <RoleBasedRoute allowedRoles={RoutePermissions.transaction}>
-                  <TransactionPage />
-                </RoleBasedRoute>
+              <UserRoute allowedRoles={RoutePermissions.transaction}>
+                <TransactionPage />
               </UserRoute>
             } />
             <Route path="approvals" element={
-              <UserRoute>
-                <RoleBasedRoute allowedRoles={RoutePermissions.approvals}>
-                  <ApprovalPage />
-                </RoleBasedRoute>
+              <UserRoute allowedRoles={RoutePermissions.approvals}>
+                <ApprovalPage />
               </UserRoute>
             } />
             <Route path="claimrequest" element={
-              <UserRoute>
-                <RoleBasedRoute allowedRoles={RoutePermissions.claimrequest}>
-                  <Request />
-                </RoleBasedRoute>
+              <UserRoute allowedRoles={RoutePermissions.claimrequest}>
+                <Request />
               </UserRoute>
             } />
             <Route path="finance" element={
-              <UserRoute>
-                <RoleBasedRoute allowedRoles={RoutePermissions.finance}>
-                  <Finance />
-                </RoleBasedRoute>
+              <UserRoute allowedRoles={RoutePermissions.finance}>
+                <Finance />
               </UserRoute>
             } />
             <Route path="request-detail/:id" element={
-              <UserRoute>
-                <RequestDetails />
-              </UserRoute>
-            } />
-            <Route path="profile" element={
-              <UserRoute>
-                <RoleBasedRoute allowedRoles={RoutePermissions.profile}>
-                  <Profile />
-                </RoleBasedRoute>
-              </UserRoute>
+              <RequestDetails />
             } />
             {/* <Route path="create-request" element={
               <UserRoute>
@@ -101,34 +82,22 @@ const App = () => {
           </Route>
 
           {/* Admin Routes */}
-          <Route path='/dashboard' element={
-            <AdminRoute>
-              <AdminDashboard />
-            </AdminRoute>
-          } />
+          <Route path='/dashboard/' element={<AdminRoute><AdminDashboard /></AdminRoute>}>
+            <Route path='project-manager' element={
+                <AdminProjectManager />
+            } />
+            <Route path='user-manager' element={
+                <AdminUserManager />
+            } />
+            <Route path='view-claim-request' element={
+                <ViewClaimRequest />
+            } />
+            <Route path='profile' element={
+                  <Profile />
+            } />
+          </Route>
 
-          <Route path='/dashboard/project-manager' element={
-            <AdminRoute>
-              <AdminProjectManager />
-            </AdminRoute>
-          } />
-          <Route path='/dashboard/user-manager' element={
-            <AdminRoute>
-              <AdminUserManager />
-            </AdminRoute>
-          } />
-          <Route path='/dashboard/view-claim-request' element={
-            <AdminRoute>
-              <ViewClaimRequest />
-            </AdminRoute>
-          } />
-          <Route path='/dashboard/profile' element={
-            <AdminRoute>
-              <AdminRoute>
-                <Profile />
-              </AdminRoute>
-            </AdminRoute>
-          } />
+          <Route path='*' element={<NotFound />} />
         </Routes>
       </Suspense>
     </Router>

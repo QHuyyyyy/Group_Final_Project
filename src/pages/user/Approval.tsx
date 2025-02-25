@@ -204,17 +204,6 @@ function ApprovalPage() {
 
   return (
     <div className="container mx-auto px-2 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <Button 
-          type="default" 
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate('/dashboard')}
-          className="flex items-center"
-        >
-          Back to Dashboard
-        </Button>
-      </div>
-
       <Card className="shadow-md">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-800">Claim Approvals</h1>
