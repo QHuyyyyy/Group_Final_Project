@@ -25,9 +25,23 @@ interface StaffMember {
   email: string;
   role_code: string;
   is_blocked: boolean;
+  is_verified: boolean;
   created_at: string;
   updated_at: string;
   is_deleted: boolean;
+}
+interface SearchParams {
+  searchCondition: {
+    keyword: string;
+    role_code: string;
+    is_blocked: boolean;
+    is_delete: boolean;
+    is_verified: string;
+  };
+  pageInfo: {
+    pageNum: number;
+    pageSize: number;
+  };
 }
 
 const AdminUserManager: React.FC = () => {
@@ -118,22 +132,41 @@ const AdminUserManager: React.FC = () => {
   const handleSave = async (values: any) => {
     try {
       if (isAdding) {
-        // Create new user
+        // Show loading message
+        const loadingMessage = message.loading('Creating user...', 0);
+        
+        // Validate and format the data
         const userData = {
-          email: values.email,
+          email: values.email.trim(),
           password: values.password,
-          user_name: values.user_name,
-          role_code: values.role_code
+          user_name: values.user_name.trim(),
+          role_code: values.role_code.trim()
         };
 
-        const response = await userService.createUser(userData);
-        
-        if (response) {
-          message.success('User created successfully');
-          // Refresh the user list after creating
-          // You might want to call your search/list API here
-          setIsModalVisible(false);
-          form.resetFields();
+        // Add validation
+        if (!userData.email || !userData.password || !userData.user_name || !userData.role_code) {
+          loadingMessage();
+          message.error('Please fill in all required fields');
+          return;
+        }
+
+        try {
+          const response = await userService.createUser(userData);
+          loadingMessage();
+          
+          if (response && response.data) {
+            message.success('User created successfully');
+            setIsModalVisible(false);
+            form.resetFields();
+            fetchUsers();
+          }
+        } catch (apiError: any) {
+          loadingMessage();
+          if (apiError.response?.status === 400) {
+            message.error(apiError.response?.data?.message || 'Invalid user data. Please check your inputs.');
+          } else {
+            message.error('An error occurred while creating the user.');
+          }
         }
       } else {
         // Handle edit case
@@ -239,6 +272,17 @@ const AdminUserManager: React.FC = () => {
       key: 'updated_at',
       width: 120,
       render: (date: string) => dayjs(date).format('YYYY-MM-DD')
+    },
+    {
+      title: 'Verified',
+      dataIndex: 'is_verified',
+      key: 'is_verified',
+      width: 100,
+      render: (verified: boolean) => (
+        <Tag color={verified ? 'success' : 'warning'}>
+          {verified ? 'Verified' : 'Unverified'}
+        </Tag>
+      )
     },
     {
       title: 'Actions',
