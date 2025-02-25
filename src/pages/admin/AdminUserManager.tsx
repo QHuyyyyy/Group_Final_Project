@@ -16,6 +16,8 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import StaffDetails from '../../components/admin/StaffDetails';
+import { userService } from '../../services/userService';
+import { message } from 'antd';
 
 interface StaffMember {
   key: string;
@@ -41,43 +43,8 @@ const AdminUserManager: React.FC = () => {
   const [form] = Form.useForm();
   const [editingRecord, setEditingRecord] = useState<StaffMember | null>(null);
   const { Option } = Select;
-  const roles = ['Manager', 'Employee', 'HR', 'Developer'];
-  const [staffData, setStaffData] = useState<StaffMember[]>([
-    {
-      key: '1',
-      username: 'johndoe',
-      fullName: 'John Doe',
-      password: 'password123',
-      confirmPassword: 'password123',
-      department: 'IT',
-      jobRank: 'Senior Developer',
-      salary: 5000,
-      email: 'john.doe@example.com',
-      phone: '0123456789',
-      address: '123 Main St, City',
-      is_blocked: false,
-      createdAt: '2025-02-13',
-      updated_at: '2025-02-13',
-      role: 'Developer'
-    },
-    {
-      key: '2',
-      username: 'janesmith',
-      fullName: 'Jane Smith',
-      password: 'password456',
-      confirmPassword: 'password456',
-      department: 'HR',
-      jobRank: 'Manager',
-      salary: 6000,
-      email: 'jane.smith@example.com',
-      phone: '0987654321',
-      address: '456 Park Ave, Town',
-      is_blocked: false,
-      createdAt: '2025-02-13',
-      updated_at: '2025-02-13',
-      role: 'Manager'
-    }
-  ]);
+  const roles = ['Admin', 'Manager', 'Employee', 'HR', 'Developer'];
+  const [staffData, setStaffData] = useState<StaffMember[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<any>(null);
@@ -101,37 +68,63 @@ const AdminUserManager: React.FC = () => {
   };
 
   const handleSave = async (values: any) => {
-    const formattedValues = {
-      ...values,
-      department: isAdding ? '' : values.department,
-      jobRank: isAdding ? '' : values.jobRank,
-      salary: isAdding ? 0 : Number(values.salary),
-      email: isAdding ? '' : values.email,
-      phone: isAdding ? '' : values.phone,
-      address: isAdding ? '' : values.address,
-      role: isAdding ? 'Employee' : values.role,
-      createdAt: values.createdAt ? dayjs(values.createdAt).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
-      confirmPassword: values.confirmPassword
-    };
+    try {
+      if (isAdding) {
+        // Create new user
+        const userData = {
+          email: values.email,
+          password: values.password,
+          user_name: values.username,
+          role_code: values.role_code
+        };
 
-    if (editingRecord) {
-      setStaffData(prev => prev.map(staff => 
-        staff.key === editingRecord.key 
-          ? { ...formattedValues, key: staff.key, is_blocked: staff.is_blocked }
-          : staff
-      ));
-    } else {
-      const newStaff = {
-        ...formattedValues,
-        key: Date.now().toString(),
-        is_blocked: false,
-        createdAt: dayjs().format('YYYY-MM-DD')
-      };
-      setStaffData(prev => [...prev, newStaff]);
+        const response = await userService.createUser(userData);
+        
+        if (response) {
+          message.success('User created successfully');
+          // Refresh the user list after creating
+          // You might want to call your search/list API here
+          setIsModalVisible(false);
+          form.resetFields();
+        }
+      } else {
+        // Handle edit case
+        const formattedValues = {
+          ...values,
+          department: values.department,
+          jobRank: values.jobRank,
+          salary: Number(values.salary),
+          email: values.email,
+          phone: values.phone,
+          address: values.address,
+          role: values.role,
+          createdAt: values.createdAt ? dayjs(values.createdAt).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
+          confirmPassword: values.confirmPassword
+        };
+
+        if (editingRecord) {
+          setStaffData(prev => prev.map(staff => 
+            staff.key === editingRecord.key 
+              ? { ...formattedValues, key: staff.key, is_blocked: staff.is_blocked }
+              : staff
+          ));
+        } else {
+          const newStaff = {
+            ...formattedValues,
+            key: Date.now().toString(),
+            is_blocked: false,
+            createdAt: dayjs().format('YYYY-MM-DD')
+          };
+          setStaffData(prev => [...prev, newStaff]);
+        }
+        setIsModalVisible(false);
+        setEditingRecord(null);
+        form.resetFields();
+      }
+    } catch (error) {
+      console.error('Error saving staff member:', error);
+      message.error('An error occurred while saving the staff member.');
     }
-    setIsModalVisible(false);
-    setEditingRecord(null);
-    form.resetFields();
   };
 
   const handleCancel = () => {
