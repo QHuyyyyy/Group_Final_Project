@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Legend, Cell, LineChart, Line } from "recharts";
 import { Col, Row, Card, Statistic, Tag, Table, List, Pagination,  Select, Dropdown } from "antd"
 import { UserOutlined, ProjectOutlined, FileTextOutlined, ClockCircleOutlined, CheckCircleOutlined, CheckOutlined, LogoutOutlined } from '@ant-design/icons';
@@ -7,12 +7,48 @@ import dayjs from "dayjs"
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import avatar from "../../assets/avatar.png";
+import { claimService } from "../../services/claimService";
+import { projectService } from "../../services/projectService";
+import { userService } from "../../services/userService";
 
 interface Claim {
   id: number;
   name: string;
   status: "Pending" | "Approved" | "Rejected" | "Paid";
   claimer: string;
+}
+
+interface Claims {
+  _id: string;
+  user_id: string;
+  project_id: string;
+  approval_id: string;
+  claim_name: string;
+  claim_status: string;
+  claim_start_date: string;
+  claim_end_date: string;
+  total_work_time: number;
+  is_deleted: boolean;
+  created_at: string;
+  updated_at: string;
+  __v: number;
+}
+
+
+interface ProjectMember {
+  user_id: string;
+  project_role: string;
+}
+
+
+interface Projects{
+  project_name: string;
+    project_code: string;
+    project_department: string;
+    project_description: string;
+    project_start_date: string;
+    project_end_date: string;
+    project_members: ProjectMember[];
 }
 
 interface ClaimData {
@@ -23,21 +59,7 @@ interface ClaimData {
 
 const { Option } = Select
 const AdminDashboard: React.FC = () => {
-  let userStats: number = 1534;
-  let projectStats: number = 342;
-  const claimStats = {
-    total: 298,
-    pending: 124,
-    approved: 84,
-    rejected: 32,
-    paid: 58,
-  };
-  const claimsData: ClaimData[] = [
-    { status: "Pending", count: 124, date: "2024-03-25" },
-    { status: "Approved", count: 84, date: "2024-03-24" },
-    { status: "Rejected", count: 32, date: "2024-03-23" },
-    { status: "Paid", count: 58, date: "2024-03-22" },
-  ];
+  
   const claimCategories = [
     { name: "HR", value: 40 },
     { name: "IT", value: 30 },
@@ -73,12 +95,12 @@ const AdminDashboard: React.FC = () => {
   };
 
   const financialData = [
-    { month: "Jan", claimsPaid: 50000000 },
-    { month: "Feb", claimsPaid: 70000000 },
-    { month: "Mar", claimsPaid: 80000000 },
-    { month: "Apr", claimsPaid: 75000000 },
-    { month: "May", claimsPaid: 90000000 },
-    { month: "Jun", claimsPaid: 85000000 },
+    { month: "Jan", Projects: 50 },
+    { month: "Feb", Projects: 70 },
+    { month: "Mar", Projects: 80 },
+    { month: "Apr", Projects: 75 },
+    { month: "May", Projects: 90 },
+    { month: "Jun", Projects: 85 },
   ];
 
   const columns = [
@@ -107,7 +129,7 @@ const AdminDashboard: React.FC = () => {
     {
       key: "1",
       label: (
-        <Link to="/profile">
+        <Link to="/dashboard/profile">
           <UserOutlined className="pr-2" />
           Profile
         </Link>
@@ -125,11 +147,131 @@ const AdminDashboard: React.FC = () => {
   ];
 
   
+  const [claims, setClaims] = useState<Claims[]>([]);
+  const [pendingClaims, setPendingClaims] = useState<Claims[]>([]);
 
+  const claimsData: ClaimData[] = [
+    { status: "Pending", count: pendingClaims.length, date: "2024-03-25" },
+    { status: "Approved", count: 84, date: "2024-03-24" },
+    { status: "Rejected", count: 32, date: "2024-03-23" },
+    { status: "Paid", count: 58, date: "2024-03-22" },
+  ];
+
+  const [projects, setProjects] = useState<Projects[]>([]);
+  const [users, setUsers] = useState([])
   const [filteredClaimData, setFilteredClaimData] = useState<ClaimData[]>(claimsData);
   console.log(filteredClaimData)
   const [selectedRange, setSelectedRange] = useState<string | null>(null);
 
+  {/*lấy data của claims*/}
+  useEffect(() => {   
+    const fetchClaims = async () => {
+      try {
+        const params = {
+          searchCondition: {
+            keyword: "",
+            claim_start_date: "",
+            claim_end_date: "",
+            is_deleted: false,
+          },
+          pageInfo: {
+            pageNum: 1,
+            pageSize: 10,
+          },
+        };
+        const data = await claimService.getAllClaims(params);
+        setClaims(data.pageData);      
+      } catch (error) {
+        console.error("Error fetching claims:", error);
+      }
+    };
+    fetchClaims();
+
+    const fetchPendingClaims = async () => {
+      try {
+        const params = {
+          searchCondition: {
+            keyword: "",
+            claim_status: "Pending Approval",
+            claim_start_date: "",
+            claim_end_date: "",
+            is_deleted: false,
+          },
+          pageInfo: {
+            pageNum: 1,
+            pageSize: 10,
+          },
+        };
+        const data = await claimService.getAllClaims(params);
+        setPendingClaims(data.pageData);      
+      } catch (error) {
+        console.error("Error fetching claims:", error);
+      }
+    };
+    fetchPendingClaims();
+
+
+  }, []);
+  console.log(claims)
+
+
+
+  console.log(pendingClaims)
+  
+  {/*lấy data của Projects*/}
+  useEffect(() => {   
+    const fetchProjects = async () => {
+      try {
+        const params = {
+          searchCondition: {
+            keyword: "",
+            claim_start_date: "",
+            claim_end_date: "",
+            is_deleted: false,
+          },
+          pageInfo: {
+            pageNum: 1,
+            pageSize: 10,
+          },
+        };
+        const data = await projectService.searchProjects(params);
+        setProjects(data.pageData);      
+      } catch (error) {
+        console.error("Error fetching claims:", error);
+      }
+    };
+    fetchProjects();
+  }, []);
+
+  console.log(projects)
+
+  {/*lấy data của Users*/}
+  useEffect(() => {   
+    const fetchUsers = async () => {
+      try {
+        const params = {
+          searchCondition: {
+            keyword: "",
+            claim_start_date: "",
+            claim_end_date: "",
+            is_deleted: false,
+          },
+          pageInfo: {
+            pageNum: 1,
+            pageSize: 10,
+          },
+        };
+        const data = await userService.searchUsers(params);
+        console.log(data)
+        setUsers(data.pageData);      
+      } catch (error) {
+        console.error("Error fetching claims:", error);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  console.log(users)
   const handleFilterChange = (value: string) => {
     setSelectedRange(value);
 
@@ -196,7 +338,7 @@ const AdminDashboard: React.FC = () => {
                   <Statistic
                     title={<span style={{ color: "white" }}>Total Users</span>}
                     className="font-bold"
-                    value={userStats}
+                    value={users.length}
                     prefix={<UserOutlined style={{ color: "white", 
                       backgroundColor:"#126896",
                       padding:"8px",
@@ -217,7 +359,7 @@ const AdminDashboard: React.FC = () => {
                   <Statistic
                     title={<span style={{ color: "white" }}>Total Claims</span>}
                     className="font-bold"
-                    value={claimStats.total}
+                    value={claims.length}
                     prefix={<FileTextOutlined style={{ color: "white", 
                       backgroundColor:"#c7920e",
                       padding:"9px",
@@ -237,7 +379,7 @@ const AdminDashboard: React.FC = () => {
                   <Statistic
                     title={<span style={{ color: "white" }}>Pending Claims</span>}
                     className="font-bold"
-                    value={claimStats.pending}
+                    value={pendingClaims.length}
                     prefix={<ClockCircleOutlined style={{ color: "white", 
                       backgroundColor:"#ba3a3a",
                       padding:"9px",
@@ -275,11 +417,10 @@ const AdminDashboard: React.FC = () => {
                   <Card title="Claim Request Overview">
                     <ResponsiveContainer width="100%" height={300} >
                       <BarChart data={claimsData}>
-                        <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="status" />
                         <YAxis />
-                        <Tooltip />
-                        <Bar dataKey="count" fill="#8884d8" />
+                        <Tooltip contentStyle={{ backgroundColor: "#fff", borderRadius: 8 }}/>
+                        <Bar dataKey="count" fill="#4faadb" barSize={40} radius={[5, 5, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   </Card>
@@ -335,7 +476,7 @@ const AdminDashboard: React.FC = () => {
                       <Statistic
                         title="Total Projects"
                         className="font-bold"
-                        value={projectStats}
+                        value={projects.length}
                         prefix={<ProjectOutlined style={{ color: "#2196f3" }} />}
                       />
                     </Card>
@@ -347,7 +488,7 @@ const AdminDashboard: React.FC = () => {
                       <Statistic
                         title="Ongoing Projects"
                         className="font-bold"
-                        value={projectStats}
+                        value={projects.length}
                         prefix={<CheckCircleOutlined style={{ color: "#ded26a" }} />}
                       />
                     </Card>
@@ -359,7 +500,7 @@ const AdminDashboard: React.FC = () => {
                       <Statistic
                         title="Completed Projects"
                         className="font-bold"
-                        value={projectStats}
+                        value={projects.length}
                         prefix={<CheckOutlined style={{ color: "#53d459" }} />}
                       />
                     </Card>
@@ -394,7 +535,7 @@ const AdminDashboard: React.FC = () => {
             </Row>
 <div className="mt-5">
             <Card
-            title="Claims Payout Trends"
+            title="Project Workload"
             style={{
               boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
             }}
@@ -409,10 +550,10 @@ const AdminDashboard: React.FC = () => {
   <LineChart data={financialData}>
     <CartesianGrid strokeDasharray="3 3" />
     <XAxis dataKey="month" />
-    <YAxis tickFormatter={(value) => `${value / 1000000}M`} />
+    <YAxis  />
     <Tooltip />
     <Legend />
-    <Line type="monotone" dataKey="claimsPaid" stroke="#8884d8" name="Claims Paid" />
+    <Line type="monotone" dataKey="Projects" stroke="#8884d8" name="Projects" />
   </LineChart>
 </ResponsiveContainer>
             </Card>
