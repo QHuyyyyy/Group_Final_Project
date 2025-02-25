@@ -1,12 +1,14 @@
 import { FC } from "react";
 
-type SearchBarProps = {
+interface SearchBarProps {
   onSearch: (query: string) => void;
-};
+  placeholder?: string;
+  style?: React.CSSProperties;
+}
 
 const SearchBar: FC<SearchBarProps> = ({ onSearch }) => {
   return (
-    <div className="mb-6 w-sm">  
+    <div className="w-sm">  
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <svg
