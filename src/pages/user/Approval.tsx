@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Table, Tag, Space, Button, Modal, Card } from "antd";
-import SearchBar from "../../components/common/SearchBar";
-import { CheckOutlined, CloseOutlined, UndoOutlined, ArrowLeftOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
+import { Table, Tag, Space, Button, Modal, Card, Input } from "antd";
+import { CheckOutlined, CloseOutlined, UndoOutlined } from "@ant-design/icons";
+
+const { Search } = Input;
 
 type Claim = {
   id: number;
@@ -123,7 +123,6 @@ function ApprovalPage() {
   const [, setSearchQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
-  const navigate = useNavigate();
 
   const filterClaims = (query: string, status: string) => {
     let filtered = DUMMY_CLAIMS.filter(claim => claim.status !== "Draft");
@@ -167,7 +166,13 @@ function ApprovalPage() {
   };
 
   const handleReturn = (id: number) => {
-    setClaims(prevClaims => prevClaims.filter(claim => claim.id !== id));
+    setClaims(prevClaims => {
+      const newClaims = prevClaims.filter(claim => claim.id !== id);
+      if (newClaims.length <= (currentPage - 1) * pageSize && currentPage > 1) {
+        setCurrentPage(currentPage - 1);
+      }
+      return newClaims;
+    });
   };
 
   const showConfirmation = (claim: Claim, type: "approve" | "reject" | "return") => {
@@ -204,17 +209,6 @@ function ApprovalPage() {
 
   return (
     <div className="container mx-auto px-2 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <Button 
-          type="default" 
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate('/dashboard')}
-          className="flex items-center"
-        >
-          Back to Dashboard
-        </Button>
-      </div>
-
       <Card className="shadow-md">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-800">Claim Approvals</h1>
@@ -222,10 +216,12 @@ function ApprovalPage() {
         
         <div className="overflow-auto custom-scrollbar">
           <div className="flex flex-wrap gap-4 items-center mb-5 mx-2">
-            <SearchBar 
-              onSearch={handleSearch} 
-              style={{ width: 250 }}
+            <Search
               placeholder="Search by Employee or Request ID"
+              onSearch={handleSearch}
+              onChange={(e) => handleSearch(e.target.value)}
+              style={{ width: 250 }}
+              allowClear
             />
           </div>
 
@@ -264,7 +260,7 @@ function ApprovalPage() {
               {
                 title: <span className="font-bold">Time</span>,
                 key: "time",
-                width: "10%",
+                width: "15%",
                 render: (_, record) => (
                   <div>
                     <div>
