@@ -1,52 +1,71 @@
-import { createContext, useState, ReactNode, useContext } from "react";
+import React, { createContext, useState, useContext, useEffect } from "react";
 import { useApiStore } from '../stores/apiStore';
 import { authService } from '../services/authService';
-
-interface User {
-  username: string;
-  role: string;
-}
+import { useUserStore } from "../stores/userStore";
 
 interface AuthContextType {
-  user: User | null;
-  login: (username: string, password: string) => Promise<void>;
+  token: string | null;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | null>(null);
 
-export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+export const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
   const { setLoading, setError } = useApiStore();
 
-  const login = async (username: string, password: string) => {
+  useEffect(() => {
+    const initializeAuth = async () => {
+
+      if (token) {
+        try {
+          setLoading(true);
+          const userInfo = await authService.getinfo();
+          useUserStore.getState().setUser(userInfo);
+        } catch (error) {
+          console.error("Lỗi khi khôi phục phiên đăng nhập:", error);
+          localStorage.removeItem("token");
+          useUserStore.getState().clearUser();
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    initializeAuth();
+  }, []);
+
+  const login = async (email: string, password: string): Promise<void> => {
     try {
       setLoading(true);
-      setError(null);
-      const response = await authService.login(username, password);
+      const response = await authService.login({ email, password });
+      setToken(response.token);
+      localStorage.setItem("token", response.token); 
+
+      const userInfo = await authService.getinfo();
       
-      if (response) {
-        setUser({
-          username: response.username,
-          role: response.role
-        });
-        localStorage.setItem('role', response.role);
-      }
-    } catch (error) {
-      setError('Invalid login credentials');
+      useUserStore.getState().setUser(userInfo);
+    } catch (error: any) {
+      setError(error.message);
       throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('role');
+  const logout  = async () => {
+    try {
+      await authService.logout(); 
+      localStorage.removeItem("token");
+      useUserStore.getState().clearUser(); 
+    } catch (error) {
+      console.error("Lỗi khi đăng xuất:", error);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{  token, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -55,7 +74,7 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within AuthContextProvider");
+    throw new Error('useAuth must be used within an AuthContextProvider');
   }
   return context;
 };

@@ -4,6 +4,9 @@ import { useLocation } from 'react-router-dom';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import Menu from '../../components/user/Menu';
 import NavbarAdminDashboard from '../../components/NavbarAdminDashboard';
+import { useUserStore } from '../../stores/userStore';
+import { useRoleMapping } from '../../hooks/useRoleMapping';
+import { useApiStore } from '../../stores/apiStore';
 
 interface Staff {
   id: string;
@@ -49,7 +52,9 @@ const claimStats: ClaimStats = {
 const Profile = () => {
   const location = useLocation();
   const isAdminDashboard = location.pathname === '/dashboard/profile';
-
+  const { getRoleName } = useRoleMapping();
+  const {isLoading} = useApiStore()
+  const user = useUserStore((state) => state);
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
@@ -77,11 +82,11 @@ const Profile = () => {
                             />
                            
                           </div>
-                          <h2 className="text-2xl font-bold mt-4 mb-1 text-gray-800">{staffData.name}</h2>
-                          <p className="text-gray-500 font-medium">{staffData.rank}</p>
+                          <h2 className="text-2xl font-bold mt-4 mb-1 text-gray-800">{user.user_name}</h2>
+                          <p className="text-gray-500 font-medium">{user.email}</p>
                           <Badge 
                             status="processing" 
-                            text={staffData.role}
+                            text={isLoading ? 'Loading...' : getRoleName(user.role_code)}
                             className="mt-3  bg-blue-50 text-blue-600 " 
                           />
                         </div>
@@ -89,7 +94,7 @@ const Profile = () => {
                         <div className="space-y-6">
                           <div className="flex items-center p-3 bg-gray-50 rounded-lg">
                             <span className="text-gray-500 w-24">Email:</span>
-                            <span className="text-gray-800 font-medium">{staffData.email}</span>
+                            <span className="text-gray-800 font-medium">{user.email}</span>
                           </div>
                           <div className="flex items-center p-3 bg-gray-50 rounded-lg">
                             <span className="text-gray-500 w-24">Phone:</span>
@@ -99,10 +104,7 @@ const Profile = () => {
                             <span className="text-gray-500 w-24">Department:</span>
                             <span className="text-gray-800 font-medium">{staffData.department}</span>
                           </div>
-                          <div className="flex items-center p-3 bg-gray-50 rounded-lg">
-                            <span className="text-gray-500 w-24">ID:</span>
-                            <span className="text-gray-800 font-medium">{staffData.id}</span>
-                          </div>
+                        
                         </div>
 
                         <div className="mt-8">
@@ -151,21 +153,7 @@ const Profile = () => {
                         </div>
 
                         {/* Account */}
-                        <Card 
-                          title="Payment Method" 
-                          className="shadow-md rounded-xl border-0"
-                          extra={<button className="text-blue-500 hover:text-blue-700">Edit</button>}
-                        >
-                          <div className="p-4 bg-gray-50 rounded-lg">
-                            <div className="flex justify-between items-center">
-                              <div>
-                                <p className="font-medium text-gray-800">Active Account</p>
-                                <p className="text-gray-500 text-sm mt-1">{staffData.id}</p>
-                              </div>
-                            
-                            </div>
-                          </div>
-                        </Card>
+                       
 
                         {/* Requests */}
                         <Card 
