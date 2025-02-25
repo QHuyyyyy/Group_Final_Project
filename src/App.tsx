@@ -82,20 +82,34 @@ const App = () => {
           </Route>
 
           {/* Admin Routes */}
-          <Route path='/dashboard/' element={<AdminRoute><AdminDashboard /></AdminRoute>}>
-            <Route path='project-manager' element={
-                <AdminProjectManager />
-            } />
-            <Route path='user-manager' element={
-                <AdminUserManager />
-            } />
-            <Route path='view-claim-request' element={
-                <ViewClaimRequest />
-            } />
-            <Route path='profile' element={
-                  <Profile />
-            } />
-          </Route>
+          <Route path='/dashboard' element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          } />
+
+          <Route path='/dashboard/project-manager' element={
+            <AdminRoute>
+              <AdminProjectManager />
+            </AdminRoute>
+          } />
+          <Route path='/dashboard/user-manager' element={
+            <AdminRoute>
+              <AdminUserManager />
+            </AdminRoute>
+          } />
+          <Route path='/dashboard/view-claim-request' element={
+            <AdminRoute>
+              <ViewClaimRequest />
+            </AdminRoute>
+          } />
+          <Route path='/dashboard/profile' element={
+            <AdminRoute>
+              <AdminRoute>
+                <Profile />
+              </AdminRoute>
+            </AdminRoute>
+          } />
 
           <Route path='*' element={<NotFound />} />
         </Routes>

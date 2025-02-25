@@ -10,7 +10,7 @@ const UserRoute = ({ children, allowedRoles }: UserRouteProps) => {
   const user = useUserStore((state) => state);
   
   if (!user || (user.role_code !== 'A002' && user.role_code !== 'A003' && user.role_code !== 'A004')) {
-    return <Navigate to="/error" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role_code)) {
