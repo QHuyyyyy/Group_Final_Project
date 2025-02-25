@@ -23,7 +23,7 @@ const Request = lazy(() => import('./pages/user/Request'));
 const Finance = lazy(() => import('./pages/user/Finance'));
 const RequestDetails = lazy(() => import('./pages/user/RequestDetails'));
 const IndustriesPage = lazy(() => import('./pages/InductriesPage'));
-
+const ViewClaimRequest = lazy(() => import('./pages/admin/ViewClaimRequest'));
 
 const Loading = () => (
   <div className="h-screen w-screen flex items-center justify-center">
@@ -116,6 +116,11 @@ const App = () => {
           <Route path='/dashboard/user-manager' element={
             <AdminRoute>
               <AdminUserManager />
+            </AdminRoute>
+          } />
+          <Route path='/dashboard/view-claim-request' element={
+            <AdminRoute>
+              <ViewClaimRequest />
             </AdminRoute>
           } />
           <Route path='/dashboard/profile' element={

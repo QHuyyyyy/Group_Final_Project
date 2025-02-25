@@ -3,7 +3,7 @@ import { Modal, Descriptions, Tag } from 'antd';
 
 interface Staff {
   username: string;
-  staffName: string;  // Thay đổi từ name thành staffName
+  fullName: string;  // Changed from staffName
   role: string;
   email: string;
   phone: string;
@@ -11,6 +11,7 @@ interface Staff {
   jobRank: string;
   salary: number;
   createdAt: string;
+  updated_at: string;
   address: string;
 }
 
@@ -35,8 +36,8 @@ const StaffDetails: React.FC<StaffDetailsProps> = ({ visible, staff, onClose }) 
           <Descriptions.Item label="Username" span={1}>
             {staff?.username}
           </Descriptions.Item>
-          <Descriptions.Item label="Staff Name" span={1}>
-            {staff?.staffName}  {/* Thay đổi từ name thành staffName */}
+          <Descriptions.Item label="Full Name" span={1}>
+            {staff?.fullName}  {/* Changed from staffName */}
           </Descriptions.Item>
           <Descriptions.Item label="Role" span={1}>
             <Tag color={
@@ -62,8 +63,11 @@ const StaffDetails: React.FC<StaffDetailsProps> = ({ visible, staff, onClose }) 
           <Descriptions.Item label="Salary" span={1}>
             ${staff?.salary?.toLocaleString()}
           </Descriptions.Item>
-          <Descriptions.Item label="Created At" span={2}>
+          <Descriptions.Item label="Created At" span={1}>
             {staff?.createdAt}
+          </Descriptions.Item>
+          <Descriptions.Item label="Updated At" span={1}>
+            {staff?.updated_at}
           </Descriptions.Item>
           <Descriptions.Item label="Address" span={2}>
             {staff?.address}
