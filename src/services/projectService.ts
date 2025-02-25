@@ -74,7 +74,7 @@ const projectService = {
   // Tìm kiếm dự án với phân trang
   searchProjects: async (params: SearchParams = { 
     searchCondition: {}, 
-    pageInfo: { pageNum: 1, pageSize: 10 } 
+    pageInfo: { pageNum: 1, pageSize: 10, totalItems: 0, totalPages: 0 } 
   }): Promise<SearchResponse> => {
     console.log('Calling searchProjects with params:', params);
     const response = await api.post('/api/projects/search', {
@@ -90,7 +90,7 @@ const projectService = {
       }
     });
     console.log('API response in service:', response);
-    return response;
+    return response.data;
   },
 
   // Lấy thông tin dự án theo ID

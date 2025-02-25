@@ -230,7 +230,7 @@ const AdminProjectManager: React.FC = () => {
       const response = await projectService.getProjectById(record._id);
       console.log('Project details response:', response);
       
-      if (response.success) {
+      if (response) {
         setSelectedProject(response.data);
         setIsModalVisible(true);
       } else {
