@@ -1,27 +1,26 @@
 import { Button, Typography, Form, Input } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { MailOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useApiStore } from '../../stores/apiStore';
-import { useAuth } from '../../contexts/AuthContext';
+import { authService } from '../../services/authService';
 import { toast } from 'react-toastify';
 import loginBackground from '../../assets/login-background.png';
 
 const { Title } = Typography;
 
-export default function Login() {
+export default function ForgotPassword() {
   const [form] = Form.useForm();
   const navigate = useNavigate();
-  const { login } = useAuth();
   const { isLoading } = useApiStore();
 
 
-  const handleSubmit = async (values: { email: string; password: string }) => {
+  const handleSubmit = async (values: { email: string }) => {
     try {
-      await login(values.email, values.password);
-      toast.success('Đăng nhập thành công!');
-      navigate('/');
+      await authService.forgotPassword(values.email);
+      toast.success('Please check your email to reset your password!');
+      navigate('/login');
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Lỗi đăng nhập');
+      toast.error(error.response?.data?.message || 'Error');
     }
   };
 
@@ -38,10 +37,10 @@ export default function Login() {
         <div className="bg-white/30 backdrop-blur-md rounded-2xl shadow-2xl p-8 space-y-8 border border-white/20">
           <div className="text-center space-y-2">
             <Title level={2} className="!text-white !m-0 !font-bold tracking-wide">
-              Welcome Back
+              Forgot Password
             </Title>
             <p className="text-white/80 text-lg font-medium">
-              Sign in to continue to your account 
+              Enter your email to reset password
             </p>
           </div>
 
@@ -53,40 +52,19 @@ export default function Login() {
           >
             <Form.Item
               name="email"
-              rules={[{ required: true, message: 'Vui lòng nhập email!' }]}
+              rules={[
+                { required: true, message: 'Please input email!' },
+                { type: 'email', message: 'Email not valid!' }
+              ]}
             >
               <Input 
-                prefix={<UserOutlined className="text-white/60" />}
+                prefix={<MailOutlined className="text-white/60" />}
                 placeholder="Email"
                 size="large"
                 className="h-12 bg-white/20 border-white/30 text-white placeholder:text-white/60
                   focus:bg-white/30 hover:bg-white/30 transition-all"
               />
             </Form.Item>
-
-            <Form.Item
-              name="password"
-              rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
-            >
-              <Input.Password
-                prefix={<LockOutlined className="text-white/60" />}
-                placeholder="Mật khẩu" 
-                size="large"
-                className="h-12 bg-white/20 border-white/30 text-white placeholder:text-white/60
-                  focus:bg-white/30 hover:bg-white/30 transition-all"
-              />
-            </Form.Item>
-
-            <div className="mb-4 right-0 flex flex-end">
-              <Button 
-                type="link" 
-                onClick={() => navigate('/forgot-password')}
-                className="text-white/80 hover:text-white font-medium transition-all duration-200
-                  hover:scale-105 transform absolute "
-              >
-               Forgot Password?
-              </Button>
-            </div>
 
             <Form.Item>
               <Button
@@ -99,12 +77,22 @@ export default function Login() {
                   shadow-lg hover:shadow-xl transition-all duration-200 
                   text-base font-semibold tracking-wide"
               >
-                Sign in
+                Send request
               </Button>
             </Form.Item>
+
+            <div className="text-center">
+              <Button 
+                type="link" 
+                onClick={() => navigate('/login')}
+                className="text-white/80 hover:text-white"
+              >
+                Back to Login
+              </Button>
+            </div>
           </Form>
         </div>
       </div>
     </div>
   );
-} 
+}

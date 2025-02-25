@@ -20,7 +20,7 @@ import StaffDetails from '../../components/admin/StaffDetails';
 interface StaffMember {
   key: string;
   username: string;
-  staffName: string;
+  fullName: string;
   password: string;
   confirmPassword: string;
   department: string;
@@ -29,8 +29,9 @@ interface StaffMember {
   email: string;
   phone: string;
   address: string;
-  isLocked: boolean;
+  is_blocked: boolean;
   createdAt: string;
+  updated_at: string;
   role: string;
 }
 
@@ -45,7 +46,7 @@ const AdminUserManager: React.FC = () => {
     {
       key: '1',
       username: 'johndoe',
-      staffName: 'John Doe',
+      fullName: 'John Doe',
       password: 'password123',
       confirmPassword: 'password123',
       department: 'IT',
@@ -54,14 +55,15 @@ const AdminUserManager: React.FC = () => {
       email: 'john.doe@example.com',
       phone: '0123456789',
       address: '123 Main St, City',
-      isLocked: false,
+      is_blocked: false,
       createdAt: '2025-02-13',
+      updated_at: '2025-02-13',
       role: 'Developer'
     },
     {
       key: '2',
       username: 'janesmith',
-      staffName: 'Jane Smith',
+      fullName: 'Jane Smith',
       password: 'password456',
       confirmPassword: 'password456',
       department: 'HR',
@@ -70,8 +72,9 @@ const AdminUserManager: React.FC = () => {
       email: 'jane.smith@example.com',
       phone: '0987654321',
       address: '456 Park Ave, Town',
-      isLocked: false,
+      is_blocked: false,
       createdAt: '2025-02-13',
+      updated_at: '2025-02-13',
       role: 'Manager'
     }
   ]);
@@ -114,14 +117,14 @@ const AdminUserManager: React.FC = () => {
     if (editingRecord) {
       setStaffData(prev => prev.map(staff => 
         staff.key === editingRecord.key 
-          ? { ...formattedValues, key: staff.key, isLocked: staff.isLocked }
+          ? { ...formattedValues, key: staff.key, is_blocked: staff.is_blocked }
           : staff
       ));
     } else {
       const newStaff = {
         ...formattedValues,
         key: Date.now().toString(),
-        isLocked: false,
+        is_blocked: false,
         createdAt: dayjs().format('YYYY-MM-DD')
       };
       setStaffData(prev => [...prev, newStaff]);
@@ -143,9 +146,9 @@ const AdminUserManager: React.FC = () => {
     setStaffData(newData);
   };
 
-  const handleLockToggle = (record: StaffMember) => {
+  const handleBlockToggle = (record: StaffMember) => {
     const newData = staffData.map(item =>
-      item.key === record.key ? { ...item, isLocked: !item.isLocked } : item
+      item.key === record.key ? { ...item, is_blocked: !item.is_blocked } : item
     );
     setStaffData(newData);
   };
@@ -169,13 +172,13 @@ const AdminUserManager: React.FC = () => {
       title: 'Username',
       dataIndex: 'username',
       key: 'username',
-      width: 130,
+      width: 120,
     },
     {
       title: 'Role',
       dataIndex: 'role',
       key: 'role',
-      width: 120,
+      width: 100,
       render: (role: string) => (
         <Tag color={
           role === 'Manager' ? 'blue' :
@@ -191,18 +194,25 @@ const AdminUserManager: React.FC = () => {
       title: 'Department',
       dataIndex: 'department',
       key: 'department',
-      width: 150,
+      width: 100,
     },
     {
       title: 'Job Rank',
       dataIndex: 'jobRank',
       key: 'jobRank',
-      width: 150,
+      width: 130,
     },
     {
       title: 'Created At',
       dataIndex: 'createdAt',
       key: 'createdAt',
+      width: 120,
+      render: (date: string) => dayjs(date).format('YYYY-MM-DD')
+    },
+    {
+      title: 'Updated At',
+      dataIndex: 'updated_at',
+      key: 'updated_at',
       width: 120,
       render: (date: string) => dayjs(date).format('YYYY-MM-DD')
     },
@@ -223,7 +233,7 @@ const AdminUserManager: React.FC = () => {
             type="text" 
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
-            disabled={record.isLocked}
+            disabled={record.is_blocked}
             className="text-gray-600 hover:text-gray-800"
           />
           <Popconfirm
@@ -231,7 +241,7 @@ const AdminUserManager: React.FC = () => {
             onConfirm={() => handleDelete(record.key)}
             okText="Yes"
             cancelText="No"
-            disabled={record.isLocked}
+            disabled={record.is_blocked}
           >
             <Button 
               type="text" 
@@ -241,9 +251,9 @@ const AdminUserManager: React.FC = () => {
           </Popconfirm>
           <Button
             type="text"
-            icon={record.isLocked ? <LockOutlined /> : <UnlockOutlined />}
-            onClick={() => handleLockToggle(record)}
-            className={record.isLocked ? 'text-red-500' : 'text-green-500'}
+            icon={record.is_blocked ? <LockOutlined /> : <UnlockOutlined />}
+            onClick={() => handleBlockToggle(record)}
+            className={record.is_blocked ? 'text-red-500' : 'text-green-500'}
           />
         </Space>
       ),
@@ -252,7 +262,7 @@ const AdminUserManager: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <SideBarAdminUser onAddUser={handleAdd} />
+      <SideBarAdminUser  onAddUser={handleAdd} />
       <div className="flex-1 ml-64 p-8">
         <div className="flex items-center justify-between mb-6">
           <Button 
@@ -332,6 +342,25 @@ const AdminUserManager: React.FC = () => {
                   </Form.Item>
 
                   <Form.Item
+                    name="email"
+                    label="Email"
+                    rules={[
+                      { required: true, message: 'Please input email!' },
+                      { type: 'email', message: 'Please enter a valid email!' }
+                    ]}
+                  >
+                    <Input />
+                  </Form.Item>
+
+                  <Form.Item
+                    name="role_code"
+                    label="Role Code"
+                    rules={[{ required: true, message: 'Please input role code!' }]}
+                  >
+                    <Input />
+                  </Form.Item>
+
+                  <Form.Item
                     name="password"
                     label="Password"
                     rules={[
@@ -372,8 +401,8 @@ const AdminUserManager: React.FC = () => {
                 </Form.Item>
 
                 <Form.Item
-                  name="staffName"
-                  label="Staff Name"
+                  name="fullName"
+                  label="Full Name"
                 >
                   <Input />
                 </Form.Item>

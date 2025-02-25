@@ -8,6 +8,7 @@ import AboutUs from './pages/AboutUs';
 
 import Services from './pages/user/Services';
 import ContactUs from './pages/Contactus';
+import ForgotPassword from './components/common/ForgotPassword';
 
 
 // Lazy load components
@@ -23,7 +24,7 @@ const Request = lazy(() => import('./pages/user/Request'));
 const Finance = lazy(() => import('./pages/user/Finance'));
 const RequestDetails = lazy(() => import('./pages/user/RequestDetails'));
 const IndustriesPage = lazy(() => import('./pages/InductriesPage'));
-
+const ViewClaimRequest = lazy(() => import('./pages/admin/ViewClaimRequest'));
 
 const Loading = () => (
   <div className="h-screen w-screen flex items-center justify-center">
@@ -43,7 +44,7 @@ const App = () => {
 
           <Route path='/aboutus' element={<AboutUs />} />
           <Route path='/services' element={<Services />} />
-
+          <Route path='/forgot-password' element={<ForgotPassword />} />
           <Route path='/login' element={<Login />} />
           <Route path='/contactus' element={<ContactUs />} />
           {/* User Dashboard Routes */}
@@ -116,6 +117,11 @@ const App = () => {
           <Route path='/dashboard/user-manager' element={
             <AdminRoute>
               <AdminUserManager />
+            </AdminRoute>
+          } />
+          <Route path='/dashboard/view-claim-request' element={
+            <AdminRoute>
+              <ViewClaimRequest />
             </AdminRoute>
           } />
           <Route path='/dashboard/profile' element={
