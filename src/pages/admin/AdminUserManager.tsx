@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Card, Table, Button, Form, Input, InputNumber, Modal, Popconfirm, Select, Space, Tag } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Card, Table, Button, Form, Input, Modal, Popconfirm, Select, Space, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import 'antd/dist/reset.css';
 import SideBarAdminUser from '../../components/admin/SideBarAdminUser';  
@@ -20,21 +20,28 @@ import { userService } from '../../services/userService';
 import { message } from 'antd';
 
 interface StaffMember {
-  key: string;
-  username: string;
-  fullName: string;
-  password: string;
-  confirmPassword: string;
-  department: string;
-  jobRank: string;
-  salary: number;
+  _id: string;
+  user_name: string;
   email: string;
-  phone: string;
-  address: string;
+  role_code: string;
   is_blocked: boolean;
-  createdAt: string;
+  is_verified: boolean;
+  created_at: string;
   updated_at: string;
-  role: string;
+  is_deleted: boolean;
+}
+interface SearchParams {
+  searchCondition: {
+    keyword: string;
+    role_code: string;
+    is_blocked: boolean;
+    is_delete: boolean;
+    is_verified: string;
+  };
+  pageInfo: {
+    pageNum: number;
+    pageSize: number;
+  };
 }
 
 const AdminUserManager: React.FC = () => {
@@ -49,6 +56,61 @@ const AdminUserManager: React.FC = () => {
   const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<any>(null);
   const [searchText, setSearchText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0
+  });
+
+  useEffect(() => {
+    fetchUsers();
+  }, [pagination.current, pagination.pageSize, searchText]);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const params: SearchParams = {
+        searchCondition: {
+          keyword: searchText || "",
+          role_code: "",
+          is_blocked: false,
+          is_delete: false,
+          is_verified: ""
+        },
+        pageInfo: {
+          pageNum: pagination.current,
+          pageSize: pagination.pageSize
+        }
+      };
+
+      const response = await userService.searchUsers(params);
+      console.log('Search response:', response);
+      
+      if (response && response.pageData) {
+        setStaffData(response.pageData);
+        setPagination(prev => ({
+          ...prev,
+          total: response.total || 0
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      message.error('An error occurred while fetching users.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Add a debounced search handler
+  const handleSearch = (value: string) => {
+    setSearchText(value);
+    // Reset to first page when searching
+    setPagination(prev => ({
+      ...prev,
+      current: 1
+    }));
+  };
 
   const handleAdd = () => {
     setIsAdding(true);
@@ -62,7 +124,7 @@ const AdminUserManager: React.FC = () => {
     setEditingRecord(record);
     form.setFieldsValue({
       ...record,
-      createdAt: dayjs(record.createdAt)
+      createdAt: dayjs(record.created_at)
     });
     setIsModalVisible(true);
   };
@@ -70,48 +132,60 @@ const AdminUserManager: React.FC = () => {
   const handleSave = async (values: any) => {
     try {
       if (isAdding) {
-        // Create new user
+        // Show loading message
+        const loadingMessage = message.loading('Creating user...', 0);
+        
+        // Validate and format the data
         const userData = {
-          email: values.email,
+          email: values.email.trim(),
           password: values.password,
-          user_name: values.username,
-          role_code: values.role_code
+          user_name: values.user_name.trim(),
+          role_code: values.role_code.trim()
         };
 
-        const response = await userService.createUser(userData);
-        
-        if (response) {
-          message.success('User created successfully');
-          // Refresh the user list after creating
-          // You might want to call your search/list API here
-          setIsModalVisible(false);
-          form.resetFields();
+        // Add validation
+        if (!userData.email || !userData.password || !userData.user_name || !userData.role_code) {
+          loadingMessage();
+          message.error('Please fill in all required fields');
+          return;
+        }
+
+        try {
+          const response = await userService.createUser(userData);
+          loadingMessage();
+          
+          if (response && response.data) {
+            message.success('User created successfully');
+            setIsModalVisible(false);
+            form.resetFields();
+            fetchUsers();
+          }
+        } catch (apiError: any) {
+          loadingMessage();
+          if (apiError.response?.status === 400) {
+            message.error(apiError.response?.data?.message || 'Invalid user data. Please check your inputs.');
+          } else {
+            message.error('An error occurred while creating the user.');
+          }
         }
       } else {
         // Handle edit case
         const formattedValues = {
           ...values,
-          department: values.department,
-          jobRank: values.jobRank,
-          salary: Number(values.salary),
-          email: values.email,
-          phone: values.phone,
-          address: values.address,
-          role: values.role,
           createdAt: values.createdAt ? dayjs(values.createdAt).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
           confirmPassword: values.confirmPassword
         };
 
         if (editingRecord) {
           setStaffData(prev => prev.map(staff => 
-            staff.key === editingRecord.key 
-              ? { ...formattedValues, key: staff.key, is_blocked: staff.is_blocked }
+            staff._id === editingRecord._id 
+              ? { ...formattedValues, _id: staff._id, is_blocked: staff.is_blocked }
               : staff
           ));
         } else {
           const newStaff = {
             ...formattedValues,
-            key: Date.now().toString(),
+            _id: Date.now().toString(),
             is_blocked: false,
             createdAt: dayjs().format('YYYY-MM-DD')
           };
@@ -135,13 +209,13 @@ const AdminUserManager: React.FC = () => {
   };
 
   const handleDelete = (key: string) => {
-    const newData = staffData.filter(item => item.key !== key);
+    const newData = staffData.filter(item => item._id !== key);
     setStaffData(newData);
   };
 
   const handleBlockToggle = (record: StaffMember) => {
     const newData = staffData.map(item =>
-      item.key === record.key ? { ...item, is_blocked: !item.is_blocked } : item
+      item._id === record._id ? { ...item, is_blocked: !item.is_blocked } : item
     );
     setStaffData(newData);
   };
@@ -156,21 +230,23 @@ const AdminUserManager: React.FC = () => {
     setSelectedStaff(null);
   };
 
-  const filteredStaffData = staffData.filter(staff => 
-    staff.username.toLowerCase().includes(searchText.toLowerCase())
-  );
-
   const columns: ColumnsType<StaffMember> = [
     {
+      title: 'No.',
+      key: 'index',
+      render: (_, __, index) => index + 1,
+      width: 50,
+    },
+    {
       title: 'Username',
-      dataIndex: 'username',
-      key: 'username',
+      dataIndex: 'user_name',
+      key: 'user_name',
       width: 120,
     },
     {
       title: 'Role',
-      dataIndex: 'role',
-      key: 'role',
+      dataIndex: 'role_code',
+      key: 'role_code',
       width: 100,
       render: (role: string) => (
         <Tag color={
@@ -184,21 +260,9 @@ const AdminUserManager: React.FC = () => {
       )
     },
     {
-      title: 'Department',
-      dataIndex: 'department',
-      key: 'department',
-      width: 100,
-    },
-    {
-      title: 'Job Rank',
-      dataIndex: 'jobRank',
-      key: 'jobRank',
-      width: 130,
-    },
-    {
       title: 'Created At',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
+      dataIndex: 'created_at',
+      key: 'created_at',
       width: 120,
       render: (date: string) => dayjs(date).format('YYYY-MM-DD')
     },
@@ -208,6 +272,17 @@ const AdminUserManager: React.FC = () => {
       key: 'updated_at',
       width: 120,
       render: (date: string) => dayjs(date).format('YYYY-MM-DD')
+    },
+    {
+      title: 'Verified',
+      dataIndex: 'is_verified',
+      key: 'is_verified',
+      width: 100,
+      render: (verified: boolean) => (
+        <Tag color={verified ? 'success' : 'warning'}>
+          {verified ? 'Verified' : 'Unverified'}
+        </Tag>
+      )
     },
     {
       title: 'Actions',
@@ -231,7 +306,7 @@ const AdminUserManager: React.FC = () => {
           />
           <Popconfirm
             title="Do you want to delete this staff member?"
-            onConfirm={() => handleDelete(record.key)}
+            onConfirm={() => handleDelete(record._id)}
             okText="Yes"
             cancelText="No"
             disabled={record.is_blocked}
@@ -271,7 +346,7 @@ const AdminUserManager: React.FC = () => {
             placeholder="Search by name..."
             prefix={<SearchOutlined className="text-gray-400" />}
             value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
             style={{ width: 300 }}
             className="ml-4"
           />
@@ -284,11 +359,20 @@ const AdminUserManager: React.FC = () => {
           <div className="overflow-auto custom-scrollbar">
             <Table 
               columns={columns} 
-              dataSource={filteredStaffData}
-              rowKey="key"
+              dataSource={staffData}
+              rowKey="_id"
+              loading={loading}
               pagination={{
-                pageSize: 10,
-                total: filteredStaffData.length,
+                current: pagination.current,
+                pageSize: pagination.pageSize,
+                total: pagination.total,
+                onChange: (page, pageSize) => {
+                  setPagination(prev => ({
+                    ...prev,
+                    current: page,
+                    pageSize: pageSize || 10
+                  }));
+                },
                 showSizeChanger: true,
                 showQuickJumper: true,
               }}
@@ -318,8 +402,7 @@ const AdminUserManager: React.FC = () => {
             layout="vertical"
             onFinish={handleSave}
             initialValues={{
-              role: 'Employee',
-              salary: '',
+              role_code: 'Employee',
               createdAt: dayjs(),
             }}
           >
@@ -327,7 +410,7 @@ const AdminUserManager: React.FC = () => {
               <div className="flex flex-col items-center gap-4 w-full">
                 <div className="w-full max-w-md">
                   <Form.Item
-                    name="username"
+                    name="user_name"
                     label="Username"
                     rules={[{ required: true, message: 'Please input username!' }]}
                   >
@@ -387,21 +470,14 @@ const AdminUserManager: React.FC = () => {
             ) : (
               <div className="grid grid-cols-2 gap-4">
                 <Form.Item
-                  name="username"
+                  name="user_name"
                   label="Username"
                 >
                   <Input disabled className="bg-gray-100" />
                 </Form.Item>
 
                 <Form.Item
-                  name="fullName"
-                  label="Full Name"
-                >
-                  <Input />
-                </Form.Item>
-
-                <Form.Item
-                  name="role"
+                  name="role_code"
                   label="Role"
                 >
                   <Select>
@@ -412,52 +488,15 @@ const AdminUserManager: React.FC = () => {
                 </Form.Item>
 
                 <Form.Item
-                  name="department"
-                  label="Department"
+                  name="createdAt"
+                  label="Created At"
                 >
-                  <Input />
-                </Form.Item>
-
-                <Form.Item
-                  name="jobRank"
-                  label="Job Rank"
-                >
-                  <Input />
-                </Form.Item>
-
-                <Form.Item
-                  name="salary"
-                  label="Salary"
-                  
-                >
-                  <InputNumber
-                    style={{ width: '100%' }}
-                    formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={value => value!.replace(/\$\s?|(,*)/g, '')}
-                  />
+                  <Input disabled className="bg-gray-100" />
                 </Form.Item>
 
                 <Form.Item
                   name="email"
                   label="Email"
-                  // rules={[
-                  //   { required: true, message: 'Please input email!' },
-                  //   { type: 'email', message: 'Please enter a valid email!' }
-                  // ]}
-                >
-                  <Input />
-                </Form.Item>
-
-                <Form.Item
-                  name="phone"
-                  label="Phone"
-                >
-                  <Input />
-                </Form.Item>
-
-                <Form.Item
-                  name="address"
-                  label="Address"
                 >
                   <Input />
                 </Form.Item>
