@@ -5,11 +5,10 @@ import UserRoute from './routes/UserRoute';
 import RoleBasedRoute from './routes/RoleBasedRoute';
 import TransactionPage from './pages/user/Transaction';
 import AboutUs from './pages/AboutUs';
-
 import Services from './pages/user/Services';
 import ContactUs from './pages/Contactus';
 import ForgotPassword from './components/common/ForgotPassword';
-
+import { RoutePermissions } from './routes/RoutePermissions';
 
 // Lazy load components
 const Homepage = lazy(() => import('./pages/Homepage'));
@@ -38,10 +37,7 @@ const App = () => {
       <Suspense fallback={<Loading />}>
         <Routes>
           <Route path='/' element={<Homepage />} />
-
           <Route path='/industries' element={<IndustriesPage />} />
-
-
           <Route path='/aboutus' element={<AboutUs />} />
           <Route path='/services' element={<Services />} />
           <Route path='/forgot-password' element={<ForgotPassword />} />
@@ -57,28 +53,30 @@ const App = () => {
           </Route>
           {/* User Dashboard Routes */}
           <Route path='/userdashboard/' element={<UserRoute><UserDashBoard /></UserRoute>}>
-
             <Route path="transaction" element={
-
               <UserRoute>
-                <TransactionPage />
+                <RoleBasedRoute allowedRoles={RoutePermissions.transaction}>
+                  <TransactionPage />
+                </RoleBasedRoute>
               </UserRoute>
             } />
             <Route path="approvals" element={
               <UserRoute>
-                <RoleBasedRoute allowedRoles={['approver']}>
+                <RoleBasedRoute allowedRoles={RoutePermissions.approvals}>
                   <ApprovalPage />
                 </RoleBasedRoute>
               </UserRoute>
             } />
             <Route path="claimrequest" element={
               <UserRoute>
-                <Request />
+                <RoleBasedRoute allowedRoles={RoutePermissions.claimrequest}>
+                  <Request />
+                </RoleBasedRoute>
               </UserRoute>
             } />
             <Route path="finance" element={
               <UserRoute>
-                <RoleBasedRoute allowedRoles={['finance']}>
+                <RoleBasedRoute allowedRoles={RoutePermissions.finance}>
                   <Finance />
                 </RoleBasedRoute>
               </UserRoute>
@@ -90,9 +88,9 @@ const App = () => {
             } />
             <Route path="profile" element={
               <UserRoute>
-
-                <Profile />
-
+                <RoleBasedRoute allowedRoles={RoutePermissions.profile}>
+                  <Profile />
+                </RoleBasedRoute>
               </UserRoute>
             } />
             {/* <Route path="create-request" element={
