@@ -16,7 +16,7 @@ const Header = () => {
   };
   
   const user = useUserStore((state) => state);
-
+  const {token} = useAuth();
   const role = user.role_code;
   useEffect(() => {
     if (role == "A001") {
@@ -68,7 +68,7 @@ const Header = () => {
         </div>
         {/* Login Button */}
         <div>
-          {user ? (
+          {token ? (
             <div className="flex items-center">
               <div
                 className="flex items-center space-x-2 cursor-pointer"
