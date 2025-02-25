@@ -3,6 +3,7 @@ import { MailOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useApiStore } from '../../stores/apiStore';
 import { authService } from '../../services/authService';
+import { toast } from 'react-toastify';
 import loginBackground from '../../assets/login-background.png';
 
 const { Title } = Typography;
@@ -11,15 +12,15 @@ export default function ForgotPassword() {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const { isLoading } = useApiStore();
-  const { message } = App.useApp();
+
 
   const handleSubmit = async (values: { email: string }) => {
     try {
       await authService.forgotPassword(values.email);
-      message.success('Please check your email to reset your password!');
+      toast.success('Please check your email to reset your password!');
       navigate('/login');
     } catch (error: any) {
-      message.error(error.response?.data?.message || 'Error');
+      toast.error(error.response?.data?.message || 'Error');
     }
   };
 

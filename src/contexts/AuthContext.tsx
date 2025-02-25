@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, useEffect } from "react";
 import { useApiStore } from '../stores/apiStore';
 import { authService } from '../services/authService';
 import { useUserStore } from "../stores/userStore";
+import { toast } from 'react-toastify';
 
 interface AuthContextType {
   token: string | null;

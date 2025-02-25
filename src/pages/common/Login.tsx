@@ -1,8 +1,9 @@
-import { Button, Typography, Form, Input, App } from 'antd';
+import { Button, Typography, Form, Input } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useApiStore } from '../../stores/apiStore';
 import { useAuth } from '../../contexts/AuthContext';
+import { toast } from 'react-toastify';
 import loginBackground from '../../assets/login-background.png';
 
 const { Title } = Typography;
@@ -12,15 +13,15 @@ export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const { isLoading } = useApiStore();
-  const { message } = App.useApp();
+
 
   const handleSubmit = async (values: { email: string; password: string }) => {
     try {
       await login(values.email, values.password);
-      message.success('Login successful!');
+      toast.success('Đăng nhập thành công!');
       navigate('/');
     } catch (error: any) {
-      message.error(error.response?.data?.message || 'Login error');
+      toast.error(error.response?.data?.message || 'Lỗi đăng nhập');
     }
   };
 
