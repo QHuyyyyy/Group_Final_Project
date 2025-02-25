@@ -166,7 +166,13 @@ function ApprovalPage() {
   };
 
   const handleReturn = (id: number) => {
-    setClaims(prevClaims => prevClaims.filter(claim => claim.id !== id));
+    setClaims(prevClaims => {
+      const newClaims = prevClaims.filter(claim => claim.id !== id);
+      if (newClaims.length <= (currentPage - 1) * pageSize && currentPage > 1) {
+        setCurrentPage(currentPage - 1);
+      }
+      return newClaims;
+    });
   };
 
   const showConfirmation = (claim: Claim, type: "approve" | "reject" | "return") => {
