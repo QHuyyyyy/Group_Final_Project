@@ -262,7 +262,7 @@ const AdminUserManager: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <SideBarAdminUser onAddUser={handleAdd} />
+      <SideBarAdminUser  onAddUser={handleAdd} />
       <div className="flex-1 ml-64 p-8">
         <div className="flex items-center justify-between mb-6">
           <Button 
