@@ -1,50 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SideBarAdminProject from '../../components/admin/SideBarAdminProject';
-import { Card, Table, Tag, Space, Button, Modal, Descriptions, Form, Input, Select, DatePicker } from 'antd';
+import { Card, Table, Tag, Space, Button, Modal, Descriptions, Form, Input, Select, DatePicker, message, Spin, Empty } from 'antd';
 import { EditOutlined, DeleteOutlined, EyeOutlined, StarOutlined, StarFilled, ArrowLeftOutlined, SearchOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-
-// Cập nhật mock data
-const mockProjects = [
-  {
-    id: '1',
-    code: 'PRJ001',
-    name: 'Project Alpha',
-    status: 'In Progress',
-    from: dayjs().format('YYYY-MM-DD'),
-    to: dayjs().add(3, 'month').format('YYYY-MM-DD'),
-    priority: 'High',
-    // Giữ lại thông tin chi tiết để dùng trong modal
-    details: {
-      pm: 'Nguyễn Văn A',
-      qa: 'Trần Thị B',
-      technicalLead: 'Lê Văn C',
-      ba: 'Phạm Thị D',
-      developers: ['Dev 1', 'Dev 2', 'Dev 3'],
-      testers: ['Test 1', 'Test 2'],
-      technicalConsultant: 'Hoàng Văn E',
-    }
-  },
-  {
-    id: '2',
-    code: 'PRJ002',
-    name: 'Project Beta',
-    status: 'Completed',
-    from: dayjs().add(1, 'week').format('YYYY-MM-DD'),
-    to: dayjs().add(2, 'month').format('YYYY-MM-DD'),
-    priority: 'Medium',
-    details: {
-      pm: 'Trần Văn X',
-      qa: 'Nguyễn Thị Y',
-      technicalLead: 'Phạm Văn Z',
-      ba: 'Lê Thị W',
-      developers: ['Dev 4', 'Dev 5'],
-      testers: ['Test 3'],
-      technicalConsultant: 'Vũ Văn K',
-    }
-  },
-];
+import projectService from '../../services/projectService';
 
 // Cập nhật lại danh sách nhân viên mẫu (chỉ có tên)
 const mockEmployees = [
@@ -74,10 +34,35 @@ interface SelectedEmployees {
   [key: string]: string[];
 }
 
+interface ProjectMember {
+  project_role: string;
+  user_id: string;
+  employee_id: string;
+  user_name: string;
+  full_name: string;
+}
+
+interface Project {
+  _id: string;
+  project_name: string;
+  project_code: string;
+  project_department: string;
+  project_description: string;
+  project_status: string;
+  project_start_date: string;
+  project_end_date: string;
+  project_comment: string | null;
+  project_members: ProjectMember[];
+  updated_by: string;
+  is_deleted: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 const AdminProjectManager: React.FC = () => {
   const navigate = useNavigate();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<any>(null);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [favoriteProjects, setFavoriteProjects] = useState<string[]>([]);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
@@ -93,6 +78,13 @@ const AdminProjectManager: React.FC = () => {
   });
   const [form] = Form.useForm();
   const [startDate, setStartDate] = useState<dayjs.Dayjs | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0
+  });
 
   // Hàm disabledStartDate
   const disabledStartDate = (current: dayjs.Dayjs) => {
@@ -117,108 +109,139 @@ const AdminProjectManager: React.FC = () => {
     }
   };
 
+  // Thêm useEffect để fetch data
+  useEffect(() => {
+    console.log('Component mounted or dependencies changed');
+    fetchProjects();
+  }, [pagination.current, pagination.pageSize, searchText]);
+
+  // Hàm fetch projects
+  const fetchProjects = async () => {
+    try {
+      setLoading(true);
+      console.log('Fetching projects with params:', {
+        searchText,
+        pagination: {
+          current: pagination.current,
+          pageSize: pagination.pageSize
+        }
+      });
+
+      const response = await projectService.searchProjects({
+        searchCondition: {
+          keyword: searchText,
+          is_delete: false
+        },
+        pageInfo: {
+          pageNum: pagination.current,
+          pageSize: pagination.pageSize
+        }
+      });
+
+      console.log('API Response:', response);
+
+      if (response.success) {
+        setProjects(response.data.pageData);
+        setPagination(prev => ({
+          ...prev,
+          total: response.data.pageInfo.totalItems
+        }));
+        console.log('Updated projects:', response.data.pageData);
+      }
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const columns = [
     {
       title: 'Project Code',
-      dataIndex: 'code',
-      key: 'code',
+      dataIndex: 'project_code',
+      key: 'project_code',
       width: 120,
-      render: (_: string, record: any) => (
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleToggleFavorite(record.id);
-            }}
-            className="text-gray-400 hover:text-yellow-500 transition-colors"
-          >
-            {favoriteProjects.includes(record.id) ? (
-              <StarFilled className="text-yellow-500" />
-            ) : (
-              <StarOutlined />
-            )}
-          </button>
-          <span>{record.code}</span>
-        </div>
-      ),
     },
     {
       title: 'Project Name',
-      dataIndex: 'name',
-      key: 'name',
+      dataIndex: 'project_name',
+      key: 'project_name',
       width: 200,
     },
     {
       title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
+      dataIndex: 'project_status',
+      key: 'project_status',
       width: 120,
       render: (status: string) => (
-        <Tag color={status === 'In Progress' ? 'blue' : 'green'}>
+        <Tag color={
+          status === 'New' ? 'blue' : 
+          status === 'Pending' ? 'orange' : 
+          'green'
+        }>
           {status}
         </Tag>
       ),
     },
     {
       title: 'From',
-      dataIndex: 'from',
-      key: 'from',
+      dataIndex: 'project_start_date',
+      key: 'project_start_date',
       width: 120,
+      render: (date: string) => dayjs(date).format('YYYY-MM-DD'),
     },
     {
       title: 'To',
-      dataIndex: 'to',
-      key: 'to',
+      dataIndex: 'project_end_date',
+      key: 'project_end_date',
       width: 120,
-    },
-    {
-      title: 'Priority',
-      dataIndex: 'priority',
-      key: 'priority',
-      width: 100,
-      render: (priority: string) => (
-        <Tag color={priority === 'High' ? 'red' : priority === 'Medium' ? 'orange' : 'green'}>
-          {priority}
-        </Tag>
-      ),
+      render: (date: string) => dayjs(date).format('YYYY-MM-DD'),
     },
     {
       title: 'Actions',
       key: 'actions',
-      fixed: 'right' as const,
       width: 150,
-      render: (_: any, record: any) => (
+      render: (_: any, record: Project) => (
         <Space size="middle">
           <Button 
             type="text" 
             icon={<EyeOutlined />}
             onClick={() => handleViewDetails(record)}
-            className="text-blue-600 hover:text-blue-800"
           />
           <Button 
             type="text" 
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
-            className="text-gray-600 hover:text-gray-800"
           />
           <Button 
             type="text" 
             danger 
             icon={<DeleteOutlined />}
+            onClick={() => handleDelete(record._id)}
           />
         </Space>
       ),
     },
   ];
 
-  // Lọc dự án theo project code
-  const filteredProjects = mockProjects.filter(project => 
-    project.code.toLowerCase().includes(searchText.toLowerCase())
-  );
-
-  const handleViewDetails = (record: any) => {
-    setSelectedProject(record);
-    setIsModalVisible(true);
+  const handleViewDetails = async (record: Project) => {
+    try {
+      setLoading(true);
+      const response = await projectService.getProjectById(record._id);
+      console.log('Project details response:', response);
+      
+      if (response.success) {
+        setSelectedProject(response.data);
+        setIsModalVisible(true);
+      } else {
+        message.error('Cannot get project details');
+      }
+    } catch (error) {
+      console.error('Error fetching project details:', error);
+      message.error('Error occurred while getting project details');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleModalClose = () => {
@@ -226,7 +249,7 @@ const AdminProjectManager: React.FC = () => {
     setSelectedProject(null);
   };
 
-  const handleEdit = (record: any) => {
+  const handleEdit = (record: Project) => {
     setSelectedProject(record);
     setIsEditModalVisible(true);
   };
@@ -296,7 +319,7 @@ const AdminProjectManager: React.FC = () => {
 
   const handleCreateSubmit = (values: any) => {
     const newProject = {
-      id: `PRJ${mockProjects.length + 1}`.padStart(6, '0'),
+      id: `PRJ${mockEmployees.length + 1}`.padStart(6, '0'),
       code: values.code,
       name: values.name,
       status: values.status,
@@ -359,7 +382,7 @@ const AdminProjectManager: React.FC = () => {
     <div className="flex min-h-screen bg-gray-100">
       <SideBarAdminProject 
         favoriteProjects={favoriteProjects}
-        projects={mockProjects}
+        projects={mockEmployees}
         onCreateProject={handleCreate}
       />
       <div className="flex-1 ml-64 p-8">
@@ -390,13 +413,18 @@ const AdminProjectManager: React.FC = () => {
           <div className="overflow-auto custom-scrollbar">
             <Table 
               columns={columns} 
-              dataSource={filteredProjects}
-              rowKey="id"
+              dataSource={projects}
+              rowKey="_id"
+              loading={loading}
               pagination={{
-                pageSize: 10,
-                total: filteredProjects.length,
-                showSizeChanger: true,
-                showQuickJumper: true,
+                ...pagination,
+                onChange: (page, pageSize) => {
+                  setPagination(prev => ({
+                    ...prev,
+                    current: page,
+                    pageSize: pageSize || 10
+                  }));
+                }
               }}
               className="overflow-hidden"
             />
@@ -411,52 +439,71 @@ const AdminProjectManager: React.FC = () => {
           footer={null}
           width={800}
         >
-          {selectedProject && (
+          {loading ? (
+            <div className="text-center py-4">
+              <Spin />
+            </div>
+          ) : selectedProject ? (
             <Descriptions bordered column={2} className="mt-4">
               <Descriptions.Item label="Project Code" span={1}>
-                {selectedProject.code}
+                {selectedProject.project_code}
               </Descriptions.Item>
               <Descriptions.Item label="Project Name" span={1}>
-                {selectedProject.name}
+                {selectedProject.project_name}
+              </Descriptions.Item>
+              <Descriptions.Item label="Department" span={2}>
+                {selectedProject.project_department}
+              </Descriptions.Item>
+              <Descriptions.Item label="Description" span={2}>
+                {selectedProject.project_description}
               </Descriptions.Item>
               <Descriptions.Item label="Status" span={1}>
-                <Tag color={selectedProject.status === 'In Progress' ? 'blue' : 'green'}>
-                  {selectedProject.status}
+                <Tag color={
+                  selectedProject.project_status === 'New' ? 'blue' : 
+                  selectedProject.project_status === 'Pending' ? 'orange' : 
+                  selectedProject.project_status === 'Completed' ? 'green' : 'default'
+                }>
+                  {selectedProject.project_status}
                 </Tag>
               </Descriptions.Item>
-              <Descriptions.Item label="Priority" span={1}>
-                <Tag color={selectedProject.priority === 'High' ? 'red' : selectedProject.priority === 'Medium' ? 'orange' : 'green'}>
-                  {selectedProject.priority}
-                </Tag>
+              <Descriptions.Item label="Start Date" span={1}>
+                {dayjs(selectedProject.project_start_date).format('DD/MM/YYYY')}
               </Descriptions.Item>
-              <Descriptions.Item label="From" span={1}>
-                {selectedProject.from}
+              <Descriptions.Item label="End Date" span={1}>
+                {dayjs(selectedProject.project_end_date).format('DD/MM/YYYY')}
               </Descriptions.Item>
-              <Descriptions.Item label="To" span={1}>
-                {selectedProject.to}
+              <Descriptions.Item label="Comments" span={2}>
+                {selectedProject.project_comment || 'No comments'}
               </Descriptions.Item>
-              <Descriptions.Item label="Project Manager" span={2}>
-                {selectedProject.details.pm}
+              
+              {/* Project Members Section */}
+              <Descriptions.Item label="Project Members" span={2}>
+                <div className="space-y-2">
+                  {selectedProject.project_members.map((member, index) => (
+                    <div key={index} className="flex items-center justify-between border-b pb-2">
+                      <span className="font-medium">{member.project_role}:</span>
+                      <span>{member.full_name || member.user_name}</span>
+                    </div>
+                  ))}
+                </div>
               </Descriptions.Item>
-              <Descriptions.Item label="Quality Assurance" span={2}>
-                {selectedProject.details.qa}
+
+              {/* Additional Information */}
+              <Descriptions.Item label="Created At" span={1}>
+                {dayjs(selectedProject.created_at).format('DD/MM/YYYY HH:mm')}
               </Descriptions.Item>
-              <Descriptions.Item label="Business Analyst" span={2}>
-                {selectedProject.details.ba}
+              <Descriptions.Item label="Updated At" span={1}>
+                {dayjs(selectedProject.updated_at).format('DD/MM/YYYY HH:mm')}
               </Descriptions.Item>
-              <Descriptions.Item label="Technical Lead" span={2}>
-                {selectedProject.details.technicalLead}
+              <Descriptions.Item label="Updated By" span={1}>
+                {selectedProject.updated_by}
               </Descriptions.Item>
-              <Descriptions.Item label="Technical Consultant" span={2}>
-                {selectedProject.details.technicalConsultant}
-              </Descriptions.Item>
-              <Descriptions.Item label="Developers" span={2}>
-                {selectedProject.details.developers.join(', ')}
-              </Descriptions.Item>
-              <Descriptions.Item label="Testers" span={2}>
-                {selectedProject.details.testers.join(', ')}
+              <Descriptions.Item label="Project ID" span={1}>
+                {selectedProject._id}
               </Descriptions.Item>
             </Descriptions>
+          ) : (
+            <Empty description="No data available" />
           )}
         </Modal>
 
@@ -474,8 +521,8 @@ const AdminProjectManager: React.FC = () => {
               form={form}
               initialValues={{
                 ...selectedProject,
-                startDate: selectedProject?.from ? dayjs(selectedProject.from) : null,
-                endDate: selectedProject?.to ? dayjs(selectedProject.to) : null,
+                startDate: selectedProject?.project_start_date ? dayjs(selectedProject.project_start_date) : null,
+                endDate: selectedProject?.project_end_date ? dayjs(selectedProject.project_end_date) : null,
               }}
               onFinish={handleEditSubmit}
               layout="vertical"
@@ -486,7 +533,7 @@ const AdminProjectManager: React.FC = () => {
                 <h3 className="text-lg font-medium text-gray-700 mb-4 pb-2 border-b">Project Information</h3>
                 <div className="grid grid-cols-2 gap-x-6 gap-y-4">
                   <Form.Item
-                    name="code"
+                    name="project_code"
                     label="Project Code"
                     rules={[{ required: true, message: 'Please input project code!' }]}
                   >
@@ -494,7 +541,7 @@ const AdminProjectManager: React.FC = () => {
                   </Form.Item>
 
                   <Form.Item
-                    name="name"
+                    name="project_name"
                     label="Project Name"
                     rules={[{ required: true, message: 'Please input project name!' }]}
                   >
@@ -502,12 +549,13 @@ const AdminProjectManager: React.FC = () => {
                   </Form.Item>
 
                   <Form.Item
-                    name="status"
+                    name="project_status"
                     label="Status"
                     rules={[{ required: true, message: 'Please select status!' }]}
                   >
                     <Select placeholder="Select status" className="rounded-md">
-                      <Select.Option value="In Progress">In Progress</Select.Option>
+                      <Select.Option value="New">New</Select.Option>
+                      <Select.Option value="Pending">Pending</Select.Option>
                       <Select.Option value="Completed">Completed</Select.Option>
                     </Select>
                   </Form.Item>
@@ -555,39 +603,41 @@ const AdminProjectManager: React.FC = () => {
                 <div className="grid grid-cols-2 gap-x-6 gap-y-4">
                   {/* Project Manager - Single select */}
                   <Form.Item
-                    name="pm"
+                    name="project_members"
                     label="Project Manager"
                     rules={[{ required: true, message: 'Please select Project Manager!' }]}
                   >
                     <Select
+                      mode="multiple"
                       showSearch
                       placeholder="Select project manager"
-                      {...commonSelectProps('pm')}
-                      onChange={(value) => handleEmployeeSelect(value, 'pm')}
+                      {...commonSelectProps('project_members')}
+                      onChange={(value) => handleEmployeeSelect(value, 'project_members')}
                     >
-                      {renderEmployeeOptions('pm')}
+                      {renderEmployeeOptions('project_members')}
                     </Select>
                   </Form.Item>
 
                   {/* QA - Single select */}
                   <Form.Item
-                    name="qa"
+                    name="project_members"
                     label="Quality Assurance"
                     rules={[{ required: true, message: 'Please select QA!' }]}
                   >
                     <Select
+                      mode="multiple"
                       showSearch
                       placeholder="Select QA"
-                      {...commonSelectProps('qa')}
-                      onChange={(value) => handleEmployeeSelect(value, 'qa')}
+                      {...commonSelectProps('project_members')}
+                      onChange={(value) => handleEmployeeSelect(value, 'project_members')}
                     >
-                      {renderEmployeeOptions('qa')}
+                      {renderEmployeeOptions('project_members')}
                     </Select>
                   </Form.Item>
 
                   {/* Technical Lead - Multiple select */}
                   <Form.Item
-                    name="technicalLead"
+                    name="project_members"
                     label="Technical Lead"
                     rules={[{ required: true, message: 'Please select Technical Lead!' }]}
                   >
@@ -595,16 +645,16 @@ const AdminProjectManager: React.FC = () => {
                       mode="multiple"
                       showSearch
                       placeholder="Select technical lead"
-                      {...commonSelectProps('technicalLead')}
-                      onChange={(value) => handleEmployeeSelect(value, 'technicalLead')}
+                      {...commonSelectProps('project_members')}
+                      onChange={(value) => handleEmployeeSelect(value, 'project_members')}
                     >
-                      {renderEmployeeOptions('technicalLead')}
+                      {renderEmployeeOptions('project_members')}
                     </Select>
                   </Form.Item>
 
                   {/* BA - Multiple select */}
                   <Form.Item
-                    name="ba"
+                    name="project_members"
                     label="Business Analyst"
                     rules={[{ required: true, message: 'Please select BA!' }]}
                   >
@@ -612,16 +662,16 @@ const AdminProjectManager: React.FC = () => {
                       mode="multiple"
                       showSearch
                       placeholder="Select business analyst"
-                      {...commonSelectProps('ba')}
-                      onChange={(value) => handleEmployeeSelect(value, 'ba')}
+                      {...commonSelectProps('project_members')}
+                      onChange={(value) => handleEmployeeSelect(value, 'project_members')}
                     >
-                      {renderEmployeeOptions('ba')}
+                      {renderEmployeeOptions('project_members')}
                     </Select>
                   </Form.Item>
 
                   {/* Developers - Multiple select */}
                   <Form.Item
-                    name="developers"
+                    name="project_members"
                     label="Developers"
                     rules={[{ required: true, message: 'Please select developers!' }]}
                   >
@@ -629,16 +679,16 @@ const AdminProjectManager: React.FC = () => {
                       mode="multiple"
                       showSearch
                       placeholder="Select developers"
-                      {...commonSelectProps('developers')}
-                      onChange={(value) => handleEmployeeSelect(value, 'developers')}
+                      {...commonSelectProps('project_members')}
+                      onChange={(value) => handleEmployeeSelect(value, 'project_members')}
                     >
-                      {renderEmployeeOptions('developers')}
+                      {renderEmployeeOptions('project_members')}
                     </Select>
                   </Form.Item>
 
                   {/* Testers - Multiple select */}
                   <Form.Item
-                    name="testers"
+                    name="project_members"
                     label="Testers"
                     rules={[{ required: true, message: 'Please select testers!' }]}
                   >
@@ -646,16 +696,16 @@ const AdminProjectManager: React.FC = () => {
                       mode="multiple"
                       showSearch
                       placeholder="Select testers"
-                      {...commonSelectProps('testers')}
-                      onChange={(value) => handleEmployeeSelect(value, 'testers')}
+                      {...commonSelectProps('project_members')}
+                      onChange={(value) => handleEmployeeSelect(value, 'project_members')}
                     >
-                      {renderEmployeeOptions('testers')}
+                      {renderEmployeeOptions('project_members')}
                     </Select>
                   </Form.Item>
 
                   {/* Technical Consultant - Multiple select */}
                   <Form.Item
-                    name="technicalConsultant"
+                    name="project_members"
                     label="Technical Consultancy"
                     rules={[{ required: true, message: 'Please select technical consultant!' }]}
                   >
@@ -663,10 +713,10 @@ const AdminProjectManager: React.FC = () => {
                       mode="multiple"
                       showSearch
                       placeholder="Select technical consultant"
-                      {...commonSelectProps('technicalConsultant')}
-                      onChange={(value) => handleEmployeeSelect(value, 'technicalConsultant')}
+                      {...commonSelectProps('project_members')}
+                      onChange={(value) => handleEmployeeSelect(value, 'project_members')}
                     >
-                      {renderEmployeeOptions('technicalConsultant')}
+                      {renderEmployeeOptions('project_members')}
                     </Select>
                   </Form.Item>
                 </div>
@@ -711,7 +761,7 @@ const AdminProjectManager: React.FC = () => {
               <h3 className="text-lg font-medium text-gray-700 mb-4 pb-2 border-b">Project Information</h3>
               <div className="grid grid-cols-2 gap-x-6 gap-y-4">
                 <Form.Item
-                  name="code"
+                  name="project_code"
                   label="Project Code"
                   rules={[{ required: true, message: 'Please input project code!' }]}
                 >
@@ -719,7 +769,7 @@ const AdminProjectManager: React.FC = () => {
                 </Form.Item>
 
                 <Form.Item
-                  name="name"
+                  name="project_name"
                   label="Project Name"
                   rules={[{ required: true, message: 'Please input project name!' }]}
                 >
@@ -727,12 +777,13 @@ const AdminProjectManager: React.FC = () => {
                 </Form.Item>
 
                 <Form.Item
-                  name="status"
+                  name="project_status"
                   label="Status"
                   rules={[{ required: true, message: 'Please select status!' }]}
                 >
                   <Select placeholder="Select status" className="rounded-md">
-                    <Select.Option value="In Progress">In Progress</Select.Option>
+                    <Select.Option value="New">New</Select.Option>
+                    <Select.Option value="Pending">Pending</Select.Option>
                     <Select.Option value="Completed">Completed</Select.Option>
                   </Select>
                 </Form.Item>
@@ -780,39 +831,41 @@ const AdminProjectManager: React.FC = () => {
               <div className="grid grid-cols-2 gap-x-6 gap-y-4">
                 {/* Project Manager - Single select */}
                 <Form.Item
-                  name="pm"
+                  name="project_members"
                   label="Project Manager"
                   rules={[{ required: true, message: 'Please select Project Manager!' }]}
                 >
                   <Select
+                    mode="multiple"
                     showSearch
                     placeholder="Select project manager"
-                    {...commonSelectProps('pm')}
-                    onChange={(value) => handleEmployeeSelect(value, 'pm')}
+                    {...commonSelectProps('project_members')}
+                    onChange={(value) => handleEmployeeSelect(value, 'project_members')}
                   >
-                    {renderEmployeeOptions('pm')}
+                    {renderEmployeeOptions('project_members')}
                   </Select>
                 </Form.Item>
 
                 {/* QA - Single select */}
                 <Form.Item
-                  name="qa"
+                  name="project_members"
                   label="Quality Assurance"
                   rules={[{ required: true, message: 'Please select QA!' }]}
                 >
                   <Select
+                    mode="multiple"
                     showSearch
                     placeholder="Select QA"
-                    {...commonSelectProps('qa')}
-                    onChange={(value) => handleEmployeeSelect(value, 'qa')}
+                    {...commonSelectProps('project_members')}
+                    onChange={(value) => handleEmployeeSelect(value, 'project_members')}
                   >
-                    {renderEmployeeOptions('qa')}
+                    {renderEmployeeOptions('project_members')}
                   </Select>
                 </Form.Item>
 
                 {/* Technical Lead - Multiple select */}
                 <Form.Item
-                  name="technicalLead"
+                  name="project_members"
                   label="Technical Lead"
                   rules={[{ required: true, message: 'Please select Technical Lead!' }]}
                 >
@@ -820,16 +873,16 @@ const AdminProjectManager: React.FC = () => {
                     mode="multiple"
                     showSearch
                     placeholder="Select technical lead"
-                    {...commonSelectProps('technicalLead')}
-                    onChange={(value) => handleEmployeeSelect(value, 'technicalLead')}
+                    {...commonSelectProps('project_members')}
+                    onChange={(value) => handleEmployeeSelect(value, 'project_members')}
                   >
-                    {renderEmployeeOptions('technicalLead')}
+                    {renderEmployeeOptions('project_members')}
                   </Select>
                 </Form.Item>
 
                 {/* BA - Multiple select */}
                 <Form.Item
-                  name="ba"
+                  name="project_members"
                   label="Business Analyst"
                   rules={[{ required: true, message: 'Please select BA!' }]}
                 >
@@ -837,16 +890,16 @@ const AdminProjectManager: React.FC = () => {
                     mode="multiple"
                     showSearch
                     placeholder="Select business analyst"
-                    {...commonSelectProps('ba')}
-                    onChange={(value) => handleEmployeeSelect(value, 'ba')}
+                    {...commonSelectProps('project_members')}
+                    onChange={(value) => handleEmployeeSelect(value, 'project_members')}
                   >
-                    {renderEmployeeOptions('ba')}
+                    {renderEmployeeOptions('project_members')}
                   </Select>
                 </Form.Item>
 
                 {/* Developers - Multiple select */}
                 <Form.Item
-                  name="developers"
+                  name="project_members"
                   label="Developers"
                   rules={[{ required: true, message: 'Please select developers!' }]}
                 >
@@ -854,16 +907,16 @@ const AdminProjectManager: React.FC = () => {
                     mode="multiple"
                     showSearch
                     placeholder="Select developers"
-                    {...commonSelectProps('developers')}
-                    onChange={(value) => handleEmployeeSelect(value, 'developers')}
+                    {...commonSelectProps('project_members')}
+                    onChange={(value) => handleEmployeeSelect(value, 'project_members')}
                   >
-                    {renderEmployeeOptions('developers')}
+                    {renderEmployeeOptions('project_members')}
                   </Select>
                 </Form.Item>
 
                 {/* Testers - Multiple select */}
                 <Form.Item
-                  name="testers"
+                  name="project_members"
                   label="Testers"
                   rules={[{ required: true, message: 'Please select testers!' }]}
                 >
@@ -871,16 +924,16 @@ const AdminProjectManager: React.FC = () => {
                     mode="multiple"
                     showSearch
                     placeholder="Select testers"
-                    {...commonSelectProps('testers')}
-                    onChange={(value) => handleEmployeeSelect(value, 'testers')}
+                    {...commonSelectProps('project_members')}
+                    onChange={(value) => handleEmployeeSelect(value, 'project_members')}
                   >
-                    {renderEmployeeOptions('testers')}
+                    {renderEmployeeOptions('project_members')}
                   </Select>
                 </Form.Item>
 
                 {/* Technical Consultant - Multiple select */}
                 <Form.Item
-                  name="technicalConsultant"
+                  name="project_members"
                   label="Technical Consultancy"
                   rules={[{ required: true, message: 'Please select technical consultant!' }]}
                 >
@@ -888,10 +941,10 @@ const AdminProjectManager: React.FC = () => {
                     mode="multiple"
                     showSearch
                     placeholder="Select technical consultant"
-                    {...commonSelectProps('technicalConsultant')}
-                    onChange={(value) => handleEmployeeSelect(value, 'technicalConsultant')}
+                    {...commonSelectProps('project_members')}
+                    onChange={(value) => handleEmployeeSelect(value, 'project_members')}
                   >
-                    {renderEmployeeOptions('technicalConsultant')}
+                    {renderEmployeeOptions('project_members')}
                   </Select>
                 </Form.Item>
               </div>

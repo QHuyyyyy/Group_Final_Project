@@ -4,6 +4,9 @@ import api from '../api/axios';
 interface ProjectMember {
     user_id: string;
     project_role: string;
+    employee_id: string;
+    user_name: string;
+    full_name: string;
   }
   
   interface ProjectData {
@@ -26,6 +29,16 @@ interface ProjectMember {
 interface PageInfo {
   pageNum: number;
   pageSize: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+interface SearchResponse {
+  success: boolean;
+  data: {
+    pageData: Project[];
+    pageInfo: PageInfo;
+  };
 }
 
 interface SearchParams {
@@ -33,10 +46,24 @@ interface SearchParams {
   pageInfo: PageInfo;
 }
 
+interface Project {
+  _id: string;
+  project_name: string;
+  project_code: string;
+  project_department: string;
+  project_description: string;
+  project_status: string;
+  project_start_date: string;
+  project_end_date: string;
+  project_comment: string | null;
+  project_members: ProjectMember[];
+  updated_by: string;
+  is_deleted: boolean;
+  created_at: string;
+  updated_at: string;
+}
 
-
-
-export const projectService = {
+const projectService = {
   // Tạo dự án mới
   createProject: async (projectData: ProjectData) => {
     const response = await api.post('/api/projects', projectData);
@@ -45,7 +72,11 @@ export const projectService = {
   },
 
   // Tìm kiếm dự án với phân trang
-  searchProjects: async (params: SearchParams) => {
+  searchProjects: async (params: SearchParams = { 
+    searchCondition: {}, 
+    pageInfo: { pageNum: 1, pageSize: 10 } 
+  }): Promise<SearchResponse> => {
+    console.log('Calling searchProjects with params:', params);
     const response = await api.post('/api/projects/search', {
       searchCondition: {
         keyword: params.searchCondition.keyword || "",
@@ -58,15 +89,14 @@ export const projectService = {
         pageSize: params.pageInfo.pageSize
       }
     });
-    console.log("fetch data:", response.data);
-    return response.data;
+    console.log('API response in service:', response);
+    return response;
   },
 
   // Lấy thông tin dự án theo ID
   getProjectById: async (id: string) => {
     const response = await api.get(`/api/projects/${id}`);
-    console.log("fetch data:", response.data);
-    return response.data;
+    return response;
   },
 
   // Cập nhật thông tin dự án
@@ -94,3 +124,5 @@ export const projectService = {
     return response.data;
   }
 };
+
+export default projectService;
