@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Table, Tag, Space, Button } from "antd";
+import { Table, Tag, Space, Button, Modal, Card } from "antd";
 import SearchBar from "../../components/common/SearchBar";
-import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
+import { CheckOutlined, CloseOutlined, UndoOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 
 type Claim = {
   id: number;
@@ -14,7 +15,7 @@ type Claim = {
   submittedDate: string;
   amount: number;
   description: string;
-  status: "Pending" | "Approved" | "Rejected";
+  status: "Pending" | "Approved" | "Rejected" | "Draft";
 };
 
 const DUMMY_CLAIMS: Claim[] = [
@@ -112,20 +113,40 @@ const DUMMY_CLAIMS: Claim[] = [
 ];
 
 function ApprovalPage() {
-  const [claims, setClaims] = useState<Claim[]>(DUMMY_CLAIMS);
+  const initialClaims = DUMMY_CLAIMS.filter(claim => 
+    claim.status !== "Draft"
+  );
+  
+  const [claims, setClaims] = useState<Claim[]>(initialClaims);
+  const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
+  const [confirmationType, setConfirmationType] = useState<"approve" | "reject" | "return" | null>(null);
   const [, setSearchQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
+  const navigate = useNavigate();
+
+  const filterClaims = (query: string, status: string) => {
+    let filtered = DUMMY_CLAIMS.filter(claim => claim.status !== "Draft");
+    
+    if (query) {
+      filtered = filtered.filter(claim => 
+        claim.description.toLowerCase().includes(query.toLowerCase()) ||
+        claim.submittedBy.toLowerCase().includes(query.toLowerCase()) ||
+        claim.employeeId.toLowerCase().includes(query.toLowerCase())
+      );
+    }
+    
+    if (status) {
+      filtered = filtered.filter(claim => claim.status === status);
+    }
+    
+    return filtered;
+  };
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     setCurrentPage(1);
-    const filteredClaims = DUMMY_CLAIMS.filter(
-      (claim) =>
-        claim.description.toLowerCase().includes(query.toLowerCase()) ||
-        claim.submittedBy.toLowerCase().includes(query.toLowerCase()) ||
-        claim.employeeId.toLowerCase().includes(query.toLowerCase())
-    );
+    const filteredClaims = filterClaims(query, "");
     setClaims(filteredClaims);
   };
 
@@ -145,137 +166,214 @@ function ApprovalPage() {
     );
   };
 
+  const handleReturn = (id: number) => {
+    setClaims(prevClaims => prevClaims.filter(claim => claim.id !== id));
+  };
+
+  const showConfirmation = (claim: Claim, type: "approve" | "reject" | "return") => {
+    setSelectedClaim(claim);
+    setConfirmationType(type);
+  };
+
+  const handleConfirmationOk = () => {
+    if (!selectedClaim || !confirmationType) return;
+
+    switch (confirmationType) {
+      case "approve":
+        handleApprove(selectedClaim.id);
+        break;
+      case "reject":
+        handleReject(selectedClaim.id);
+        break;
+      case "return":
+        handleReturn(selectedClaim.id);
+        break;
+    }
+
+    setSelectedClaim(null);
+    setConfirmationType(null);
+  };
+
+  const handleConfirmationCancel = () => {
+    setSelectedClaim(null);
+    setConfirmationType(null);
+  };
+
   const startIndex = (currentPage - 1) * pageSize;
   const currentClaims = claims.slice(startIndex, startIndex + pageSize);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-6">Claim Approvals</h1>
-      <div className="flex">
-        <SearchBar onSearch={handleSearch} />
+    <div className="container mx-auto px-2 py-8">
+      <div className="flex items-center justify-between mb-6">
+        <Button 
+          type="default" 
+          icon={<ArrowLeftOutlined />}
+          onClick={() => navigate('/dashboard')}
+          className="flex items-center"
+        >
+          Back to Dashboard
+        </Button>
       </div>
-      <div className="bg-white rounded-lg">
-        <Table
-          className="border-gray-600 shadow-lg rounded-lg"
-          components={{
-            header: {
-              cell: ({ children }) => (
-                <th className="!bg-gray-200">{children}</th>
-              ),
-            },
-          }}
-          dataSource={currentClaims}
-          pagination={{
-            className:
-              "[&.ant-table-pagination]:bg-white [&.ant-table-pagination]:mb-0 [&.ant-table-pagination]:mt-0",
-            current: currentPage,
-            total: claims.length,
-            pageSize: pageSize,
-            onChange: (page) => setCurrentPage(page),
-            showSizeChanger: false,
-          }}
-          columns={[
-            {
-              title: <span className="font-bold">Employee</span>,
-              key: "employee",
-              width: "15%",
-              render: (_, record) => (
-                <div className="flex items-center">
-                  <div className="">
-                    <div className="font-medium text-gray-900">
-                      {record.submittedBy}
-                    </div>
-                    <div className="text-gray-500 text-center">
-                      {record.department}
+
+      <Card className="shadow-md">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">Claim Approvals</h1>
+        </div>
+        
+        <div className="overflow-auto custom-scrollbar">
+          <div className="flex flex-wrap gap-4 items-center mb-5 mx-2">
+            <SearchBar 
+              onSearch={handleSearch} 
+              style={{ width: 250 }}
+              placeholder="Search by Employee or Request ID"
+            />
+          </div>
+
+          <Table
+            dataSource={currentClaims}
+            columns={[
+              {
+                title: <span className="font-bold">Employee</span>,
+                key: "employee",
+                width: "15%",
+                render: (_, record) => (
+                  <div className="flex items-center">
+                    <div className="">
+                      <div className="font-medium text-gray-900">
+                        {record.submittedBy}
+                      </div>
+                      <div className="text-gray-500 text-center">
+                        {record.department}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ),
-            },
-            {
-              title: <span className="font-bold">Employee ID</span>,
-              dataIndex: "employeeId",
-              key: "employeeId",
-              width: "10%",
-            },
-            {
-              title: <span className="font-bold">Overtime Type</span>,
-              dataIndex: "overtimeType",
-              key: "overtimeType",
-              width: "10%",
-            },
-            {
-              title: <span className="font-bold">Time</span>,
-              key: "time",
-              width: "10%",
-              render: (_, record) => (
-                <div>
+                ),
+              },
+              {
+                title: <span className="font-bold">Employee ID</span>,
+                dataIndex: "employeeId",
+                key: "employeeId",
+                width: "10%",
+              },
+              {
+                title: <span className="font-bold">Overtime Type</span>,
+                dataIndex: "overtimeType",
+                key: "overtimeType",
+                width: "10%",
+              },
+              {
+                title: <span className="font-bold">Time</span>,
+                key: "time",
+                width: "10%",
+                render: (_, record) => (
                   <div>
-                    {record.startTime} - {record.endTime}
+                    <div>
+                      {record.startTime} - {record.endTime}
+                    </div>
+                    <div className="text-sm text-gray-500 ml-1">
+                      {record.submittedDate}
+                    </div>
                   </div>
-                  <div className="text-sm text-gray-500 ml-1">
-                    {record.submittedDate}
-                  </div>
-                </div>
-              ),
-            },
-            {
-              title: <span className="font-bold">Hours</span>,
-              key: "hours",
-              width: "8%",
-              render: (_, record) => `${record.amount.toFixed(1)}h`,
-            },
-            {
-              title: <span className="font-bold">Reason</span>,
-              dataIndex: "description",
-              key: "description",
-              width: "25%",
-            },
-            {
-              title: <span className="font-bold">Status</span>,
-              key: "status",
-              width: "10%",
-              render: (_, record) => (
-                <Tag
-                  color={
-                    record.status === "Approved"
-                      ? "success"
-                      : record.status === "Rejected"
+                ),
+              },
+              {
+                title: <span className="font-bold">Hours</span>,
+                key: "hours",
+                width: "8%",
+                render: (_, record) => `${record.amount.toFixed(1)}h`,
+              },
+              {
+                title: <span className="font-bold">Reason</span>,
+                dataIndex: "description",
+                key: "description",
+                width: "25%",
+              },
+              {
+                title: <span className="font-bold">Status</span>,
+                key: "status",
+                width: "10%",
+                render: (_, record) => (
+                  <Tag
+                    color={
+                      record.status === "Approved"
+                        ? "success"
+                        : record.status === "Rejected"
                         ? "error"
                         : "warning"
-                  }
-                >
-                  {record.status}
-                </Tag>
-              ),
-            },
-            {
-              title: <span className="font-bold">Actions</span>,
-              key: "actions",
-              width: "10%",
-              render: (_, record) =>
-                record.status === "Pending" ? (
-                  <Space>
-                    <Button
-                      type="primary"
-                      icon={<CheckOutlined />}
-                      onClick={() => handleApprove(record.id)}
-                      style={{ backgroundColor: "#52c41a" }}
-                    />
-                    <Button
-                      type="primary"
-                      danger
-                      icon={<CloseOutlined />}
-                      onClick={() => handleReject(record.id)}
-                    />
-                  </Space>
-                ) : (
-                  <span className="text-gray-500">Processed</span>
+                    }
+                  >
+                    {record.status}
+                  </Tag>
                 ),
-            },
-          ]}
-        />
-      </div>
+              },
+              {
+                title: <span className="font-bold">Actions</span>,
+                key: "actions",
+                width: "15%",
+                render: (_, record) => {
+                  if (record.status === "Pending") {
+                    return (
+                      <Space>
+                        <Button
+                          type="primary"
+                          icon={<CheckOutlined />}
+                          onClick={() => showConfirmation(record, "approve")}
+                          style={{ backgroundColor: '#52c41a' }}
+                          className="hover:!bg-[#52c41a]"
+                        />
+                        <Button
+                          type="primary"
+                          danger
+                          icon={<CloseOutlined />}
+                          onClick={() => showConfirmation(record, "reject")}
+                        />
+                        <Button
+                          type="primary"
+                          icon={<UndoOutlined />}
+                          onClick={() => showConfirmation(record, "return")}
+                          style={{ backgroundColor: '#faad14' }}
+                          className="hover:!bg-[#ffeb29]"
+                        />
+                      </Space>
+                    );
+                  }
+                  
+                  return <span className="text-gray-500">Processed</span>;
+                },
+              },
+            ]}
+            pagination={{
+              pageSize: pageSize,
+              total: claims.length,
+              showSizeChanger: false,
+              showQuickJumper: true,
+              current: currentPage,
+              onChange: (page) => setCurrentPage(page),
+            }}
+            className="overflow-hidden"
+            scroll={{ x: 1000 }}
+          />
+        </div>
+      </Card>
+
+      <Modal
+        title="Confirmation"
+        open={!!selectedClaim}
+        onOk={handleConfirmationOk}
+        onCancel={handleConfirmationCancel}
+        okText="Confirm"
+        cancelText="Cancel"
+      >
+        {confirmationType === "approve" && (
+          <p>Are you sure you want to approve this claim?</p>
+        )}
+        {confirmationType === "reject" && (
+          <p>Are you sure you want to reject this claim?</p>
+        )}
+        {confirmationType === "return" && (
+          <p>Are you sure you want to return this claim?</p>
+        )}
+      </Modal>
     </div>
   );
 }
