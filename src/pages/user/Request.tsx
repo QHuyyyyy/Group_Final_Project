@@ -1,129 +1,120 @@
-import { useState } from "react";
-import { Input, Button, Card, Table, Tag, Space } from "antd";
-import { EditOutlined, EyeOutlined, CloudUploadOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { useState, useEffect } from "react";
+import { Input, Card, Table, Tag, message, Button, Space, Popconfirm } from "antd";
+import { claimService } from "../../services/claimService";
+import dayjs from 'dayjs';
 import RequestDetails from "../../components/user/RequestDetails";
-import UpdateRequest from "../../components/user/UpdateRequest";
-import CreateRequest from "../../pages/user/CreateRequest"
-import SendRequest from "../../components/user/SendRequest";
-// import ReturnRequest from "../../components/user/ReturnRequest";
-import CancelRequest from "../../components/user/CancelRequest";
+import { EyeOutlined } from "@ant-design/icons";
 
 interface Request {
-  id: number;
-  name: string;
-  project: string;
-  totalHours: number;
-  status: string;
-  createdDate: string;
-  startDate: string;
-  endDate: string;
-  description: string;
+  _id: string;
+  claim_name: string;
+  project_id: string;
+  total_work_time: number;
+  claim_status: string;
+  created_at: string;
+  claim_start_date: string;
+  claim_end_date: string;
+}
+
+interface SearchParams {
+  searchCondition: {
+    keyword: string;
+    claim_status: string;
+    claim_start_date: string;
+    claim_end_date: string;
+    is_delete: boolean;
+  };
+  pageInfo: {
+    pageNum: number;
+    pageSize: number;
+  };
 }
 
 const { Search } = Input;
 
-const initialRequests = [
-  {
-    id: 1,
-    name: "John Doe",
-    project: "Project A",
-    totalHours: 40,
-    status: "Draft",
-    createdDate: "2025-02-10",
-    startDate: "2025-02-01",
-    endDate: "2025-02-05",
-    description: "Worked on the initial phase of Project A",
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    project: "Project B",
-    totalHours: 35,
-    status: "Pending Approval",
-    createdDate: "2025-02-08",
-    startDate: "2025-02-02",
-    endDate: "2025-02-07",
-    description: "Assisted in completing the final deliverables",
-  },
-];
-
 const Request = () => {
-  const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
-  const [filteredRequests, setFilteredRequests] = useState(initialRequests);
-  const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
-  const [updateRequest, setUpdateRequest] = useState<Request | null>(null);
-  const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
-  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
-  const [sendRequestId, setSendRequestId] = useState<number | null>(null);
-  const [isSendModalVisible, setIsSendModalVisible] = useState(false);
-  // const [returnRequestId, setReturnRequestId] = useState<number | null>(null);
-  // const [isReturnModalVisible, setIsReturnModalVisible] = useState(false);
+  const [claims, setClaims] = useState<Request[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0
+  });
+  const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
-  // New state for CancelRequest modal
-  const [cancelRequestId, setCancelRequestId] = useState<number | null>(null);
-  const [isCancelModalVisible, setIsCancelModalVisible] = useState(false);
+  useEffect(() => {
+    fetchClaims();
+  }, [pagination.current, pagination.pageSize, searchText]);
 
-  ////////////////////////////////////////////////////////////////////////////
+  const fetchClaims = async () => {
+    try {
+      setLoading(true);
+      const params: SearchParams = {
+        searchCondition: {
+          keyword: searchText || "",
+          claim_status: "",
+          claim_start_date: "",
+          claim_end_date: "",
+          is_delete: false,
+        },
+        pageInfo: {
+          pageNum: pagination.current,
+          pageSize: pagination.pageSize
+        }
+      };
+
+      const response = await claimService.searchClaims(params);
+      console.log('Search response:', response);
+      
+      if (response && response.pageData) {
+        setClaims(response.pageData);
+        setPagination(prev => ({
+          ...prev,
+          total: response.total || 0
+        }));
+      }
+  } catch (error) {
+      console.error('Error fetching users:', error);
+      message.error('An error occurred while fetching users.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSearch = (value: string) => {
-    const filteredData = initialRequests.filter((req) =>
-      req.name.toLowerCase().includes(value.toLowerCase())
-    );
-    setFilteredRequests(filteredData);
+    setSearchText(value);
+    setPagination(prev => ({
+      ...prev,
+      current: 1
+    }));
   };
 
-  const showUpdateModal = (request: Request) => {
-    setUpdateRequest(request);
-    setIsUpdateModalVisible(true);
+  const handleView = (record: Request) => {
+    setSelectedRequest(record);
+    setIsModalVisible(true);
   };
 
-  const showDetailModal = (request: any) => {
-    setSelectedRequest(request);
-    setIsDetailModalVisible(true);
+  const handleCloseModal = () => {
+    setIsModalVisible(false);
+    setSelectedRequest(null);
   };
 
-  const showSendModal = (id: number) => {
-    setSendRequestId(id);
-    setIsSendModalVisible(true);
+  const handleEdit = (record: Request) => {
+    // TODO: Implement edit functionality
+    console.log('Edit claim:', record);
   };
 
-  const handleSendRequest = (id: number) => {
-    setFilteredRequests(prevRequests =>
-      prevRequests.map(req =>
-        req.id === id ? { ...req, status: "Pending Approval" } : req
-      )
-    );
-    setIsSendModalVisible(false);
-    setSendRequestId(null);
-  };
-
-  // const showReturnModal = (id: number) => {
-  //   setReturnRequestId(id);
-  //   setIsReturnModalVisible(true);
-  // };
-  // const handleReturnRequest = (id: number) => {
-  //   setFilteredRequests(prevRequests =>
-  //     prevRequests.map(req =>
-  //       req.id === id ? { ...req, status: "Draft" } : req
-  //     )
-  //   );
-  //   setIsReturnModalVisible(false);
-  //   setReturnRequestId(null);
-  // };
-
-  // Show CancelRequest modal
-  const showCancelModal = (id: number) => {
-    setCancelRequestId(id);
-    setIsCancelModalVisible(true);
-  };
-
-  const handleCancelRequest = (id: number) => {
-    setFilteredRequests(prevRequests =>
-      prevRequests.map(req =>
-        req.id === id ? { ...req, status: "Cancelled" } : req
-      )
-    );
-    setIsCancelModalVisible(false);
-    setCancelRequestId(null);
+  const handleDelete = async (record: Request) => {
+    try {
+      await claimService.changeClaimStatus(record._id, 'DELETED');
+      message.success('Claim deleted successfully');
+      fetchClaims();
+    } catch (error) {
+      console.error('Error deleting claim:', error);
+      message.error('Failed to delete claim');
+    }
   };
 
   return (
@@ -137,166 +128,130 @@ const Request = () => {
             style={{ width: 300 }}
             className="ml-0"
           />
-          <Button
-            onClick={() => setIsCreateModalVisible(true)}
-            type="primary"
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            Create Request
+          <Button type="primary" onClick={() => console.log('Add new claim')}>
+            Add New Claim
           </Button>
         </div>
 
         <Card className="shadow-md">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">My Requests</h1>
+            <h1 className="text-2xl font-bold text-gray-800">My Claims</h1>
           </div>
-          <div className="overflow-auto custom-scrollbar">
-            <Table
-              dataSource={filteredRequests}
-              columns={[
-                {
-                  title: "ID",
-                  dataIndex: "id",
-                  key: "id",
-                  width: 80
-                },
-                {
-                  title: "Create Date",
-                  dataIndex: "createdDate",
-                  key: "createdDate",
-                  width: 120
-                },
-                {
-                  title: "Project",
-                  dataIndex: "project",
-                  key: "project",
-                  width: 150
-                },
-                {
-                  title: "Total Hours Worked",
-                  dataIndex: "totalHours",
-                  key: "totalHours",
-                  width: 150
-                },
-                {
-                  title: "Status",
-                  dataIndex: "status",
-                  key: "status",
-                  width: 150,
-                  render: (status: string) => (
-                    <Tag color={
-                      status === "Draft" ? "gold" :
-                        status === "Pending Approval" ? "blue" :
-                          status === "Approved" ? "green" :
-                            "red"
-                    }>
-                      {status}
-                    </Tag>
-                  )
-                },
-                {
-                  title: "Actions",
-                  key: "actions",
-                  fixed: "right" as const,
-                  width: 150,
-                  render: (_: any, record: any) => (
-                    <Space size="middle">
-                      <Button
-                        type="text"
-                        icon={<EyeOutlined />}
-                        onClick={() => showDetailModal(record)}
-                        className="text-blue-600 hover:text-blue-800"
-                      />
-                      {record.status === "Draft" && (
-                        <Button
-                          type="text"
-                          icon={<EditOutlined />}
-                          onClick={() => showUpdateModal(record)}
-                          className="text-gray-600 hover:text-gray-800"
-
-                        />
-                      )}
-                      {record.status === "Draft" && (
-                        <Button
-                          type="text"
-                          icon={<CloudUploadOutlined />}
-                          onClick={() => showSendModal(record.id)}
-                          className="text-green-600 hover:text-green-800"
-                        />
-                      )}
-                      {/* {record.status === "Pending Approval" && (
-                        <Button
-                          type="text"
-                          icon={<ReloadOutlined />}
-                          onClick={() => showReturnModal(record.id)}
-                          className="text-orange-600 hover:text-orange-800"
-                        />
-                      )} */}
-                      {(record.status === "Draft" || record.status === "Pending Approval") && (
-                        <Button
-                          type="text"
-                          icon={<CloseCircleOutlined />}
-                          onClick={() => showCancelModal(record.id)}
-                          className="text-red-600 hover:text-red-800"
-                        />
-                      )}
-                    </Space>
-                  )
+          <Table
+            loading={loading}
+            dataSource={claims}
+            columns={[
+              {
+                title: "No.",
+                key: "index",
+                render: (_, __, index) => index + 1,
+                width: 50,
+              },
+              {
+                title: "Claim Name",
+                dataIndex: "claim_name",
+                key: "claim_name",
+                width: 120,
+              },
+              {
+                title: "Created At",
+                dataIndex: "created_at",
+                key: "created_at",
+                width: 120,
+                render: (date: string) => dayjs(date).format('YYYY-MM-DD')
+              },
+              {
+                title: "Total Hours",
+                dataIndex: "total_work_time",
+                key: "total_work_time",
+                width: 100,
+                render: (minutes: number) => {
+                  if (!minutes && minutes !== 0) return '-';
+                  
+                  const hours = minutes / 60;
+                  // Làm tròn đến 2 chữ số thập phân
+                  const roundedHours = Math.round(hours * 100) / 100;
+                  
+                  return (
+                    <span>
+                      {roundedHours} {roundedHours <= 1 ? 'hour' : 'hours'}
+                    </span>
+                  );
                 }
-              ]}
-              rowKey="id"
-              pagination={{
-                pageSize: 10,
-                total: filteredRequests.length,
-                showSizeChanger: true,
-                showQuickJumper: true,
-              }}
-              className="overflow-hidden w-full"
-              scroll={{ x: true }}
-            />
-          </div>
-        </Card>
-
-        <CreateRequest
-          visible={isCreateModalVisible}
-          onClose={() => setIsCreateModalVisible(false)}
-        />
-
-        <RequestDetails
-          visible={isDetailModalVisible}
-          request={selectedRequest}
-          onClose={() => setIsDetailModalVisible(false)}
-        />
-
-        {isUpdateModalVisible && updateRequest && (
-          <UpdateRequest
-            visible={isUpdateModalVisible}
-            request={updateRequest}
-            onClose={() => setIsUpdateModalVisible(false)}
+              },
+              {
+                title: "Status",
+                dataIndex: "claim_status",
+                key: "claim_status",
+                width: 100,
+                render: (status: string) => (
+                  <Tag color={
+                    !status || status === "DRAFT" ? "gold" :
+                    status === "PENDING" ? "blue" :
+                    status === "APPROVED" ? "green" :
+                    "red"
+                  }>
+                    {status || "DRAFT"}
+                  </Tag>
+                )
+              },
+              {
+                title: "Actions",
+                key: "actions",
+                width: 200,
+                render: (_, record) => (
+                  <Space size="middle">
+                    <Button 
+                      type="text" 
+                      icon={<EyeOutlined />} 
+                      onClick={() => handleView(record)}
+                      title="View"
+                    />
+                    {record.claim_status === "DRAFT" && (
+                      <>
+                        <Button type="link" onClick={() => handleEdit(record)}>
+                          Edit
+                        </Button>
+                        <Popconfirm
+                          title="Are you sure you want to delete this claim?"
+                          onConfirm={() => handleDelete(record)}
+                          okText="Yes"
+                          cancelText="No"
+                        >
+                          <Button type="link" danger>
+                            Delete
+                          </Button>
+                        </Popconfirm>
+                      </>
+                    )}
+                  </Space>
+                )
+              }
+            ]}
+            rowKey="_id"
+            pagination={{
+              current: pagination.current,
+              pageSize: pagination.pageSize,
+              total: pagination.total,
+              showSizeChanger: true,
+              showQuickJumper: true,
+              onChange: (page, pageSize) => {
+                setPagination(prev => ({
+                  ...prev,
+                  current: page,
+                  pageSize: pageSize || 10
+                }));
+              },
+            }}
+            className="overflow-hidden w-full"
+            scroll={{ x: true }}
           />
-        )}
-
-        <SendRequest
-          id={sendRequestId}
-          visible={isSendModalVisible}
-          onSend={handleSendRequest}
-          onCancel={() => setIsSendModalVisible(false)}
-        />
-
-        {/* <ReturnRequest
-          id={returnRequestId}
-          visible={isReturnModalVisible}
-          onReturn={handleReturnRequest}
-          onCancel={() => setIsReturnModalVisible(false)}
-        /> */}
-
-        {/* CancelRequest modal */}
-        <CancelRequest
-          id={cancelRequestId}
-          status="Draft" // or "Pending Approval" based on your state
-          visible={isCancelModalVisible}
-          onCancelRequest={handleCancelRequest}
-          onClose={() => setIsCancelModalVisible(false)}
+        </Card>
+        
+        <RequestDetails
+          visible={isModalVisible}
+          request={selectedRequest}
+          onClose={handleCloseModal}
         />
       </div>
     </div>

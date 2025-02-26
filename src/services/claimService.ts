@@ -21,7 +21,7 @@ interface SearchCondition {
   claim_start_date?: string;
   claim_end_date?: string;
   claim_status?: string;
-  is_deleted?: boolean;
+  is_delete?: boolean;
 }
 
 interface PageInfo {

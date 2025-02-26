@@ -1,7 +1,7 @@
 import { Modal } from "antd";
 
 interface DeleteRequestProps {
-    id: number | null;
+    id: string | null;
     visible: boolean;
     onConfirm: () => void;
     onCancel: () => void;
