@@ -76,27 +76,50 @@ const projectService = {
     searchCondition: {}, 
     pageInfo: { pageNum: 1, pageSize: 10, totalItems: 0, totalPages: 0 } 
   }): Promise<SearchResponse> => {
-    console.log('Calling searchProjects with params:', params);
-    const response = await api.post('/api/projects/search', {
-      searchCondition: {
-        keyword: params.searchCondition.keyword || "",
-        project_start_date: params.searchCondition.project_start_date,
-        project_end_date: params.searchCondition.project_end_date,
-        is_delete: params.searchCondition.is_delete || false
-      },
-      pageInfo: {
-        pageNum: params.pageInfo.pageNum,
-        pageSize: params.pageInfo.pageSize
+    try {
+      console.log('Calling searchProjects with params:', params);
+      const response = await api.post('/api/projects/search', {
+        searchCondition: {
+          keyword: params.searchCondition.keyword || "",
+          project_start_date: params.searchCondition.project_start_date,
+          project_end_date: params.searchCondition.project_end_date,
+          is_delete: params.searchCondition.is_delete || false
+        },
+        pageInfo: {
+          pageNum: params.pageInfo.pageNum,
+          pageSize: params.pageInfo.pageSize
+        }
+      });
+      console.log('API response in service:', response);
+      
+      // Kiểm tra và trả về dữ liệu
+      if (response && response.data) {
+        return {
+          success: true,
+          data: {
+            pageData: response.data.pageData || [],
+            pageInfo: {
+              pageNum: response.data.pageInfo?.pageNum || 1,
+              pageSize: response.data.pageInfo?.pageSize || 10,
+              totalItems: response.data.pageInfo?.totalItems || 0,
+              totalPages: response.data.pageInfo?.totalPages || 0
+            }
+          }
+        };
       }
-    });
-    console.log('API response in service:', response);
-    return response.data;
+      
+      throw new Error('Invalid response format');
+    } catch (error) {
+      console.error('Error in searchProjects:', error);
+      throw error;
+    }
   },
 
   // Lấy thông tin dự án theo ID
   getProjectById: async (id: string) => {
     const response = await api.get(`/api/projects/${id}`);
-    return response;
+    console.log("fetch project data:", response.data);
+    return response.data;
   },
 
   // Cập nhật thông tin dự án
