@@ -2,14 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SideBarAdminProject from '../../components/admin/SideBarAdminProject';
 import { Card, Table, Tag, Space, Button, Modal, Form, Input, Select, DatePicker, message, Spin, Empty } from 'antd';
-import { EditOutlined, DeleteOutlined, EyeOutlined, ArrowLeftOutlined, SearchOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, EyeOutlined, ArrowLeftOutlined, SearchOutlined, StarOutlined, StarFilled } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import projectService from '../../services/projectService';
 
 // Thêm interface để định nghĩa kiểu dữ liệu
-interface SelectedEmployees {
-  [key: string]: string[];
-}
 
 interface ProjectMember {
   project_role: string;
@@ -44,7 +41,6 @@ const AdminProjectManager: React.FC = () => {
   const [favoriteProjects, setFavoriteProjects] = useState<string[]>([]);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
-  const [selectedEmployees, setSelectedEmployees] = useState<SelectedEmployees>({});
   const [form] = Form.useForm();
   const [startDate, setStartDate] = useState<dayjs.Dayjs | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -193,6 +189,21 @@ const AdminProjectManager: React.FC = () => {
       render: (date: string) => dayjs(date).format('YYYY-MM-DD'),
     },
     {
+      title: 'Favorite',
+      key: 'favorite',
+      width: 80,
+      render: (_: any, record: Project) => (
+        <Button
+          type="text"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleToggleFavorite(record._id);
+          }}
+          icon={favoriteProjects.includes(record._id) ? <StarFilled className="text-yellow-400" /> : <StarOutlined />}
+        />
+      ),
+    },
+    {
       title: 'Actions',
       key: 'actions',
       width: 150,
@@ -238,92 +249,111 @@ const AdminProjectManager: React.FC = () => {
   };
 
   const handleEdit = (record: Project) => {
-    setSelectedProject(record);
-    setIsEditModalVisible(true);
+    try {
+      setSelectedProject(record);
+      
+      // Set giá trị mặc định cho form từ record
+      form.setFieldsValue({
+        project_name: record.project_name,
+        project_code: record.project_code,
+        project_department: record.project_department,
+        project_description: record.project_description,
+        project_status: record.project_status,
+        startDate: dayjs(record.project_start_date), // Convert string to dayjs
+        endDate: dayjs(record.project_end_date), // Convert string to dayjs
+        
+        // Set giá trị cho các role từ project_members
+        project_manager: record.project_members.find(m => m.project_role === 'Project Manager')?.user_id,
+        qa_leader: record.project_members.find(m => m.project_role === 'Quality Analytics')?.user_id,
+        technical_leader: record.project_members
+          .filter(m => m.project_role === 'Technical Lead')
+          .map(m => m.user_id),
+        business_analyst: record.project_members
+          .filter(m => m.project_role === 'Business Analyst')
+          .map(m => m.user_id),
+        developers: record.project_members
+          .filter(m => m.project_role === 'Developer')
+          .map(m => m.user_id),
+        testers: record.project_members
+          .filter(m => m.project_role === 'Tester')
+          .map(m => m.user_id),
+        technical_consultant: record.project_members
+          .filter(m => m.project_role === 'Technical Consultant')
+          .map(m => m.user_id)
+      });
+
+      setIsEditModalVisible(true);
+    } catch (error) {
+      console.error('Error in handleEdit:', error);
+      message.error('Có lỗi xảy ra khi mở form chỉnh sửa');
+    }
   };
 
   const handleEditModalClose = () => {
     setIsEditModalVisible(false);
     setSelectedProject(null);
-    setSelectedEmployees({});
+    
   };
 
   const handleEditSubmit = async (values: any) => {
     try {
+      if (!selectedProject?._id) {
+        message.error('Không tìm thấy project ID');
+        return;
+      }
+
       setLoading(true);
+
+      // Chuẩn bị dữ liệu để update
       const projectData = {
-        ...values,
+        project_name: values.project_name,
+        project_code: values.project_code,
+        project_department: values.project_department,
+        project_description: values.project_description,
         project_start_date: values.startDate.format('YYYY-MM-DD'),
         project_end_date: values.endDate.format('YYYY-MM-DD'),
         project_members: [
-          // PM - single select
           {
-            user_id: values.project_manager,
             project_role: 'Project Manager',
-            employee_id: '',
-            user_name: '',
-            full_name: ''
+            user_id: values.project_manager
           },
-          // QA - single select
           {
-            user_id: values.qa_leader,
             project_role: 'Quality Analytics',
-            employee_id: '',
-            user_name: '',
-            full_name: ''
+            user_id: values.qa_leader
           },
-          // Technical Lead - multiple select
-          ...values.technical_leader.map((id: string) => ({
-            user_id: id,
+          ...(values.technical_leader || []).map((id: string) => ({
             project_role: 'Technical Lead',
-            employee_id: '',
-            user_name: '',
-            full_name: ''
+            user_id: id
           })),
-          // BA - multiple select
-          ...values.business_analyst.map((id: string) => ({
-            user_id: id,
+          ...(values.business_analyst || []).map((id: string) => ({
             project_role: 'Business Analyst',
-            employee_id: '',
-            user_name: '',
-            full_name: ''
+            user_id: id
           })),
-          // Developers - multiple select
-          ...values.developers.map((id: string) => ({
-            user_id: id,
+          ...(values.developers || []).map((id: string) => ({
             project_role: 'Developer',
-            employee_id: '',
-            user_name: '',
-            full_name: ''
+            user_id: id
           })),
-          // Testers - multiple select
-          ...values.testers.map((id: string) => ({
-            user_id: id,
+          ...(values.testers || []).map((id: string) => ({
             project_role: 'Tester',
-            employee_id: '',
-            user_name: '',
-            full_name: ''
+            user_id: id
           })),
-          // Technical Consultant - multiple select
-          ...values.technical_consultant.map((id: string) => ({
-            user_id: id,
+          ...(values.technical_consultant || []).map((id: string) => ({
             project_role: 'Technical Consultant',
-            employee_id: '',
-            user_name: '',
-            full_name: ''
+            user_id: id
           }))
         ]
       };
 
-      const response = await projectService.updateProject(selectedProject?._id || '', projectData);
-      if (response.success) {
-        message.success('Project updated successfully');
-        setIsEditModalVisible(false);
-        fetchProjects(); // Refresh danh sách
-      }
+      // Gọi API update project
+      await projectService.updateProject(selectedProject._id, projectData);
+
+      message.success('Cập nhật dự án thành công');
+      setIsEditModalVisible(false);
+      fetchProjects(); // Refresh danh sách dự án
+
     } catch (error) {
       console.error('Error updating project:', error);
-      message.error('Failed to update project');
+      message.error('Có lỗi xảy ra khi cập nhật dự án');
     } finally {
       setLoading(false);
     }
@@ -344,7 +374,7 @@ const AdminProjectManager: React.FC = () => {
 
   const handleCreateModalClose = () => {
     setIsCreateModalVisible(false);
-    setSelectedEmployees({});
+    
   };
 
   const handleCreateSubmit = async (values: any) => {
@@ -597,7 +627,7 @@ const AdminProjectManager: React.FC = () => {
 
         {/* Modal Edit Project */}
         <Modal
-          title={<h2 className="text-2xl font-semibold text-gray-800 mb-4">Edit Project</h2>}
+          title={<h2 className="text-2xl font-semibold text-gray-800 mb-4">Update Project</h2>}
           open={isEditModalVisible}
           onCancel={handleEditModalClose}
           footer={null}
@@ -612,83 +642,77 @@ const AdminProjectManager: React.FC = () => {
               initialValues={selectedProject}
             >
               {/* Project Information */}
-              <div className="mb-8">
-                <h3 className="text-lg font-medium text-gray-700 mb-4 pb-2 border-b">Project Information</h3>
-                <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                  <Form.Item
-                    name="project_code"
-                    label="Project Code"
-                    rules={[{ required: true, message: 'Please input project code!' }]}
-                  >
-                    <Input placeholder="Enter project code" className="rounded-md" />
-                  </Form.Item>
-
+              <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                <div className="col-span-2">
                   <Form.Item
                     name="project_name"
                     label="Project Name"
-                    rules={[{ required: true, message: 'Please input project name!' }]}
+                    rules={[{ required: true, message: 'Please specify value for this field.' }]}
                   >
-                    <Input placeholder="Enter project name" className="rounded-md" />
+                    <Input className="rounded-md" />
                   </Form.Item>
+                </div>
 
+                <div className="col-span-2">
                   <Form.Item
-                    name="project_status"
-                    label="Status"
-                    rules={[{ required: true, message: 'Please select status!' }]}
+                    name="project_code"
+                    label="Project Code"
+                    rules={[{ required: true, message: 'Please specify value for this field.' }]}
                   >
-                    <Select placeholder="Select status" className="rounded-md">
-                      <Select.Option value="New">New</Select.Option>
-                      <Select.Option value="Pending">Pending</Select.Option>
-                      <Select.Option value="Completed">Completed</Select.Option>
-                    </Select>
+                    <Input className="rounded-md" />
                   </Form.Item>
+                </div>
 
-                 
-
+                <div className="col-span-2">
                   <Form.Item
                     name="project_department"
                     label="Department"
-                    rules={[{ required: true, message: 'Please select department!' }]}
                   >
                     <Select placeholder="Select department">
-                      <Select.Option value="IT">IT Department</Select.Option>
-                      <Select.Option value="HR">HR Department</Select.Option>
-                      <Select.Option value="Marketing">Marketing Department</Select.Option>
-                      <Select.Option value="Sales">Sales Department</Select.Option>
-                      <Select.Option value="Finance">Finance Department</Select.Option>
+                      <Select.Option value="CMS">CMS</Select.Option>
+                      <Select.Option value="ERP">ERP</Select.Option>
+                      <Select.Option value="Blockchain">Blockchain</Select.Option>
                     </Select>
                   </Form.Item>
+                </div>
 
+                <div className="col-span-2">
                   <Form.Item
                     name="project_description"
                     label="Description"
-                    rules={[{ required: true, message: 'Please input project description!' }]}
+                    rules={[{ required: true, message: 'Please specify value for this field.' }]}
                   >
                     <Input.TextArea 
                       rows={4}
                       placeholder="Enter project description"
+                      className="rounded-md"
                     />
                   </Form.Item>
+                </div>
 
+                {/* Date Selection in 2 columns */}
+                <div>
                   <Form.Item
                     label="Start Date"
                     name="startDate"
-                    rules={[{ required: true, message: 'Please select start date!' }]}
                   >
                     <DatePicker 
                       style={{ width: '100%' }}
+                      className="rounded-md"
                       disabledDate={disabledStartDate}
                       onChange={handleStartDateChange}
                     />
                   </Form.Item>
+                </div>
 
+                <div>
                   <Form.Item
                     label="End Date"
                     name="endDate"
-                    rules={[{ required: true, message: 'Please select end date!' }]}
                   >
                     <DatePicker 
                       style={{ width: '100%' }}
+                      className="rounded-md"
                       disabledDate={disabledEndDate}
                     />
                   </Form.Item>
@@ -699,80 +723,67 @@ const AdminProjectManager: React.FC = () => {
               <div className="mb-8">
                 <h3 className="text-lg font-medium text-gray-700 mb-4 pb-2 border-b">Team Members</h3>
                 <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                  {/* Project Manager - Single select */}
                   <Form.Item
                     name="project_manager"
                     label="Project Manager"
-                    rules={[{ required: true, message: 'Please select Project Manager!' }]}
                   >
                     <Select placeholder="Select Project Manager">
-                      {/* Options sẽ được fetch từ API */}
+                      {/* Options từ API */}
                     </Select>
                   </Form.Item>
 
-                  {/* QA - Single select */}
                   <Form.Item
                     name="qa_leader"
                     label="Quality Analytics"
-                    rules={[{ required: true, message: 'Please select QA!' }]}
                   >
                     <Select placeholder="Select QA">
-                      {/* Options sẽ được fetch từ API */}
+                      {/* Options từ API */}
                     </Select>
                   </Form.Item>
 
-                  {/* Technical Lead - Multiple select */}
+                  {/* Các role khác tương tự, bỏ rules */}
                   <Form.Item
                     name="technical_leader"
                     label="Technical Lead"
-                    rules={[{ required: true, message: 'Please select Technical Lead!' }]}
                   >
                     <Select mode="multiple" placeholder="Select Technical Lead">
-                      {/* Options sẽ được fetch từ API */}
+                      {/* Options từ API */}
                     </Select>
                   </Form.Item>
 
-                  {/* BA - Multiple select */}
                   <Form.Item
                     name="business_analyst"
                     label="Business Analyst"
-                    rules={[{ required: true, message: 'Please select BA!' }]}
                   >
                     <Select mode="multiple" placeholder="Select Business Analyst">
-                      {/* Options sẽ được fetch từ API */}
+                      {/* Options từ API */}
                     </Select>
                   </Form.Item>
 
-                  {/* Developers - Multiple select */}
                   <Form.Item
                     name="developers"
                     label="Developers"
-                    rules={[{ required: true, message: 'Please select developers!' }]}
                   >
                     <Select mode="multiple" placeholder="Select Developers">
-                      {/* Options sẽ được fetch từ API */}
+                      {/* Options từ API */}
                     </Select>
                   </Form.Item>
 
-                  {/* Testers - Multiple select */}
                   <Form.Item
                     name="testers"
                     label="Testers"
-                    rules={[{ required: true, message: 'Please select testers!' }]}
                   >
                     <Select mode="multiple" placeholder="Select Testers">
-                      {/* Options sẽ được fetch từ API */}
+                      {/* Options từ API */}
                     </Select>
                   </Form.Item>
 
-                  {/* Technical Consultant - Multiple select */}
                   <Form.Item
                     name="technical_consultant"
                     label="Technical Consultancy"
-                    rules={[{ required: true, message: 'Please select technical consultant!' }]}
                   >
                     <Select mode="multiple" placeholder="Select Technical Consultant">
-                      {/* Options sẽ được fetch từ API */}
+                      {/* Options từ API */}
                     </Select>
                   </Form.Item>
                 </div>
@@ -788,7 +799,7 @@ const AdminProjectManager: React.FC = () => {
                 <Button 
                   type="primary" 
                   htmlType="submit"
-                  className="px-6 rounded-md"
+                  loading={loading}
                 >
                   Update Project
                 </Button>
