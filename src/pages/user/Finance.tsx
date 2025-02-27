@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DollarOutlined, EyeOutlined, DownloadOutlined,FileExcelOutlined } from '@ant-design/icons';
 import { Modal, Descriptions } from 'antd';
 import { exportToExcel } from '../../utils/xlsxUtils';
+import { claimService } from '../../services/claimService';
 
 
 interface Claim {
@@ -23,31 +24,23 @@ const Finance = () => {
   const [selectedClaimForInfo, setSelectedClaimForInfo] = useState<Claim | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [isViewModalVisible, setIsViewModalVisible] = useState(false);
+  const [claims, setClaims] = useState<Claim[]>([]);
   
-  const [claims, setClaims] = useState<Claim[]>([
-    {
-      id: "CLM-001",
-      staffName: "John Smith",
-      projectName: "Project Alpha",
-      from: "2024-01-01",
-      to: "2024-04-01",
-      totalHours: 45,
-      amount: 2250,
-      status: "Approved",
-      auditTrail: []
-    },
-    {
-      id: "CLM-002",
-      staffName: "Jane Doe", 
-      projectName: "Project Beta",
-      from: "2024-01-15",
-      to: "2024-03-15",
-      totalHours: 38,
-      amount: 1900,
-      status: "Approved",
-      auditTrail: []
-    }
-  ]);
+  useEffect(() => {
+    const fetchClaims = async () => {
+      try {
+        const response = await claimService.searchClaimsForFinance({
+          searchCondition: {},
+          pageInfo: { pageNum: 1, pageSize: 10 }
+        });
+        setClaims(Array.isArray(response) ? response : []);
+      } catch (error) {
+        console.error("Error fetching claims:", error);
+      }
+    };
+
+    fetchClaims();
+  }, []);
 
   const handleMarkAsPaid = (claim: Claim) => {
     setSelectedClaim(claim);
@@ -253,7 +246,7 @@ const Finance = () => {
       {showConfirmDialog && (
         <Modal
           title={<h2 className="text-2xl font-bold text-center">Confirm Payment</h2>}
-          visible={showConfirmDialog}
+          open={showConfirmDialog}
           onCancel={() => setShowConfirmDialog(false)}
           footer={null}
           width={600}
@@ -276,7 +269,7 @@ const Finance = () => {
 
       <Modal
         title={<h2 className="text-2xl font-bold">Claim Details</h2>}
-        visible={isViewModalVisible}
+        open={isViewModalVisible}
         onCancel={handleViewModalClose}
         footer={null}
         width={800}
