@@ -9,6 +9,8 @@ import ContactUs from './pages/Contactus';
 import ForgotPassword from './components/common/ForgotPassword';
 import NotFound from './pages/NotFound';
 import { RoutePermissions } from './routes/RoutePermissions';
+import VerifyToken from './pages/common/VerifyToken';
+import ResendToken from './pages/common/ResendToken';
 
 // Lazy load components
 const Homepage = lazy(() => import('./pages/Homepage'));
@@ -43,7 +45,8 @@ const App = () => {
           <Route path='/forgot-password' element={<ForgotPassword />} />
           <Route path='/login' element={<Login />} />
           <Route path='/contactus' element={<ContactUs />} />
-
+          <Route path='/verify/:token' element={<VerifyToken />} />
+                  <Route path='/resend-token' element={<ResendToken />} />
           {/* User Dashboard Routes */}
           <Route path='/userdashboard/' element={<UserRoute><UserDashBoard /></UserRoute>}>
             <Route path="profile" element={
