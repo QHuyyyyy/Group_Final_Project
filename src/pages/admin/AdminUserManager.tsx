@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Table, Button, Form, Input, Modal, Popconfirm, Select, Space, Tag } from 'antd';
+import { Card, Table, Button, Form, Input, Modal, Select, Space, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import 'antd/dist/reset.css';
 import SideBarAdminUser from '../../components/admin/SideBarAdminUser';  
 import { useNavigate } from 'react-router-dom';
 import { 
-  EditOutlined, 
-  DeleteOutlined, 
+  EditOutlined,  
   EyeOutlined, 
   LockOutlined,
   UnlockOutlined,
@@ -21,12 +20,13 @@ import { message } from 'antd';
 import { roleService } from '../../services/roleService';
 
 import AddUserModal from '../../components/admin/AddUserModal';
+import DeleteUserButton from '../../components/admin/DeleteUserButton';
 
 interface StaffMember {
   _id: string;
   user_name: string;
   email: string;
-  role_code: string;
+  role_code: string;  // A001, A002, A003, A004
   is_blocked: boolean;
   is_verified: boolean;
   created_at: string;
@@ -174,11 +174,6 @@ const AdminUserManager: React.FC = () => {
     form.resetFields();
   };
 
-  const handleDelete = (key: string) => {
-    const newData = staffData.filter(item => item._id !== key);
-    setStaffData(newData);
-  };
-
   const handleBlockToggle = (record: StaffMember) => {
     const newData = staffData.map(item =>
       item._id === record._id ? { ...item, is_blocked: !item.is_blocked } : item
@@ -216,12 +211,15 @@ const AdminUserManager: React.FC = () => {
       width: 100,
       render: (role: string) => (
         <Tag color={
-          role === 'Manager' ? 'blue' :
-          role === 'Developer' ? 'green' :
-          role === 'HR' ? 'purple' :
-          'default'
+          role === 'A001' ? 'blue' :
+          role === 'A002' ? 'green' :
+          role === 'A003' ? 'purple' :
+          role === 'A004' ? 'orange' : 'default'
         }>
-          {role}
+          {role === 'A001' ? 'Admin' :
+           role === 'A002' ? 'Finance' :
+           role === 'A003' ? 'Approval' :
+           role === 'A004' ? 'Member' : role}
         </Tag>
       )
     },
@@ -270,19 +268,13 @@ const AdminUserManager: React.FC = () => {
             disabled={record.is_blocked}
             className="text-gray-600 hover:text-gray-800"
           />
-          <Popconfirm
-            title="Do you want to delete this staff member?"
-            onConfirm={() => handleDelete(record._id)}
-            okText="Yes"
-            cancelText="No"
-            disabled={record.is_blocked}
-          >
-            <Button 
-              type="text" 
-              danger 
-              icon={<DeleteOutlined />}
-            />
-          </Popconfirm>
+          <DeleteUserButton
+            userId={record._id}
+            isBlocked={record.is_blocked}
+            onSuccess={() => {
+              fetchUsers();
+            }}
+          />
           <Button
             type="text"
             icon={record.is_blocked ? <LockOutlined /> : <UnlockOutlined />}
