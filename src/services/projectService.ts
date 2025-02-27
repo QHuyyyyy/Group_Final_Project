@@ -18,6 +18,7 @@ interface ProjectMember {
 
   interface SearchCondition {
   keyword?: string;
+  project_status?:string;
   project_start_date?: string;
   project_end_date?: string;
   is_delete?: boolean;
@@ -49,6 +50,7 @@ export const projectService = {
     const response = await api.post('/api/projects/search', {
       searchCondition: {
         keyword: params.searchCondition.keyword || "",
+        project_status: params.searchCondition.project_status,
         project_start_date: params.searchCondition.project_start_date,
         project_end_date: params.searchCondition.project_end_date,
         is_delete: params.searchCondition.is_delete || false

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input, Button, Card, Table, Tag, Space } from "antd";
 import { EditOutlined, EyeOutlined, CloudUploadOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import RequestDetails from "../../components/user/RequestDetails";
@@ -7,6 +7,7 @@ import CreateRequest from "../../pages/user/CreateRequest"
 import SendRequest from "../../components/user/SendRequest";
 // import ReturnRequest from "../../components/user/ReturnRequest";
 import CancelRequest from "../../components/user/CancelRequest";
+import { claimService } from "../../services/claimService";
 
 interface Request {
   id: number;
@@ -56,13 +57,38 @@ const Request = () => {
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
   const [sendRequestId, setSendRequestId] = useState<number | null>(null);
   const [isSendModalVisible, setIsSendModalVisible] = useState(false);
+  const [requests, setRequests] = useState([])
   // const [returnRequestId, setReturnRequestId] = useState<number | null>(null);
   // const [isReturnModalVisible, setIsReturnModalVisible] = useState(false);
 
   // New state for CancelRequest modal
   const [cancelRequestId, setCancelRequestId] = useState<number | null>(null);
   const [isCancelModalVisible, setIsCancelModalVisible] = useState(false);
+  useEffect(() => {
+    const fetchClaims = async () => {
+          try {
+            const params = {
+              searchCondition: {
+                keyword: "",
+                claim_start_date: "",
+                claim_end_date: "",
+                is_deleted: false,
+              },
+              pageInfo: {
+                pageNum: 1,
+                pageSize: 10,
+              },
+            };
+            const data = await claimService.getAllClaims(params);
+            setRequests(data.pageData);      
+          } catch (error) {
+            console.error("Error fetching claims:", error);
+          }
+        };
+        fetchClaims();
+  })
 
+  console.log(requests)
   ////////////////////////////////////////////////////////////////////////////
   const handleSearch = (value: string) => {
     const filteredData = initialRequests.filter((req) =>
