@@ -3,7 +3,7 @@ import { Modal, Descriptions, Tag } from 'antd';
 
 interface Staff {
   username: string;
-  fullName: string;  // Changed from staffName
+  fullName: string; 
   role: string;
   email: string;
   phone: string;
@@ -22,6 +22,13 @@ interface StaffDetailsProps {
 }
 
 const StaffDetails: React.FC<StaffDetailsProps> = ({ visible, staff, onClose }) => {
+  const roleMap: { [key: string]: string } = {
+    A001: 'Admin',
+    A002: 'Finance',
+    A003: 'Approval',
+    A004: 'Member',
+  };
+
   return (
     <Modal
       title={<h3 className="text-lg font-medium text-gray-800">Staff Details</h3>}
@@ -41,11 +48,12 @@ const StaffDetails: React.FC<StaffDetailsProps> = ({ visible, staff, onClose }) 
           </Descriptions.Item>
           <Descriptions.Item label="Role" span={1}>
             <Tag color={
-              staff?.role === 'Manager' ? 'blue' :
-              staff?.role === 'Developer' ? 'green' :
-              staff?.role === 'HR' ? 'purple' : 'default'
+              staff?.role === 'A001' ? 'blue' :
+              staff?.role === 'A002' ? 'green' :
+              staff?.role === 'A003' ? 'purple' :
+              staff?.role === 'A004' ? 'orange' : 'default'
             }>
-              {staff?.role}
+              {roleMap[staff?.role] || staff?.role}
             </Tag>
           </Descriptions.Item>
           <Descriptions.Item label="Email" span={1}>

@@ -18,6 +18,9 @@ import dayjs from 'dayjs';
 import StaffDetails from '../../components/admin/StaffDetails';
 import { userService } from '../../services/userService';
 import { message } from 'antd';
+import { roleService } from '../../services/roleService';
+
+import AddUserModal from '../../components/admin/AddUserModal';
 
 interface StaffMember {
   _id: string;
@@ -49,10 +52,8 @@ const AdminUserManager: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [editingRecord, setEditingRecord] = useState<StaffMember | null>(null);
-  const { Option } = Select;
-  const roles = ['Admin', 'Manager', 'Employee', 'HR', 'Developer'];
   const [staffData, setStaffData] = useState<StaffMember[]>([]);
-  const [isAdding, setIsAdding] = useState(false);
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<any>(null);
   const [searchText, setSearchText] = useState('');
@@ -62,9 +63,11 @@ const AdminUserManager: React.FC = () => {
     pageSize: 10,
     total: 0
   });
+  const [roleOptions, setRoleOptions] = useState<{ label: string; value: string }[]>([]);
 
   useEffect(() => {
     fetchUsers();
+    fetchRoles();
   }, [pagination.current, pagination.pageSize, searchText]);
 
   const fetchUsers = async () => {
@@ -102,6 +105,20 @@ const AdminUserManager: React.FC = () => {
     }
   };
 
+  const fetchRoles = async () => {
+    try {
+      const roles = await roleService.getAllRoles();
+      const options = roles.map(role => ({
+        label: role.role_name, // Hiển thị role_name
+        value: role.role_code  // Giá trị thực sự là role_code
+      }));
+      setRoleOptions(options);
+    } catch (error) {
+      console.error('Error fetching roles:', error);
+      message.error('Không thể tải danh sách vai trò');
+    }
+  };
+
   // Add a debounced search handler
   const handleSearch = (value: string) => {
     setSearchText(value);
@@ -113,14 +130,10 @@ const AdminUserManager: React.FC = () => {
   };
 
   const handleAdd = () => {
-    setIsAdding(true);
-    setEditingRecord(null);
-    form.resetFields();
-    setIsModalVisible(true);
+    setIsAddModalVisible(true);
   };
 
   const handleEdit = (record: StaffMember) => {
-    setIsAdding(false);
     setEditingRecord(record);
     form.setFieldsValue({
       ...record,
@@ -131,70 +144,24 @@ const AdminUserManager: React.FC = () => {
 
   const handleSave = async (values: any) => {
     try {
-      if (isAdding) {
-        // Show loading message
-        const loadingMessage = message.loading('Creating user...', 0);
-        
-        // Validate and format the data
-        const userData = {
-          email: values.email.trim(),
-          password: values.password,
-          user_name: values.user_name.trim(),
-          role_code: values.role_code.trim()
-        };
-
-        // Add validation
-        if (!userData.email || !userData.password || !userData.user_name || !userData.role_code) {
-          loadingMessage();
-          message.error('Please fill in all required fields');
-          return;
-        }
-
-        try {
-          const response = await userService.createUser(userData);
-          loadingMessage();
-          
-          if (response && response.data) {
-            message.success('User created successfully');
-            setIsModalVisible(false);
-            form.resetFields();
-            fetchUsers();
-          }
-        } catch (apiError: any) {
-          loadingMessage();
-          if (apiError.response?.status === 400) {
-            message.error(apiError.response?.data?.message || 'Invalid user data. Please check your inputs.');
-          } else {
-            message.error('An error occurred while creating the user.');
-          }
-        }
+      if (editingRecord) {
+        setStaffData(prev => prev.map(staff => 
+          staff._id === editingRecord._id 
+            ? { ...values, _id: staff._id, is_blocked: staff.is_blocked }
+            : staff
+        ));
       } else {
-        // Handle edit case
-        const formattedValues = {
+        const newStaff = {
           ...values,
-          createdAt: values.createdAt ? dayjs(values.createdAt).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
-          confirmPassword: values.confirmPassword
+          _id: Date.now().toString(),
+          is_blocked: false,
+          createdAt: dayjs().format('YYYY-MM-DD')
         };
-
-        if (editingRecord) {
-          setStaffData(prev => prev.map(staff => 
-            staff._id === editingRecord._id 
-              ? { ...formattedValues, _id: staff._id, is_blocked: staff.is_blocked }
-              : staff
-          ));
-        } else {
-          const newStaff = {
-            ...formattedValues,
-            _id: Date.now().toString(),
-            is_blocked: false,
-            createdAt: dayjs().format('YYYY-MM-DD')
-          };
-          setStaffData(prev => [...prev, newStaff]);
-        }
-        setIsModalVisible(false);
-        setEditingRecord(null);
-        form.resetFields();
+        setStaffData(prev => [...prev, newStaff]);
       }
+      setIsModalVisible(false);
+      setEditingRecord(null);
+      form.resetFields();
     } catch (error) {
       console.error('Error saving staff member:', error);
       message.error('An error occurred while saving the staff member.');
@@ -204,7 +171,6 @@ const AdminUserManager: React.FC = () => {
   const handleCancel = () => {
     setIsModalVisible(false);
     setEditingRecord(null);
-    setIsAdding(false);
     form.resetFields();
   };
 
@@ -330,7 +296,7 @@ const AdminUserManager: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <SideBarAdminUser  onAddUser={handleAdd} />
+      <SideBarAdminUser onAddUser={handleAdd} />
       <div className="flex-1 ml-64 p-8">
         <div className="flex items-center justify-between mb-6">
           <Button 
@@ -382,9 +348,18 @@ const AdminUserManager: React.FC = () => {
           </div>
         </Card>
 
-        {/* Edit/Add Modal */}
+        <AddUserModal
+          visible={isAddModalVisible}
+          onCancel={() => setIsAddModalVisible(false)}
+          onSuccess={() => {
+            setIsAddModalVisible(false);
+            fetchUsers();
+          }}
+          roleOptions={roleOptions}
+        />
+
         <Modal
-          title={<h2 className="text-2xl font-bold">{isAdding ? "Add Account Staff" : "Complete Staff Information"}</h2>}
+          title={<h2 className="text-2xl font-bold">Complete Staff Information</h2>}
           open={isModalVisible}
           onCancel={handleCancel}
           width={800}
@@ -401,111 +376,42 @@ const AdminUserManager: React.FC = () => {
             form={form}
             layout="vertical"
             onFinish={handleSave}
-            initialValues={{
-              role_code: 'Employee',
-              createdAt: dayjs(),
-            }}
           >
-            {isAdding ? (
-              <div className="flex flex-col items-center gap-4 w-full">
-                <div className="w-full max-w-md">
-                  <Form.Item
-                    name="user_name"
-                    label="Username"
-                    rules={[{ required: true, message: 'Please input username!' }]}
-                  >
-                    <Input />
-                  </Form.Item>
+            <div className="grid grid-cols-2 gap-4">
+              <Form.Item
+                name="user_name"
+                label="Username"
+              >
+                <Input disabled className="bg-gray-100" />
+              </Form.Item>
 
-                  <Form.Item
-                    name="email"
-                    label="Email"
-                    rules={[
-                      { required: true, message: 'Please input email!' },
-                      { type: 'email', message: 'Please enter a valid email!' }
-                    ]}
-                  >
-                    <Input />
-                  </Form.Item>
+              <Form.Item
+                name="role_code"
+                label="Role"
+              >
+                <Select
+                  placeholder="Select role"
+                  options={roleOptions}
+                />
+              </Form.Item>
 
-                  <Form.Item
-                    name="role_code"
-                    label="Role Code"
-                    rules={[{ required: true, message: 'Please input role code!' }]}
-                  >
-                    <Input />
-                  </Form.Item>
+              <Form.Item
+                name="createdAt"
+                label="Created At"
+              >
+                <Input disabled className="bg-gray-100" />
+              </Form.Item>
 
-                  <Form.Item
-                    name="password"
-                    label="Password"
-                    rules={[
-                      { required: true, message: 'Please input password!' },
-                      { min: 6, message: 'Password must be at least 6 characters!' }
-                    ]}
-                  >
-                    <Input.Password />
-                  </Form.Item>
-
-                  <Form.Item
-                    name="confirmPassword"
-                    label="Confirm Password"
-                    dependencies={['password']}
-                    rules={[
-                      { required: true, message: 'Please confirm your password!' },
-                      ({ getFieldValue }) => ({
-                        validator(_, value) {
-                          if (!value || getFieldValue('password') === value) {
-                            return Promise.resolve();
-                          }
-                          return Promise.reject(new Error('The passwords do not match!'));
-                        },
-                      }),
-                    ]}
-                  >
-                    <Input.Password />
-                  </Form.Item>
-                </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-4">
-                <Form.Item
-                  name="user_name"
-                  label="Username"
-                >
-                  <Input disabled className="bg-gray-100" />
-                </Form.Item>
-
-                <Form.Item
-                  name="role_code"
-                  label="Role"
-                >
-                  <Select>
-                    {roles.map(role => (
-                      <Option key={role} value={role}>{role}</Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-
-                <Form.Item
-                  name="createdAt"
-                  label="Created At"
-                >
-                  <Input disabled className="bg-gray-100" />
-                </Form.Item>
-
-                <Form.Item
-                  name="email"
-                  label="Email"
-                >
-                  <Input />
-                </Form.Item>
-              </div>
-            )}
+              <Form.Item
+                name="email"
+                label="Email"
+              >
+                <Input />
+              </Form.Item>
+            </div>
           </Form>
         </Modal>
 
-        {/* Details Modal */}
         <StaffDetails 
           visible={isDetailsModalVisible}
           staff={selectedStaff}
