@@ -26,7 +26,7 @@ interface StaffMember {
   _id: string;
   user_name: string;
   email: string;
-  role_code: string;
+  role_code: string;  // A001, A002, A003, A004
   is_blocked: boolean;
   is_verified: boolean;
   created_at: string;
@@ -216,12 +216,15 @@ const AdminUserManager: React.FC = () => {
       width: 100,
       render: (role: string) => (
         <Tag color={
-          role === 'Manager' ? 'blue' :
-          role === 'Developer' ? 'green' :
-          role === 'HR' ? 'purple' :
-          'default'
+          role === 'A001' ? 'blue' :
+          role === 'A002' ? 'green' :
+          role === 'A003' ? 'purple' :
+          role === 'A004' ? 'orange' : 'default'
         }>
-          {role}
+          {role === 'A001' ? 'Admin' :
+           role === 'A002' ? 'Finance' :
+           role === 'A003' ? 'Approval' :
+           role === 'A004' ? 'Member' : role}
         </Tag>
       )
     },
