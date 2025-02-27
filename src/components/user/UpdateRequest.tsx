@@ -8,41 +8,40 @@ const { Option } = Select;
 
 interface UpdateRequestProps {
     visible: boolean;
-    request: Request;
+    claim: {
+        id: string;
+        name: string;
+        project: string;
+        totalHours: number;
+        status: string;
+        createdDate: string;
+        startDate: string;
+        endDate: string;
+        description: string;
+    };
     onClose: () => void;
 }
 
-interface Request {
-    id: number;
-    name: string;
-    project: string;
-    totalHours: number;
-    status: string;
-    createdDate: string;
-    startDate: string;
-    endDate: string;
-    description: string;
-}
 
-const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, request, onClose }) => {
+const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, claim, onClose }) => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
     const [startDate, setStartDate] = useState<dayjs.Dayjs | null>(null);
 
     // Sửa lại cách khởi tạo form
     React.useEffect(() => {
-        const start = dayjs(request.startDate);
+        const start = dayjs(claim.startDate);
         setStartDate(start);
         form.setFieldsValue({
-            name: request.name,
-            project: request.project,
+            name: claim.name,
+            project: claim.project,
             startDate: start,
-            endDate: dayjs(request.endDate),
-            totalHours: request.totalHours,
-            status: request.status,
-            description: request.description
+            endDate: dayjs(claim.endDate),
+            totalHours: claim.totalHours,
+            status: claim.status,
+            description: claim.description
         });
-    }, [request, form]);
+    }, [claim, form]);
 
     // Hàm disabledStartDate
     const disabledStartDate = (current: dayjs.Dayjs) => {

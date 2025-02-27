@@ -2,10 +2,10 @@ import { useState } from "react";
 import { Modal, notification } from "antd";
 
 interface CancelRequestProps {
-    id: number | null;
+    id: string | null;
     status: string;
     visible: boolean;
-    onCancelRequest: (id: number) => void;
+    onCancelRequest: (id: string) => Promise<void>;
     onClose: () => void;
 }
 // const CancelRequest: React.FC<CancelRequestProps> = ({ id, status, visible, onCancelRequest, onClose }) => {

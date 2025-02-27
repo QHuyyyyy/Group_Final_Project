@@ -14,6 +14,9 @@ interface Claim {
   created_at: string;
   updated_at: string;
   __v: number;
+  project_info: {
+    project_name: string;
+  }
 }
 
 interface SearchCondition {
@@ -21,7 +24,7 @@ interface SearchCondition {
   claim_start_date?: string;
   claim_end_date?: string;
   claim_status?: string;
-  is_deleted?: boolean;
+  is_delete?: boolean;
 }
 
 interface PageInfo {
