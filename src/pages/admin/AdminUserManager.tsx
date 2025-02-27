@@ -60,7 +60,8 @@ const AdminUserManager: React.FC = () => {
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
-    total: 0
+    totalItems: 0,
+    totalPages: 0
   });
   const [roleOptions, setRoleOptions] = useState<{ label: string; value: string }[]>([]);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
@@ -94,7 +95,8 @@ const AdminUserManager: React.FC = () => {
         setStaffData(response.pageData);
         setPagination(prev => ({
           ...prev,
-          total: response.total || 0
+          totalItems: response.pageInfo.totalItems,
+          totalPages: response.pageInfo.totalPages
         }));
       }
     } catch (error) {
@@ -288,13 +290,14 @@ const AdminUserManager: React.FC = () => {
               pagination={{
                 current: pagination.current,
                 pageSize: pagination.pageSize,
-                total: pagination.total,
+                total: pagination.totalItems,
                 onChange: (page, pageSize) => {
                   setPagination(prev => ({
                     ...prev,
                     current: page,
                     pageSize: pageSize || 10
                   }));
+                  fetchUsers();
                 },
                 showSizeChanger: true,
                 showQuickJumper: true,
