@@ -208,7 +208,7 @@ function ApprovalPage() {
   const currentClaims = claims.slice(startIndex, startIndex + pageSize);
 
   return (
-    <div className="container mx-auto px-2 py-8">
+    <div className="overflow-x-auto">
       <Card className="shadow-md">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-800">Claim Approvals</h1>
@@ -282,7 +282,7 @@ function ApprovalPage() {
                 title: <span className="font-bold">Reason</span>,
                 dataIndex: "description",
                 key: "description",
-                width: "25%",
+                width: "20%",
               },
               {
                 title: <span className="font-bold">Status</span>,

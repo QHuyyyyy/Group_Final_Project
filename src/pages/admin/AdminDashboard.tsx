@@ -107,7 +107,7 @@ const AdminDashboard: React.FC = () => {
     {
       key: "1",
       label: (
-        <Link to={`profile`}>
+        <Link to={"/dashboard/profile"}>
           <UserOutlined className="pr-2" />
           Profile
         </Link>
