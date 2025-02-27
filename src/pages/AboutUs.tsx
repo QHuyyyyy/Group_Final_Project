@@ -1,8 +1,8 @@
-import React from "react";
+import React, {useState, useEffect} from "react";
 import Header from "../layout/header";
 import Banner from "../layout/banner";
 import Footer from "../layout/footer";
-
+import UserSpinner from "../components/user/UserSpinner";
 const customerReviews = [
   {
     name: "Alice Johnson",
@@ -41,8 +41,19 @@ const customerReviews = [
     productImage: "https://via.placeholder.com/24",
   },
 ];
-
 const AboutUs: React.FC = () => {
+  const [isLoading, setIsLoading] = useState(true);
+  useEffect(() => {
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
+  
+      return () => clearTimeout(timer);
+    }, []);
+  
+    if (isLoading) {
+      return <UserSpinner/>;
+    }
   return (
     <div className="min-h-screen">
       <Header />
