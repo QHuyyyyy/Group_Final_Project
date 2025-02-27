@@ -14,6 +14,9 @@ interface Claim {
   created_at: string;
   updated_at: string;
   __v: number;
+  project_info: {
+    project_name: string;
+  }
 }
 
 interface SearchCondition {

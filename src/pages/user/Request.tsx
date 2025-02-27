@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Input, Card, Table, Tag, message, Button, Space, Popconfirm } from "antd";
+import { Input, Card, Table, Tag, message, Button, Space } from "antd";
 import { claimService } from "../../services/claimService";
 import dayjs from 'dayjs';
 import RequestDetails from "../../components/user/RequestDetails";
@@ -135,21 +135,7 @@ const Claim = () => {
     setSelectedRequest(null);
   };
 
-  const handleEdit = (record: Claim) => {
-    // TODO: Implement edit functionality
-    console.log('Edit claim:', record);
-  };
-
-  const handleDelete = async (record: Claim) => {
-    try {
-      await claimService.changeClaimStatus(record._id, 'DELETED');
-      message.success('Claim deleted successfully');
-      fetchClaims();
-    } catch (error) {
-      console.error('Error deleting claim:', error);
-      message.error('Failed to delete claim');
-    }
-  };
+  
 
   const formatWorkTime = (hours: number) => { 
     if (!hours && hours !== 0) return '-';
@@ -240,23 +226,7 @@ const Claim = () => {
                       onClick={() => handleView(record)}
                       title="View"
                     />
-                    {record.claim_status === "DRAFT" && (
-                      <>
-                        <Button type="link" onClick={() => handleEdit(record)}>
-                          Edit
-                        </Button>
-                        <Popconfirm
-                          title="Are you sure you want to delete this claim?"
-                          onConfirm={() => handleDelete(record)}
-                          okText="Yes"
-                          cancelText="No"
-                        >
-                          <Button type="link" danger>
-                            Delete
-                          </Button>
-                        </Popconfirm>
-                      </>
-                    )}
+                   
                   </Space>
                 )
               }
