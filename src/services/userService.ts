@@ -22,6 +22,7 @@ interface SearchParams {
 interface UpdateUserData {
   email?: string;
   user_name?: string;
+  role_code?: string;
 }
 export const userService = {
   createUser: async (userData: createUser) => {
@@ -62,8 +63,8 @@ export const userService = {
     return response.data.data;
   },
 
-  changeRole: async ( user_id:string,old_role: string, new_role: string) => {
-    const response = await api.put(`/api/users/change-role`, { user_id, old_role,new_role });
-    return response.data.data;
+  changeRole: async (user_id: string, role_code: string) => {
+    const response = await api.put(`/api/users/change-role`, { user_id, role_code });
+    return response.data;
   }
 };
