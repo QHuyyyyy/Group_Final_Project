@@ -58,8 +58,8 @@ export const userService = {
     return response.data;
   },
 
-  changeStatus: async ( user_id:string,old_status: string, new_status: string) => {
-    const response = await api.put(`/api/users/change-status`, { user_id, old_status,new_status });
+  changeStatus: async ({ user_id, is_blocked }: { user_id: string; is_blocked: boolean }) => {
+    const response = await api.put(`/api/users/change-status`, { user_id, is_blocked });
     return response.data;
   },
 

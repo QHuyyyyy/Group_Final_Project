@@ -7,8 +7,6 @@ import { useNavigate } from 'react-router-dom';
 import { 
   EditOutlined,  
   EyeOutlined, 
-  LockOutlined,
-  UnlockOutlined,
   ArrowLeftOutlined,
   
   SearchOutlined
@@ -23,6 +21,7 @@ import AddUserModal from '../../components/admin/AddUserModal';
 import DeleteUserButton from '../../components/admin/DeleteUserButton';
 import EditUserModal from '../../components/admin/EditUserModal';
 import { debounce } from 'lodash';
+import BlockUserButton from '../../components/admin/BlockUserButton';
 
 interface StaffMember {
   _id: string;
@@ -141,14 +140,6 @@ const AdminUserManager: React.FC = () => {
     setIsEditModalVisible(true);
   };
 
-  
-  const handleBlockToggle = (record: StaffMember) => {
-    const newData = staffData.map(item =>
-      item._id === record._id ? { ...item, is_blocked: !item.is_blocked } : item
-    );
-    setStaffData(newData);
-  };
-
   const handleViewDetails = (staff: any) => {
     setSelectedStaff(staff);
     setIsDetailsModalVisible(true);
@@ -243,11 +234,10 @@ const AdminUserManager: React.FC = () => {
               fetchUsers();
             }}
           />
-          <Button
-            type="text"
-            icon={record.is_blocked ? <LockOutlined /> : <UnlockOutlined />}
-            onClick={() => handleBlockToggle(record)}
-            className={record.is_blocked ? 'text-red-500' : 'text-green-500'}
+          <BlockUserButton
+            userId={record._id}
+            isBlocked={record.is_blocked}
+            onSuccess={fetchUsers}
           />
         </Space>
       ),
