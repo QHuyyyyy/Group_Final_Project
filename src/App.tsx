@@ -21,9 +21,8 @@ const AdminProjectManager = lazy(() => import('./pages/admin/AdminProjectManager
 const AdminUserManager = lazy(() => import('./pages/admin/AdminUserManager'));
 const UserDashBoard = lazy(() => import('./pages/user/UserDashboard'));
 const ApprovalPage = lazy(() => import('./pages/user/Approval'));
-const Request = lazy(() => import('./pages/user/Request'));
+const Claim = lazy(() => import('./pages/user/Request'));
 const Finance = lazy(() => import('./pages/user/Finance'));
-const RequestDetails = lazy(() => import('./pages/user/RequestDetails'));
 const IndustriesPage = lazy(() => import('./pages/InductriesPage'));
 const ViewClaimRequest = lazy(() => import('./pages/admin/ViewClaimRequest'));
 
@@ -66,16 +65,13 @@ const App = () => {
             } />
             <Route path="claimrequest" element={
               <UserRoute allowedRoles={RoutePermissions.claimrequest}>
-                <Request />
+                <Claim />
               </UserRoute>
             } />
             <Route path="finance" element={
               <UserRoute allowedRoles={RoutePermissions.finance}>
                 <Finance />
               </UserRoute>
-            } />
-            <Route path="request-detail/:id" element={
-              <RequestDetails />
             } />
             {/* <Route path="create-request" element={
               <UserRoute>
