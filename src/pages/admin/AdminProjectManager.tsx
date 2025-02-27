@@ -50,6 +50,8 @@ const AdminProjectManager: React.FC = () => {
     pageSize: 10,
     total: 0
   });
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
 
   // Hàm disabledStartDate
   const disabledStartDate = (current: dayjs.Dayjs) => {
@@ -135,14 +137,26 @@ const AdminProjectManager: React.FC = () => {
     }));
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
+    setProjectToDelete(id);
+    setIsDeleteModalVisible(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!projectToDelete) return;
+    
     try {
-      await projectService.deleteProject(id);
+      setLoading(true);
+      await projectService.deleteProject(projectToDelete);
       message.success('Xóa dự án thành công');
-      fetchProjects(); // Tải lại danh sách sau khi xóa
+      fetchProjects();
     } catch (error) {
       console.error('Error deleting project:', error);
       message.error('Có lỗi xảy ra khi xóa dự án');
+    } finally {
+      setLoading(false);
+      setIsDeleteModalVisible(false);
+      setProjectToDelete(null);
     }
   };
 
@@ -975,6 +989,22 @@ const AdminProjectManager: React.FC = () => {
               <Button type="primary" htmlType="submit">Create Project</Button>
             </div>
           </Form>
+        </Modal>
+
+        <Modal
+          title="Confirm Delete Project"
+          open={isDeleteModalVisible}
+          onOk={handleConfirmDelete}
+          onCancel={() => {
+            setIsDeleteModalVisible(false);
+            setProjectToDelete(null);
+          }}
+          okText="Delete"
+          cancelText="Cancel"
+          okButtonProps={{ danger: true }}
+        >
+          <p>Are you sure you want to delete this project?</p>
+          <p>This action cannot be undone.</p>
         </Modal>
       </div>
     </div>
