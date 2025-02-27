@@ -58,9 +58,11 @@ export const userService = {
     return response.data.data;
   },
 
-  changeStatus: async ( user_id:string,old_status: string, new_status: string) => {
-    const response = await api.put(`/api/users/change-status`, { user_id, old_status,new_status });
-    return response.data.data;
+
+  changeStatus: async ({ user_id, is_blocked }: { user_id: string; is_blocked: boolean }) => {
+    const response = await api.put(`/api/users/change-status`, { user_id, is_blocked });
+    return response.data;
+
   },
 
   changeRole: async (user_id: string, role_code: string) => {
