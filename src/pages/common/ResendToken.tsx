@@ -1,6 +1,6 @@
 import { Button, Typography, Form, Input } from 'antd';
-import { KeyOutlined } from '@ant-design/icons';
-import { useNavigate} from 'react-router-dom';
+import { KeyOutlined, MailOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import { useApiStore } from '../../stores/apiStore';
 import { authService } from '../../services/authService';
 import { toast } from 'react-toastify';
@@ -8,19 +8,19 @@ import loginBackground from '../../assets/login-background.png';
 
 const { Title } = Typography;
 
-export default function VerifyToken() {
+export default function ResendToken() {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const { isLoading } = useApiStore();
 
-
-  const handleSubmit = async (values: { token: string }) => {
+  const handleSubmit = async (values: { email: string }) => {
     try {
-      await authService.verifyToken(values.token);
-      toast.success('Account verified successful!');
-      navigate('/login');
+      await authService.resendToken(values.email);
+      localStorage.setItem('verifyEmail', values.email);
+      toast.success('New token has been sent to your email!');
+      navigate('/verify/token');
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Error verify');
+      toast.error(error.response?.data?.message || 'Error sending token');
     }
   };
 
@@ -37,10 +37,10 @@ export default function VerifyToken() {
         <div className="bg-white/30 backdrop-blur-md rounded-2xl shadow-2xl p-8 space-y-8 border border-white/20">
           <div className="text-center space-y-2">
             <Title level={2} className="!text-white !m-0 !font-bold tracking-wide">
-              Verify Account
+              Resend Token
             </Title>
             <p className="text-white/80 text-lg font-medium">
-              Input token in your email to verify
+              Enter your email to receive a new token
             </p>
           </div>
 
@@ -49,15 +49,17 @@ export default function VerifyToken() {
             onFinish={handleSubmit}
             layout="vertical"
             className="space-y-6"
-            initialValues={{ token: ""}}
           >
             <Form.Item
-              name="token"
-              rules={[{ required: true, message: 'please input token!' }]}
+              name="email"
+              rules={[
+                { required: true, message: 'Please enter your email!' },
+                { type: 'email', message: 'Invalid email format!' }
+              ]}
             >
               <Input 
-                prefix={<KeyOutlined className="text-white/60" />}
-                placeholder="Verify Account"
+                prefix={<MailOutlined className="text-white/60" />}
+                placeholder="Email"
                 size="large"
                 className="h-12 bg-white/20 border-white/30 text-white placeholder:text-white/60
                   focus:bg-white/30 hover:bg-white/30 transition-all"
@@ -75,24 +77,17 @@ export default function VerifyToken() {
                   shadow-lg hover:shadow-xl transition-all duration-200 
                   text-base font-semibold tracking-wide"
               >
-                Verify
+                Send New Token
               </Button>
             </Form.Item>
 
-            <div className="flex justify-between items-center">
+            <div className="text-center">
               <Button 
                 type="link" 
-                onClick={() => navigate('/resend-token')}
+                onClick={() => navigate('/verify/token')}
                 className="text-white/80 hover:text-white"
               >
-                Resend Token
-              </Button>
-              <Button 
-                type="link" 
-                onClick={() => navigate('/login')}
-                className="text-white/80 hover:text-white"
-              >
-                Back to Login
+                Back to Verification Page
               </Button>
             </div>
           </Form>
