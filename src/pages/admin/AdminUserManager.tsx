@@ -22,6 +22,7 @@ import { roleService } from '../../services/roleService';
 import AddUserModal from '../../components/admin/AddUserModal';
 import DeleteUserButton from '../../components/admin/DeleteUserButton';
 import EditUserModal from '../../components/admin/EditUserModal';
+import { debounce } from 'lodash';
 
 interface StaffMember {
   _id: string;
@@ -122,14 +123,14 @@ const AdminUserManager: React.FC = () => {
   };
 
   // Add a debounced search handler
-  const handleSearch = (value: string) => {
+  const handleSearch = debounce((value: string) => {
     setSearchText(value);
     // Reset to first page when searching
     setPagination(prev => ({
       ...prev,
       current: 1
     }));
-  };
+  }, 2000);
 
   const handleAdd = () => {
     setIsAddModalVisible(true);
@@ -270,7 +271,6 @@ const AdminUserManager: React.FC = () => {
           <Input
             placeholder="Search by name..."
             prefix={<SearchOutlined className="text-gray-400" />}
-            value={searchText}
             onChange={(e) => handleSearch(e.target.value)}
             style={{ width: 300 }}
             className="ml-4"
