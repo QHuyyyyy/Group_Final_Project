@@ -179,15 +179,15 @@ const AdminUserManager: React.FC = () => {
       width: 100,
       render: (role: string) => (
         <Tag color={
-          role === 'A001' ? 'blue' :
-          role === 'A002' ? 'green' :
-          role === 'A003' ? 'purple' :
-          role === 'A004' ? 'orange' : 'default'
+          role === 'A001' ? 'red' :
+          role === 'A002' ? 'blue' :
+          role === 'A003' ? 'yellow' :
+           'default'
         }>
-          {role === 'A001' ? 'Admin' :
+          {role === 'A001' ? 'Administrator' :
            role === 'A002' ? 'Finance' :
-           role === 'A003' ? 'Approval' :
-           role === 'A004' ? 'Member' : role}
+           role === 'A003' ? 'BUL, PM' :
+           role === 'A004' ? 'All Members' : role}
         </Tag>
       )
     },
