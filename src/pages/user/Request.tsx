@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import RequestDetails from "../../components/user/RequestDetails";
 import { EyeOutlined } from "@ant-design/icons";
 
-interface Request {
+interface Claim {
   _id: string;
   claim_name: string;
   project_id: string;
@@ -28,12 +28,16 @@ interface SearchParams {
     pageNum: number;
     pageSize: number;
   };
+  sortInfo: {
+    field: string;
+    order: string;
+  };
 }
 
 const { Search } = Input;
 
-const Request = () => {
-  const [claims, setClaims] = useState<Request[]>([]);
+const Claim = () => {
+  const [claims, setClaims] = useState<Claim[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [pagination, setPagination] = useState({
@@ -41,12 +45,21 @@ const Request = () => {
     pageSize: 10,
     total: 0
   });
-  const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<Claim | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [totalHoursMap, setTotalHoursMap] = useState<Record<string, number>>({});
 
   useEffect(() => {
     fetchClaims();
   }, [pagination.current, pagination.pageSize, searchText]);
+
+  useEffect(() => {
+    if (claims.length > 0) {
+      claims.forEach(claim => {
+        fetchTotal_Hours(claim._id);
+      });
+    }
+  }, [claims]);
 
   const fetchClaims = async () => {
     try {
@@ -62,6 +75,10 @@ const Request = () => {
         pageInfo: {
           pageNum: pagination.current,
           pageSize: pagination.pageSize
+        },
+        sortInfo: {
+          field: "created_at",
+          order: "desc"
         }
       };
 
@@ -75,11 +92,28 @@ const Request = () => {
           total: response.total || 0
         }));
       }
-  } catch (error) {
+    } catch (error) {
       console.error('Error fetching users:', error);
       message.error('An error occurred while fetching users.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTotal_Hours = async (claimId: string) => {
+    try {
+      const response = await claimService.getClaimById(claimId);
+      console.log('Total hours response:', response);
+      
+      if (response && response.total_work_time) {
+        setTotalHoursMap(prev => ({
+          ...prev,
+          [claimId]: response.total_work_time
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching total hours:', error);
+      message.error('An error occurred while fetching total hours.');
     }
   };
 
@@ -91,7 +125,7 @@ const Request = () => {
     }));
   };
 
-  const handleView = (record: Request) => {
+  const handleView = (record: Claim) => {
     setSelectedRequest(record);
     setIsModalVisible(true);
   };
@@ -101,12 +135,12 @@ const Request = () => {
     setSelectedRequest(null);
   };
 
-  const handleEdit = (record: Request) => {
+  const handleEdit = (record: Claim) => {
     // TODO: Implement edit functionality
     console.log('Edit claim:', record);
   };
 
-  const handleDelete = async (record: Request) => {
+  const handleDelete = async (record: Claim) => {
     try {
       await claimService.changeClaimStatus(record._id, 'DELETED');
       message.success('Claim deleted successfully');
@@ -115,6 +149,11 @@ const Request = () => {
       console.error('Error deleting claim:', error);
       message.error('Failed to delete claim');
     }
+  };
+
+  const formatWorkTime = (hours: number) => { 
+    if (!hours && hours !== 0) return '-';
+    return `${hours}h`;
   };
 
   return (
@@ -158,26 +197,20 @@ const Request = () => {
                 dataIndex: "created_at",
                 key: "created_at",
                 width: 120,
-                render: (date: string) => dayjs(date).format('YYYY-MM-DD')
+                render: (date: string) => dayjs(date).format('YYYY-MM-DD'),
+                sorter: (a, b) => {
+                  const dateA = new Date(a.created_at).getTime();
+                  const dateB = new Date(b.created_at).getTime();
+                  return dateA - dateB;
+                },
+                defaultSortOrder: 'descend'
               },
               {
                 title: "Total Hours",
                 dataIndex: "total_work_time",
                 key: "total_work_time",
                 width: 100,
-                render: (minutes: number) => {
-                  if (!minutes && minutes !== 0) return '-';
-                  
-                  const hours = minutes / 60;
-                  // Làm tròn đến 2 chữ số thập phân
-                  const roundedHours = Math.round(hours * 100) / 100;
-                  
-                  return (
-                    <span>
-                      {roundedHours} {roundedHours <= 1 ? 'hour' : 'hours'}
-                    </span>
-                  );
-                }
+                render: (_, record) => formatWorkTime(totalHoursMap[record._id] || 0)
               },
               {
                 title: "Status",
@@ -250,7 +283,7 @@ const Request = () => {
         
         <RequestDetails
           visible={isModalVisible}
-          request={selectedRequest}
+          claim={selectedRequest}
           onClose={handleCloseModal}
         />
       </div>
@@ -258,4 +291,4 @@ const Request = () => {
   );
 };
 
-export default Request;
+export default Claim;

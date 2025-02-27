@@ -1,9 +1,11 @@
-import { Modal, Descriptions, Tag } from "antd";
+import { Modal, Descriptions, Tag, message } from "antd";
 import dayjs from "dayjs";
+import { useEffect, useState } from "react";
+import { claimService } from "../../services/claimService";
 
 interface RequestDetailsProps {
     visible: boolean;
-    request: {
+    claim: {
         _id: string;
         claim_name: string;
         project_id: string;
@@ -18,8 +20,38 @@ interface RequestDetailsProps {
     onClose: () => void;
 }
 
-const RequestDetails: React.FC<RequestDetailsProps> = ({ visible, request, onClose }) => {
-    if (!request) return null;
+const RequestDetails: React.FC<RequestDetailsProps> = ({ visible, claim, onClose }) => {
+    const [totalHoursMap, setTotalHoursMap] = useState<Record<string, number>>({});
+
+    useEffect(() => {
+        if (claim?._id) {
+            fetchTotal_Hours(claim._id);
+        }
+    }, [claim]);
+
+    const fetchTotal_Hours = async (claimId: string) => {
+        try {
+            const response = await claimService.getClaimById(claimId);
+            console.log('Total hours response:', response);
+            
+            if (response && response.total_work_time) {
+                setTotalHoursMap(prev => ({
+                    ...prev,
+                    [claimId]: response.total_work_time
+                }));
+            }
+        } catch (error) {
+            console.error('Error fetching total hours:', error);
+            message.error('An error occurred while fetching total hours.');
+        }
+    };
+
+    const formatWorkTime = (hours: number) => {
+        if (!hours && hours !== 0) return '-';
+        return `${hours}h`;
+    };
+
+    if (!claim) return null;
 
     return (
         <Modal
@@ -31,38 +63,38 @@ const RequestDetails: React.FC<RequestDetailsProps> = ({ visible, request, onClo
         >
             <Descriptions bordered column={2} className="mt-4">
                 <Descriptions.Item label="Claim ID" span={1}>
-                    {request._id}
+                    {claim._id}
                 </Descriptions.Item>
                 <Descriptions.Item label="Claim Name" span={1}>
-                    {request.claim_name}
+                    {claim.claim_name}
                 </Descriptions.Item>
                 <Descriptions.Item label="Project Name" span={1}>
-                    {request.project_name || request.project_id}
+                    {claim.project_name || claim.project_id}
                 </Descriptions.Item>
                 <Descriptions.Item label="Status" span={1}>
                     <Tag color={
-                        !request.claim_status || request.claim_status === "DRAFT" ? "gold" :
-                        request.claim_status === "PENDING" ? "blue" :
-                        request.claim_status === "APPROVED" ? "green" : "red"
+                        !claim.claim_status || claim.claim_status === "DRAFT" ? "gold" :
+                        claim.claim_status === "PENDING" ? "blue" :
+                        claim.claim_status === "APPROVED" ? "green" : "red"
                     }>
-                        {request.claim_status || "DRAFT"}
+                        {claim.claim_status || "DRAFT"}
                     </Tag>
                 </Descriptions.Item>
                 <Descriptions.Item label="Created Date" span={1}>
-                    {dayjs(request.created_at).format('YYYY-MM-DD')}
+                    {dayjs(claim.created_at).format('YYYY-MM-DD')}
                 </Descriptions.Item>
                 <Descriptions.Item label="Total Hours" span={1}>
-                    {request.total_work_time / 60} hours
+                    {formatWorkTime(totalHoursMap[claim._id])}
                 </Descriptions.Item>
                 <Descriptions.Item label="Start Date" span={1}>
-                    {dayjs(request.claim_start_date).format('YYYY-MM-DD')}
+                    {dayjs(claim.claim_start_date).format('YYYY-MM-DD')}
                 </Descriptions.Item>
                 <Descriptions.Item label="End Date" span={1}>
-                    {dayjs(request.claim_end_date).format('YYYY-MM-DD')}
+                    {dayjs(claim.claim_end_date).format('YYYY-MM-DD')}
                 </Descriptions.Item>
-                {request.description && (
+                {claim.description && (
                     <Descriptions.Item label="Description" span={2}>
-                        {request.description}
+                        {claim.description}
                     </Descriptions.Item>
                 )}
             </Descriptions>
