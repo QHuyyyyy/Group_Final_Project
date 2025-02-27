@@ -77,14 +77,22 @@ export default function Login() {
               />
             </Form.Item>
 
-            <div className="mb-4 right-0 flex flex-end">
+            <div className="flex justify-between items-center mb-6">
               <Button 
                 type="link" 
                 onClick={() => navigate('/forgot-password')}
                 className="text-white/80 hover:text-white font-medium transition-all duration-200
-                  hover:scale-105 transform absolute "
+                  hover:scale-105 transform"
               >
-               Forgot Password?
+                Forgot Password?
+              </Button>
+              <Button 
+                type="link" 
+                onClick={() => navigate('/verify/token')}
+                className="text-white/80 hover:text-white font-medium transition-all duration-200
+                  hover:scale-105 transform"
+              >
+                Verify Account?
               </Button>
             </div>
 
