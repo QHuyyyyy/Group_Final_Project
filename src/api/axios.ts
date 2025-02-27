@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { ApiResponse } from '../models/ApiResponse';
+import { ApiResponse} from '../models/ApiResponse';
 
 
 const apiUrl = import.meta.env.VITE_API_URL;
@@ -33,6 +33,7 @@ api.interceptors.response.use(
     //   localStorage.removeItem("token");
     //   window.location.href = "/login";
     // }
+    console.log(error)
     return Promise.reject(error);
   }
 );

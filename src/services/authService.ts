@@ -1,9 +1,10 @@
 // src/services/authService.ts
 import api from "../api/axios";
+import { ApiResponse } from "../models/ApiResponse";
 import { Credentials, Token } from "../models/AuthModel";
 
 export const authService = {
-  login: async (credentials: Credentials) : Promise<Token> => {
+  login: async (credentials: Credentials) : Promise<ApiResponse<Token>> => {
     const response = await api.post("/api/auth", credentials);
     console.log("fetch data:", response.data.data);
     return response.data.data;
@@ -16,8 +17,8 @@ export const authService = {
 
   logout: async () => {
     const response = await api.post("/api/auth/logout");
-    console.log("fetch data:", response.data.data.data);
-    return response.data.data.data;
+    console.log("fetch data:", response.data.data);
+    return response.data.data;
   },
 
   verifyToken: async (token: string) => {
