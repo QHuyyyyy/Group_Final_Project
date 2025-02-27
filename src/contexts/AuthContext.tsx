@@ -40,8 +40,8 @@ export const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
     try {
       setLoading(true);
       const response = await authService.login({ email, password });
-      setToken(response.token);
-      localStorage.setItem("token", response.token); 
+      setToken(response.data.token);
+      localStorage.setItem("token", response.data.token); 
 
       const userInfo = await authService.getinfo();
       
