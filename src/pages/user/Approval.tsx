@@ -361,13 +361,13 @@ function ApprovalPage() {
         cancelText="Cancel"
       >
         {confirmationType === "approve" && (
-          <p>Are you sure you want to approve this claim?</p>
+          <p>Are you sure you want to <b>approve</b> this claim?</p>
         )}
         {confirmationType === "reject" && (
-          <p>Are you sure you want to reject this claim?</p>
+          <p>Are you sure you want to <b>reject</b> this claim?</p>
         )}
         {confirmationType === "return" && (
-          <p>Are you sure you want to return this claim?</p>
+          <p>Are you sure you want to <b>return</b> this claim?</p>
         )}
       </Modal>
     </div>
