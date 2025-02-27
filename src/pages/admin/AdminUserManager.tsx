@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Table, Button,Input,Space, Tag } from 'antd';
+import { Card, Table, Button,Input,Space, Tag, Select, Switch } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import 'antd/dist/reset.css';
 import SideBarAdminUser from '../../components/admin/SideBarAdminUser';  
@@ -65,11 +65,12 @@ const AdminUserManager: React.FC = () => {
   });
   const [roleOptions, setRoleOptions] = useState<{ label: string; value: string }[]>([]);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [isBlockedFilter, setIsBlockedFilter] = useState<boolean | undefined>(undefined);
 
   useEffect(() => {
     fetchUsers();
     fetchRoles();
-  }, [pagination.current, pagination.pageSize, searchText]);
+  }, [pagination.current, pagination.pageSize, searchText, isBlockedFilter]);
 
   const fetchUsers = async () => {
     try {
@@ -78,7 +79,7 @@ const AdminUserManager: React.FC = () => {
         searchCondition: {
           keyword: searchText || "",
           role_code: "",
-          is_blocked: false,
+          is_blocked: isBlockedFilter !== undefined ? isBlockedFilter : false,
           is_delete: false,
           is_verified: ""
         },
@@ -258,19 +259,34 @@ const AdminUserManager: React.FC = () => {
             Back to Dashboard
           </Button>
           
-          <Input
+          
+        </div>
+
+        <Card className="shadow-md">
+          <div className="mb-6 flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-gray-800">Staff Information</h1>
+            <div>
+            <Space>
+              <span>Blocked: </span>
+              <Switch 
+                checked={isBlockedFilter === true} 
+                onChange={(checked) => {
+                  setIsBlockedFilter(checked);
+                  setPagination(prev => ({ ...prev, current: 1 }));
+                }} 
+              />
+            </Space>
+            <Input
             placeholder="Search by name..."
             prefix={<SearchOutlined className="text-gray-400" />}
             onChange={(e) => handleSearch(e.target.value)}
             style={{ width: 300 }}
             className="ml-4"
           />
-        </div>
-
-        <Card className="shadow-md">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">Staff Information</h1>
+            </div>
+           
           </div>
+          
           <div className="overflow-auto custom-scrollbar">
             <Table 
               columns={columns} 
