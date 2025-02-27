@@ -17,8 +17,8 @@ export const roleService = {
     const response = await api.get('/api/roles/get-all', {
       params: { keyword }
     });
-    console.log("fetch data:",response.data)
-    return response.data;
+    console.log("fetch data:",response.data.data)
+    return response.data.data;
   },
 
 };
