@@ -5,6 +5,7 @@ import { Card, Table, Tag, Space, Button, Modal, Form, Input, Select, DatePicker
 import { EditOutlined, DeleteOutlined, EyeOutlined, ArrowLeftOutlined, SearchOutlined, StarOutlined, StarFilled } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import projectService from '../../services/projectService';
+import { userService } from '../../services/userService';
 
 // Thêm interface để định nghĩa kiểu dữ liệu
 
@@ -52,6 +53,8 @@ const AdminProjectManager: React.FC = () => {
   });
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
+  const [users, setUsers] = useState<any[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
 
   // Hàm disabledStartDate
   const disabledStartDate = (current: dayjs.Dayjs) => {
@@ -318,52 +321,86 @@ const AdminProjectManager: React.FC = () => {
 
       setLoading(true);
 
-      // Chuẩn bị dữ liệu để update
+      // Format dữ liệu để update với cùng cấu trúc như create
       const projectData = {
         project_name: values.project_name,
         project_code: values.project_code,
-        project_department: values.project_department,
-        project_description: values.project_description,
-        project_start_date: values.startDate.format('YYYY-MM-DD'),
-        project_end_date: values.endDate.format('YYYY-MM-DD'),
+        project_department: values.project_department || 'HR',
+        project_description: values.project_description || '',
+        project_status: values.project_status,
+        project_start_date: dayjs(values.startDate).format('YYYY-MM-DD'),
+        project_end_date: dayjs(values.endDate).format('YYYY-MM-DD'),
         project_members: [
+          // PM - single select
           {
+            user_id: values.project_manager,
             project_role: 'Project Manager',
-            user_id: values.project_manager
+            employee_id: '',
+            user_name: '',
+            full_name: ''
           },
+          // QA - single select
           {
+            user_id: values.qa_leader,
             project_role: 'Quality Analytics',
-            user_id: values.qa_leader
+            employee_id: '',
+            user_name: '',
+            full_name: ''
           },
+          // Technical Lead - multiple select
           ...(values.technical_leader || []).map((id: string) => ({
+            user_id: id,
             project_role: 'Technical Lead',
-            user_id: id
+            employee_id: '',
+            user_name: '',
+            full_name: ''
           })),
+          // BA - multiple select
           ...(values.business_analyst || []).map((id: string) => ({
+            user_id: id,
             project_role: 'Business Analyst',
-            user_id: id
+            employee_id: '',
+            user_name: '',
+            full_name: ''
           })),
+          // Developers - multiple select
           ...(values.developers || []).map((id: string) => ({
+            user_id: id,
             project_role: 'Developer',
-            user_id: id
+            employee_id: '',
+            user_name: '',
+            full_name: ''
           })),
+          // Testers - multiple select
           ...(values.testers || []).map((id: string) => ({
+            user_id: id,
             project_role: 'Tester',
-            user_id: id
+            employee_id: '',
+            user_name: '',
+            full_name: ''
           })),
+          // Technical Consultant - multiple select
           ...(values.technical_consultant || []).map((id: string) => ({
+            user_id: id,
             project_role: 'Technical Consultant',
-            user_id: id
+            employee_id: '',
+            user_name: '',
+            full_name: ''
           }))
-        ]
+        ].filter(member => member.user_id) // Lọc bỏ các member không có user_id
       };
 
-      // Gọi API update project
-      await projectService.updateProject(selectedProject._id, projectData);
+      console.log('Sending update data:', projectData);
 
-      message.success('Cập nhật dự án thành công');
-      setIsEditModalVisible(false);
-      fetchProjects(); // Refresh danh sách dự án
+      const response = await projectService.updateProject(selectedProject._id, projectData);
+      
+      if (response) {
+        message.success('Cập nhật dự án thành công');
+        setIsEditModalVisible(false);
+        form.resetFields();
+        fetchProjects();
+        setSelectedUsers(new Set());
+      }
 
     } catch (error) {
       console.error('Error updating project:', error);
@@ -475,6 +512,101 @@ const AdminProjectManager: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Thêm hàm để fetch users
+  const fetchUsers = async (searchText: string = '') => {
+    try {
+      const response = await userService.searchUsers({
+        searchCondition: {
+          keyword: searchText,
+          is_delete: false,
+          is_blocked: false
+        },
+        pageInfo: {
+          pageNum: 1,
+          pageSize: 100 // Lấy nhiều user để có đủ lựa chọn
+        }
+      });
+
+      if (response && response.pageData) {
+        // Format data cho Select options
+        const formattedUsers = response.pageData.map((user: any) => ({
+          value: user._id,
+          label: `${user.full_name || user.user_name} (${user.email})`,
+          role_code: user.role_code
+        }));
+        setUsers(formattedUsers);
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      message.error('Không thể tải danh sách người dùng');
+    }
+  };
+
+  // Thêm useEffect để fetch users khi component mount
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  // Thêm hàm xử lý search users
+  const handleUserSearch = async (searchText: string) => {
+    try {
+      const response = await userService.searchUsers({
+        searchCondition: {
+          keyword: searchText,
+          is_delete: false
+        },
+        pageInfo: {
+          pageNum: 1,
+          pageSize: 100
+        }
+      });
+      
+      if (response && response.pageData) {
+        const formattedUsers = response.pageData.map((user: any) => ({
+          value: user._id,
+          label: `${user.full_name || user.user_name} (${user.email})`
+        }));
+        setUsers(formattedUsers);
+      }
+    } catch (error) {
+      console.error('Error searching users:', error);
+    }
+  };
+
+  // Thêm hàm để cập nhật selectedUsers khi có thay đổi trong form
+  const handleUserSelect = (value: string | string[], fieldName: string) => {
+    const allFormValues = form.getFieldsValue();
+    const newSelectedUsers = new Set<string>();
+    
+    // Lấy tất cả users đã chọn từ các trường khác
+    Object.entries(allFormValues).forEach(([key, val]) => {
+      if (key !== fieldName && val) { // Bỏ qua trường hiện tại
+        if (Array.isArray(val)) {
+          val.forEach(v => {
+            if (typeof v === 'string') { // Kiểm tra kiểu dữ liệu
+              newSelectedUsers.add(v);
+            }
+          });
+        } else if (typeof val === 'string') { // Kiểm tra kiểu dữ liệu
+          newSelectedUsers.add(val);
+        }
+      }
+    });
+
+    // Thêm user(s) mới được chọn
+    if (Array.isArray(value)) {
+      value.forEach(v => {
+        if (typeof v === 'string') { // Kiểm tra kiểu dữ liệu
+          newSelectedUsers.add(v);
+        }
+      });
+    } else if (typeof value === 'string') { // Kiểm tra kiểu dữ liệu
+      newSelectedUsers.add(value);
+    }
+
+    setSelectedUsers(newSelectedUsers);
   };
 
   return (
@@ -740,19 +872,39 @@ const AdminProjectManager: React.FC = () => {
                   <Form.Item
                     name="project_manager"
                     label="Project Manager"
+                    rules={[{ required: true, message: 'Vui lòng chọn Project Manager!' }]}
                   >
-                    <Select placeholder="Select Project Manager">
-                      {/* Options từ API */}
-                    </Select>
+                    <Select
+                      showSearch
+                      placeholder="Chọn Project Manager"
+                      onSearch={handleUserSearch}
+                      filterOption={false}
+                      options={users.filter(user => 
+                        !selectedUsers.has(user.value) || 
+                        user.value === form.getFieldValue('project_manager')
+                      )}
+                      notFoundContent={loading ? <Spin size="small" /> : null}
+                      onChange={(value) => handleUserSelect(value, 'project_manager')}
+                    />
                   </Form.Item>
 
                   <Form.Item
                     name="qa_leader"
                     label="Quality Analytics"
+                    rules={[{ required: true, message: 'Vui lòng chọn QA!' }]}
                   >
-                    <Select placeholder="Select QA">
-                      {/* Options từ API */}
-                    </Select>
+                    <Select
+                      showSearch
+                      placeholder="Chọn QA"
+                      onSearch={handleUserSearch}
+                      filterOption={false}
+                      options={users.filter(user => 
+                        !selectedUsers.has(user.value) || 
+                        user.value === form.getFieldValue('qa_leader')
+                      )}
+                      notFoundContent={loading ? <Spin size="small" /> : null}
+                      onChange={(value) => handleUserSelect(value, 'qa_leader')}
+                    />
                   </Form.Item>
 
                   {/* Các role khác tương tự, bỏ rules */}
@@ -760,45 +912,95 @@ const AdminProjectManager: React.FC = () => {
                     name="technical_leader"
                     label="Technical Lead"
                   >
-                    <Select mode="multiple" placeholder="Select Technical Lead">
-                      {/* Options từ API */}
-                    </Select>
+                    <Select
+                      mode="multiple"
+                      showSearch
+                      placeholder="Select Technical Lead"
+                      onSearch={handleUserSearch}
+                      filterOption={false}
+                      options={users.filter(user => 
+                        !selectedUsers.has(user.value) || 
+                        (form.getFieldValue('technical_leader') || []).includes(user.value)
+                      )}
+                      notFoundContent={loading ? <Spin size="small" /> : null}
+                      onChange={(value) => handleUserSelect(value, 'technical_leader')}
+                    />
                   </Form.Item>
 
                   <Form.Item
                     name="business_analyst"
                     label="Business Analyst"
                   >
-                    <Select mode="multiple" placeholder="Select Business Analyst">
-                      {/* Options từ API */}
-                    </Select>
+                    <Select
+                      mode="multiple"
+                      showSearch
+                      placeholder="Select Business Analyst"
+                      onSearch={handleUserSearch}
+                      filterOption={false}
+                      options={users.filter(user => 
+                        !selectedUsers.has(user.value) || 
+                        (form.getFieldValue('business_analyst') || []).includes(user.value)
+                      )}
+                      notFoundContent={loading ? <Spin size="small" /> : null}
+                      onChange={(value) => handleUserSelect(value, 'business_analyst')}
+                    />
                   </Form.Item>
 
                   <Form.Item
                     name="developers"
                     label="Developers"
                   >
-                    <Select mode="multiple" placeholder="Select Developers">
-                      {/* Options từ API */}
-                    </Select>
+                    <Select
+                      mode="multiple"
+                      showSearch
+                      placeholder="Select Developers"
+                      onSearch={handleUserSearch}
+                      filterOption={false}
+                      options={users.filter(user => 
+                        !selectedUsers.has(user.value) || 
+                        (form.getFieldValue('developers') || []).includes(user.value)
+                      )}
+                      notFoundContent={loading ? <Spin size="small" /> : null}
+                      onChange={(value) => handleUserSelect(value, 'developers')}
+                    />
                   </Form.Item>
 
                   <Form.Item
                     name="testers"
                     label="Testers"
                   >
-                    <Select mode="multiple" placeholder="Select Testers">
-                      {/* Options từ API */}
-                    </Select>
+                    <Select
+                      mode="multiple"
+                      showSearch
+                      placeholder="Select Testers"
+                      onSearch={handleUserSearch}
+                      filterOption={false}
+                      options={users.filter(user => 
+                        !selectedUsers.has(user.value) || 
+                        (form.getFieldValue('testers') || []).includes(user.value)
+                      )}
+                      notFoundContent={loading ? <Spin size="small" /> : null}
+                      onChange={(value) => handleUserSelect(value, 'testers')}
+                    />
                   </Form.Item>
 
                   <Form.Item
                     name="technical_consultant"
                     label="Technical Consultancy"
                   >
-                    <Select mode="multiple" placeholder="Select Technical Consultant">
-                      {/* Options từ API */}
-                    </Select>
+                    <Select
+                      mode="multiple"
+                      showSearch
+                      placeholder="Select Technical Consultant"
+                      onSearch={handleUserSearch}
+                      filterOption={false}
+                      options={users.filter(user => 
+                        !selectedUsers.has(user.value) || 
+                        (form.getFieldValue('technical_consultant') || []).includes(user.value)
+                      )}
+                      notFoundContent={loading ? <Spin size="small" /> : null}
+                      onChange={(value) => handleUserSelect(value, 'technical_consultant')}
+                    />
                   </Form.Item>
                 </div>
               </div>
@@ -914,71 +1116,134 @@ const AdminProjectManager: React.FC = () => {
                 <Form.Item
                   name="project_manager"
                   label="Project Manager"
-                  rules={[{ required: true, message: 'Please select Project Manager!' }]}
+                  rules={[{ required: true, message: 'Vui lòng chọn Project Manager!' }]}
                 >
-                  <Select placeholder="Select Project Manager">
-                    {/* Options sẽ được fetch từ API */}
-                  </Select>
+                  <Select
+                    showSearch
+                    placeholder="Chọn Project Manager"
+                    onSearch={handleUserSearch}
+                    filterOption={false}
+                    options={users.filter(user => 
+                      !selectedUsers.has(user.value) || 
+                      user.value === form.getFieldValue('project_manager')
+                    )}
+                    notFoundContent={loading ? <Spin size="small" /> : null}
+                    onChange={(value) => handleUserSelect(value, 'project_manager')}
+                  />
                 </Form.Item>
 
                 <Form.Item
                   name="qa_leader"
                   label="Quality Analytics"
-                  rules={[{ required: true, message: 'Please select QA!' }]}
+                  rules={[{ required: true, message: 'Vui lòng chọn QA!' }]}
                 >
-                  <Select placeholder="Select QA">
-                    {/* Options sẽ được fetch từ API */}
-                  </Select>
+                  <Select
+                    showSearch
+                    placeholder="Chọn QA"
+                    onSearch={handleUserSearch}
+                    filterOption={false}
+                    options={users.filter(user => 
+                      !selectedUsers.has(user.value) || 
+                      user.value === form.getFieldValue('qa_leader')
+                    )}
+                    notFoundContent={loading ? <Spin size="small" /> : null}
+                    onChange={(value) => handleUserSelect(value, 'qa_leader')}
+                  />
                 </Form.Item>
 
                 <Form.Item
                   name="technical_leader"
                   label="Technical Lead"
-                  rules={[{ required: true, message: 'Please select Technical Lead!' }]}
                 >
-                  <Select mode="multiple" placeholder="Select Technical Lead">
-                    {/* Options sẽ được fetch từ API */}
-                  </Select>
+                  <Select
+                    mode="multiple"
+                    showSearch
+                    placeholder="Select Technical Lead"
+                    onSearch={handleUserSearch}
+                    filterOption={false}
+                    options={users.filter(user => 
+                      !selectedUsers.has(user.value) || 
+                      (form.getFieldValue('technical_leader') || []).includes(user.value)
+                    )}
+                    notFoundContent={loading ? <Spin size="small" /> : null}
+                    onChange={(value) => handleUserSelect(value, 'technical_leader')}
+                  />
                 </Form.Item>
 
                 <Form.Item
                   name="business_analyst"
                   label="Business Analyst"
-                  rules={[{ required: true, message: 'Please select BA!' }]}
                 >
-                  <Select mode="multiple" placeholder="Select Business Analyst">
-                    {/* Options sẽ được fetch từ API */}
-                  </Select>
+                  <Select
+                    mode="multiple"
+                    showSearch
+                    placeholder="Select Business Analyst"
+                    onSearch={handleUserSearch}
+                    filterOption={false}
+                    options={users.filter(user => 
+                      !selectedUsers.has(user.value) || 
+                      (form.getFieldValue('business_analyst') || []).includes(user.value)
+                    )}
+                    notFoundContent={loading ? <Spin size="small" /> : null}
+                    onChange={(value) => handleUserSelect(value, 'business_analyst')}
+                  />
                 </Form.Item>
 
                 <Form.Item
                   name="developers"
                   label="Developers"
-                  rules={[{ required: true, message: 'Please select developers!' }]}
                 >
-                  <Select mode="multiple" placeholder="Select Developers">
-                    {/* Options sẽ được fetch từ API */}
-                  </Select>
+                  <Select
+                    mode="multiple"
+                    showSearch
+                    placeholder="Select Developers"
+                    onSearch={handleUserSearch}
+                    filterOption={false}
+                    options={users.filter(user => 
+                      !selectedUsers.has(user.value) || 
+                      (form.getFieldValue('developers') || []).includes(user.value)
+                    )}
+                    notFoundContent={loading ? <Spin size="small" /> : null}
+                    onChange={(value) => handleUserSelect(value, 'developers')}
+                  />
                 </Form.Item>
 
                 <Form.Item
                   name="testers"
                   label="Testers"
-                  rules={[{ required: true, message: 'Please select testers!' }]}
                 >
-                  <Select mode="multiple" placeholder="Select Testers">
-                    {/* Options sẽ được fetch từ API */}
-                  </Select>
+                  <Select
+                    mode="multiple"
+                    showSearch
+                    placeholder="Select Testers"
+                    onSearch={handleUserSearch}
+                    filterOption={false}
+                    options={users.filter(user => 
+                      !selectedUsers.has(user.value) || 
+                      (form.getFieldValue('testers') || []).includes(user.value)
+                    )}
+                    notFoundContent={loading ? <Spin size="small" /> : null}
+                    onChange={(value) => handleUserSelect(value, 'testers')}
+                  />
                 </Form.Item>
 
                 <Form.Item
                   name="technical_consultant"
                   label="Technical Consultancy"
-                  rules={[{ required: true, message: 'Please select technical consultant!' }]}
                 >
-                  <Select mode="multiple" placeholder="Select Technical Consultant">
-                    {/* Options sẽ được fetch từ API */}
-                  </Select>
+                  <Select
+                    mode="multiple"
+                    showSearch
+                    placeholder="Select Technical Consultant"
+                    onSearch={handleUserSearch}
+                    filterOption={false}
+                    options={users.filter(user => 
+                      !selectedUsers.has(user.value) || 
+                      (form.getFieldValue('technical_consultant') || []).includes(user.value)
+                    )}
+                    notFoundContent={loading ? <Spin size="small" /> : null}
+                    onChange={(value) => handleUserSelect(value, 'technical_consultant')}
+                  />
                 </Form.Item>
               </div>
             </div>

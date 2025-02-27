@@ -1,65 +1,84 @@
-import React, { useState } from 'react';
-import { Table, Tag, DatePicker, Select, Input, Card, Button } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Table, Tag, Card, Button, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import {  ArrowLeftOutlined,SearchOutlined} from '@ant-design/icons';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
-
-const { RangePicker } = DatePicker;
-const { Option } = Select;
-
+import { claimLogService } from '../../services/claimLogService';
+import { useUserStore } from '../../stores/userStore';
 interface Transaction {
-  id: string;
-  requestId: string;
-  employeeName: string;
-  previousStatus: string;
-  newStatus: string;
-  changedBy: string;
-  changedAt: string;
-  remarks: string;
+  _id: string;
+  claim_id: string; 
+  claim_name: string;
+  old_status: string;
+  new_status: string;
+  updated_by: string;
+  created_at: string;
+  updated_at: string;
+  remarks?: string;
+  is_deleted: boolean;
+}
+
+interface PaginationState {
+  current: number;
+  pageSize: number;
+  total: number;
 }
 
 const TransactionPage: React.FC = () => {
   const navigate = useNavigate();
-  const [searchText, setSearchText] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('');
-  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null]>([null, null]);
+  const user = useUserStore((state) => state);
+  
+  const [loading, setLoading] = useState(false);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [pagination, setPagination] = useState<PaginationState>({
+    current: 1,
+    pageSize: 10,
+    total: 0
+  });
 
-  const mockTransactions: Transaction[] = [
-    {
-      id: 'TRX001',
-      requestId: 'REQ001',
-      employeeName: 'John Doe',
-      previousStatus: 'Draft',
-      newStatus: 'Pending Approval',
-      changedBy: 'John Doe',
-      changedAt: '2024-03-15 09:30:00',
-      remarks: 'Submitted for approval'
-    },
-    {
-      id: 'TRX002',
-      requestId: 'REQ001',
-      employeeName: 'John Doe',
-      previousStatus: 'Pending Approval',
-      newStatus: 'Approved',
-      changedBy: 'Jane Smith',
-      changedAt: '2024-03-16 14:20:00',
-      remarks: 'Approved by manager'
-    },
-    {
-      id: 'TRX003',
-      requestId: 'REQ002',
-      employeeName: 'Alice Johnson',
-      previousStatus: 'Draft',
-      newStatus: 'Rejected',
-      changedBy: 'Bob Wilson',
-      changedAt: '2024-03-17 11:45:00',
-      remarks: 'Insufficient details provided'
+  const fetchTransactions = async () => {
+    try {
+      setLoading(true);
+      const response = await claimLogService.searchClaimLogs({
+        searchCondition: {
+          claim_id: "67b93c4db74349d8a681d145",
+          is_deleted: false
+        },
+        pageInfo: {
+          pageNum: pagination.current,
+          pageSize: pagination.pageSize
+        }
+      });
+
+      setTransactions(response.pageData || []);
+      setPagination(prev => ({
+        ...prev,
+        total: response.pageInfo?.totalItems || 0
+      }));
+
+    } catch (error) {
+      console.error('Error loading transaction data:', error);
+      message.error('An error occurred while loading transaction data');
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
-  const getStatusColor = (status: string) => {
-    const colors: { [key: string]: string } = {
+  useEffect(() => {
+    fetchTransactions();
+  }, [pagination.current, pagination.pageSize, user.id]);
+
+  const handleTableChange = (newPagination: any) => {
+    setPagination(prev => ({
+      ...prev,
+      current: newPagination.current,
+      pageSize: newPagination.pageSize
+    }));
+  };
+
+  const getStatusColor = (status: string): string => {
+    const colors: Record<string, string> = {
       'Draft': 'gray',
       'Pending Approval': 'orange',
       'Approved': 'green',
@@ -72,137 +91,102 @@ const TransactionPage: React.FC = () => {
   const columns: ColumnsType<Transaction> = [
     {
       title: 'Transaction ID',
-      dataIndex: 'id',
-      key: 'id',
-      width: '10%',
-    },
-    {
-      title: 'Request ID',
-      dataIndex: 'requestId', 
-      key: 'requestId',
-      width: '10%',
-    },
-    {
-      title: 'Employee',
-      key: 'employee',
+      dataIndex: '_id',
+      key: '_id',
       width: '15%',
-      render: (_, record) => (
-        <div className="flex items-center">
-          <div>
-            <div className="text-sm font-medium text-gray-900">{record.employeeName}</div>
-            <div className="text-sm text-gray-500 text-center">{record.changedBy}</div>
-          </div>
-        </div>
-      ),
+    },
+    {
+      title: 'Claim Name',
+      dataIndex: 'claim_name',
+      key: 'claim_id',
+      width: '15%',
     },
     {
       title: 'Status Change',
       key: 'statusChange',
-      width: '20%',
+      width: '25%',
       render: (_, record) => (
         <div className="flex items-center gap-2">
-          <Tag color={getStatusColor(record.previousStatus)}>{record.previousStatus}</Tag>
+          <Tag color={getStatusColor(record.old_status)}>{record.old_status}</Tag>
           <span>→</span>
-          <Tag color={getStatusColor(record.newStatus)}>{record.newStatus}</Tag>
+          <Tag color={getStatusColor(record.new_status)}>{record.new_status}</Tag>
         </div>
       ),
     },
     {
-      title: 'Time',
+      title: 'Created at',
       key: 'time',
       width: '15%',
       render: (_, record) => (
         <div>
-          <div className="text-sm">{dayjs(record.changedAt).format('HH:mm:ss')}</div>
-          <div className="text-xs text-gray-500">{dayjs(record.changedAt).format('DD/MM/YYYY')}</div>
+          <div className="text-sm">{dayjs(record.created_at).format('HH:mm:ss')}</div>
+          <div className="text-xs text-gray-500">{dayjs(record.created_at).format('DD/MM/YYYY')}</div>
         </div>
       ),
     },
     {
-      title: 'Remarks',
-      dataIndex: 'remarks',
-      key: 'remarks',
-      width: '20%',
+      title: 'Updated at',
+      key: 'time',
+      width: '15%',
+      render: (_, record) => (
+        <div>
+          <div className="text-sm">{dayjs(record.updated_at).format('HH:mm:ss')}</div>
+          <div className="text-xs text-gray-500">{dayjs(record.updated_at).format('DD/MM/YYYY')}</div>
+        </div>
+      ),
+    },
+    {
+      title: 'Updated by',
+      dataIndex: 'updated_by',
+      key: 'updated_by',
+      width: '15%',
     },
   ];
 
-  const filteredTransactions = mockTransactions.filter(transaction => {
-    const matchesSearch = 
-      transaction.employeeName.toLowerCase().includes(searchText.toLowerCase()) ||
-      transaction.requestId.toLowerCase().includes(searchText.toLowerCase());
-    
-    const matchesStatus = !statusFilter || 
-      transaction.previousStatus === statusFilter ||
-      transaction.newStatus === statusFilter;
-    
-    const matchesDate = !dateRange[0] || !dateRange[1] || 
-      (dayjs(transaction.changedAt).isAfter(dateRange[0]) && 
-       dayjs(transaction.changedAt).isBefore(dateRange[1]));
-
-    return matchesSearch && matchesStatus && matchesDate;
-  });
-
   return (
-    <div className="container mx-auto px-2 py-8">
+    <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <Button 
-          type="default" 
+          type="default"
           icon={<ArrowLeftOutlined />}
           onClick={() => navigate('/dashboard')}
-          className="flex items-center"
+          className="flex items-center hover:bg-gray-100"
         >
           Back to Dashboard
         </Button>
       </div>
-    
-      <Card className="shadow-md">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Transaction History</h1>
-        </div>
-        <div className="overflow-auto custom-scrollbar">
-        
-        <div className="flex flex-wrap gap-4 items-center mb-5 mx-2">
-          <Input
-            placeholder="Search by Employee or Request ID"
-            prefix={<SearchOutlined />}
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            style={{ width: 250 }}
-          />
-          
-          <Select
-            placeholder="Filter by Status"
-            style={{ width: 200 }}
-            value={statusFilter}
-            onChange={setStatusFilter}
-            allowClear
-          >
-            <Option value="Draft">Draft</Option>
-            <Option value="Pending Approval">Pending Approval</Option>
-            <Option value="Approved">Approved</Option>
-            <Option value="Rejected">Rejected</Option>
-            <Option value="Paid">Paid</Option>
-          </Select>
-          
-          <RangePicker
-            onChange={(dates) => setDateRange(dates as [dayjs.Dayjs | null, dayjs.Dayjs | null])}
-            style={{ width: 300 }}
-          />
-        </div>
 
-          <Table
-            dataSource={filteredTransactions}
-            columns={columns}
-            pagination={{
-              pageSize: 10,
-              total: filteredTransactions.length,
-              showSizeChanger: true,
-              showQuickJumper: true,
-            }}
-            className="overflow-hidden"
-            scroll={{ x: 1000 }}
-          />
+      <Card className="shadow-lg rounded-lg">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">Request History</h1>
         </div>
+        
+        <Table
+          dataSource={transactions}
+          columns={columns}
+          loading={loading}
+          pagination={{
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total: pagination.total,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total) => `Total ${total} transactions`,
+            locale: {
+              items_per_page: '/ page',
+              jump_to: 'Go to page',
+              page: 'Page',
+              prev_page: 'Previous',
+              next_page: 'Next'
+            }
+          }}
+          onChange={handleTableChange}
+          className="overflow-x-auto"
+          scroll={{ x: 1000 }}
+          locale={{
+            emptyText: 'No data'
+          }}
+        />
       </Card>
     </div>
   );
