@@ -6,9 +6,9 @@ import { Credentials, Token } from "../models/AuthModel";
 export const authService = {
   login: async (credentials: Credentials) : Promise<ApiResponse<Token>> => {
     const response = await api.post("/api/auth", credentials);
-    console.log("fetch data:", response.data.data);
-    return response.data.data;
-  },
+    console.log("fetch data:", response.data);
+    return response.data;
+  },     
   getinfo: async () => {
     const response = await api.get("/api/auth");
     console.log("fetch data:", response.data.data);
