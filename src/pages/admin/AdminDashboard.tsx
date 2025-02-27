@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Legend, Cell, LineChart, Line } from "recharts";
-import { Col, Row, Card, Statistic, Tag, Table, List, Pagination,  Select, Dropdown } from "antd"
+import { Col, Row, Card, Statistic, Tag, Table, List, Pagination, Select, Dropdown } from "antd"
 import { UserOutlined, ProjectOutlined, FileTextOutlined, ClockCircleOutlined, CheckCircleOutlined, CheckOutlined, LogoutOutlined } from '@ant-design/icons';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import dayjs from "dayjs"
@@ -107,7 +107,7 @@ const AdminDashboard: React.FC = () => {
     {
       key: "1",
       label: (
-        <Link to="/profile">
+        <Link to={`profile`}>
           <UserOutlined className="pr-2" />
           Profile
         </Link>
@@ -124,7 +124,7 @@ const AdminDashboard: React.FC = () => {
     },
   ];
 
-  
+
 
   const [filteredClaimData, setFilteredClaimData] = useState<ClaimData[]>(claimsData);
   console.log(filteredClaimData)
@@ -159,15 +159,15 @@ const AdminDashboard: React.FC = () => {
       const itemDate = dayjs(item.date);
       return itemDate.isAfter(startDate) && itemDate.isBefore(endDate);
     });
-    
+
     setFilteredClaimData(filtered);
   };
-  
+
   return (
     <>
-    <div className="flex items-center justify-between p-5">
-    <div className="flex items-center gap-5 justify-end w-full">
-    <Dropdown menu={{ items: menu }} trigger={["click"]}>
+      <div className="flex items-center justify-between p-5">
+        <div className="flex items-center gap-5 justify-end w-full">
+          <Dropdown menu={{ items: menu }} trigger={["click"]}>
             <img
               src={avatar}
               alt="User Avatar"
@@ -175,9 +175,9 @@ const AdminDashboard: React.FC = () => {
               height={40}
               className="cursor-pointer"
             />
-        </Dropdown>
+          </Dropdown>
         </div>
-        </div>
+      </div>
       <div className="flex min-h-screen bg-gray-100">
         <AdminSidebar />
         <div className="flex-1 ml-64  bg-sky-50">
@@ -188,20 +188,21 @@ const AdminDashboard: React.FC = () => {
               <Col lg={8} md={24} xs={24}>
                 <Card style={{
                   backgroundColor: "#138dcf",
-                  
+
                 }}
-                className="relative overflow-hidden">
+                  className="relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-12 h-12 bg-[#1a6b96] opacity-50 rounded-full transform translate-x-4 -translate-y-4"></div>
                   <div className="absolute top-0 right-0 w-14 h-14 bg-[#266b90] opacity-50 rounded-full transform translate-x-4 -translate-y-4"></div>
                   <Statistic
                     title={<span style={{ color: "white" }}>Total Users</span>}
                     className="font-bold"
                     value={userStats}
-                    prefix={<UserOutlined style={{ color: "white", 
-                      backgroundColor:"#126896",
-                      padding:"8px",
-                      borderRadius:"50%"
-                     }} />}
+                    prefix={<UserOutlined style={{
+                      color: "white",
+                      backgroundColor: "#126896",
+                      padding: "8px",
+                      borderRadius: "50%"
+                    }} />}
                     valueStyle={{ color: "white" }}
                   />
                 </Card>
@@ -211,17 +212,19 @@ const AdminDashboard: React.FC = () => {
                 <Card style={{
                   backgroundColor: "#f2b00c"
                 }}
-                className="relative overflow-hidden">
+                  className="relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-12 h-12 bg-[#b1861a] opacity-50 rounded-full transform translate-x-4 -translate-y-4"></div>
                   <div className="absolute top-0 right-0 w-14 h-14 bg-[#b08519] opacity-50 rounded-full transform translate-x-4 -translate-y-4"></div>
                   <Statistic
                     title={<span style={{ color: "white" }}>Total Claims</span>}
                     className="font-bold"
                     value={claimStats.total}
-                    prefix={<FileTextOutlined style={{ color: "white", 
-                      backgroundColor:"#c7920e",
-                      padding:"9px",
-                      borderRadius:"50%" }} />}
+                    prefix={<FileTextOutlined style={{
+                      color: "white",
+                      backgroundColor: "#c7920e",
+                      padding: "9px",
+                      borderRadius: "50%"
+                    }} />}
                     valueStyle={{ color: "white" }}
                   />
                 </Card>
@@ -231,90 +234,92 @@ const AdminDashboard: React.FC = () => {
                 <Card style={{
                   backgroundColor: "#f25050"
                 }}
-                className="relative overflow-hidden">
+                  className="relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-12 h-12 bg-[#b83535] opacity-50 rounded-full transform translate-x-4 -translate-y-4"></div>
                   <div className="absolute top-0 right-0 w-14 h-14 bg-[#8f3232] opacity-50 rounded-full transform translate-x-4 -translate-y-4"></div>
                   <Statistic
                     title={<span style={{ color: "white" }}>Pending Claims</span>}
                     className="font-bold"
                     value={claimStats.pending}
-                    prefix={<ClockCircleOutlined style={{ color: "white", 
-                      backgroundColor:"#ba3a3a",
-                      padding:"9px",
-                      borderRadius:"50%" }} />}
+                    prefix={<ClockCircleOutlined style={{
+                      color: "white",
+                      backgroundColor: "#ba3a3a",
+                      padding: "9px",
+                      borderRadius: "50%"
+                    }} />}
                     valueStyle={{ color: "white" }}
                   />
                 </Card>
               </Col>
             </Row>
-   
+
             <div className="mt-4">
               <Card
-              title={
-                <div className="flex justify-between items-center">
-                  <span>Claim Request Charts</span>
-                </div>
-              }
-              extra={
-                <Select 
-                  defaultValue="this_month" 
-                  style={{ width: 150 }} 
-                  onChange={handleFilterChange}
-                  value={selectedRange}
-                >
-                  <Option value="this_week">This Week</Option>
-                  <Option value="this_month">This Month</Option>
-                  <Option value="this_year">This Year</Option>
-                </Select>
-              }
-              style={{
-                boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
-              }}>
-              <Row gutter={[16, 16]}>
-                <Col lg={12} md={24}>
-                  <Card title="Claim Request Overview">
-                    <ResponsiveContainer width="100%" height={300} >
-                      <BarChart data={claimsData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="status" />
-                        <YAxis />
-                        <Tooltip />
-                        <Bar dataKey="count" fill="#8884d8" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </Card>
-                </Col>
-                <Col lg={12} md={24}>
-                  <Card title="Claims By Department">
-                    <ResponsiveContainer width="100%" height={300}>
-                      <PieChart>
-                        <Pie
-                          data={claimCategories}
-                          dataKey="value"
-                          nameKey="name"
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={100}
-                          fill="#8884d8"
-                          label
-                        >
-                          {claimCategories.map((_, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </Card>
-                </Col>
-              </Row>
+                title={
+                  <div className="flex justify-between items-center">
+                    <span>Claim Request Charts</span>
+                  </div>
+                }
+                extra={
+                  <Select
+                    defaultValue="this_month"
+                    style={{ width: 150 }}
+                    onChange={handleFilterChange}
+                    value={selectedRange}
+                  >
+                    <Option value="this_week">This Week</Option>
+                    <Option value="this_month">This Month</Option>
+                    <Option value="this_year">This Year</Option>
+                  </Select>
+                }
+                style={{
+                  boxShadow: "10px 10px 25px -19px rgba(0,0,0,0.75)"
+                }}>
+                <Row gutter={[16, 16]}>
+                  <Col lg={12} md={24}>
+                    <Card title="Claim Request Overview">
+                      <ResponsiveContainer width="100%" height={300} >
+                        <BarChart data={claimsData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="status" />
+                          <YAxis />
+                          <Tooltip />
+                          <Bar dataKey="count" fill="#8884d8" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </Card>
+                  </Col>
+                  <Col lg={12} md={24}>
+                    <Card title="Claims By Department">
+                      <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                          <Pie
+                            data={claimCategories}
+                            dataKey="value"
+                            nameKey="name"
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={100}
+                            fill="#8884d8"
+                            label
+                          >
+                            {claimCategories.map((_, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </Card>
+                  </Col>
+                </Row>
               </Card>
               <Row gutter={[16, 16]} className="mt-4">
                 <Col md={24} xs={24}>
                   <Card title="Recent Claims"
-                  style={{
-                    boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
-                  }}>
+                    style={{
+                      boxShadow: "10px 10px 25px -19px rgba(0,0,0,0.75)"
+                    }}>
                     <Table dataSource={recentClaims} columns={columns} rowKey="id" pagination={false} />
                     <Pagination align="center" defaultCurrent={1} total={50} style={{
                       marginTop: "2%"
@@ -324,13 +329,13 @@ const AdminDashboard: React.FC = () => {
               </Row>
             </div>
 
-            
+
             <Row gutter={[16, 16]}>
               <Col lg={8} md={24}>
                 <Row gutter={[24, 24]} className="mt-4">
                   <Col xs={24}>
                     <Card style={{
-                      boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
+                      boxShadow: "10px 10px 25px -19px rgba(0,0,0,0.75)"
                     }}>
                       <Statistic
                         title="Total Projects"
@@ -342,7 +347,7 @@ const AdminDashboard: React.FC = () => {
                   </Col>
                   <Col xs={24}>
                     <Card style={{
-                      boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
+                      boxShadow: "10px 10px 25px -19px rgba(0,0,0,0.75)"
                     }}>
                       <Statistic
                         title="Ongoing Projects"
@@ -354,7 +359,7 @@ const AdminDashboard: React.FC = () => {
                   </Col>
                   <Col xs={24}>
                     <Card style={{
-                      boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
+                      boxShadow: "10px 10px 25px -19px rgba(0,0,0,0.75)"
                     }}>
                       <Statistic
                         title="Completed Projects"
@@ -370,14 +375,14 @@ const AdminDashboard: React.FC = () => {
               <Col lg={16} md={24}>
                 <div className="mt-4">
                   <Card title="Monthly Newly Started Project" style={{
-                boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
-              }} className="text-3xl" extra={
-                <Select defaultValue="this_month" style={{ width: 150 }} onChange={handleFilterChange}>
-          <Option value="this_week">This Week</Option>
-          <Option value="this_month">This Month</Option>
-          <Option value="this_year">This Year</Option>
-        </Select>
-              }>
+                    boxShadow: "10px 10px 25px -19px rgba(0,0,0,0.75)"
+                  }} className="text-3xl" extra={
+                    <Select defaultValue="this_month" style={{ width: 150 }} onChange={handleFilterChange}>
+                      <Option value="this_week">This Week</Option>
+                      <Option value="this_month">This Month</Option>
+                      <Option value="this_year">This Year</Option>
+                    </Select>
+                  }>
                     <ResponsiveContainer width="100%" height={300}>
                       <BarChart data={projectTrendData}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#ccc" />
@@ -392,34 +397,34 @@ const AdminDashboard: React.FC = () => {
                 </div>
               </Col>
             </Row>
-<div className="mt-5">
-            <Card
-            title="Claims Payout Trends"
-            style={{
-              boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
-            }}
-            extra={
-              <Select defaultValue="this_month" style={{ width: 150 }} onChange={handleFilterChange}>
-        <Option value="this_week">This Week</Option>
-        <Option value="this_month">This Month</Option>
-        <Option value="this_year">This Year</Option>
-      </Select>
-            }>
-                       <ResponsiveContainer width="100%" height={300}>
-  <LineChart data={financialData}>
-    <CartesianGrid strokeDasharray="3 3" />
-    <XAxis dataKey="month" />
-    <YAxis tickFormatter={(value) => `${value / 1000000}M`} />
-    <Tooltip />
-    <Legend />
-    <Line type="monotone" dataKey="claimsPaid" stroke="#8884d8" name="Claims Paid" />
-  </LineChart>
-</ResponsiveContainer>
-            </Card>
+            <div className="mt-5">
+              <Card
+                title="Claims Payout Trends"
+                style={{
+                  boxShadow: "10px 10px 25px -19px rgba(0,0,0,0.75)"
+                }}
+                extra={
+                  <Select defaultValue="this_month" style={{ width: 150 }} onChange={handleFilterChange}>
+                    <Option value="this_week">This Week</Option>
+                    <Option value="this_month">This Month</Option>
+                    <Option value="this_year">This Year</Option>
+                  </Select>
+                }>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={financialData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis tickFormatter={(value) => `${value / 1000000}M`} />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="claimsPaid" stroke="#8884d8" name="Claims Paid" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </Card>
             </div>
             <div className="mt-5">
               <Card title="Recent Activities" style={{
-                boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
+                boxShadow: "10px 10px 25px -19px rgba(0,0,0,0.75)"
               }}>
                 <List dataSource={recentActivities} renderItem={(item: any) => (
                   <List.Item><List.Item.Meta title={item.activity} description={item.time} />

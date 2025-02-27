@@ -24,7 +24,7 @@ const Navbar = () => {
     {
       key: "1",
       label: (
-        <Link to="/userdashboard/profile">
+        <Link to={`profile`}>
           <UserOutlined className="pr-2" />
           Profile
         </Link>
