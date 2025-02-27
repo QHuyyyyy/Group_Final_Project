@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Modal, notification } from "antd";
+import { SendOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 
 interface SendRequestProps {
-    id: number | null;
+    id: string | null;
     visible: boolean;
-    onSend: (id: number) => void;
+    onSend: (id: string) => Promise<void>;
     onCancel: () => void;
 }
 
@@ -14,21 +15,31 @@ const SendRequest: React.FC<SendRequestProps> = ({ id, visible, onSend, onCancel
     const handleSend = async () => {
         if (id === null) return;
         setLoading(true);
-
-
-        setTimeout(() => {
-            onSend(id);
-            setLoading(false);
+        try {
+            await onSend(id);
             notification.success({
                 message: "Request Sent",
                 description: `Request ID ${id} has been sent for approval.`,
+                icon: <SendOutlined style={{ color: '#52c41a' }} />
             });
-        }, 1000);
+        } catch (error) {
+            notification.error({
+                message: "Send Failed",
+                description: "Failed to send request for approval.",
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <Modal
-            title="Send Request for Approval"
+            title={
+                <span>
+                    <SendOutlined style={{ marginRight: 8 }} />
+                    Send Request for Approval
+                </span>
+            }
             open={visible}
             onOk={handleSend}
             onCancel={onCancel}
@@ -37,8 +48,13 @@ const SendRequest: React.FC<SendRequestProps> = ({ id, visible, onSend, onCancel
             cancelText="Cancel"
             confirmLoading={loading}
         >
-            <p>Are you sure you want to send request {id ? `ID ${id}` : "this request"} for approval?</p>
-            <p>Once sent, the status will change to "Pending Approval".</p>
+            <div style={{ display: 'flex', alignItems: 'start', gap: '8px' }}>
+                <QuestionCircleOutlined style={{ marginTop: '4px', color: '#1890ff' }} />
+                <div>
+                    <p>Are you sure you want to send request {id ? `ID ${id}` : "this request"} for approval?</p>
+                    <p>Once sent, the status will change to "Pending Approval".</p>
+                </div>
+            </div>
         </Modal>
     );
 };
