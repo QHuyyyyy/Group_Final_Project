@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Legend, Cell, LineChart, Line } from "recharts";
 import { Col, Row, Card, Statistic, Tag, Table, List, Pagination, Select, Dropdown } from "antd"
 import { UserOutlined, ProjectOutlined, FileTextOutlined, ClockCircleOutlined, CheckCircleOutlined, CheckOutlined, LogoutOutlined } from '@ant-design/icons';
@@ -7,6 +7,9 @@ import dayjs from "dayjs"
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import avatar from "../../assets/avatar.png";
+import { claimService } from "../../services/claimService";
+import  projectService from "../../services/projectService";
+import { userService } from "../../services/userService";
 
 interface Claim {
   id: number;
@@ -106,7 +109,7 @@ const AdminDashboard: React.FC = () => {
     {
       key: "1",
       label: (
-        <Link to="/profile">
+        <Link to="/dashboard/profile">
           <UserOutlined className="pr-2" />
           Profile
         </Link>
@@ -190,7 +193,7 @@ const AdminDashboard: React.FC = () => {
             pageSize: 10,
           },
         };
-        const data = await claimService.getAllClaims(params);
+        const data = await claimService.searchClaims(params);
         setClaims(data.pageData);
       } catch (error) {
         console.error("Error fetching claims:", error);
@@ -273,10 +276,12 @@ const AdminDashboard: React.FC = () => {
           pageInfo: {
             pageNum: 1,
             pageSize: 10,
+            totalItems: 0,
+            totalPages: 0
           },
         };
         const data = await projectService.searchProjects(params);
-        setProjects(data.pageData);
+        setProjects(data.data.pageData);
       } catch (error) {
         console.error("Error fetching claims:", error);
       }
@@ -295,10 +300,12 @@ const AdminDashboard: React.FC = () => {
           pageInfo: {
             pageNum: 1,
             pageSize: 10,
+            totalItems: 0,
+            totalPages: 0
           },
         };
         const data = await projectService.searchProjects(params);
-        setOngoingProjects(data.pageData);
+        setOngoingProjects(data.data.pageData);
       } catch (error) {
         console.error("Error fetching claims:", error);
       }
@@ -317,10 +324,12 @@ const AdminDashboard: React.FC = () => {
           pageInfo: {
             pageNum: 1,
             pageSize: 10,
+            totalItems: 0,
+            totalPages: 0
           },
         };
         const data = await projectService.searchProjects(params);
-        setCompletedProjects(data.pageData);
+        setCompletedProjects(data.data.pageData);
       } catch (error) {
         console.error("Error fetching claims:", error);
       }
@@ -597,7 +606,7 @@ const AdminDashboard: React.FC = () => {
                       <Statistic
                         title="Total Projects"
                         className="font-bold"
-                        value={projectStats}
+                        value={projects.length}
                         prefix={<ProjectOutlined style={{ color: "#2196f3" }} />}
                       />
                     </Card>

@@ -79,7 +79,7 @@ const Request = () => {
                 pageSize: 10,
               },
             };
-            const data = await claimService.getAllClaims(params);
+            const data = await claimService.searchClaims(params);
             setRequests(data.pageData);      
           } catch (error) {
             console.error("Error fetching claims:", error);
