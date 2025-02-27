@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
-import { Card, Table, Button, Form, Input, InputNumber, Modal, Popconfirm, Select, Space, Tag } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Card, Table, Button, Form, Input, Modal, Select, Space, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import 'antd/dist/reset.css';
 import SideBarAdminUser from '../../components/admin/SideBarAdminUser';  
 import { useNavigate } from 'react-router-dom';
 import { 
-  EditOutlined, 
-  DeleteOutlined, 
+  EditOutlined,  
   EyeOutlined, 
   LockOutlined,
   UnlockOutlined,
@@ -16,22 +15,36 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import StaffDetails from '../../components/admin/StaffDetails';
+import { userService } from '../../services/userService';
+import { message } from 'antd';
+import { roleService } from '../../services/roleService';
+
+import AddUserModal from '../../components/admin/AddUserModal';
+import DeleteUserButton from '../../components/admin/DeleteUserButton';
 
 interface StaffMember {
-  key: string;
-  username: string;
-  staffName: string;
-  password: string;
-  confirmPassword: string;
-  department: string;
-  jobRank: string;
-  salary: number;
+  _id: string;
+  user_name: string;
   email: string;
-  phone: string;
-  address: string;
-  isLocked: boolean;
-  createdAt: string;
-  role: string;
+  role_code: string;  // A001, A002, A003, A004
+  is_blocked: boolean;
+  is_verified: boolean;
+  created_at: string;
+  updated_at: string;
+  is_deleted: boolean;
+}
+interface SearchParams {
+  searchCondition: {
+    keyword: string;
+    role_code: string;
+    is_blocked: boolean;
+    is_delete: boolean;
+    is_verified: string;
+  };
+  pageInfo: {
+    pageNum: number;
+    pageSize: number;
+  };
 }
 
 const AdminUserManager: React.FC = () => {
@@ -39,113 +52,131 @@ const AdminUserManager: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [editingRecord, setEditingRecord] = useState<StaffMember | null>(null);
-  const { Option } = Select;
-  const roles = ['Manager', 'Employee', 'HR', 'Developer'];
-  const [staffData, setStaffData] = useState<StaffMember[]>([
-    {
-      key: '1',
-      username: 'johndoe',
-      staffName: 'John Doe',
-      password: 'password123',
-      confirmPassword: 'password123',
-      department: 'IT',
-      jobRank: 'Senior Developer',
-      salary: 5000,
-      email: 'john.doe@example.com',
-      phone: '0123456789',
-      address: '123 Main St, City',
-      isLocked: false,
-      createdAt: '2025-02-13',
-      role: 'Developer'
-    },
-    {
-      key: '2',
-      username: 'janesmith',
-      staffName: 'Jane Smith',
-      password: 'password456',
-      confirmPassword: 'password456',
-      department: 'HR',
-      jobRank: 'Manager',
-      salary: 6000,
-      email: 'jane.smith@example.com',
-      phone: '0987654321',
-      address: '456 Park Ave, Town',
-      isLocked: false,
-      createdAt: '2025-02-13',
-      role: 'Manager'
-    }
-  ]);
-  const [isAdding, setIsAdding] = useState(false);
+  const [staffData, setStaffData] = useState<StaffMember[]>([]);
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<any>(null);
   const [searchText, setSearchText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0
+  });
+  const [roleOptions, setRoleOptions] = useState<{ label: string; value: string }[]>([]);
+
+  useEffect(() => {
+    fetchUsers();
+    fetchRoles();
+  }, [pagination.current, pagination.pageSize, searchText]);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const params: SearchParams = {
+        searchCondition: {
+          keyword: searchText || "",
+          role_code: "",
+          is_blocked: false,
+          is_delete: false,
+          is_verified: ""
+        },
+        pageInfo: {
+          pageNum: pagination.current,
+          pageSize: pagination.pageSize
+        }
+      };
+
+      const response = await userService.searchUsers(params);
+      console.log('Search response:', response);
+      
+      if (response && response.pageData) {
+        setStaffData(response.pageData);
+        setPagination(prev => ({
+          ...prev,
+          total: response.total || 0
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      message.error('An error occurred while fetching users.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchRoles = async () => {
+    try {
+      const roles = await roleService.getAllRoles();
+      const options = roles.map(role => ({
+        label: role.role_name, // Hiển thị role_name
+        value: role.role_code  // Giá trị thực sự là role_code
+      }));
+      setRoleOptions(options);
+    } catch (error) {
+      console.error('Error fetching roles:', error);
+      message.error('Không thể tải danh sách vai trò');
+    }
+  };
+
+  // Add a debounced search handler
+  const handleSearch = (value: string) => {
+    setSearchText(value);
+    // Reset to first page when searching
+    setPagination(prev => ({
+      ...prev,
+      current: 1
+    }));
+  };
 
   const handleAdd = () => {
-    setIsAdding(true);
-    setEditingRecord(null);
-    form.resetFields();
-    setIsModalVisible(true);
+    setIsAddModalVisible(true);
   };
 
   const handleEdit = (record: StaffMember) => {
-    setIsAdding(false);
     setEditingRecord(record);
     form.setFieldsValue({
       ...record,
-      createdAt: dayjs(record.createdAt)
+      createdAt: dayjs(record.created_at)
     });
     setIsModalVisible(true);
   };
 
   const handleSave = async (values: any) => {
-    const formattedValues = {
-      ...values,
-      department: isAdding ? '' : values.department,
-      jobRank: isAdding ? '' : values.jobRank,
-      salary: isAdding ? 0 : Number(values.salary),
-      email: isAdding ? '' : values.email,
-      phone: isAdding ? '' : values.phone,
-      address: isAdding ? '' : values.address,
-      role: isAdding ? 'Employee' : values.role,
-      createdAt: values.createdAt ? dayjs(values.createdAt).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
-      confirmPassword: values.confirmPassword
-    };
-
-    if (editingRecord) {
-      setStaffData(prev => prev.map(staff => 
-        staff.key === editingRecord.key 
-          ? { ...formattedValues, key: staff.key, isLocked: staff.isLocked }
-          : staff
-      ));
-    } else {
-      const newStaff = {
-        ...formattedValues,
-        key: Date.now().toString(),
-        isLocked: false,
-        createdAt: dayjs().format('YYYY-MM-DD')
-      };
-      setStaffData(prev => [...prev, newStaff]);
+    try {
+      if (editingRecord) {
+        setStaffData(prev => prev.map(staff => 
+          staff._id === editingRecord._id 
+            ? { ...values, _id: staff._id, is_blocked: staff.is_blocked }
+            : staff
+        ));
+      } else {
+        const newStaff = {
+          ...values,
+          _id: Date.now().toString(),
+          is_blocked: false,
+          createdAt: dayjs().format('YYYY-MM-DD')
+        };
+        setStaffData(prev => [...prev, newStaff]);
+      }
+      setIsModalVisible(false);
+      setEditingRecord(null);
+      form.resetFields();
+    } catch (error) {
+      console.error('Error saving staff member:', error);
+      message.error('An error occurred while saving the staff member.');
     }
-    setIsModalVisible(false);
-    setEditingRecord(null);
-    form.resetFields();
   };
 
   const handleCancel = () => {
     setIsModalVisible(false);
     setEditingRecord(null);
-    setIsAdding(false);
     form.resetFields();
   };
 
-  const handleDelete = (key: string) => {
-    const newData = staffData.filter(item => item.key !== key);
-    setStaffData(newData);
-  };
-
-  const handleLockToggle = (record: StaffMember) => {
+  const handleBlockToggle = (record: StaffMember) => {
     const newData = staffData.map(item =>
-      item.key === record.key ? { ...item, isLocked: !item.isLocked } : item
+      item._id === record._id ? { ...item, is_blocked: !item.is_blocked } : item
     );
     setStaffData(newData);
   };
@@ -160,51 +191,62 @@ const AdminUserManager: React.FC = () => {
     setSelectedStaff(null);
   };
 
-  const filteredStaffData = staffData.filter(staff => 
-    staff.username.toLowerCase().includes(searchText.toLowerCase())
-  );
-
   const columns: ColumnsType<StaffMember> = [
     {
+      title: 'No.',
+      key: 'index',
+      render: (_, __, index) => index + 1,
+      width: 50,
+    },
+    {
       title: 'Username',
-      dataIndex: 'username',
-      key: 'username',
-      width: 130,
+      dataIndex: 'user_name',
+      key: 'user_name',
+      width: 120,
     },
     {
       title: 'Role',
-      dataIndex: 'role',
-      key: 'role',
-      width: 120,
+      dataIndex: 'role_code',
+      key: 'role_code',
+      width: 100,
       render: (role: string) => (
         <Tag color={
-          role === 'Manager' ? 'blue' :
-          role === 'Developer' ? 'green' :
-          role === 'HR' ? 'purple' :
-          'default'
+          role === 'A001' ? 'blue' :
+          role === 'A002' ? 'green' :
+          role === 'A003' ? 'purple' :
+          role === 'A004' ? 'orange' : 'default'
         }>
-          {role}
+          {role === 'A001' ? 'Admin' :
+           role === 'A002' ? 'Finance' :
+           role === 'A003' ? 'Approval' :
+           role === 'A004' ? 'Member' : role}
         </Tag>
       )
     },
     {
-      title: 'Department',
-      dataIndex: 'department',
-      key: 'department',
-      width: 150,
-    },
-    {
-      title: 'Job Rank',
-      dataIndex: 'jobRank',
-      key: 'jobRank',
-      width: 150,
-    },
-    {
       title: 'Created At',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
+      dataIndex: 'created_at',
+      key: 'created_at',
       width: 120,
       render: (date: string) => dayjs(date).format('YYYY-MM-DD')
+    },
+    {
+      title: 'Updated At',
+      dataIndex: 'updated_at',
+      key: 'updated_at',
+      width: 120,
+      render: (date: string) => dayjs(date).format('YYYY-MM-DD')
+    },
+    {
+      title: 'Verified',
+      dataIndex: 'is_verified',
+      key: 'is_verified',
+      width: 100,
+      render: (verified: boolean) => (
+        <Tag color={verified ? 'success' : 'warning'}>
+          {verified ? 'Verified' : 'Unverified'}
+        </Tag>
+      )
     },
     {
       title: 'Actions',
@@ -223,27 +265,21 @@ const AdminUserManager: React.FC = () => {
             type="text" 
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
-            disabled={record.isLocked}
+            disabled={record.is_blocked}
             className="text-gray-600 hover:text-gray-800"
           />
-          <Popconfirm
-            title="Do you want to delete this staff member?"
-            onConfirm={() => handleDelete(record.key)}
-            okText="Yes"
-            cancelText="No"
-            disabled={record.isLocked}
-          >
-            <Button 
-              type="text" 
-              danger 
-              icon={<DeleteOutlined />}
-            />
-          </Popconfirm>
+          <DeleteUserButton
+            userId={record._id}
+            isBlocked={record.is_blocked}
+            onSuccess={() => {
+              fetchUsers();
+            }}
+          />
           <Button
             type="text"
-            icon={record.isLocked ? <LockOutlined /> : <UnlockOutlined />}
-            onClick={() => handleLockToggle(record)}
-            className={record.isLocked ? 'text-red-500' : 'text-green-500'}
+            icon={record.is_blocked ? <LockOutlined /> : <UnlockOutlined />}
+            onClick={() => handleBlockToggle(record)}
+            className={record.is_blocked ? 'text-red-500' : 'text-green-500'}
           />
         </Space>
       ),
@@ -268,7 +304,7 @@ const AdminUserManager: React.FC = () => {
             placeholder="Search by name..."
             prefix={<SearchOutlined className="text-gray-400" />}
             value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
             style={{ width: 300 }}
             className="ml-4"
           />
@@ -281,11 +317,20 @@ const AdminUserManager: React.FC = () => {
           <div className="overflow-auto custom-scrollbar">
             <Table 
               columns={columns} 
-              dataSource={filteredStaffData}
-              rowKey="key"
+              dataSource={staffData}
+              rowKey="_id"
+              loading={loading}
               pagination={{
-                pageSize: 10,
-                total: filteredStaffData.length,
+                current: pagination.current,
+                pageSize: pagination.pageSize,
+                total: pagination.total,
+                onChange: (page, pageSize) => {
+                  setPagination(prev => ({
+                    ...prev,
+                    current: page,
+                    pageSize: pageSize || 10
+                  }));
+                },
                 showSizeChanger: true,
                 showQuickJumper: true,
               }}
@@ -295,9 +340,18 @@ const AdminUserManager: React.FC = () => {
           </div>
         </Card>
 
-        {/* Edit/Add Modal */}
+        <AddUserModal
+          visible={isAddModalVisible}
+          onCancel={() => setIsAddModalVisible(false)}
+          onSuccess={() => {
+            setIsAddModalVisible(false);
+            fetchUsers();
+          }}
+          roleOptions={roleOptions}
+        />
+
         <Modal
-          title={<h2 className="text-2xl font-bold">{isAdding ? "Add Account Staff" : "Complete Staff Information"}</h2>}
+          title={<h2 className="text-2xl font-bold">Complete Staff Information</h2>}
           open={isModalVisible}
           onCancel={handleCancel}
           width={800}
@@ -314,137 +368,42 @@ const AdminUserManager: React.FC = () => {
             form={form}
             layout="vertical"
             onFinish={handleSave}
-            initialValues={{
-              role: 'Employee',
-              salary: '',
-              createdAt: dayjs(),
-            }}
           >
-            {isAdding ? (
-              <div className="flex flex-col items-center gap-4 w-full">
-                <div className="w-full max-w-md">
-                  <Form.Item
-                    name="username"
-                    label="Username"
-                    rules={[{ required: true, message: 'Please input username!' }]}
-                  >
-                    <Input />
-                  </Form.Item>
+            <div className="grid grid-cols-2 gap-4">
+              <Form.Item
+                name="user_name"
+                label="Username"
+              >
+                <Input disabled className="bg-gray-100" />
+              </Form.Item>
 
-                  <Form.Item
-                    name="password"
-                    label="Password"
-                    rules={[
-                      { required: true, message: 'Please input password!' },
-                      { min: 6, message: 'Password must be at least 6 characters!' }
-                    ]}
-                  >
-                    <Input.Password />
-                  </Form.Item>
+              <Form.Item
+                name="role_code"
+                label="Role"
+              >
+                <Select
+                  placeholder="Select role"
+                  options={roleOptions}
+                />
+              </Form.Item>
 
-                  <Form.Item
-                    name="confirmPassword"
-                    label="Confirm Password"
-                    dependencies={['password']}
-                    rules={[
-                      { required: true, message: 'Please confirm your password!' },
-                      ({ getFieldValue }) => ({
-                        validator(_, value) {
-                          if (!value || getFieldValue('password') === value) {
-                            return Promise.resolve();
-                          }
-                          return Promise.reject(new Error('The passwords do not match!'));
-                        },
-                      }),
-                    ]}
-                  >
-                    <Input.Password />
-                  </Form.Item>
-                </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-4">
-                <Form.Item
-                  name="username"
-                  label="Username"
-                >
-                  <Input disabled className="bg-gray-100" />
-                </Form.Item>
+              <Form.Item
+                name="createdAt"
+                label="Created At"
+              >
+                <Input disabled className="bg-gray-100" />
+              </Form.Item>
 
-                <Form.Item
-                  name="staffName"
-                  label="Staff Name"
-                >
-                  <Input />
-                </Form.Item>
-
-                <Form.Item
-                  name="role"
-                  label="Role"
-                >
-                  <Select>
-                    {roles.map(role => (
-                      <Option key={role} value={role}>{role}</Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-
-                <Form.Item
-                  name="department"
-                  label="Department"
-                >
-                  <Input />
-                </Form.Item>
-
-                <Form.Item
-                  name="jobRank"
-                  label="Job Rank"
-                >
-                  <Input />
-                </Form.Item>
-
-                <Form.Item
-                  name="salary"
-                  label="Salary"
-                  
-                >
-                  <InputNumber
-                    style={{ width: '100%' }}
-                    formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={value => value!.replace(/\$\s?|(,*)/g, '')}
-                  />
-                </Form.Item>
-
-                <Form.Item
-                  name="email"
-                  label="Email"
-                  // rules={[
-                  //   { required: true, message: 'Please input email!' },
-                  //   { type: 'email', message: 'Please enter a valid email!' }
-                  // ]}
-                >
-                  <Input />
-                </Form.Item>
-
-                <Form.Item
-                  name="phone"
-                  label="Phone"
-                >
-                  <Input />
-                </Form.Item>
-
-                <Form.Item
-                  name="address"
-                  label="Address"
-                >
-                  <Input />
-                </Form.Item>
-              </div>
-            )}
+              <Form.Item
+                name="email"
+                label="Email"
+              >
+                <Input />
+              </Form.Item>
+            </div>
           </Form>
         </Modal>
 
-        {/* Details Modal */}
         <StaffDetails 
           visible={isDetailsModalVisible}
           staff={selectedStaff}

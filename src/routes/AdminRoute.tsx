@@ -1,14 +1,20 @@
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useUserStore } from '../stores/userStore';
+
 interface AdminRouteProps {
   children: React.ReactNode;
+  allowedRoles?: string[];
 }
 
-const AdminRoute = ({ children }: AdminRouteProps) => {
-  const { user } = useAuth();
+const AdminRoute = ({ children, allowedRoles }: AdminRouteProps) => {
+  const user = useUserStore((state) => state);
   
-  if (!user || user.role !== 'admin') {
-    return <Navigate to="/" replace />;
+  if (!user || user.role_code !== 'A001') {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (allowedRoles && !allowedRoles.includes(user.role_code)) {
+    return <Navigate to="/error" replace />;
   }
 
   return <>{children}</>;
