@@ -11,6 +11,7 @@ import NotFound from './pages/NotFound';
 import { RoutePermissions } from './routes/RoutePermissions';
 import VerifyToken from './pages/common/VerifyToken';
 import ResendToken from './pages/common/ResendToken';
+import Settings from "./pages/Settings";
 
 // Lazy load components
 const Homepage = lazy(() => import('./pages/Homepage'));
@@ -109,6 +110,7 @@ const App = () => {
               </AdminRoute>
             </AdminRoute>
           } />
+          <Route path='/dashboard/settings' element={<Settings />} />
 
           <Route path='*' element={<NotFound />} />
         </Routes>
