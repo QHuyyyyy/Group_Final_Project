@@ -16,7 +16,7 @@ interface Claim {
   __v: number;
   project_info: {
     project_name: string;
-  }
+  };
 }
 
 interface SearchCondition {
@@ -37,63 +37,65 @@ interface SearchParams {
   pageInfo: PageInfo;
 }
 
+const BASE_URL = "/api/claims"; // Định nghĩa BASE_URL chung
+
 export const claimService = {
   // Tạo claim mới
   createClaim: async (claimData: Partial<Claim>) => {
-    const response = await api.post('/api/claims', claimData);
+    const response = await api.post(`${BASE_URL}`, claimData);
     console.log("fetch data:", response.data.data);
     return response.data.data;
   },
 
   // Tìm kiếm claims với phân trang
   searchClaims: async (params: SearchParams) => {
-    const response = await api.post('/api/claims/search', params);
+    const response = await api.post(`${BASE_URL}/search`, params);
     console.log("fetch data:", response.data.data);
     return response.data.data;
   },
 
   // Tìm kiếm claims theo người yêu cầu
   searchClaimsByClaimer: async (params: SearchParams) => {
-    const response = await api.post('/api/claims/claimer-search', params);
+    const response = await api.post(`${BASE_URL}/claimer-search`, params);
     console.log("fetch data:", response.data.data);
     return response.data.data;
   },
 
   // Tìm kiếm claims cần phê duyệt
   searchClaimsForApproval: async (params: SearchParams) => {
-    const response = await api.post('/api/claims/approval-search', params);
+    const response = await api.post(`${BASE_URL}/approval-search`, params);
     console.log("fetch data:", response.data.data);
     return response.data.data;
   },
 
   // Tìm kiếm claims cho bộ phận tài chính
   searchClaimsForFinance: async (params: SearchParams) => {
-    const response = await api.post('/api/claims/finance-search', params);
+    const response = await api.post(`${BASE_URL}/finance-search`, params);
     console.log("fetch data:", response.data.data);
     return response.data.data;
   },
 
   // Lấy thông tin claim theo ID
   getClaimById: async (id: string) => {
-    const response = await api.get(`/api/claims/${id}`);
+    const response = await api.get(`${BASE_URL}/${id}`);
     console.log("fetch data:", response.data.data);
     return response.data.data;
   },
 
   // Cập nhật thông tin claim
   updateClaim: async (id: string, claimData: Partial<Claim>) => {
-    const response = await api.put(`/api/claims/${id}`, claimData);
+    const response = await api.put(`${BASE_URL}/${id}`, claimData);
     console.log("fetch data:", response.data.data);
     return response.data.data;
   },
 
   // Thay đổi trạng thái claim
   changeClaimStatus: async (claimId: string, newStatus: string) => {
-    const response = await api.put('/api/claims/change-status', {
+    const response = await api.put(`${BASE_URL}/change-status`, {
       claim_id: claimId,
-      claim_status: newStatus
+      claim_status: newStatus,
     });
     console.log("fetch data:", response.data.data);
     return response.data.data;
-  }
+  },
 };

@@ -1,27 +1,33 @@
 import { useState } from "react";
 import { Modal, notification } from "antd";
-import { SendOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { SendOutlined, QuestionCircleOutlined } from "@ant-design/icons";
+import { claimService } from "../../services/claimService";  // Import API
 
 interface SendRequestProps {
     id: string | null;
     visible: boolean;
-    onSend: (id: string) => Promise<void>;
     onCancel: () => void;
+    onSuccess: () => void;  // Gọi lại danh sách request sau khi gửi thành công
 }
 
-const SendRequest: React.FC<SendRequestProps> = ({ id, visible, onSend, onCancel }) => {
+const SendRequest: React.FC<SendRequestProps> = ({ id, visible, onCancel, onSuccess }) => {
     const [loading, setLoading] = useState(false);
 
     const handleSend = async () => {
-        if (id === null) return;
+        if (!id) return;
         setLoading(true);
+
         try {
-            await onSend(id);
+            // Gọi API để thay đổi trạng thái request thành "Pending Approval"
+            await claimService.changeClaimStatus(id, "Pending Approval");
+
             notification.success({
                 message: "Request Sent",
                 description: `Request ID ${id} has been sent for approval.`,
-                icon: <SendOutlined style={{ color: '#52c41a' }} />
+                icon: <SendOutlined style={{ color: "#52c41a" }} />
             });
+
+            onSuccess();  // Reload danh sách sau khi gửi thành công
         } catch (error) {
             notification.error({
                 message: "Send Failed",
@@ -29,6 +35,7 @@ const SendRequest: React.FC<SendRequestProps> = ({ id, visible, onSend, onCancel
             });
         } finally {
             setLoading(false);
+            onCancel(); // Đóng modal
         }
     };
 

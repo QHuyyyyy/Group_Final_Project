@@ -84,7 +84,7 @@ const Claim = () => {
 
       const response = await claimService.searchClaims(params);
       console.log('Search response:', response);
-      
+
       if (response && response.pageData) {
         setClaims(response.pageData);
         setPagination(prev => ({
@@ -104,7 +104,7 @@ const Claim = () => {
     try {
       const response = await claimService.getClaimById(claimId);
       console.log('Total hours response:', response);
-      
+
       if (response && response.total_work_time) {
         setTotalHoursMap(prev => ({
           ...prev,
@@ -135,9 +135,9 @@ const Claim = () => {
     setSelectedRequest(null);
   };
 
-  
 
-  const formatWorkTime = (hours: number) => { 
+
+  const formatWorkTime = (hours: number) => {
     if (!hours && hours !== 0) return '-';
     return `${hours}h`;
   };
@@ -206,9 +206,9 @@ const Claim = () => {
                 render: (status: string) => (
                   <Tag color={
                     !status || status === "DRAFT" ? "gold" :
-                    status === "PENDING" ? "blue" :
-                    status === "APPROVED" ? "green" :
-                    "red"
+                      status === "PENDING" ? "blue" :
+                        status === "APPROVED" ? "green" :
+                          "red"
                   }>
                     {status || "DRAFT"}
                   </Tag>
@@ -220,13 +220,13 @@ const Claim = () => {
                 width: 200,
                 render: (_, record) => (
                   <Space size="middle">
-                    <Button 
-                      type="text" 
-                      icon={<EyeOutlined />} 
+                    <Button
+                      type="text"
+                      icon={<EyeOutlined />}
                       onClick={() => handleView(record)}
                       title="View"
                     />
-                   
+
                   </Space>
                 )
               }
@@ -250,7 +250,7 @@ const Claim = () => {
             scroll={{ x: true }}
           />
         </Card>
-        
+
         <RequestDetails
           visible={isModalVisible}
           claim={selectedRequest}

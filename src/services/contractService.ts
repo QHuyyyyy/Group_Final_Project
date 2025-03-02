@@ -1,4 +1,4 @@
-import api from '../api/axios';
+import api from "../api/axios";
 
 interface Contract {
     _id: string;
@@ -10,14 +10,15 @@ interface Contract {
     __v: number;
 }
 
+const BASE_URL = "/api/contracts"; // Định nghĩa BASE_URL chung
+
 export const contractService = {
     // Lấy tất cả contracts hoặc tìm kiếm theo từ khóa
     getAllContracts: async (keyword?: string): Promise<Contract[]> => {
-        const response = await api.get('/api/contracts/get-all', {
-            params: { keyword }
+        const response = await api.get(`${BASE_URL}/get-all`, {
+            params: { keyword },
         });
-        console.log("fetch data:",response.data.data)
+        console.log("fetch data:", response.data.data);
         return response.data.data;
     },
-
 };
