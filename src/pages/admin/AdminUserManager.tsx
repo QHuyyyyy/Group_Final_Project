@@ -203,7 +203,7 @@ const AdminUserManager: React.FC = () => {
       key: 'is_verified',
       width: 100,
       render: (verified: boolean) => (
-        <Tag color={verified ? 'success' : 'warning'}>
+        <Tag color={verified ? 'success' : 'error'}>
           {verified ? 'Verified' : 'Unverified'}
         </Tag>
       )

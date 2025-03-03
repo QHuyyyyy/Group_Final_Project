@@ -24,11 +24,13 @@ const NavbarAdminDashboard: React.FC = () => {
   const menu = (
     <Menu>
       <Menu.Item key="1" onClick={() =>{
-        navigate("/userdashboard/profile")
+        navigate("/dashboard/profile")
       }}>
         <UserOutlined /> Profile
       </Menu.Item>
-      <Menu.Item key="2">
+      <Menu.Item key="2" onClick={() =>{
+        navigate("/dashboard/settings")
+      }}>
         <SettingOutlined /> Settings
       </Menu.Item>
       <Menu.Item key="3" onClick={handleLogout} style={{
