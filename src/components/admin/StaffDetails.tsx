@@ -2,17 +2,19 @@ import React from 'react';
 import { Modal, Descriptions, Tag } from 'antd';
 
 interface Staff {
-  username: string;
-  fullName: string; 
-  role: string;
+  _id: string;
   email: string;
-  phone: string;
-  department: string;
-  jobRank: string;
-  salary: number;
-  createdAt: string;
+  user_name: string;
+  role_code: string;
+  is_verified: boolean;
+  verification_token: string;
+  verification_token_expires: string;
+  token_version: number;
+  is_blocked: boolean;
+  created_at: string;
   updated_at: string;
-  address: string;
+  is_deleted: boolean;
+  __v: number;
 }
 
 interface StaffDetailsProps {
@@ -22,11 +24,24 @@ interface StaffDetailsProps {
 }
 
 const StaffDetails: React.FC<StaffDetailsProps> = ({ visible, staff, onClose }) => {
-  const roleMap: { [key: string]: string } = {
-    A001: 'Admin',
-    A002: 'Finance',
-    A003: 'Approval',
-    A004: 'Member',
+  const roleMap: { [key: string]: { name: string; color: string } } = {
+    A001: { name: 'Administrator', color: 'red' },
+    A002: { name: 'Finance', color: 'blue' },
+    A003: { name: 'BUL, PM', color: 'yellow' },
+    // A004: { name: 'All Members', color: ' purple' },
+    A004: { name: 'All Members', color: 'default' }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
   };
 
   return (
@@ -41,44 +56,34 @@ const StaffDetails: React.FC<StaffDetailsProps> = ({ visible, staff, onClose }) 
       <div className="py-4">
         <Descriptions column={2} bordered className="custom-descriptions">
           <Descriptions.Item label="Username" span={1}>
-            {staff?.username}
-          </Descriptions.Item>
-          <Descriptions.Item label="Full Name" span={1}>
-            {staff?.fullName}  {/* Changed from staffName */}
-          </Descriptions.Item>
-          <Descriptions.Item label="Role" span={1}>
-            <Tag color={
-              staff?.role === 'A001' ? 'blue' :
-              staff?.role === 'A002' ? 'green' :
-              staff?.role === 'A003' ? 'purple' :
-              staff?.role === 'A004' ? 'orange' : 'default'
-            }>
-              {roleMap[staff?.role] || staff?.role}
-            </Tag>
+            {staff?.user_name}
           </Descriptions.Item>
           <Descriptions.Item label="Email" span={1}>
             {staff?.email}
           </Descriptions.Item>
-          <Descriptions.Item label="Phone" span={1}>
-            {staff?.phone}
+          <Descriptions.Item label="Role" span={1}>
+            <Tag color={roleMap[staff?.role_code]?.color || 'default'}>
+              {roleMap[staff?.role_code]?.name || staff?.role_code}
+            </Tag>
           </Descriptions.Item>
-          <Descriptions.Item label="Department" span={1}>
-            {staff?.department}
+          <Descriptions.Item label="Verification Status" span={1}>
+            <Tag color={staff?.is_verified ? 'success' : 'error'}>
+              {staff?.is_verified ? 'Verified' : 'Unerified'}
+            </Tag>
           </Descriptions.Item>
-          <Descriptions.Item label="Job Rank" span={1}>
-            {staff?.jobRank}
-          </Descriptions.Item>
-          <Descriptions.Item label="Salary" span={1}>
-            ${staff?.salary?.toLocaleString()}
+          <Descriptions.Item label="Account Status" span={1}>
+            <Tag color={staff?.is_blocked ? 'error' : 'success'}>
+              {staff?.is_blocked ? 'Blocked' : 'Active'}
+            </Tag>
           </Descriptions.Item>
           <Descriptions.Item label="Created At" span={1}>
-            {staff?.createdAt}
+            {staff?.created_at ? formatDate(staff.created_at) : ''}
           </Descriptions.Item>
           <Descriptions.Item label="Updated At" span={1}>
-            {staff?.updated_at}
+            {staff?.updated_at ? formatDate(staff.updated_at) : ''}
           </Descriptions.Item>
-          <Descriptions.Item label="Address" span={2}>
-            {staff?.address}
+          <Descriptions.Item label="Version" span={1}>
+            {staff?.__v}
           </Descriptions.Item>
         </Descriptions>
       </div>
