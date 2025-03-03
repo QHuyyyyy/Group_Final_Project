@@ -67,7 +67,7 @@ const Menu = () => {
         { 
           icon: user, 
           label: "Profile", 
-          href: "/userdashboard/profile",
+          href: "/userdashboard/userprofile",
           allowedRoles: ["A001", "A002", "A003", "A004"]
         },
       ],

@@ -11,6 +11,7 @@ import NotFound from './pages/NotFound';
 import { RoutePermissions } from './routes/RoutePermissions';
 import VerifyToken from './pages/common/VerifyToken';
 import ResendToken from './pages/common/ResendToken';
+import UserProfile from './pages/common/userProfile';
 
 // Lazy load components
 const Homepage = lazy(() => import('./pages/Homepage'));
@@ -48,9 +49,9 @@ const App = () => {
                   <Route path='/resend-token' element={<ResendToken />} />
           {/* User Dashboard Routes */}
           <Route path='/userdashboard/' element={<UserRoute><UserDashBoard /></UserRoute>}>
-            <Route path="profile" element={
+            <Route path="userprofile" element={
               <UserRoute allowedRoles={RoutePermissions.profile}>
-                <Profile />
+                <UserProfile />
               </UserRoute>
             } />
             <Route path="transaction" element={
