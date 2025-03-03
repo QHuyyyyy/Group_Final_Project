@@ -217,7 +217,7 @@ const AdminDashboard: React.FC = () => {
     const fetchPendingClaims = async () => {
       try {
         const data = await claimService.getPendingClaims();
-        setPendingClaims(data.pageData);
+        setPendingClaims(data.data.pageData);
         setDataLoaded(prev => ({ ...prev, pendingClaims: true }));
       } catch (error) {
         console.error("Error fetching claims:", error);
@@ -229,7 +229,7 @@ const AdminDashboard: React.FC = () => {
     const fetchApprovedClaims = async () => {
       try {
         const data = await claimService.getApprovedClaims();
-        setApprovedClaims(data.pageData);
+        setApprovedClaims(data.data.pageData);
         setDataLoaded(prev => ({ ...prev, approvedClaims: true }));
       } catch (error) {
         console.error("Error fetching claims:", error);
@@ -241,7 +241,7 @@ const AdminDashboard: React.FC = () => {
     const fetchRejectedClaims = async () => {
       try {
         const data = await claimService.getRejectedClaims();
-        setRejectedClaims(data.pageData);
+        setRejectedClaims(data.data.pageData);
         setDataLoaded(prev => ({ ...prev, rejectedClaims: true }));
       } catch (error) {
         console.error("Error fetching claims:", error);
@@ -253,7 +253,7 @@ const AdminDashboard: React.FC = () => {
     const fetchPaidClaims = async () => {
       try {
         const data = await claimService.getPaidClaims();
-        setPaidClaims(data.pageData);
+        setPaidClaims(data.data.pageData);
         setDataLoaded(prev => ({ ...prev, paidClaims: true }));
       } catch (error) {
         console.error("Error fetching claims:", error);
@@ -265,7 +265,7 @@ const AdminDashboard: React.FC = () => {
     const fetchDraftClaims = async () => {
       try {
         const data = await claimService.getDraftClaims();
-        setDraftClaims(data.pageData);
+        setDraftClaims(data.data.pageData);
         setDataLoaded(prev => ({ ...prev, draftClaims: true }));
       } catch (error) {
         console.error("Error fetching claims:", error);
@@ -277,7 +277,7 @@ const AdminDashboard: React.FC = () => {
     const fetchCanceledClaims = async () => {
       try {
         const data = await claimService.getCanceledClaims();
-        setCanceledClaims(data.pageData);
+        setCanceledClaims(data.data.pageData);
         setDataLoaded(prev => ({ ...prev, canceledClaims: true }));
       } catch (error) {
         console.error("Error fetching claims:", error);
@@ -306,6 +306,7 @@ const AdminDashboard: React.FC = () => {
           },
         };
         const data = await projectService.searchProjects(params);
+        console.log(data)
         setProjects(data.data.pageData);
         setDataLoaded(prev => ({ ...prev, projects: true }));
       } catch (error) {
@@ -410,6 +411,7 @@ const AdminDashboard: React.FC = () => {
           },
         };
         const data = await userService.searchUsers(params);
+        console.log(data)
         setUsers(data.pageData);
         
         setDataLoaded(prev => ({ ...prev, users: true }));
