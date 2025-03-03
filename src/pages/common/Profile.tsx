@@ -11,9 +11,11 @@ import {
   CalendarOutlined,
   DollarOutlined,
   FileProtectOutlined,
+
   ProjectOutlined,
   CreditCardOutlined,
   LoadingOutlined
+
 } from '@ant-design/icons';
 import { useLocation } from 'react-router-dom';
 import AdminSidebar from '../../components/admin/AdminSidebar';
@@ -47,7 +49,7 @@ interface Employee {
   salary: number;
   start_date: string;
   end_date: string;
-  updated_by: string;
+  updated_by?: string;
   created_at: string;
   updated_at: string;
   is_deleted: boolean;
@@ -69,7 +71,7 @@ const Profile = () => {
   const user = useUserStore((state) => state);
   const [employeeData, setEmployeeData] = useState<Employee | null>(null);
   // Add state for projects
-  const [projects, setProjects] = useState<{name: string, role: string}[]>([]);
+
 
   const [dataLoaded, setDataLoaded] = useState({
     employeeData:false
@@ -78,14 +80,12 @@ const Profile = () => {
   useEffect(() => {
     const fetchEmployeeData = async () => {
       try {
-        const data = await employeeService.getEmployeeById(user.id);
-        setEmployeeData(data);
-        // Add mock projects data for now
-        setProjects([
-          { name: "Project A", role: "Developer" },
-          { name: "Project B", role: "Team Lead" }
-        ]);
-        setDataLoaded(prev => ({ ...prev, employeeData: true }));
+
+
+        const response = await employeeService.getEmployeeById(user.id);
+        setEmployeeData(response.data);
+
+
       } catch (error) {
         console.error('Error fetching employee data:', error);
         setDataLoaded(prev => ({ ...prev, employeeData: true }));
@@ -196,32 +196,8 @@ const Profile = () => {
                   {/* Right Column - Stats & Activities */}
                   <Col xs={24} md={16}>
                     <div className="space-y-6">
-                      {/* Projects Section - Moved from left column */}
-                      <Card 
-                        title={<span className="text-xl font-bold flex items-center gap-2">
-                          <ProjectOutlined className="text-blue-500" /> Current Projects
-                        </span>}
-                        className="rounded-xl border-0 shadow-md"
-                        extra={<Badge count={projects.length} />}
-                      >
-                        <div className="space-y-3">
-                          {projects.map((project) => (
-                            <div key={project.name} className="bg-white p-4 rounded-xl border border-gray-100 hover:shadow-md transition-all duration-300">
-                              <div className="flex justify-between items-center">
-                                <div>
-                                  <h4 className="font-semibold text-gray-800">{project.name}</h4>
-                                  <p className="text-sm text-gray-500 mt-1">Role: {project.role}</p>
-                                </div>
-                                <Badge 
-                                  status="processing" 
-                                  text="Active"
-                                  className="px-3 py-1 bg-blue-50 text-blue-600 border border-blue-100 rounded-full" 
-                                />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </Card>
+          
+                  
 
                       {/* Statistics Cards */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -350,26 +326,7 @@ const Profile = () => {
                         </div>
                       </div>
 
-                      <div className="mt-8">
-                        <h3 className="text-xl font-bold text-gray-800 mb-4">My Projects</h3>
-                        <div className="space-y-4">
-                          {projects.map((project) => (
-                            <div key={project.name} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all">
-                              <div className="flex justify-between items-center">
-                                <div>
-                                  <h4 className="font-medium text-gray-800">{project.name}</h4>
-                                  <p className="text-sm text-gray-500">Role: {project.role}</p>
-                                </div>
-                                <Badge 
-                                  status="processing" 
-                                  text="Active"
-                                  className="px-3 py-1 bg-green-50 text-green-600 border border-green-200 rounded-full" 
-                                />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+              
                     </Card>
                   </Col>
 
