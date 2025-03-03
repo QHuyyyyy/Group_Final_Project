@@ -7,13 +7,19 @@ import { EyeOutlined } from "@ant-design/icons";
 
 interface Claim {
   _id: string;
-  claim_name: string;
-  project_id: string;
-  total_work_time: number;
-  claim_status: string;
-  created_at: string;
-  claim_start_date: string;
-  claim_end_date: string;
+    staff_id: string;
+    staff_name: string;
+    staff_email: string;
+    staff_role: string;
+    role_in_project: string;
+    claim_name: string;
+    claim_start_date: string;
+    claim_end_date: string;
+    is_deleted: boolean;
+    created_at: string;
+    updated_at: string;
+    total_work_time: number;
+    claim_status: string;
 }
 
 interface SearchParams {
@@ -85,16 +91,16 @@ const Claim = () => {
       const response = await claimService.searchClaims(params);
       console.log('Search response:', response);
       
-      if (response && response.pageData) {
-        setClaims(response.pageData);
+      if (response && response.data && response.data.pageData) {
+        setClaims(response.data.pageData);
         setPagination(prev => ({
           ...prev,
-          total: response.total || 0
+          total: response.data.pageInfo.totalItems || 0
         }));
       }
     } catch (error) {
-      console.error('Error fetching users:', error);
-      message.error('An error occurred while fetching users.');
+      console.error('Error fetching claims:', error);
+      message.error('An error occurred while fetching claims.');
     } finally {
       setLoading(false);
     }
@@ -253,7 +259,7 @@ const Claim = () => {
         
         <RequestDetails
           visible={isModalVisible}
-          claim={selectedRequest}
+          claim={selectedRequest }
           onClose={handleCloseModal}
         />
       </div>

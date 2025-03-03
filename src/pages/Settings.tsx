@@ -7,28 +7,10 @@ import moment from 'moment';
 import type { UploadProps } from 'antd';
 import NavbarAdminDashboard from '../components/NavbarAdminDashboard';
 import AdminSidebar from '../components/admin/AdminSidebar';
+import { Employee } from '../models/EmployeeModel';
 
 // Define the Employee interface
-interface Employee {
-  _id: string;
-  user_id: string;
-  job_rank: string;
-  contract_type: string;
-  account: string;
-  address: string;
-  phone: string;
-  full_name: string;
-  avatar_url: string;
-  department_name: string;
-  salary: number;
-  start_date: string;
-  end_date: string;
-  updated_by: string;
-  created_at: string;
-  updated_at: string;
-  is_deleted: boolean;
-  __v: number;
-}
+
 
 const Settings = () => {
   const [form] = Form.useForm();
@@ -43,21 +25,22 @@ const Settings = () => {
       try {
         if (user.id) {
           const data = await employeeService.getEmployeeById(user.id);
-          setEmployeeData(data);
-          setAvatarUrl(data.avatar_url);
+          console.log(data)
+          setEmployeeData(data.data);
+          setAvatarUrl(data.data.avatar_url);
           
           // Set form values
           form.setFieldsValue({
-            full_name: data.full_name,
-            phone: data.phone,
-            address: data.address,
-            account: data.account,
-            job_rank: data.job_rank,
-            contract_type: data.contract_type,
-            department_name: data.department_name,
-            salary: data.salary,
-            start_date: data.start_date ? moment(data.start_date) : null,
-            end_date: data.end_date ? moment(data.end_date) : null,
+            full_name: data.data.full_name,
+            phone: data.data.phone,
+            address: data.data.address,
+            account: data.data.account,
+            job_rank: data.data.job_rank,
+            contract_type: data.data.contract_type,
+            department_name: data.data.department_name,
+            salary: data.data.salary,
+            start_date: data.data.start_date ? moment(data.data.start_date) : null,
+            end_date: data.data.end_date ? moment(data.data.end_date) : null,
           });
         }
       } catch (error) {
@@ -99,7 +82,7 @@ const Settings = () => {
       const updatedEmployee = await employeeService.updateEmployee(employeeData._id, updateData);
       
       // Update local state with the response data
-      setEmployeeData(updatedEmployee);
+      setEmployeeData(updatedEmployee.data);
       message.success('Profile updated successfully');
     } catch (error) {
       console.error('Error updating profile:', error);

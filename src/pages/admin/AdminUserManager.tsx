@@ -92,12 +92,12 @@ const AdminUserManager: React.FC = () => {
       const response = await userService.searchUsers(params);
       console.log('Search response:', response);
       
-      if (response && response.pageData) {
-        setStaffData(response.pageData);
+      if (response && response.data) {
+        setStaffData(response.data.pageData);
         setPagination(prev => ({
           ...prev,
-          totalItems: response.pageInfo.totalItems,
-          totalPages: response.pageInfo.totalPages
+          totalItems: response.data.pageInfo.totalItems,
+          totalPages: response.data.pageInfo.totalPages
         }));
       }
     } catch (error) {
@@ -112,13 +112,13 @@ const AdminUserManager: React.FC = () => {
     try {
       const roles = await roleService.getAllRoles();
       const options = roles.map(role => ({
-        label: role.role_name, // Hiển thị role_name
-        value: role.role_code  // Giá trị thực sự là role_code
+        label: role.role_name,
+        value: role.role_code
       }));
       setRoleOptions(options);
     } catch (error) {
       console.error('Error fetching roles:', error);
-      message.error('Không thể tải danh sách vai trò');
+      message.error('Cannot load role list');
     }
   };
 
