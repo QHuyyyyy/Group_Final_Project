@@ -31,9 +31,8 @@ export interface SearchClaimLogsRequest {
 }
 
 export interface SearchClaimLogsResponse {
-    success: boolean;
-    data: {
+
         pageData: ClaimLog[];
         pageInfo: PageInfo;
-    };
+
 }

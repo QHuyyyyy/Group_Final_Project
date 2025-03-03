@@ -15,7 +15,7 @@ export default function ResendToken() {
 
   const handleSubmit = async (values: { email: string }) => {
     try {
-      await authService.resendToken(values.email);
+      await authService.resendToken({ email: values.email });
       localStorage.setItem('verifyEmail', values.email);
       toast.success('New token has been sent to your email!');
       navigate('/verify/token');

@@ -16,7 +16,7 @@ export default function VerifyToken() {
 
   const handleSubmit = async (values: { token: string }) => {
     try {
-      await authService.verifyToken(values.token);
+      await authService.verifyToken({ token: values.token });
       toast.success('Account verified successful!');
       navigate('/login');
     } catch (error: any) {
