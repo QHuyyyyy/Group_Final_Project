@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Table, Button, Form, Input, Modal, Select, Space, Tag } from 'antd';
+import { Card, Table, Button,Input,Space, Tag, Switch } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import 'antd/dist/reset.css';
 import SideBarAdminUser from '../../components/admin/SideBarAdminUser';  
@@ -7,8 +7,6 @@ import { useNavigate } from 'react-router-dom';
 import { 
   EditOutlined,  
   EyeOutlined, 
-  LockOutlined,
-  UnlockOutlined,
   ArrowLeftOutlined,
   
   SearchOutlined
@@ -21,6 +19,9 @@ import { roleService } from '../../services/roleService';
 
 import AddUserModal from '../../components/admin/AddUserModal';
 import DeleteUserButton from '../../components/admin/DeleteUserButton';
+import EditUserModal from '../../components/admin/EditUserModal';
+import { debounce } from 'lodash';
+import BlockUserButton from '../../components/admin/BlockUserButton';
 
 interface StaffMember {
   _id: string;
@@ -49,8 +50,6 @@ interface SearchParams {
 
 const AdminUserManager: React.FC = () => {
   const navigate = useNavigate();
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [form] = Form.useForm();
   const [editingRecord, setEditingRecord] = useState<StaffMember | null>(null);
   const [staffData, setStaffData] = useState<StaffMember[]>([]);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
@@ -61,14 +60,17 @@ const AdminUserManager: React.FC = () => {
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
-    total: 0
+    totalItems: 0,
+    totalPages: 0
   });
   const [roleOptions, setRoleOptions] = useState<{ label: string; value: string }[]>([]);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [isBlockedFilter, setIsBlockedFilter] = useState<boolean | undefined>(undefined);
 
   useEffect(() => {
     fetchUsers();
     fetchRoles();
-  }, [pagination.current, pagination.pageSize, searchText]);
+  }, [pagination.current, pagination.pageSize, searchText, isBlockedFilter]);
 
   const fetchUsers = async () => {
     try {
@@ -77,7 +79,7 @@ const AdminUserManager: React.FC = () => {
         searchCondition: {
           keyword: searchText || "",
           role_code: "",
-          is_blocked: false,
+          is_blocked: isBlockedFilter !== undefined ? isBlockedFilter : false,
           is_delete: false,
           is_verified: ""
         },
@@ -94,7 +96,8 @@ const AdminUserManager: React.FC = () => {
         setStaffData(response.pageData);
         setPagination(prev => ({
           ...prev,
-          total: response.total || 0
+          totalItems: response.pageInfo.totalItems,
+          totalPages: response.pageInfo.totalPages
         }));
       }
     } catch (error) {
@@ -120,14 +123,14 @@ const AdminUserManager: React.FC = () => {
   };
 
   // Add a debounced search handler
-  const handleSearch = (value: string) => {
+  const handleSearch = debounce((value: string) => {
     setSearchText(value);
     // Reset to first page when searching
     setPagination(prev => ({
       ...prev,
       current: 1
     }));
-  };
+  }, 2000);
 
   const handleAdd = () => {
     setIsAddModalVisible(true);
@@ -135,50 +138,7 @@ const AdminUserManager: React.FC = () => {
 
   const handleEdit = (record: StaffMember) => {
     setEditingRecord(record);
-    form.setFieldsValue({
-      ...record,
-      createdAt: dayjs(record.created_at)
-    });
-    setIsModalVisible(true);
-  };
-
-  const handleSave = async (values: any) => {
-    try {
-      if (editingRecord) {
-        setStaffData(prev => prev.map(staff => 
-          staff._id === editingRecord._id 
-            ? { ...values, _id: staff._id, is_blocked: staff.is_blocked }
-            : staff
-        ));
-      } else {
-        const newStaff = {
-          ...values,
-          _id: Date.now().toString(),
-          is_blocked: false,
-          createdAt: dayjs().format('YYYY-MM-DD')
-        };
-        setStaffData(prev => [...prev, newStaff]);
-      }
-      setIsModalVisible(false);
-      setEditingRecord(null);
-      form.resetFields();
-    } catch (error) {
-      console.error('Error saving staff member:', error);
-      message.error('An error occurred while saving the staff member.');
-    }
-  };
-
-  const handleCancel = () => {
-    setIsModalVisible(false);
-    setEditingRecord(null);
-    form.resetFields();
-  };
-
-  const handleBlockToggle = (record: StaffMember) => {
-    const newData = staffData.map(item =>
-      item._id === record._id ? { ...item, is_blocked: !item.is_blocked } : item
-    );
-    setStaffData(newData);
+    setIsEditModalVisible(true);
   };
 
   const handleViewDetails = (staff: any) => {
@@ -211,15 +171,15 @@ const AdminUserManager: React.FC = () => {
       width: 100,
       render: (role: string) => (
         <Tag color={
-          role === 'A001' ? 'blue' :
-          role === 'A002' ? 'green' :
-          role === 'A003' ? 'purple' :
-          role === 'A004' ? 'orange' : 'default'
+          role === 'A001' ? 'red' :
+          role === 'A002' ? 'blue' :
+          role === 'A003' ? 'yellow' :
+           'default'
         }>
-          {role === 'A001' ? 'Admin' :
+          {role === 'A001' ? 'Administrator' :
            role === 'A002' ? 'Finance' :
-           role === 'A003' ? 'Approval' :
-           role === 'A004' ? 'Member' : role}
+           role === 'A003' ? 'BUL, PM' :
+           role === 'A004' ? 'All Members' : role}
         </Tag>
       )
     },
@@ -243,7 +203,7 @@ const AdminUserManager: React.FC = () => {
       key: 'is_verified',
       width: 100,
       render: (verified: boolean) => (
-        <Tag color={verified ? 'success' : 'warning'}>
+        <Tag color={verified ? 'success' : 'error'}>
           {verified ? 'Verified' : 'Unverified'}
         </Tag>
       )
@@ -275,11 +235,10 @@ const AdminUserManager: React.FC = () => {
               fetchUsers();
             }}
           />
-          <Button
-            type="text"
-            icon={record.is_blocked ? <LockOutlined /> : <UnlockOutlined />}
-            onClick={() => handleBlockToggle(record)}
-            className={record.is_blocked ? 'text-red-500' : 'text-green-500'}
+          <BlockUserButton
+            userId={record._id}
+            isBlocked={record.is_blocked}
+            onSuccess={fetchUsers}
           />
         </Space>
       ),
@@ -300,20 +259,34 @@ const AdminUserManager: React.FC = () => {
             Back to Dashboard
           </Button>
           
-          <Input
+          
+        </div>
+
+        <Card className="shadow-md">
+          <div className="mb-6 flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-gray-800">Staff Information</h1>
+            <div>
+            <Space>
+              <span>Blocked: </span>
+              <Switch 
+                checked={isBlockedFilter === true} 
+                onChange={(checked) => {
+                  setIsBlockedFilter(checked);
+                  setPagination(prev => ({ ...prev, current: 1 }));
+                }} 
+              />
+            </Space>
+            <Input
             placeholder="Search by name..."
             prefix={<SearchOutlined className="text-gray-400" />}
-            value={searchText}
             onChange={(e) => handleSearch(e.target.value)}
             style={{ width: 300 }}
             className="ml-4"
           />
-        </div>
-
-        <Card className="shadow-md">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">Staff Information</h1>
+            </div>
+           
           </div>
+          
           <div className="overflow-auto custom-scrollbar">
             <Table 
               columns={columns} 
@@ -323,13 +296,14 @@ const AdminUserManager: React.FC = () => {
               pagination={{
                 current: pagination.current,
                 pageSize: pagination.pageSize,
-                total: pagination.total,
+                total: pagination.totalItems,
                 onChange: (page, pageSize) => {
                   setPagination(prev => ({
                     ...prev,
                     current: page,
                     pageSize: pageSize || 10
                   }));
+                  fetchUsers();
                 },
                 showSizeChanger: true,
                 showQuickJumper: true,
@@ -350,59 +324,19 @@ const AdminUserManager: React.FC = () => {
           roleOptions={roleOptions}
         />
 
-        <Modal
-          title={<h2 className="text-2xl font-bold">Complete Staff Information</h2>}
-          open={isModalVisible}
-          onCancel={handleCancel}
-          width={800}
-          footer={[
-            <Button key="cancel" onClick={handleCancel}>
-              Cancel
-            </Button>,
-            <Button key="submit" type="primary" onClick={form.submit}>
-              Save
-            </Button>
-          ]}
-        >
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={handleSave}
-          >
-            <div className="grid grid-cols-2 gap-4">
-              <Form.Item
-                name="user_name"
-                label="Username"
-              >
-                <Input disabled className="bg-gray-100" />
-              </Form.Item>
-
-              <Form.Item
-                name="role_code"
-                label="Role"
-              >
-                <Select
-                  placeholder="Select role"
-                  options={roleOptions}
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="createdAt"
-                label="Created At"
-              >
-                <Input disabled className="bg-gray-100" />
-              </Form.Item>
-
-              <Form.Item
-                name="email"
-                label="Email"
-              >
-                <Input />
-              </Form.Item>
-            </div>
-          </Form>
-        </Modal>
+        <EditUserModal
+          visible={isEditModalVisible}
+          onCancel={() => {
+            setIsEditModalVisible(false);
+            setEditingRecord(null);
+          }}
+          onSuccess={() => {
+            setIsEditModalVisible(false);
+            fetchUsers();
+          }}
+          editingRecord={editingRecord}
+          roleOptions={roleOptions}
+        />
 
         <StaffDetails 
           visible={isDetailsModalVisible}

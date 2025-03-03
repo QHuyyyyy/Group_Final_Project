@@ -14,6 +14,9 @@ interface Claim {
   created_at: string;
   updated_at: string;
   __v: number;
+  project_info: {
+    project_name: string;
+  }
 }
 
 interface SearchCondition {
@@ -21,7 +24,7 @@ interface SearchCondition {
   claim_start_date?: string;
   claim_end_date?: string;
   claim_status?: string;
-  is_deleted?: boolean;
+  is_delete?: boolean;
 }
 
 interface PageInfo {
@@ -38,50 +41,50 @@ export const claimService = {
   // Tạo claim mới
   createClaim: async (claimData: Partial<Claim>) => {
     const response = await api.post('/api/claims', claimData);
-    console.log("fetch data:", response.data);
-    return response.data;
+    console.log("fetch data:", response.data.data);
+    return response.data.data;
   },
 
   // Tìm kiếm claims với phân trang
   searchClaims: async (params: SearchParams) => {
     const response = await api.post('/api/claims/search', params);
-    console.log("fetch data:", response.data);
-    return response.data;
+    console.log("fetch data:", response.data.data);
+    return response.data.data;
   },
 
   // Tìm kiếm claims theo người yêu cầu
   searchClaimsByClaimer: async (params: SearchParams) => {
     const response = await api.post('/api/claims/claimer-search', params);
-    console.log("fetch data:", response.data);
-    return response.data;
+    console.log("fetch data:", response.data.data);
+    return response.data.data;
   },
 
   // Tìm kiếm claims cần phê duyệt
   searchClaimsForApproval: async (params: SearchParams) => {
     const response = await api.post('/api/claims/approval-search', params);
-    console.log("fetch data:", response.data);
-    return response.data;
+    console.log("fetch data:", response.data.data);
+    return response.data.data;
   },
 
   // Tìm kiếm claims cho bộ phận tài chính
   searchClaimsForFinance: async (params: SearchParams) => {
     const response = await api.post('/api/claims/finance-search', params);
-    console.log("fetch data:", response.data);
-    return response.data;
+    console.log("fetch data:", response.data.data);
+    return response.data.data;
   },
 
   // Lấy thông tin claim theo ID
   getClaimById: async (id: string) => {
     const response = await api.get(`/api/claims/${id}`);
-    console.log("fetch data:", response.data);
-    return response.data;
+    console.log("fetch data:", response.data.data);
+    return response.data.data;
   },
 
   // Cập nhật thông tin claim
   updateClaim: async (id: string, claimData: Partial<Claim>) => {
     const response = await api.put(`/api/claims/${id}`, claimData);
-    console.log("fetch data:", response.data);
-    return response.data;
+    console.log("fetch data:", response.data.data);
+    return response.data.data;
   },
 
   // Thay đổi trạng thái claim
@@ -90,8 +93,8 @@ export const claimService = {
       claim_id: claimId,
       claim_status: newStatus
     });
-    console.log("fetch data:", response.data);
-    return response.data;
+    console.log("fetch data:", response.data.data);
+    return response.data.data;
   },
 
   getPendingClaims: async () => {
