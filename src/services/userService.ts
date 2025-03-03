@@ -51,6 +51,6 @@ export const userService = {
 
   changeRole: async (roleData: ChangeRoleRequest): Promise<ChangeResponse> => {
     const response = await api.put(`/api/users/change-role`, roleData);
-    return response.data;
+    return response.data.data;
   }
 };

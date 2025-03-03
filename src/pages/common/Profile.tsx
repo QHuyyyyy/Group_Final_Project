@@ -44,7 +44,7 @@ interface Employee {
   salary: number;
   start_date: string;
   end_date: string;
-  updated_by: string;
+  updated_by?: string;
   created_at: string;
   updated_at: string;
   is_deleted: boolean;
@@ -82,8 +82,8 @@ const Profile = () => {
   useEffect(() => {
     const fetchEmployeeData = async () => {
       try {
-        const data = await employeeService.getEmployeeById(user.id);
-        setEmployeeData(data);
+        const response = await employeeService.getEmployeeById(user.id);
+        setEmployeeData(response.data);
       } catch (error) {
         console.error('Error fetching employee data:', error);
       }
