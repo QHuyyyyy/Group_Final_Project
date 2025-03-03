@@ -1,39 +1,52 @@
 // src/services/authService.ts
-import api from "../api/axios";
+import { apiUtils } from "../api/axios";
+
+interface User {
+  id: string;
+  email: string;
+  user_name: string;
+  role_code: string;
+}
+
+interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+}
 
 export const authService = {
-  login: async (credentials: { email: string; password: string }) => {
-    const response = await api.post("/api/auth", credentials);
-    console.log("fetch data:", response.data);
-    return response.data;
-  },
-  getinfo: async () => {
-    const response = await api.get("/api/auth");
-    console.log("fetch data:", response.data);
-    return response.data;
+  // Đăng nhập
+  login: async (credentials: LoginCredentials) => {
+    return apiUtils.post<ApiResponse<User>>('/api/auth', credentials);
   },
 
+  // Lấy thông tin user
+  getInfo: async () => {
+    return apiUtils.get<ApiResponse<User>>('/api/auth');
+  },
+
+  // Đăng xuất
   logout: async () => {
-    const response = await api.post("/api/auth/logout");
-    console.log("fetch data:", response.data);
-    return response.data;
+    return apiUtils.post<ApiResponse<void>>('/api/auth/logout');
   },
 
+  // Xác thực token
   verifyToken: async (token: string) => {
-    const response = await api.post("/api/auth/verify-token", { token });
-    console.log("fetch data:", response.data);
-    return response.data;
+    return apiUtils.post<ApiResponse<boolean>>('/api/auth/verify-token', { token });
   },
 
+  // Gửi lại token
   resendToken: async (email: string) => {
-    const response = await api.post("/api/auth/resend-token", { email });
-    console.log("fetch data:", response.data);
-    return response.data;
+    return apiUtils.post<ApiResponse<void>>('/api/auth/resend-token', { email });
   },
 
+  // Quên mật khẩu
   forgotPassword: async (email: string) => {
-    const response = await api.put("/api/auth/forgot-password", { email });
-    console.log("fetch data:", response.data);
-    return response.data;
-  },
+    return apiUtils.put<ApiResponse<void>>('/api/auth/forgot-password', { email });
+  }
 };

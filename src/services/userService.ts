@@ -1,70 +1,116 @@
 // src/services/userService.ts
-import api from '../api/axios';
-interface createUser {
+import { apiUtils } from "../api/axios";
+
+interface User {
+  _id: string;
+  email: string;
+  user_name: string;
+  role_code: string;
+  is_blocked: boolean;
+  is_verified: boolean;
+  is_deleted: boolean;
+  created_at: string;
+  updated_at: string;
+  __v: number;
+}
+
+interface CreateUser {
   email: string;
   password: string;
   user_name: string;
   role_code: string;
 }
-interface SearchParams {
-  searchCondition: {
-    keyword?: string;
-    role_code?: string;
-    is_blocked?: boolean;
-    is_delete?: boolean;
-    is_verified?: string;
-  };
-  pageInfo: {
-    pageNum: number;
-    pageSize: number;
-  };
+
+interface SearchCondition {
+  keyword?: string;
+  role_code?: string;
+  is_blocked?: boolean;
+  is_delete?: boolean;
+  is_verified?: string;
 }
+
+interface PageInfo {
+  pageNum: number;
+  pageSize: number;
+}
+
+interface SearchParams {
+  searchCondition: SearchCondition;
+  pageInfo: PageInfo;
+}
+
 interface UpdateUserData {
   email?: string;
   user_name?: string;
   role_code?: string;
 }
+
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+}
+
 export const userService = {
-  createUser: async (userData: createUser) => {
-    const response = await api.post('/api/users', userData);
-    console.log("fetch data:",response.data)
-    return response.data;
+  // Tạo user mới
+  createUser: async (userData: CreateUser) => {
+    return apiUtils.post<ApiResponse<User>>('/api/users', userData);
   },
 
-  searchUsers: async (params: SearchParams) => {
-    const response = await api.post('/api/users/search', params);
-    console.log("fetch data:",response.data)
-    return response.data;
+  // Tìm kiếm users với phân trang
+  searchUsers: async (params: SearchParams = {
+    searchCondition: {
+      keyword: "",
+      role_code: "",
+      is_blocked: false,
+      is_delete: false,
+      is_verified: ""
+    },
+    pageInfo: {
+      pageNum: 1,
+      pageSize: 10
+    }
+  }) => {
+    return apiUtils.post<ApiResponse<User[]>>('/api/users/search', params);
   },
 
+  // Lấy thông tin user theo ID
   getUserById: async (id: string) => {
-    const response = await api.get(`/api/users/${id}`);
-    console.log("fetch data:",response.data)
-    return response.data;
+    return apiUtils.get<ApiResponse<User>>(`/api/users/${id}`);
   },
 
+  // Cập nhật thông tin user
   updateUser: async (id: string, userData: UpdateUserData) => {
-    const response = await api.put(`/api/users/${id}`, userData);
-    return response.data;
+    return apiUtils.put<ApiResponse<User>>(`/api/users/${id}`, userData);
   },
 
+  // Xóa user (soft delete)
   deleteUser: async (id: string) => {
-    const response = await api.delete(`/api/users/${id}`);
-    return response.data;
+    return apiUtils.delete<ApiResponse<User>>(`/api/users/${id}`);
   },
 
-  changePassword: async ( old_password: string, new_password: string) => {
-    const response = await api.put(`/api/users/change-password`, {old_password,new_password});
-    return response.data;
+  // Đổi mật khẩu
+  changePassword: async (old_password: string, new_password: string) => {
+    return apiUtils.put<ApiResponse<void>>('/api/users/change-password', {
+      old_password,
+      new_password
+    });
   },
 
-  changeStatus: async ( user_id:string,old_status: string, new_status: string) => {
-    const response = await api.put(`/api/users/change-status`, { user_id, old_status,new_status });
-    return response.data;
+  // Thay đổi trạng thái user
+  changeStatus: async (user_id: string, old_status: string, new_status: string) => {
+    return apiUtils.put<ApiResponse<User>>('/api/users/change-status', {
+      user_id,
+      old_status,
+      new_status
+    });
   },
 
+  // Thay đổi role của user
   changeRole: async (user_id: string, role_code: string) => {
-    const response = await api.put(`/api/users/change-role`, { user_id, role_code });
-    return response.data;
+    return apiUtils.put<ApiResponse<User>>('/api/users/change-role', {
+      user_id,
+      role_code
+    });
   }
 };

@@ -1,49 +1,11 @@
-import api from '../api/axios';
-
+import { apiUtils } from "../api/axios";
 
 interface ProjectMember {
-    user_id: string;
-    project_role: string;
-    employee_id: string;
-    user_name: string;
-    full_name: string;
-  }
-  
-  interface ProjectData {
-    project_name: string;
-    project_code: string;
-    project_department: string;
-    project_description: string;
-    project_start_date: string;
-    project_end_date: string;
-    project_members: ProjectMember[];
-  }
-
-  interface SearchCondition {
-  keyword?: string;
-  project_start_date?: string;
-  project_end_date?: string;
-  is_delete?: boolean;
-}
-
-interface PageInfo {
-  pageNum: number;
-  pageSize: number;
-  totalItems: number;
-  totalPages: number;
-}
-
-interface SearchResponse {
-  success: boolean;
-  data: {
-    pageData: Project[];
-    pageInfo: PageInfo;
-  };
-}
-
-interface SearchParams {
-  searchCondition: SearchCondition;
-  pageInfo: PageInfo;
+  user_id: string;
+  project_role: string;
+  employee_id: string;
+  user_name: string;
+  full_name: string;
 }
 
 interface Project {
@@ -63,89 +25,84 @@ interface Project {
   updated_at: string;
 }
 
-const projectService = {
+interface SearchCondition {
+  keyword?: string;
+  project_start_date?: string;
+  project_end_date?: string;
+  is_delete?: boolean;
+  user_id?: string;
+}
+
+interface PageInfo {
+  pageNum: number;
+  pageSize: number;
+}
+
+interface SearchParams {
+  searchCondition: SearchCondition;
+  pageInfo: PageInfo;
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+}
+
+export const projectService = {
   // Tạo dự án mới
-  createProject: async (projectData: ProjectData) => {
-    const response = await api.post('/api/projects', projectData);
-    console.log("fetch data:", response.data);
-    return response.data;
+  createProject: async (projectData: Partial<Project>) => {
+    return apiUtils.post<ApiResponse<Project>>('/api/projects', projectData);
   },
 
   // Tìm kiếm dự án với phân trang
   searchProjects: async (params: SearchParams = { 
-    searchCondition: {}, 
-    pageInfo: { pageNum: 1, pageSize: 10, totalItems: 0, totalPages: 0 } 
-  }): Promise<SearchResponse> => {
-    try {
-      console.log('Calling searchProjects with params:', params);
-      const response = await api.post('/api/projects/search', {
-        searchCondition: {
-          keyword: params.searchCondition.keyword || "",
-          project_start_date: params.searchCondition.project_start_date,
-          project_end_date: params.searchCondition.project_end_date,
-          is_delete: params.searchCondition.is_delete || false
-        },
-        pageInfo: {
-          pageNum: params.pageInfo.pageNum,
-          pageSize: params.pageInfo.pageSize
-        }
-      });
-      console.log('API response in service:', response);
-      
-      // Kiểm tra và trả về dữ liệu
-      if (response && response.data) {
-        return {
-          success: true,
-          data: {
-            pageData: response.data.pageData || [],
-            pageInfo: {
-              pageNum: response.data.pageInfo?.pageNum || 1,
-              pageSize: response.data.pageInfo?.pageSize || 10,
-              totalItems: response.data.pageInfo?.totalItems || 0,
-              totalPages: response.data.pageInfo?.totalPages || 0
-            }
-          }
-        };
-      }
-      
-      throw new Error('Invalid response format');
-    } catch (error) {
-      console.error('Error in searchProjects:', error);
-      throw error;
-    }
+    searchCondition: {
+      keyword: "",
+      project_start_date: "",
+      project_end_date: "",
+      is_delete: false,
+      user_id: ""
+    }, 
+    pageInfo: { 
+      pageNum: 1, 
+      pageSize: 10 
+    } 
+  }) => {
+    return apiUtils.post<ApiResponse<Project[]>>('/api/projects/search', params);
   },
 
   // Lấy thông tin dự án theo ID
   getProjectById: async (id: string) => {
-    const response = await api.get(`/api/projects/${id}`);
-    console.log("fetch project data:", response.data);
-    return response.data;
+    return apiUtils.get<ApiResponse<Project>>(`/api/projects/${id}`);
   },
 
   // Cập nhật thông tin dự án
-  updateProject: async (id: string, projectData: ProjectData) => {
-    const response = await api.put(`/api/projects/${id}`, projectData);
-    console.log("fetch data:", response.data);
-    return response.data;
+  updateProject: async (id: string, projectData: Partial<Project>) => {
+    return apiUtils.put<ApiResponse<Project>>(`/api/projects/${id}`, projectData);
   },
 
-  // Xóa dự án
-  deleteProject: async (id: string): Promise<void> => {
-    const response = await api.delete(`/api/projects/${id}`);
-    console.log("fetch data:", response.data);
-    return response.data;
+  // Xóa dự án (soft delete)
+  deleteProject: async (id: string) => {
+    return apiUtils.delete<ApiResponse<void>>(`/api/projects/${id}`);
   },
 
   // Thay đổi trạng thái dự án
-  changeProjectStatus: async (project_id: string, project_status: string, project_comment: string)=> {
-    const response = await api.put('/api/projects/change-status', {
+  changeProjectStatus: async (project_id: string, project_status: string, project_comment: string) => {
+    return apiUtils.put<ApiResponse<Project>>('/api/projects/change-status', {
       project_id,
       project_status,
       project_comment
     });
-    console.log("fetch data:", response.data);
-    return response.data;
+  },
+
+  // Lấy tất cả dự án
+  getAllProjects: async () => {
+    return apiUtils.get<ApiResponse<Project[]>>('/api/projects/get-all');
+  },
+
+  // Kiểm tra mã dự án đã tồn tại
+  checkProjectCode: async (code: string) => {
+    return apiUtils.get<ApiResponse<boolean>>(`/api/projects/check-code/${code}`);
   }
 };
-
-export default projectService;
