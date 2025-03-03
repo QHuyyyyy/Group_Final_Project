@@ -61,6 +61,18 @@ interface ClaimData {
   date?: string;
 }
 
+interface User {
+  _id: string;
+  email: string;
+  user_name: string;
+  role_code: string;
+  is_verified: boolean;
+  is_blocked: boolean;
+  is_deleted: boolean;
+  created_at: string;
+  updated_at: string;
+  token_version: number;
+}
 const { Option } = Select
 const AdminDashboard: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -155,7 +167,7 @@ const AdminDashboard: React.FC = () => {
   const [projects, setProjects] = useState<Projects[]>([]);
   const [ongoingProjects, setOngoingProjects] = useState<Projects[]>([])
   const [completedProjects, setCompletedProjects] = useState<Projects[]>([])
-  const [users, setUsers] = useState([])
+  const [users, setUsers] = useState<User[]>([])
   const [filteredClaimData, setFilteredClaimData] = useState<ClaimData[]>(claimsData);
   const [selectedRange, setSelectedRange] = useState<string | null>(null);
   const [dataLoaded, setDataLoaded] = useState({
@@ -195,9 +207,10 @@ const AdminDashboard: React.FC = () => {
         const params = {
           searchCondition: {
             keyword: "",
+            claim_status:"",
             claim_start_date: "",
             claim_end_date: "",
-            is_deleted: false,
+            is_delete: false,
           },
           pageInfo: {
             pageNum: 1,
@@ -412,7 +425,7 @@ const AdminDashboard: React.FC = () => {
         };
         const data = await userService.searchUsers(params);
         console.log(data)
-        setUsers(data.pageData);
+        setUsers(data.data.pageData);
         
         setDataLoaded(prev => ({ ...prev, users: true }));
       } catch (error) {

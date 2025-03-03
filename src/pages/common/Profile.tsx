@@ -11,7 +11,8 @@ import {
   CalendarOutlined,
   DollarOutlined,
   FileProtectOutlined,
-  CreditCardOutlined
+  CreditCardOutlined,
+  LoadingOutlined
 } from '@ant-design/icons';
 import { useLocation } from 'react-router-dom';
 import AdminSidebar from '../../components/admin/AdminSidebar';
@@ -79,7 +80,7 @@ const Profile = () => {
 
         const response = await employeeService.getEmployeeById(user.id);
         setEmployeeData(response.data);
-
+        setDataLoaded(prev => ({ ...prev, employeeData: true }));
       } catch (error) {
         console.error('Error fetching employee data:', error);
         setDataLoaded(prev => ({ ...prev, employeeData: true }));
