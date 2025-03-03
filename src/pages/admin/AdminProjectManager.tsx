@@ -529,9 +529,9 @@ const AdminProjectManager: React.FC = () => {
         }
       });
 
-      if (response && response.pageData) {
+      if (response && response.data.pageData) {
         // Format data cho Select options
-        const formattedUsers = response.pageData.map((user: any) => ({
+        const formattedUsers = response.data.pageData.map((user: any) => ({
           value: user._id,
           label: `${user.full_name || user.user_name} (${user.email})`,
           role_code: user.role_code
@@ -563,8 +563,8 @@ const AdminProjectManager: React.FC = () => {
         }
       });
       
-      if (response && response.pageData) {
-        const formattedUsers = response.pageData.map((user: any) => ({
+      if (response && response.data.pageData) {
+        const formattedUsers = response.data.pageData.map((user: any) => ({
           value: user._id,
           label: `${user.full_name || user.user_name} (${user.email})`
         }));
