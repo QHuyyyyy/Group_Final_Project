@@ -23,9 +23,9 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => {
     if (response.data.success) {
-      return response.data; // Trả về data trực tiếp nếu success = true
+      return response.data.data; // Trả về data trực tiếp nếu success = true
     } else {
-      return Promise.reject(response.data); // Ném lỗi nếu success = false
+      return Promise.reject(response.data.data); // Ném lỗi nếu success = false
     }
   },
   (error) => {
@@ -116,7 +116,7 @@ export const apiUtils = {
         'Content-Type': 'multipart/form-data',
       },
     });
-    return response.data;
+    return response.data.data;
   }
 };
 
