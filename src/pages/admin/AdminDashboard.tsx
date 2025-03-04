@@ -142,7 +142,6 @@ const AdminDashboard: React.FC = () => {
     },
   ];
 
-
   const [claims, setClaims] = useState<Claims[]>([]);
   const [pendingClaims, setPendingClaims] = useState<Claims[]>([]);
   const [approvedClaims, setApprovedClaims] = useState<Claims[]>([]);

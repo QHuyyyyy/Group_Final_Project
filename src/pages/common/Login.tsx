@@ -88,11 +88,10 @@ export default function Login() {
               </Button>
               <Button 
                 type="link" 
-                onClick={() => navigate('/verify/token')}
-                className="text-white/80 hover:text-white font-medium transition-all duration-200
-                  hover:scale-105 transform"
+                onClick={() => navigate('/resend-token')}
+                className="text-white/80 hover:text-white"
               >
-                Verify Account?
+                Resend Token
               </Button>
             </div>
 
