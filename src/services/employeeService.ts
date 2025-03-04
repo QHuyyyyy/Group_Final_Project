@@ -1,18 +1,19 @@
-import api from '../api/axios';
+import { apiUtils } from '../api/axios';
+import { EMPLOYEES_ENDPOINT } from '../constants/authURL';
 import { ApiResponse } from '../models/ApiResponse';
-import { Employee, EmployeeUpdateData} from '../models/EmployeeModel';
+import { Employee, EmployeeUpdateData } from '../models/EmployeeModel';
 
 export const employeeService = {
   // Lấy thông tin nhân viên theo ID
   getEmployeeById: async (id: string): Promise<ApiResponse<Employee>> => {
-    const response = await api.get(`/api/employees/${id}`);
+    const response = await apiUtils.get<ApiResponse<Employee>>(`${EMPLOYEES_ENDPOINT}/${id}`);
     console.log("fetch data:", response.data);
     return response.data;
   },
 
   // Cập nhật thông tin nhân viên
   updateEmployee: async (id: string, employeeData: EmployeeUpdateData): Promise<ApiResponse<Employee>> => {
-    const response = await api.put(`/api/employees/${id}`, employeeData);
+    const response = await  apiUtils.put<ApiResponse<Employee>>(`${EMPLOYEES_ENDPOINT}/${id}`, employeeData);
     console.log("fetch data:", response.data);
     return response.data;
   }

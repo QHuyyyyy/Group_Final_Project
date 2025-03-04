@@ -1,3 +1,6 @@
+import { Page, PageInfo } from "./PageModel";
+import { SearchClaimLogsCondition } from "./SearchConditionModel";
+
 export interface ClaimLog {
     _id: string;
     claim_name: string;
@@ -9,24 +12,8 @@ export interface ClaimLog {
     updated_at: string;
 }
 
-export interface Page {
-    pageNum: number;
-    pageSize: number;
-}
-export interface PageInfo {
-    pageNum: number;
-    pageSize: number;
-    totalItems: number;
-    totalPages: number;
-}
-
-export interface SearchCondition {
-    claim_id?: string;
-    is_deleted?: boolean;
-}
-
 export interface SearchClaimLogsRequest {
-    searchCondition: SearchCondition;
+    searchCondition: SearchClaimLogsCondition;
     pageInfo: Page;
 }
 

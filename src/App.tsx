@@ -44,8 +44,10 @@ const App = () => {
           <Route path='/forgot-password' element={<ForgotPassword />} />
           <Route path='/login' element={<Login />} />
           <Route path='/contactus' element={<ContactUs />} />
-          <Route path='/verify/:token' element={<VerifyToken />} />
-          <Route path='/resend-token' element={<ResendToken />} />
+
+          <Route path='/verify-email/:token' element={<VerifyToken />} />
+                  <Route path='/resend-token' element={<ResendToken />} />
+
           {/* User Dashboard Routes */}
           <Route path='/userdashboard/' element={
             <ProtectedRoute allowedRoles={RoutePermissions.user}>

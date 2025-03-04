@@ -106,9 +106,9 @@ export const apiUtils = {
    * @param params - Query parameters
    * @param config - Additional axios config
    */
-  async get<T>(url: string, params?: object, config?: AxiosRequestConfig): Promise<T> {
+  async get<T>(url: string, params?: object, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
     const response = await api.get(url, { ...config, params });
-    return response.data.data;
+    return response as AxiosResponse<T>;
   },
 
   /**
@@ -117,9 +117,9 @@ export const apiUtils = {
    * @param data - Request body
    * @param config - Additional axios config
    */
-  async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise< AxiosResponse<T>> {
     const response = await api.post(url, data, config);
-    return response.data.data;
+    return response as AxiosResponse<T>;
   },
 
   /**
@@ -128,9 +128,9 @@ export const apiUtils = {
    * @param data - Request body
    * @param config - Additional axios config
    */
-  async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise< AxiosResponse<T>>  {
     const response = await api.put(url, data, config);
-    return response.data.data;
+    return response  as AxiosResponse<T>
   },
 
   /**
@@ -138,9 +138,9 @@ export const apiUtils = {
    * @param url - API endpoint
    * @param config - Additional axios config
    */
-  async delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+  async delete<T>(url: string, config?: AxiosRequestConfig): Promise< AxiosResponse<T>>  {
     const response = await api.delete(url, config);
-    return response.data.data;
+    return response as AxiosResponse<T>
   },
 
   /**
@@ -151,7 +151,7 @@ export const apiUtils = {
    */
   async patch<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
     const response = await api.patch(url, data, config);
-    return response.data.data;
+    return response.data;
   },
 
   /**
@@ -177,7 +177,7 @@ export const apiUtils = {
         'Content-Type': 'multipart/form-data',
       },
     });
-    return response.data.data;
+    return response.data;
   }
 };
 
