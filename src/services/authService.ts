@@ -24,8 +24,8 @@ export const authService = {
     return response.data;
   },
 
-  verifyToken: async (token: Token): Promise<ApiResponse<null>> => {
-    const response = await api.post(`${AUTH_URL}/verify-token`, { token });
+  verifyToken: async (token: string): Promise<ApiResponse<null>> => {
+    const response = await api.post(`${AUTH_URL}/verify-token`, token );
     console.log("fetch data:", response.data);
     return response.data;
   },
