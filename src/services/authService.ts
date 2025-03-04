@@ -25,7 +25,9 @@ export const authService = {
   },
 
   verifyToken: async (token: string): Promise<ApiResponse<null>> => {
+
     const response = await apiUtils.post<ApiResponse<null>>(`${AUTH_URL}/verify-token`, token );
+
     console.log("fetch data:", response.data);
     return response.data;
   },
