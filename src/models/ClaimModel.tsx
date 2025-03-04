@@ -114,7 +114,7 @@ export interface CreateClaim {
   }
   
   export interface ChangeClaimStatusRequest {
-    claim_id: string;
+    _id: string;
     claim_status: string;
     comment?: string;
   }

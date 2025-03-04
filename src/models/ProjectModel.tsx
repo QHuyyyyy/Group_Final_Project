@@ -75,8 +75,7 @@ export interface SearchParams {
 }
 
 export interface SearchResponse {
-   
-        pageData: ProjectData[];
+    pageData: ProjectData[];
         pageInfo: PageInfo;
   
 }
@@ -94,7 +93,7 @@ export interface UpdateProjectRequest {
 }
 
 export interface ChangeProjectStatusRequest {
-    project_id: string;
+    _id: string;
     project_status: string;
     project_comment?: string; 
 }
