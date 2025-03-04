@@ -60,7 +60,7 @@ export const claimService = {
     return response.data.data;
   },
 
-  getPendingClaims: async () => {
+  getPendingClaims: async (): Promise<ApiResponse<SearchResponse>> => {
     const response = await api.post('/api/claims/search', {
       searchCondition: {
         keyword: "",
@@ -76,7 +76,7 @@ export const claimService = {
     return response.data;
   },
   
-  getApprovedClaims: async () => {
+  getApprovedClaims: async (): Promise<ApiResponse<SearchResponse>> => {
     const response = await api.post('/api/claims/search', {
       searchCondition: {
         keyword: "",
@@ -92,7 +92,7 @@ export const claimService = {
     return response.data;
   },
 
-  getRejectedClaims: async () => {
+  getRejectedClaims: async (): Promise<ApiResponse<SearchResponse>> => {
     const response = await api.post('/api/claims/search', {
       searchCondition: {
         keyword: "",
@@ -108,7 +108,7 @@ export const claimService = {
     return response.data;
   },
 
-  getPaidClaims: async () => {
+  getPaidClaims: async (): Promise<ApiResponse<SearchResponse>> => {
     const response = await api.post('/api/claims/search', {
       searchCondition: {
         keyword: "",
@@ -124,7 +124,7 @@ export const claimService = {
     return response.data;
   },
 
-  getDraftClaims: async () => {
+  getDraftClaims: async (): Promise<ApiResponse<SearchResponse>> => {
     const response = await api.post('/api/claims/search', {
       searchCondition: {
         keyword: "",
@@ -140,7 +140,7 @@ export const claimService = {
     return response.data;
   },
   
-  getCanceledClaims: async () => {
+  getCanceledClaims: async (): Promise<ApiResponse<SearchResponse>> => {
     const response = await api.post('/api/claims/search', {
       searchCondition: {
         keyword: "",

@@ -210,11 +210,37 @@ const AdminDashboard: React.FC = () => {
 
     const fetchPendingClaims = async () => {
       try {
-        const data = await claimService.getPendingClaims();
-        setPendingClaims(data.data.pageData);
-        setDataLoaded(prev => ({ ...prev, pendingClaims: true }));
+        let pageNum = 1;
+        const pageSize = 10;
+        let allPendingClaims:Claim[] = []
+        while(true){
+        const params = {
+          searchCondition: {
+            keyword: "",
+            claim_status:"Pending Approval",
+            claim_start_date: "",
+            claim_end_date: "",
+            is_delete: false,
+          },
+          pageInfo: {
+            pageNum,
+            pageSize
+          },
+        };   
+        const data = await claimService.searchClaims(params);
+        if (!data || !data.data || !data.data.pageData) break;
+
+        const newClaims = data.data.pageData;
+        if(newClaims.length===0) break;
+
+        allPendingClaims = [...allPendingClaims, ...newClaims]
+        pageNum++;
+      }
+        setPendingClaims(allPendingClaims);
       } catch (error) {
         console.error("Error fetching claims:", error);
+      }
+      finally{
         setDataLoaded(prev => ({ ...prev, pendingClaims: true }));
       }
     };
@@ -222,11 +248,37 @@ const AdminDashboard: React.FC = () => {
 
     const fetchApprovedClaims = async () => {
       try {
-        const data = await claimService.getApprovedClaims();
-        setApprovedClaims(data.data.pageData);
-        setDataLoaded(prev => ({ ...prev, approvedClaims: true }));
+        let pageNum = 1;
+        const pageSize = 10;
+        let allApprovedClaims:Claim[] = []
+        while(true){
+        const params = {
+          searchCondition: {
+            keyword: "",
+            claim_status:"Approved",
+            claim_start_date: "",
+            claim_end_date: "",
+            is_delete: false,
+          },
+          pageInfo: {
+            pageNum,
+            pageSize
+          },
+        };   
+        const data = await claimService.searchClaims(params);
+        if (!data || !data.data || !data.data.pageData) break;
+
+        const newClaims = data.data.pageData;
+        if(newClaims.length===0) break;
+
+        allApprovedClaims = [...allApprovedClaims, ...newClaims]
+        pageNum++;
+      }
+        setApprovedClaims(allApprovedClaims);
       } catch (error) {
         console.error("Error fetching claims:", error);
+      }
+      finally{
         setDataLoaded(prev => ({ ...prev, approvedClaims: true }));
       }
     };
@@ -234,11 +286,37 @@ const AdminDashboard: React.FC = () => {
 
     const fetchRejectedClaims = async () => {
       try {
-        const data = await claimService.getRejectedClaims();
-        setRejectedClaims(data.data.pageData);
-        setDataLoaded(prev => ({ ...prev, rejectedClaims: true }));
+        let pageNum = 1;
+        const pageSize = 10;
+        let allRejectedClaims:Claim[] = []
+        while(true){
+        const params = {
+          searchCondition: {
+            keyword: "",
+            claim_status:"Rejected",
+            claim_start_date: "",
+            claim_end_date: "",
+            is_delete: false,
+          },
+          pageInfo: {
+            pageNum,
+            pageSize
+          },
+        };   
+        const data = await claimService.searchClaims(params);
+        if (!data || !data.data || !data.data.pageData) break;
+
+        const newClaims = data.data.pageData;
+        if(newClaims.length===0) break;
+
+        allRejectedClaims = [...allRejectedClaims, ...newClaims]
+        pageNum++;
+      }
+        setRejectedClaims(allRejectedClaims);
       } catch (error) {
         console.error("Error fetching claims:", error);
+      }
+      finally{
         setDataLoaded(prev => ({ ...prev, rejectedClaims: true }));
       }
     };
@@ -246,11 +324,37 @@ const AdminDashboard: React.FC = () => {
 
     const fetchPaidClaims = async () => {
       try {
-        const data = await claimService.getPaidClaims();
-        setPaidClaims(data.data.pageData);
-        setDataLoaded(prev => ({ ...prev, paidClaims: true }));
+        let pageNum = 1;
+        const pageSize = 10;
+        let allPaidClaims:Claim[] = []
+        while(true){
+        const params = {
+          searchCondition: {
+            keyword: "",
+            claim_status:"Paid",
+            claim_start_date: "",
+            claim_end_date: "",
+            is_delete: false,
+          },
+          pageInfo: {
+            pageNum,
+            pageSize
+          },
+        };   
+        const data = await claimService.searchClaims(params);
+        if (!data || !data.data || !data.data.pageData) break;
+
+        const newClaims = data.data.pageData;
+        if(newClaims.length===0) break;
+
+        allPaidClaims = [...allPaidClaims, ...newClaims]
+        pageNum++;
+      }
+        setPaidClaims(allPaidClaims);
       } catch (error) {
         console.error("Error fetching claims:", error);
+      }
+      finally{
         setDataLoaded(prev => ({ ...prev, paidClaims: true }));
       }
     };
@@ -258,11 +362,37 @@ const AdminDashboard: React.FC = () => {
 
     const fetchDraftClaims = async () => {
       try {
-        const data = await claimService.getDraftClaims();
-        setDraftClaims(data.data.pageData);
-        setDataLoaded(prev => ({ ...prev, draftClaims: true }));
+        let pageNum = 1;
+        const pageSize = 10;
+        let allDraftClaims:Claim[] = []
+        while(true){
+        const params = {
+          searchCondition: {
+            keyword: "",
+            claim_status:"Draft",
+            claim_start_date: "",
+            claim_end_date: "",
+            is_delete: false,
+          },
+          pageInfo: {
+            pageNum,
+            pageSize
+          },
+        };   
+        const data = await claimService.searchClaims(params);
+        if (!data || !data.data || !data.data.pageData) break;
+
+        const newClaims = data.data.pageData;
+        if(newClaims.length===0) break;
+
+        allDraftClaims = [...allDraftClaims, ...newClaims]
+        pageNum++;
+      }
+        setDraftClaims(allDraftClaims);
       } catch (error) {
         console.error("Error fetching claims:", error);
+      }
+      finally{
         setDataLoaded(prev => ({ ...prev, draftClaims: true }));
       }
     };
@@ -270,11 +400,37 @@ const AdminDashboard: React.FC = () => {
 
     const fetchCanceledClaims = async () => {
       try {
-        const data = await claimService.getCanceledClaims();
-        setCanceledClaims(data.data.pageData);
-        setDataLoaded(prev => ({ ...prev, canceledClaims: true }));
+        let pageNum = 1;
+        const pageSize = 10;
+        let allCanceledClaims:Claim[] = []
+        while(true){
+        const params = {
+          searchCondition: {
+            keyword: "",
+            claim_status:"Canceled",
+            claim_start_date: "",
+            claim_end_date: "",
+            is_delete: false,
+          },
+          pageInfo: {
+            pageNum,
+            pageSize
+          },
+        };   
+        const data = await claimService.searchClaims(params);
+        if (!data || !data.data || !data.data.pageData) break;
+
+        const newClaims = data.data.pageData;
+        if(newClaims.length===0) break;
+
+        allCanceledClaims = [...allCanceledClaims, ...newClaims]
+        pageNum++;
+      }
+        setCanceledClaims(allCanceledClaims);
       } catch (error) {
         console.error("Error fetching claims:", error);
+      }
+      finally{
         setDataLoaded(prev => ({ ...prev, canceledClaims: true }));
       }
     };
