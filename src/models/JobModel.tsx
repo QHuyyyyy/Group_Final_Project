@@ -7,7 +7,4 @@ export interface Job {
     updated_at: string;
 }
 
-export interface GetAllJobsResponse {
-    success: boolean;
-    data: Job[];
-}
+

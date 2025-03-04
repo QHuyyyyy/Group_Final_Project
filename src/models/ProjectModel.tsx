@@ -27,10 +27,6 @@ export interface Project {
     __v: number;
 }
 
-export interface CreateProjectResponse {
-    success: boolean;
-    data: Project;
-}
 
 export interface ProjectMemberInfo {
     user_id: string;
@@ -79,17 +75,13 @@ export interface SearchParams {
 }
 
 export interface SearchResponse {
-    success: boolean;
-    data: {
+   
         pageData: ProjectData[];
         pageInfo: PageInfo;
-    };
+  
 }
 
-export interface ProjectResponse {
-    success: boolean;
-    data: ProjectData;
-}
+
 
 export interface UpdateProjectRequest {
     project_name: string;
@@ -107,10 +99,6 @@ export interface ChangeProjectStatusRequest {
     project_comment?: string; 
 }
 
-export interface ChangeProjectStatusResponse {
-    success: boolean;
-    data: {}; 
-}
 
 
 

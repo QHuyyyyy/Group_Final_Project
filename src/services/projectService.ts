@@ -1,11 +1,12 @@
 import api from '../api/axios';
-import { CreateProjectRequest, CreateProjectResponse, SearchParams, SearchResponse, ProjectResponse, UpdateProjectRequest, ChangeProjectStatusRequest, ChangeProjectStatusResponse } from '../models/ProjectModel';
+import { ApiResponse } from '../models/ApiResponse';
+import { CreateProjectRequest, SearchParams, SearchResponse,  UpdateProjectRequest, ChangeProjectStatusRequest,  Project, ProjectData } from '../models/ProjectModel';
 
 const projectService = {
   // Create a new projec
-  createProject: async (projectData: CreateProjectRequest): Promise<CreateProjectResponse> => {
+  createProject: async (projectData: CreateProjectRequest): Promise<ApiResponse<Project>> => {
     const response = await api.post('/api/projects', projectData);
-    console.log("fetch data:", response.data.data);
+    console.log("fetch data:", response.data);
     return response.data;
   },
 
@@ -13,7 +14,7 @@ const projectService = {
   searchProjects: async (params: SearchParams = {
     searchCondition: {},
     pageInfo: { pageNum: 1, pageSize: 10, totalItems: 0, totalPages: 0 }
-  }): Promise<SearchResponse> => {
+  }): Promise<ApiResponse<SearchResponse>> => {
     try {
       console.log('Calling searchProjects with params:', params);
       const response = await api.post('/api/projects/search', {
@@ -55,30 +56,30 @@ const projectService = {
   },
 
   // Lấy thông tin dự án theo ID
-  getProjectById: async (id: string): Promise<ProjectResponse> => {
+  getProjectById: async (id: string): Promise<ApiResponse<ProjectData>> => {
     const response = await api.get(`/api/projects/${id}`);
-    console.log("fetch project data:", response.data.data);
+    console.log("fetch project data:", response.data);
     return response.data;
   },
 
   // Cập nhật thông tin dự án
-  updateProject: async (id: string, projectData: UpdateProjectRequest) => {
+  updateProject: async (id: string, projectData: UpdateProjectRequest): Promise<ApiResponse<ProjectData>> => {
     const response = await api.put(`/api/projects/${id}`, projectData);
-    console.log("fetch data:", response.data.data);
+    console.log("fetch data:", response.data);
     return response.data;
   },
 
   // Xóa dự án
-  deleteProject: async (id: string): Promise<void> => {
+  deleteProject: async (id: string): Promise<ApiResponse<null>> => {
     const response = await api.delete(`/api/projects/${id}`);
-    console.log("fetch data:", response.data.data);
-    return response.data.data;
+    console.log("fetch data:", response.data);
+    return response.data;
   },
 
   // Change project status
-  changeProjectStatus: async (statusData: ChangeProjectStatusRequest): Promise<ChangeProjectStatusResponse> => {
-    const response = await api.put<ChangeProjectStatusResponse>('/api/projects/change-status', statusData);
-    console.log("fetch data:", response.data.data);
+  changeProjectStatus: async (statusData: ChangeProjectStatusRequest): Promise<ApiResponse<null>>=> {
+    const response = await api.put<ApiResponse<null>>('/api/projects/change-status', statusData);
+    console.log("fetch data:", response.data);
     return response.data;
   }
 };

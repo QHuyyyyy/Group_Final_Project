@@ -19,10 +19,7 @@ export interface Employee {
     __v:number;
 }
 
-export interface EmployeeByIdResponse {
-    success: boolean;
-    data: Employee;
-}
+
 
 export interface EmployeeUpdateData {
     user_id?:string
@@ -39,7 +36,4 @@ export interface EmployeeUpdateData {
     updated_by?: string;
 }
 
-export interface UpdateEmployeeResponse {
-    success: boolean;
-    data: Employee;
-}
+
