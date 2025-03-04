@@ -1,8 +1,6 @@
 import React from "react";
-import { Avatar, Badge, Dropdown, Menu, Row, Col } from "antd";
+import { Avatar, Dropdown, Menu, Row, Col } from "antd";
 import {
- 
-  BellOutlined,
   LogoutOutlined,
   SettingOutlined,
   UserOutlined,
@@ -29,7 +27,7 @@ const NavbarAdminDashboard: React.FC = () => {
         <UserOutlined /> Profile
       </Menu.Item>
       <Menu.Item key="2" onClick={() =>{
-        navigate("/dashboard/settings")
+        navigate("/dashboard/settingadmin")
       }}>
         <SettingOutlined /> Settings
       </Menu.Item>
@@ -41,19 +39,13 @@ const NavbarAdminDashboard: React.FC = () => {
   );
 
   return (
-    <div className="flex justify-between items-center bg-white   dark:text-white px-6 py-3 shadow-md">
+    <div className="flex justify-between items-center bg-white  dark:text-white px-6 py-3 shadow-md">
       
       <div className="flex items-center space-x-4">
       </div>
       <div className="flex items-center space-x-4">
         {/* Notification Icons */}
         <Row gutter={[16,16]} align="middle">
-        <Col>
-        <Badge count={5} className="cursor-pointer">
-          <BellOutlined className="text-xl" />
-        </Badge>
-        </Col>
-
         <Col>
         <Dropdown overlay={menu} trigger={["click"]}>
           <Avatar

@@ -11,6 +11,7 @@ import avatar from "../../assets/avatar.png";
 import { claimService } from "../../services/claimService";
 import  projectService from "../../services/projectService";
 import { userService } from "../../services/userService";
+import { SettingOutlined } from '@ant-design/icons';
 
 interface Claim {
   id: number;
@@ -133,6 +134,15 @@ const AdminDashboard: React.FC = () => {
     },
     {
       key: "2",
+      label: (
+        <Link to="/dashboard/settingadmin">
+          <SettingOutlined className="pr-2" />
+          Setting
+        </Link>
+      ),
+    },
+    {
+      key: "3",
       label: (
         <span onClick={handleLogout} className="cursor-pointer">
           <LogoutOutlined className="pr-2" />

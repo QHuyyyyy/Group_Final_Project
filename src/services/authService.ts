@@ -9,7 +9,7 @@ export const authService = {
   login: async (credentials: Credentials): Promise<ApiResponse<Token>> => {
     const response = await api.post(`${AUTH_URL}`, credentials);
     console.log("fetch data:", response.data);
-    return response.data;
+    return response.data
   },
 
   getinfo: async (): Promise<ApiResponse<Info>> => {

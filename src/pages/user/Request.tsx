@@ -4,41 +4,8 @@ import { claimService } from "../../services/claimService";
 import dayjs from 'dayjs';
 import RequestDetails from "../../components/user/RequestDetails";
 import { EyeOutlined } from "@ant-design/icons";
-
-interface Claim {
-  _id: string;
-    staff_id: string;
-    staff_name: string;
-    staff_email: string;
-    staff_role: string;
-    role_in_project: string;
-    claim_name: string;
-    claim_start_date: string;
-    claim_end_date: string;
-    is_deleted: boolean;
-    created_at: string;
-    updated_at: string;
-    total_work_time: number;
-    claim_status: string;
-}
-
-interface SearchParams {
-  searchCondition: {
-    keyword: string;
-    claim_status: string;
-    claim_start_date: string;
-    claim_end_date: string;
-    is_delete: boolean;
-  };
-  pageInfo: {
-    pageNum: number;
-    pageSize: number;
-  };
-  sortInfo: {
-    field: string;
-    order: string;
-  };
-}
+import type { Claim, ClaimById, SearchParams } from "../../models/ClaimModel";
+import CreateRequest from "./CreateRequest";
 
 const { Search } = Input;
 
@@ -54,9 +21,10 @@ const Claim = () => {
   const [selectedRequest, setSelectedRequest] = useState<ClaimById |undefined>(undefined);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [totalHoursMap, setTotalHoursMap] = useState<Record<string, number>>({});
+  const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
 
   useEffect(() => {
-    fetchClaims();
+      fetchClaims();
   }, [pagination.current, pagination.pageSize, searchText]);
 
   useEffect(() => {
@@ -82,12 +50,9 @@ const Claim = () => {
           pageNum: pagination.current,
           pageSize: pagination.pageSize
         },
-      
-  
       };
 
       const response = await claimService.searchClaims(params);
-      console.log('Search response:', response);
       
       if (response && response.data && response.data.pageData) {
         setClaims(response.data.pageData);
@@ -108,6 +73,7 @@ const Claim = () => {
     try {
       const response = await claimService.getClaimById(claimId);
       console.log('Total hours response:', response);
+      
       if (response && response.data && response.data.total_work_time) {
         setTotalHoursMap(prev => ({
           ...prev,
@@ -118,7 +84,6 @@ const Claim = () => {
       console.error('Error fetching total hours:', error);
     }
   };
-
 
   const handleSearch = (value: string) => {
     setSearchText(value);
@@ -145,6 +110,25 @@ const Claim = () => {
     setSelectedRequest(undefined);
   };
 
+  const handleOpenCreateModal = () => {
+    setIsCreateModalVisible(true);
+  };
+
+  const handleCloseCreateModal = () => {
+    setIsCreateModalVisible(false);
+  };
+
+  const handleCreateSuccess = () => {
+    setIsCreateModalVisible(false);
+    fetchClaims();
+    message.success('Claim created successfully');
+  };
+
+  const formatWorkTime = (hours: number) => { 
+    if (!hours && hours !== 0) return '-';
+    return `${hours}h`;
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-100">
       <div className="flex-1 p-8">
@@ -156,10 +140,13 @@ const Claim = () => {
             style={{ width: 300 }}
             className="ml-0"
           />
-          <Button type="primary" onClick={() => console.log('Add new claim')}>
+          <Button 
+            type="primary" 
+            onClick={handleOpenCreateModal}
+          >
             Add New Claim
           </Button>
-        </div>
+        </div>  
 
         <Card className="shadow-md">
           <div className="mb-6">
@@ -174,7 +161,7 @@ const Claim = () => {
                 key: "index",
                 render: (_, __, index) => index + 1,
                 width: 60,
-                align: 'center'
+                align: 'center',
               },
               {
                 title: "Staff Name",
@@ -187,19 +174,19 @@ const Claim = () => {
                 title: "Project Name",
                 dataIndex: ["project_info", "project_name"],
                 key: "project_name",
-                width: 150,
+                width: 180,
                 render: (_, record) => record.project_info?.project_name || '-'
               },
               {
                 title: "Project Duration",
                 dataIndex: "duration",
                 key: "duration",
-                width: 180,
+                width: 200,
                 align: 'center',
                 render: (_, record) => (
                   <span>
                     {dayjs(record.claim_start_date).format('YYYY-MM-DD')} 
-                    {' - '} 
+                    {' to '} 
                     {dayjs(record.claim_end_date).format('YYYY-MM-DD')}
                   </span>
                 ),
@@ -216,10 +203,7 @@ const Claim = () => {
                 key: "total_work_time",
                 width: 100,
                 align: 'center',
-                render: (_, record) => {
-                  const hours = totalHoursMap[record._id];
-                  return hours !== undefined ? `${hours}h` : '-';
-                }
+                render: (_, record) => formatWorkTime(totalHoursMap[record._id])
               },
               {
                 title: "Status",
@@ -277,8 +261,13 @@ const Claim = () => {
         
         <RequestDetails
           visible={isModalVisible}
-          claim={selectedRequest }
+          claim={selectedRequest}
           onClose={handleCloseModal}
+        />
+        <CreateRequest
+          visible={isCreateModalVisible}
+          onClose={handleCloseCreateModal}
+          onSuccess={handleCreateSuccess}
         />
       </div>
     </div>
