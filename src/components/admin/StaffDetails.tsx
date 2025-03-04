@@ -34,7 +34,8 @@ const StaffDetails: React.FC<StaffDetailsProps> = ({ visible, staff, onClose }) 
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleString('en-US', {
+    return date.toLocaleString('vi-VN', {
+      timeZone: 'Asia/Ho_Chi_Minh',
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -50,7 +51,7 @@ const StaffDetails: React.FC<StaffDetailsProps> = ({ visible, staff, onClose }) 
       open={visible}
       onCancel={onClose}
       footer={null}
-      width={700}
+      width={800}
       className="custom-modal"
     >
       <div className="py-4">
@@ -68,7 +69,7 @@ const StaffDetails: React.FC<StaffDetailsProps> = ({ visible, staff, onClose }) 
           </Descriptions.Item>
           <Descriptions.Item label="Verification Status" span={1}>
             <Tag color={staff?.is_verified ? 'success' : 'error'}>
-              {staff?.is_verified ? 'Verified' : 'Unerified'}
+              {staff?.is_verified ? 'Verified' : 'Unverified'}
             </Tag>
           </Descriptions.Item>
           <Descriptions.Item label="Account Status" span={1}>

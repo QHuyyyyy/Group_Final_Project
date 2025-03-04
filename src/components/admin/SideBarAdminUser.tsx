@@ -4,7 +4,7 @@ import {
   EyeOutlined,
   UserAddOutlined
 } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface NavbarAdminUserProps {
   onAddUser: () => void;
@@ -12,6 +12,11 @@ interface NavbarAdminUserProps {
 
 const NavbarAdminUser: React.FC<NavbarAdminUserProps> = ({ onAddUser }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isActiveRoute = (path: string) => {
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
+  };
 
   return (
     <div className="fixed left-0 top-0 h-screen w-64 bg-[#1E2640] text-white p-4">
@@ -22,14 +27,22 @@ const NavbarAdminUser: React.FC<NavbarAdminUserProps> = ({ onAddUser }) => {
         {/* Menu Items */}
         <div className="space-y-2">
           <div 
-            className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-[#2E3754] transition-colors cursor-pointer"
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors cursor-pointer ${
+              isActiveRoute('/dashboard/user-manager')
+                ? 'bg-blue-600 text-white'
+                : 'hover:bg-[#2E3754] text-gray-300'
+            }`}
             onClick={() => navigate('/dashboard/user-manager')}
           >
             <TeamOutlined />
             <span>Staff Management</span>
           </div>
           <div 
-            className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-[#2E3754] transition-colors cursor-pointer"
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors cursor-pointer ${
+              isActiveRoute('/dashboard/view-claim-request')
+                ? 'bg-blue-600 text-white'
+                : 'hover:bg-[#2E3754] text-gray-300'
+            }`}
             onClick={() => navigate('/dashboard/view-claim-request')}
           >
             <EyeOutlined />
@@ -37,7 +50,7 @@ const NavbarAdminUser: React.FC<NavbarAdminUserProps> = ({ onAddUser }) => {
           </div>
 
           <div 
-            className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg bg-blue-500 hover:bg-blue-600 transition-colors cursor-pointer"
+            className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors cursor-pointer"
             onClick={onAddUser}
           >
             <UserAddOutlined />
