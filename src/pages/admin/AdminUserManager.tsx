@@ -111,14 +111,13 @@ const AdminUserManager: React.FC = () => {
   const fetchRoles = async () => {
     try {
       const roles = await roleService.getAllRoles();
-      const options = roles.map(role => ({
+      const options = roles.data.map(role => ({
         label: role.role_name,
         value: role.role_code
       }));
       setRoleOptions(options);
     } catch (error) {
       console.error('Error fetching roles:', error);
-      message.error('Cannot load role list');
     }
   };
 
