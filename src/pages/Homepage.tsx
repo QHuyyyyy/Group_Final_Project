@@ -1,35 +1,44 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import Header from '../layout/header';
 import Banner from '../layout/banner';
+import UserSpinner from '../components/user/UserSpinner';
 
 const ServicesSection = lazy(() => import('../components/home/ServicesSection'));
 const GlobalPresence = lazy(() => import('../components/home/GlobalPresence')); 
 const CultureSection = lazy(() => import('../components/home/CultureSection'));
 const Footer = lazy(() => import('../layout/footer'));
 
-const LoadingSection = () => (
-  <div className="h-96 flex items-center justify-center">
-    <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-gray-900"></div>
-  </div>
-);
+
 
 const Homepage = () => {
+  const [isLoading, setIsLoading] = useState(true)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <UserSpinner/>;
+  }
   return (
     <div className="min-h-screen">
       <Header />
       <Banner 
        title="We Are A Comprehensive Technology Enabler" 
        description="For complex business challenges and opportunitie" />
-      <Suspense fallback={<LoadingSection />}>
+      <Suspense fallback={<UserSpinner />}>
         <ServicesSection />
       </Suspense>
-      <Suspense fallback={<LoadingSection />}>
+      <Suspense fallback={<UserSpinner />}>
         <GlobalPresence />
       </Suspense>
-      <Suspense fallback={<LoadingSection />}>
+      <Suspense fallback={<UserSpinner />}>
         <CultureSection />
       </Suspense>
-      <Suspense fallback={<LoadingSection />}>
+      <Suspense fallback={<UserSpinner />}>
         <Footer />
       </Suspense>
     </div>

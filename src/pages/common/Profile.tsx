@@ -1,4 +1,4 @@
-import { Card,  Badge, Statistic, Row, Col, Avatar } from 'antd';
+import { Card,  Badge, Statistic, Row, Col, Avatar, Layout, Spin } from 'antd';
 import { 
   UserOutlined, 
   ClockCircleOutlined, 
@@ -11,7 +11,8 @@ import {
   CalendarOutlined,
   DollarOutlined,
   FileProtectOutlined,
-  CreditCardOutlined
+  CreditCardOutlined,
+  LoadingOutlined
 } from '@ant-design/icons';
 import { useLocation } from 'react-router-dom';
 import AdminSidebar from '../../components/admin/AdminSidebar';
@@ -69,15 +70,20 @@ const Profile = () => {
   // Add state for projects
 
 
+  const [dataLoaded, setDataLoaded] = useState({
+    employeeData:false
+  })
+  const [isLoad, setIsLoad] = useState(true)
   useEffect(() => {
     const fetchEmployeeData = async () => {
       try {
 
         const response = await employeeService.getEmployeeById(user.id);
         setEmployeeData(response.data);
-
+        setDataLoaded(prev => ({ ...prev, employeeData: true }));
       } catch (error) {
         console.error('Error fetching employee data:', error);
+        setDataLoaded(prev => ({ ...prev, employeeData: true }));
       }
     };
 
@@ -97,6 +103,30 @@ const Profile = () => {
     if (!salary) return 'N/A';
     return salary.toLocaleString() + ' VND';
   };
+  useEffect(() => {
+      const allDataLoaded = Object.values(dataLoaded).every(status => status === true);
+      if (allDataLoaded) {
+        setIsLoad(false);
+      }
+    }, [dataLoaded]);
+    const loadingIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+    if (isLoad) {
+      return (
+        <Layout style={{ 
+          height: "100vh", 
+          display: "flex", 
+          justifyContent: "center", 
+          alignItems: "center",
+          background: "#f0f2f5"
+        }}>
+          <div style={{ textAlign: "center" }}>
+            <Spin indicator={loadingIcon} />
+            <h2 style={{ marginTop: 20, color: "#1890ff" }}>Loading Profile...</h2>
+            <p style={{ color: "#8c8c8c" }}>Please wait</p>
+          </div>
+        </Layout>
+      );
+    }
 
   return (
     <div className="flex min-h-screen bg-gray-50">

@@ -55,7 +55,108 @@ export const claimService = {
   // Thay đổi trạng thái claim
   changeClaimStatus: async (requestBody: ChangeClaimStatusRequest): Promise<ApiResponse<null>> => {
     const response = await api.put('/api/claims/change-status', requestBody);
+
+    console.log("fetch data:", response.data.data);
+    return response.data.data;
+  },
+
+  getPendingClaims: async () => {
+    const response = await api.post('/api/claims/search', {
+      searchCondition: {
+        keyword: "",
+        claim_status: "Pending Approval",
+        claim_start_date: "",
+        claim_end_date: "",
+      },
+      pageInfo: {
+        pageNum: 1,
+        pageSize: 10
+      }
+    })
+    return response.data;
+  },
+  
+  getApprovedClaims: async () => {
+    const response = await api.post('/api/claims/search', {
+      searchCondition: {
+        keyword: "",
+        claim_status: "Approved",
+        claim_start_date: "",
+        claim_end_date: "",
+      },
+      pageInfo: {
+        pageNum: 1,
+        pageSize: 10
+      }
+    })
+    return response.data;
+  },
+
+  getRejectedClaims: async () => {
+    const response = await api.post('/api/claims/search', {
+      searchCondition: {
+        keyword: "",
+        claim_status: "Rejected",
+        claim_start_date: "",
+        claim_end_date: "",
+      },
+      pageInfo: {
+        pageNum: 1,
+        pageSize: 10
+      }
+    })
+    return response.data;
+  },
+
+  getPaidClaims: async () => {
+    const response = await api.post('/api/claims/search', {
+      searchCondition: {
+        keyword: "",
+        claim_status: "Paid",
+        claim_start_date: "",
+        claim_end_date: "",
+      },
+      pageInfo: {
+        pageNum: 1,
+        pageSize: 10
+      }
+    })
+    return response.data;
+  },
+
+  getDraftClaims: async () => {
+    const response = await api.post('/api/claims/search', {
+      searchCondition: {
+        keyword: "",
+        claim_status: "Draft",
+        claim_start_date: "",
+        claim_end_date: "",
+      },
+      pageInfo: {
+        pageNum: 1,
+        pageSize: 10
+      }
+    })
+    return response.data;
+  },
+  
+  getCanceledClaims: async () => {
+    const response = await api.post('/api/claims/search', {
+      searchCondition: {
+        keyword: "",
+        claim_status: "Canceled",
+        claim_start_date: "",
+        claim_end_date: "",
+      },
+      pageInfo: {
+        pageNum: 1,
+        pageSize: 10
+      }
+    })
+
     console.log("fetch data:", response.data);
+
     return response.data;
   }
+
 };

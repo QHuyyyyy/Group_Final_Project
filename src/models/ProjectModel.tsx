@@ -56,6 +56,7 @@ export interface ProjectData {
 
 export interface SearchCondition {
     keyword?: string;
+    project_status?:string;
     project_start_date?: string;
     project_end_date?: string;
     is_delete?: boolean;
