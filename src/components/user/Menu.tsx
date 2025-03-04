@@ -83,7 +83,7 @@ const Menu = () => {
     .filter(section => section.items.length > 0);
 
   return (
-    <div className="bg-[#1E2640] min-h-screen w-59 fixed left-0 top-0 text-white">
+    <div className="bg-[#1E2640] min-h-screen w-60 max-w-[250px] fixed left-0 top-0 text-white">
       <div className="p-6">
         <div className="text-xl font-bold mb-8 text-center">User Dashboard</div>
         <div className="space-y-6">
