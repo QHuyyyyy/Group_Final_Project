@@ -21,7 +21,7 @@ export default function Login() {
       toast.success('Đăng nhập thành công!');
       navigate('/');
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Lỗi đăng nhập');
+      toast.error(error.response.data.message || 'Lỗi đăng nhập');
     }
   };
 

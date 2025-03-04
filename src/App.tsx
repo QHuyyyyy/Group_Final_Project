@@ -8,6 +8,7 @@ import ForgotPassword from './components/common/ForgotPassword';
 import NotFound from './pages/NotFound';
 import VerifyToken from './pages/common/VerifyToken';
 import ResendToken from './pages/common/ResendToken';
+import Settings from "./pages/Settings";
 import ProtectedRoute from './routes/ProtectedRoute';
 import { RoutePermissions } from './routes/RoutePermissions';
 
@@ -110,6 +111,7 @@ const App = () => {
               <Profile />
             </ProtectedRoute>
           } />
+          <Route path='/dashboard/settings' element={<Settings />} />
 
           <Route path='*' element={<NotFound />} />
         </Routes>

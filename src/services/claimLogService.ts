@@ -1,24 +1,12 @@
-import api from "../api/axios";
+import api from '../api/axios';
+import { ApiResponse } from '../models/ApiResponse';
+import { SearchClaimLogsRequest, SearchClaimLogsResponse } from '../models/ClaimLogsModel';
 
-// Thêm interface cho request search logs
-interface SearchLogsParams {
-    searchCondition: {
-      claim_id?: string;
-      is_deleted?: boolean;
-    };
-    pageInfo: {
-      pageNum: number;
-      pageSize: number;
-    };
-  }
-  
-  // Thêm function search logs vào claimService
-  export const claimLogService = {
-    // ... các function khác
-  
-    searchClaimLogs: async (params: SearchLogsParams) => {
-      const response = await api.post('/api/claim-logs/search', params);
-      console.log(response.data)
-      return response.data;
-    }
-  };
+export const claimLogService = {
+  // Search claim logs with pagination
+  searchClaimLogs: async (requestData: SearchClaimLogsRequest): Promise<ApiResponse<SearchClaimLogsResponse>> => {
+    const response = await api.post<ApiResponse<SearchClaimLogsResponse>>('/api/claim-logs/search', requestData);
+    console.log("fetch data:", response.data);
+    return response.data; // This will now be typed as SearchClaimLogsResponse
+  },
+};

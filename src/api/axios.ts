@@ -1,4 +1,6 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
+import { ApiResponse} from '../models/ApiResponse';
+
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -21,18 +23,17 @@ api.interceptors.request.use(
 );
 
 api.interceptors.response.use(
-  (response) => {
-    if (response.data.success) {
-      return response.data; // Trả về data trực tiếp nếu success = true
-    } else {
-      return Promise.reject(response.data); // Ném lỗi nếu success = false
-    }
+  <T>(response: AxiosResponse<ApiResponse<T>>): AxiosResponse<T> => {
+  
+      return response as AxiosResponse<T>; 
+      
   },
   (error) => {
     // if (error.response?.status === 401) {
     //   localStorage.removeItem("token");
     //   window.location.href = "/login";
     // }
+    console.log(error)
     return Promise.reject(error);
   }
 );

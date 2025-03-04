@@ -1,6 +1,7 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense,useEffect,useState } from 'react';
 import Header from '../layout/header';
 import Banner from '../layout/banner';
+import UserSpinner from '../components/user/UserSpinner';
 
 const IndustriesSelection = lazy(() => import('../components/industries/IndustriesSelection'));
 
@@ -13,6 +14,18 @@ const LoadingSection = () => (
 );
 
 const Industries = () => {
+    const [isLoading, setIsLoading] = useState(true);
+      useEffect(() => {
+          const timer = setTimeout(() => {
+            setIsLoading(false);
+          }, 500);
+      
+          return () => clearTimeout(timer);
+        }, []);
+      
+        if (isLoading) {
+          return <UserSpinner/>;
+        }
     return (
         <div className="min-h-screen">
             <Header />

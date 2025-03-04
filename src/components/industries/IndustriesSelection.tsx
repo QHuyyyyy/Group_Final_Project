@@ -1,6 +1,7 @@
 
 
 const IndustriesSelection = () => {
+  
     const industries = [
         { title: "Aviation", icon: "https://media.istockphoto.com/id/1414160809/vi/vec-to/bi%E1%BB%83u-t%C6%B0%E1%BB%A3ng-m%C3%A1y-bay-h%C3%ACnh-%E1%BA%A3nh-chuy%E1%BA%BFn-bay-m%C3%A1y-bay-giao-th%C3%B4ng-v%E1%BA%ADn-t%E1%BA%A3i-bi%E1%BB%83u-t%C6%B0%E1%BB%A3ng-du-l%E1%BB%8Bch.jpg?s=612x612&w=0&k=20&c=EQ6ezDgXyPO8sLUDOBcCz0ZMJXpwZiNSPkmyYqHQXII=", description: "With over a decade of experience with 100+ aviation leaders, FPT Software integrates systems, optimizes operations, enhances customer experiences and supports net-zero transition." },
         { title: "Automotive", icon: "https://png.pngtree.com/png-vector/20190507/ourmid/pngtree-vector-car-icon-png-image_1024782.jpg", description: "We deliver services to automakers, Tier-1 suppliers and semiconductor firms to innovate. With 5000+ engineers, we support Vietnam's rise as an automotive tech hub." },
