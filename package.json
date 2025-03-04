@@ -19,6 +19,7 @@
     "final-project": "file:",
     "firebase": "^11.3.0",
     "framer-motion": "^12.4.5",
+    "lodash": "^4.17.21",
     "moment": "^2.30.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
