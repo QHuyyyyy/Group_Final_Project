@@ -111,15 +111,14 @@ const Claim = () => {
       const response = await claimService.getClaimById(claimId);
       console.log('Total hours response:', response);
       
-      if (response && response.total_work_time) {
+      if (response && response.data && response.data.total_work_time) {
         setTotalHoursMap(prev => ({
           ...prev,
-          [claimId]: response.total_work_time
+          [claimId]: response.data.total_work_time
         }));
       }
     } catch (error) {
       console.error('Error fetching total hours:', error);
-      message.error('An error occurred while fetching total hours.');
     }
   };
 
@@ -211,12 +210,12 @@ const Claim = () => {
                 width: 100,
                 render: (status: string) => (
                   <Tag color={
-                    !status || status === "DRAFT" ? "gold" :
-                    status === "PENDING" ? "blue" :
-                    status === "APPROVED" ? "green" :
+                    !status || status === "Draft" ? "gold" :
+                    status === "Pending Approval" ? "blue" :
+                    status === "Approved" ? "green" :
                     "red"
                   }>
-                    {status || "DRAFT"}
+                    {status || "Draft"}
                   </Tag>
                 )
               },

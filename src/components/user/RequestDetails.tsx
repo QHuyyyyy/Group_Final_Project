@@ -37,10 +37,10 @@ const RequestDetails: React.FC<RequestDetailsProps> = ({ visible, claim, onClose
             const response = await claimService.getClaimById(claimId);
             console.log('Total hours response:', response);
             
-            if (response && response.total_work_time) {
+            if (response && response.data && response.data.total_work_time) {
                 setTotalHoursMap(prev => ({
                     ...prev,
-                    [claimId]: response.total_work_time
+                    [claimId]: response.data.total_work_time
                 }));
             }
         } catch (error) {
@@ -75,12 +75,11 @@ const RequestDetails: React.FC<RequestDetailsProps> = ({ visible, claim, onClose
                     pageSize: 1
                 },
             });
-            if (response && response.project_name) {
-                setProjectName(response.project_name);
+            if (response && response.data && response.data.project_name) {
+                setProjectName(response.data.project_name);
             }
         } catch (error) {
             console.error('Error fetching project details:', error);
-            message.error('An error occurred while fetching project details.');
         }
     };
 
@@ -106,11 +105,11 @@ const RequestDetails: React.FC<RequestDetailsProps> = ({ visible, claim, onClose
                 </Descriptions.Item>
                 <Descriptions.Item label="Status" span={1}>
                     <Tag color={
-                        !claim.claim_status || claim.claim_status === "DRAFT" ? "gold" :
-                        claim.claim_status === "PENDING" ? "blue" :
-                        claim.claim_status === "APPROVED" ? "green" : "red"
+                        !claim.claim_status || claim.claim_status === "Draft" ? "gold" :
+                        claim.claim_status === "Pending Approval" ? "blue" :
+                        claim.claim_status === "Approved" ? "green" : "red"
                     }>
-                        {claim.claim_status || "DRAFT"}
+                        {claim.claim_status || "Draft"}
                     </Tag>
                 </Descriptions.Item>
                 <Descriptions.Item label="Created Date" span={1}>
