@@ -1,4 +1,6 @@
-// Interface cho response của getClaimById
+import { PageInfo } from "./PageModel";
+import { SearchClaimCondition } from "./SearchConditionModel";
+
 export interface CreateClaim {
     _id: string;
     user_id: string;
@@ -15,7 +17,6 @@ export interface CreateClaim {
     __v: number;
   }
   
-  // Interface cho response của searchClaims
   export interface Claim {
     _id: string;
     staff_id: string;
@@ -70,23 +71,8 @@ export interface CreateClaim {
     pageInfo: PageInfo;
   }
   
-  export interface PageInfo {
-    pageNum: number;
-    pageSize: number;
-    totalItems: number;
-    totalPages: number;
-  }
-  
-  export interface SearchCondition {
-    keyword?: string;
-    claim_status?: string;
-    claim_start_date?: string;
-    claim_end_date?: string;
-    is_delete?: boolean;
-  }
-  
   export interface SearchParams {
-    searchCondition: SearchCondition;
+    searchCondition: SearchClaimCondition;
     pageInfo: {
       pageNum: number;
       pageSize: number;

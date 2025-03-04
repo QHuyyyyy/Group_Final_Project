@@ -1,8 +1,7 @@
 import { apiUtils } from '../api/axios';
+import { EMPLOYEES_ENDPOINT } from '../constants/authURL';
 import { ApiResponse } from '../models/ApiResponse';
 import { Employee, EmployeeUpdateData } from '../models/EmployeeModel';
-
-const EMPLOYEES_ENDPOINT = '/api/employees';
 
 export const employeeService = {
   // Lấy thông tin nhân viên theo ID

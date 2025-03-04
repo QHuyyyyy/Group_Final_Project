@@ -1,8 +1,7 @@
 import { apiUtils } from '../api/axios';
+import { CLAIM_LOGS_ENDPOINT } from '../constants/authURL';
 import { ApiResponse } from '../models/ApiResponse';
 import { SearchClaimLogsRequest, SearchClaimLogsResponse } from '../models/ClaimLogsModel';
-
-const CLAIM_LOGS_ENDPOINT = '/api/claim-logs';
 
 export const claimLogService = {
   // Search claim logs with pagination
