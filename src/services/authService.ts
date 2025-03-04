@@ -1,9 +1,8 @@
 // src/services/authService.ts
 import  { apiUtils } from "../api/axios";
+import { AUTH_URL } from "../constants/authURL";
 import { ApiResponse } from "../models/ApiResponse";
 import { Credentials, Email, Info, Token } from "../models/AuthModel";
-
-const AUTH_URL = "/api/auth"; // Biến chung để tránh lặp lại URL
 
 export const authService = {
   login: async (credentials: Credentials): Promise<ApiResponse<Token>> => {

@@ -1,8 +1,7 @@
 import { apiUtils } from '../api/axios';
+import { ROLES_ENDPOINT } from '../constants/authURL';
 import { ApiResponse } from '../models/ApiResponse';
 import { Role, RoleTypes } from '../models/RoleModel';
-
-const ROLES_ENDPOINT = '/api/roles';
 
 export const roleService = {
   // Lấy tất cả roles hoặc tìm kiếm theo từ khóa

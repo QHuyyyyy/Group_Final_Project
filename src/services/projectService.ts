@@ -1,16 +1,15 @@
 import { apiUtils } from '../api/axios';
+import { PROJECTS_ENDPOINT } from '../constants/authURL';
 import { ApiResponse } from '../models/ApiResponse';
 import {
   CreateProjectRequest,
   SearchParams,
-  SearchResponse,
+  ProjectResponse,
   UpdateProjectRequest,
   ChangeProjectStatusRequest,
   Project,
   ProjectData
 } from '../models/ProjectModel';
-
-const PROJECTS_ENDPOINT = '/api/projects';
 
 const projectService = {
   // Tạo dự án mới
@@ -24,10 +23,10 @@ const projectService = {
   searchProjects: async (params: SearchParams = {
     searchCondition: {},
     pageInfo: { pageNum: 1, pageSize: 10, totalItems: 0, totalPages: 0 }
-  }): Promise<ApiResponse<SearchResponse>> => {
+  }): Promise<ApiResponse<ProjectResponse>> => {
     try {
       console.log('Calling searchProjects with params:', params);
-      const response = await apiUtils.post<ApiResponse<SearchResponse>>(`${PROJECTS_ENDPOINT}/search`, {
+      const response = await apiUtils.post<ApiResponse<ProjectResponse>>(`${PROJECTS_ENDPOINT}/search`, {
         searchCondition: {
           keyword: params.searchCondition.keyword || "",
           project_status: params.searchCondition.project_status,

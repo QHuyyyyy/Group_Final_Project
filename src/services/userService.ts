@@ -1,5 +1,6 @@
 // src/services/userService.ts
 import  { apiUtils } from '../api/axios';
+import { USERS_ENDPOINT } from '../constants/authURL';
 import { ApiResponse } from '../models/ApiResponse';
 import {
   CreateUser,
@@ -11,8 +12,6 @@ import {
   ChangeRoleRequest,
   UserData
 } from '../models/UserModel';
-
-const USERS_ENDPOINT = '/api/users';
 
 export const userService = {
   // Tạo người dùng mới

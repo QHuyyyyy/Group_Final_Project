@@ -1,8 +1,7 @@
 import { apiUtils } from '../api/axios';
+import { JOB_ENDPOINT } from '../constants/authURL';
 import { ApiResponse } from '../models/ApiResponse';
 import { Job } from '../models/JobModel';
-
-const JOB_ENDPOINT = '/api/jobs';
 
 export const jobService = {
     getAllJobs: async (keyword?: string): Promise<ApiResponse<Job[]>> => {
