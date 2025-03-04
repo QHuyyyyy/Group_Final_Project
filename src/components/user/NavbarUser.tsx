@@ -2,6 +2,7 @@ import { Badge, Dropdown, Popover, Row, Col } from "antd";
 import {
   BellOutlined,
   LogoutOutlined,
+  SettingOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import avatar from "../../assets/avatar.png";
@@ -13,7 +14,6 @@ const Navbar = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
   const [open, setOpen] = useState(false);
-
   const handleLogout = () => {
     logout();
     navigate("/login");
@@ -31,6 +31,15 @@ const Navbar = () => {
     },
     {
       key: "2",
+      label: (
+        <Link to="/userdashboard/settinguser">
+          <SettingOutlined className="pr-2" />
+          Settings
+        </Link>
+      ),
+    },
+    {
+      key: "3",
       label: (
         <span onClick={handleLogout} className="cursor-pointer">
           <LogoutOutlined className="pr-2" />
@@ -61,7 +70,7 @@ const Navbar = () => {
   );
 
   return (
-    <div className="flex justify-between items-center bg-white dark:bg-gray-900 text-gray-900 dark:text-white px-6 py-3 shadow-md">
+    <div className="flex justify-between items-center bg-white dark:text-white px-6 py-3 shadow-md">
       <div className="flex items-center space-x-4">
       </div>
       <div className="flex items-center">

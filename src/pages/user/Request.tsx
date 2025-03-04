@@ -5,8 +5,7 @@ import dayjs from 'dayjs';
 import RequestDetails from "../../components/user/RequestDetails";
 import { EyeOutlined } from "@ant-design/icons";
 import type { Claim, ClaimById, SearchParams } from "../../models/ClaimModel";
-
-
+import CreateRequest from "./CreateRequest";
 
 const { Search } = Input;
 
@@ -22,9 +21,10 @@ const Claim = () => {
   const [selectedRequest, setSelectedRequest] = useState<ClaimById |undefined>(undefined);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [totalHoursMap, setTotalHoursMap] = useState<Record<string, number>>({});
+  const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
 
   useEffect(() => {
-    fetchClaims();
+      fetchClaims();
   }, [pagination.current, pagination.pageSize, searchText]);
 
   useEffect(() => {
@@ -50,12 +50,9 @@ const Claim = () => {
           pageNum: pagination.current,
           pageSize: pagination.pageSize
         },
-      
-  
       };
 
       const response = await claimService.searchClaims(params);
-      console.log('Search response:', response);
       
       if (response && response.data && response.data.pageData) {
         setClaims(response.data.pageData);
@@ -113,7 +110,19 @@ const Claim = () => {
     setSelectedRequest(undefined);
   };
 
-  
+  const handleOpenCreateModal = () => {
+    setIsCreateModalVisible(true);
+  };
+
+  const handleCloseCreateModal = () => {
+    setIsCreateModalVisible(false);
+  };
+
+  const handleCreateSuccess = () => {
+    setIsCreateModalVisible(false);
+    fetchClaims();
+    message.success('Claim created successfully');
+  };
 
   const formatWorkTime = (hours: number) => { 
     if (!hours && hours !== 0) return '-';
@@ -131,10 +140,13 @@ const Claim = () => {
             style={{ width: 300 }}
             className="ml-0"
           />
-          <Button type="primary" onClick={() => console.log('Add new claim')}>
+          <Button 
+            type="primary" 
+            onClick={handleOpenCreateModal}
+          >
             Add New Claim
           </Button>
-        </div>
+        </div>  
 
         <Card className="shadow-md">
           <div className="mb-6">
@@ -148,23 +160,39 @@ const Claim = () => {
                 title: "No.",
                 key: "index",
                 render: (_, __, index) => index + 1,
-                width: 50,
+                width: 60,
+                align: 'center',
               },
               {
-                title: "Claim Name",
-                dataIndex: "claim_name",
-                key: "claim_name",
+                title: "Staff Name",
+                dataIndex: ["staff_name", "staff_email"],
+                key: "staff_name",
                 width: 120,
+                render: (_, record) => record.staff_name
               },
               {
-                title: "Created At",
-                dataIndex: "created_at",
-                key: "created_at",
-                width: 120,
-                render: (date: string) => dayjs(date).format('YYYY-MM-DD'),
+                title: "Project Name",
+                dataIndex: ["project_info", "project_name"],
+                key: "project_name",
+                width: 180,
+                render: (_, record) => record.project_info?.project_name || '-'
+              },
+              {
+                title: "Project Duration",
+                dataIndex: "duration",
+                key: "duration",
+                width: 200,
+                align: 'center',
+                render: (_, record) => (
+                  <span>
+                    {dayjs(record.claim_start_date).format('YYYY-MM-DD')} 
+                    {' to '} 
+                    {dayjs(record.claim_end_date).format('YYYY-MM-DD')}
+                  </span>
+                ),
                 sorter: (a, b) => {
-                  const dateA = new Date(a.created_at).getTime();
-                  const dateB = new Date(b.created_at).getTime();
+                  const dateA = new Date(a.claim_start_date).getTime();
+                  const dateB = new Date(b.claim_start_date).getTime();
                   return dateA - dateB;
                 },
                 defaultSortOrder: 'descend'
@@ -174,13 +202,15 @@ const Claim = () => {
                 dataIndex: "total_work_time",
                 key: "total_work_time",
                 width: 100,
-                render: (_, record) => formatWorkTime(totalHoursMap[record._id] || 0)
+                align: 'center',
+                render: (_, record) => formatWorkTime(totalHoursMap[record._id])
               },
               {
                 title: "Status",
                 dataIndex: "claim_status",
                 key: "claim_status",
-                width: 100,
+                width: 120,
+                align: 'center',
                 render: (status: string) => (
                   <Tag color={
                     !status || status === "Draft" ? "gold" :
@@ -195,7 +225,8 @@ const Claim = () => {
               {
                 title: "Actions",
                 key: "actions",
-                width: 200,
+                width: 100,
+                align: 'center',
                 render: (_, record) => (
                   <Space size="middle">
                     <Button 
@@ -204,7 +235,6 @@ const Claim = () => {
                       onClick={() => handleView(record)}
                       title="View"
                     />
-                   
                   </Space>
                 )
               }
@@ -231,8 +261,13 @@ const Claim = () => {
         
         <RequestDetails
           visible={isModalVisible}
-          claim={selectedRequest }
+          claim={selectedRequest}
           onClose={handleCloseModal}
+        />
+        <CreateRequest
+          visible={isCreateModalVisible}
+          onClose={handleCloseCreateModal}
+          onSuccess={handleCreateSuccess}
         />
       </div>
     </div>
