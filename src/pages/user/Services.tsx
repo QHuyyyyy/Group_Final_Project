@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState, useEffect} from "react";
 import { Card, Row, Col, Typography, Menu } from "antd";
 import {
     CarOutlined,
@@ -18,6 +18,7 @@ import Banner from "../../layout/banner";
 import Footer from "../../layout/footer";
 
 import { motion } from "framer-motion";
+import UserSpinner from "../../components/user/UserSpinner";
 const { Title, Paragraph } = Typography;
 
 const services = [
@@ -34,7 +35,20 @@ const services = [
     { name: "Retail", icon: <ShoppingOutlined /> },
 ];
 
+
 const Services: React.FC = () => {
+    const [isLoading, setIsLoading] = useState(true)
+    useEffect(() => {
+        const timer = setTimeout(() => {
+          setIsLoading(false);
+        }, 500);
+    
+        return () => clearTimeout(timer);
+      }, []);
+    
+      if (isLoading) {
+        return <UserSpinner />;
+      }
     return (
         <div className="min-h-screen">
             <Header />

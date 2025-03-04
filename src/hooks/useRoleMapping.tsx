@@ -14,7 +14,7 @@ export const useRoleMapping = () => {
     const fetchRoles = async () => {
       try {
         const roles = await roleService.getAllRoles();
-        const mapping = roles.reduce((acc: RoleMapping, role) => {
+        const mapping = roles.data.reduce((acc: RoleMapping, role) => {
           acc[role.role_code] = role.role_name;
           return acc;
         }, {});

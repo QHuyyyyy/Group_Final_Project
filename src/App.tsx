@@ -1,16 +1,16 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
-import AdminRoute from './routes/AdminRoute';
-import UserRoute from './routes/UserRoute';
 import TransactionPage from './pages/user/Transaction';
 import AboutUs from './pages/AboutUs';
 import Services from './pages/user/Services';
 import ContactUs from './pages/Contactus';
 import ForgotPassword from './components/common/ForgotPassword';
 import NotFound from './pages/NotFound';
-import { RoutePermissions } from './routes/RoutePermissions';
 import VerifyToken from './pages/common/VerifyToken';
 import ResendToken from './pages/common/ResendToken';
+import Settings from "./pages/Settings";
+import ProtectedRoute from './routes/ProtectedRoute';
+import { RoutePermissions } from './routes/RoutePermissions';
 
 // Lazy load components
 const Homepage = lazy(() => import('./pages/Homepage'));
@@ -44,34 +44,40 @@ const App = () => {
           <Route path='/forgot-password' element={<ForgotPassword />} />
           <Route path='/login' element={<Login />} />
           <Route path='/contactus' element={<ContactUs />} />
-          <Route path='/verify/:token' element={<VerifyToken />} />
+
+          <Route path='/verify-email/:token' element={<VerifyToken />} />
                   <Route path='/resend-token' element={<ResendToken />} />
+
           {/* User Dashboard Routes */}
-          <Route path='/userdashboard/' element={<UserRoute><UserDashBoard /></UserRoute>}>
+          <Route path='/userdashboard/' element={
+            <ProtectedRoute allowedRoles={RoutePermissions.user}>
+              <UserDashBoard />
+            </ProtectedRoute>
+          }>
             <Route path="profile" element={
-              <UserRoute allowedRoles={RoutePermissions.profile}>
+              <ProtectedRoute allowedRoles={RoutePermissions.user}>
                 <Profile />
-              </UserRoute>
+              </ProtectedRoute>
             } />
             <Route path="transaction" element={
-              <UserRoute allowedRoles={RoutePermissions.transaction}>
+              <ProtectedRoute allowedRoles={RoutePermissions.transaction}>
                 <TransactionPage />
-              </UserRoute>
+              </ProtectedRoute>
             } />
             <Route path="approvals" element={
-              <UserRoute allowedRoles={RoutePermissions.approvals}>
+              <ProtectedRoute allowedRoles={RoutePermissions.approvals}>
                 <ApprovalPage />
-              </UserRoute>
+              </ProtectedRoute>
             } />
             <Route path="claimrequest" element={
-              <UserRoute allowedRoles={RoutePermissions.claimrequest}>
+              <ProtectedRoute allowedRoles={RoutePermissions.claimrequest}>
                 <Claim />
-              </UserRoute>
+              </ProtectedRoute>
             } />
             <Route path="finance" element={
-              <UserRoute allowedRoles={RoutePermissions.finance}>
+              <ProtectedRoute allowedRoles={RoutePermissions.finance}>
                 <Finance />
-              </UserRoute>
+              </ProtectedRoute>
             } />
             {/* <Route path="create-request" element={
               <UserRoute>
@@ -82,33 +88,33 @@ const App = () => {
 
           {/* Admin Routes */}
           <Route path='/dashboard' element={
-            <AdminRoute>
+            <ProtectedRoute allowedRoles={RoutePermissions.admin} redirectPath="/">
               <AdminDashboard />
-            </AdminRoute>
+            </ProtectedRoute>
           } />
 
           <Route path='/dashboard/project-manager' element={
-            <AdminRoute>
+            <ProtectedRoute allowedRoles={RoutePermissions.admin} redirectPath="/">
               <AdminProjectManager />
-            </AdminRoute>
+            </ProtectedRoute>
           } />
           <Route path='/dashboard/user-manager' element={
-            <AdminRoute>
+            <ProtectedRoute allowedRoles={RoutePermissions.admin} redirectPath="/">
               <AdminUserManager />
-            </AdminRoute>
+            </ProtectedRoute>
           } />
           <Route path='/dashboard/view-claim-request' element={
-            <AdminRoute>
+            <ProtectedRoute allowedRoles={RoutePermissions.admin} redirectPath="/">
               <ViewClaimRequest />
-            </AdminRoute>
+            </ProtectedRoute>
           } />
           <Route path='/dashboard/profile' element={
-            <AdminRoute>
-              <AdminRoute>
-                <Profile />
-              </AdminRoute>
-            </AdminRoute>
+            <ProtectedRoute allowedRoles={RoutePermissions.admin} redirectPath="/">
+              <Profile />
+            </ProtectedRoute>
           } />
+          <Route path='/dashboard/settings' element={<Settings />} />
+          <Route path='/dashboard/settings' element={<Settings />} />
 
           <Route path='*' element={<NotFound />} />
         </Routes>

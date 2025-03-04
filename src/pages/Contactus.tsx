@@ -1,8 +1,20 @@
-import React from "react";
+import React, {useState, useEffect} from "react";
 import Header from "../layout/header";
 import Footer from "../layout/footer";
-
+import UserSpinner from "../components/user/UserSpinner";
 const Contactus: React.FC = () => {
+  const [isLoading, setIsLoading] = useState(true);
+    useEffect(() => {
+        const timer = setTimeout(() => {
+          setIsLoading(false);
+        }, 500);
+    
+        return () => clearTimeout(timer);
+      }, []);
+    
+      if (isLoading) {
+        return <UserSpinner/>;
+      }
   return (
     <div className="min-h-screen">
       <Header />

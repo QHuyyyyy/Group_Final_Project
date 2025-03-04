@@ -16,7 +16,7 @@ export default function ForgotPassword() {
 
   const handleSubmit = async (values: { email: string }) => {
     try {
-      await authService.forgotPassword(values.email);
+      await authService.forgotPassword({ email: values.email });
       toast.success('Please check your email to reset your password!');
       navigate('/login');
     } catch (error: any) {

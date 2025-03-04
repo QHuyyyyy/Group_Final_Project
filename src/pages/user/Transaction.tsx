@@ -8,7 +8,6 @@ import { claimLogService } from '../../services/claimLogService';
 import { useUserStore } from '../../stores/userStore';
 interface Transaction {
   _id: string;
-  claim_id: string; 
   claim_name: string;
   old_status: string;
   new_status: string;
@@ -51,10 +50,10 @@ const TransactionPage: React.FC = () => {
         }
       });
 
-      setTransactions(response.pageData || []);
+      setTransactions(response.data.pageData || [] as Transaction[]);
       setPagination(prev => ({
         ...prev,
-        total: response.pageInfo?.totalItems || 0
+        total: response.data.pageInfo?.totalItems || 0
       }));
 
     } catch (error) {

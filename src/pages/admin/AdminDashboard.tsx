@@ -1,12 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Legend, Cell, LineChart, Line } from "recharts";
-import { Col, Row, Card, Statistic, Tag, Table, List, Pagination,  Select, Dropdown } from "antd"
+import { Col, Row, Card, Statistic, Tag, Table, List, Pagination, Select, Dropdown, Spin, Layout } from "antd"
+import { LoadingOutlined } from "@ant-design/icons";
 import { UserOutlined, ProjectOutlined, FileTextOutlined, ClockCircleOutlined, CheckCircleOutlined, CheckOutlined, LogoutOutlined } from '@ant-design/icons';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import dayjs from "dayjs"
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import avatar from "../../assets/avatar.png";
+import { claimService } from "../../services/claimService";
+import  projectService from "../../services/projectService";
+import { userService } from "../../services/userService";
 
 interface Claim {
   id: number;
@@ -15,35 +19,67 @@ interface Claim {
   claimer: string;
 }
 
+interface Claims {
+  _id: string;
+  user_id: string;
+  project_id: string;
+  approval_id: string;
+  claim_name: string;
+  claim_status: string;
+  claim_start_date: string;
+  claim_end_date: string;
+  total_work_time: number;
+  is_deleted: boolean;
+  created_at: string;
+  updated_at: string;
+  data: {
+    employee_info?: {
+      department_name: string
+    }
+  }
+  __v: number;
+}
+
+
+interface ProjectMember {
+  user_id: string;
+  project_role: string;
+}
+
+
+interface Projects {
+  project_name: string;
+  project_code: string;
+  project_department: string;
+  project_description: string;
+  project_start_date: string;
+  project_end_date: string;
+  project_members: ProjectMember[];
+}
+
 interface ClaimData {
   status: string;
   count: number;
   date?: string;
 }
 
+interface User {
+  _id: string;
+  email: string;
+  user_name: string;
+  role_code: string;
+  is_verified: boolean;
+  is_blocked: boolean;
+  is_deleted: boolean;
+  created_at: string;
+  updated_at: string;
+  token_version: number;
+}
 const { Option } = Select
 const AdminDashboard: React.FC = () => {
-  let userStats: number = 1534;
-  let projectStats: number = 342;
-  const claimStats = {
-    total: 298,
-    pending: 124,
-    approved: 84,
-    rejected: 32,
-    paid: 58,
-  };
-  const claimsData: ClaimData[] = [
-    { status: "Pending", count: 124, date: "2024-03-25" },
-    { status: "Approved", count: 84, date: "2024-03-24" },
-    { status: "Rejected", count: 32, date: "2024-03-23" },
-    { status: "Paid", count: 58, date: "2024-03-22" },
-  ];
-  const claimCategories = [
-    { name: "HR", value: 40 },
-    { name: "IT", value: 30 },
-    { name: "Finance", value: 20 },
-    { name: "Sales", value: 10 },
-  ];
+  const [isLoading, setIsLoading] = useState(true);
+
+  
   const recentClaims = [
     { id: 1, name: "Overtime Payment", status: "Pending", claimer: "John Doe" },
     { id: 2, name: "Travel Reimbursement", status: "Approved", claimer: "Jane Smith" },
@@ -56,14 +92,6 @@ const AdminDashboard: React.FC = () => {
     { activity: "User Sarah submitted a claim", time: "Yesterday" },
     { activity: "Admin assigned a user to Project Beta", time: "2 days ago" },
   ];
-  const projectTrendData = [
-    { month: "Jan", projects: 20 },
-    { month: "Feb", projects: 30 },
-    { month: "Mar", projects: 45 },
-    { month: "Apr", projects: 50 },
-    { month: "May", projects: 40 },
-    { month: "Jun", projects: 55 },
-  ];
 
   const statusColors: Record<Claim["status"], string> = {
     Pending: "gold",
@@ -71,16 +99,6 @@ const AdminDashboard: React.FC = () => {
     Rejected: "red",
     Paid: "blue",
   };
-
-  const financialData = [
-    { month: "Jan", claimsPaid: 50000000 },
-    { month: "Feb", claimsPaid: 70000000 },
-    { month: "Mar", claimsPaid: 80000000 },
-    { month: "Apr", claimsPaid: 75000000 },
-    { month: "May", claimsPaid: 90000000 },
-    { month: "Jun", claimsPaid: 85000000 },
-  ];
-
   const columns = [
     { title: "ID", dataIndex: "id", key: "id" },
     { title: "Claim Name", dataIndex: "name", key: "name" },
@@ -107,7 +125,7 @@ const AdminDashboard: React.FC = () => {
     {
       key: "1",
       label: (
-        <Link to="/profile">
+        <Link to="/dashboard/profile">
           <UserOutlined className="pr-2" />
           Profile
         </Link>
@@ -124,12 +142,313 @@ const AdminDashboard: React.FC = () => {
     },
   ];
 
-  
+  const [claims, setClaims] = useState<Claims[]>([]);
+  const [pendingClaims, setPendingClaims] = useState<Claims[]>([]);
+  const [approvedClaims, setApprovedClaims] = useState<Claims[]>([]);
+  const [rejectedClaims, setRejectedClaims] = useState<Claims[]>([]);
+  const [paidClaims, setPaidClaims] = useState<Claims[]>([]);
+  const [draftClaims, setDraftClaims] = useState<Claims[]>([]);
+  const [canceledClaims, setCanceledClaims] = useState<Claims[]>([]);
+  const claimsData: ClaimData[] = [
+    { status: "Pending", count: pendingClaims.length, date: "2024-03-25" },
+    { status: "Approved", count: approvedClaims.length, date: "2024-03-24" },
+    { status: "Rejected", count: rejectedClaims.length, date: "2024-03-23" },
+    { status: "Paid", count: paidClaims.length, date: "2024-03-22" },
+    { status: "Draft", count: draftClaims.length, date: "2024-03-22" },
+    { status: "Canceled", count: canceledClaims.length, date: "2024-03-22" }
+  ];
 
+  const claimCategories = [
+    { 
+      name: "Department 01", 
+      value: claims.filter((claim) => claim.data?.employee_info?.department_name === "Department 01").length 
+    },
+    { 
+      name: "Department 02", 
+      value: claims.filter((claim) => claim.data?.employee_info?.department_name === "Department 02").length 
+    },
+    { 
+      name: "Department 03", 
+      value: claims.filter((claim) => claim.data?.employee_info?.department_name === "Department 03").length 
+    },
+    { 
+      name: "Department 04", 
+      value: claims.filter((claim) => claim.data?.employee_info?.department_name === "Department 04").length 
+    },
+  ];
+
+  const [projects, setProjects] = useState<Projects[]>([]);
+  const [ongoingProjects, setOngoingProjects] = useState<Projects[]>([])
+  const [completedProjects, setCompletedProjects] = useState<Projects[]>([])
+  const [users, setUsers] = useState<User[]>([])
   const [filteredClaimData, setFilteredClaimData] = useState<ClaimData[]>(claimsData);
-  console.log(filteredClaimData)
   const [selectedRange, setSelectedRange] = useState<string | null>(null);
+  const [dataLoaded, setDataLoaded] = useState({
+    claims: false,
+    pendingClaims: false,
+    approvedClaims: false,
+    rejectedClaims: false,
+    paidClaims: false,
+    draftClaims: false,
+    canceledClaims: false,
+    projects: false,
+    ongoingProjects: false,
+    completedProjects: false,
+    users: false
+  });
 
+  const processProjectData = (projects: Projects[]) => {
+    const counts: Record<string, number> = {};
+
+    projects.forEach(({ project_start_date }) => {
+      const date = new Date(project_start_date);
+      const month = date.toLocaleString("en-US", { month: "short" });
+
+      counts[month] = (counts[month] || 0) + 1;
+    });
+
+    return Object.entries(counts).map(([month, projects]) => ({ month, projects }));
+  };
+
+  const projectTrendData = processProjectData(projects);
+
+
+  {/*lấy data của claims*/ }
+  useEffect(() => {
+    const fetchClaims = async () => {
+      try {
+        const params = {
+          searchCondition: {
+            keyword: "",
+            claim_status:"",
+            claim_start_date: "",
+            claim_end_date: "",
+            is_delete: false,
+          },
+          pageInfo: {
+            pageNum: 1,
+            pageSize: 10,
+          },
+        };
+        const response = await claimService.searchClaims(params);
+        setClaims(response.data.pageData);
+        setDataLoaded(prev => ({ ...prev, claims: true }));
+      } catch (error) {
+        console.error("Error fetching claims:", error);
+        setDataLoaded(prev => ({ ...prev, claims: true }));
+      }
+    };
+    fetchClaims();
+
+    const fetchPendingClaims = async () => {
+      try {
+        const data = await claimService.getPendingClaims();
+        setPendingClaims(data.data.pageData);
+        setDataLoaded(prev => ({ ...prev, pendingClaims: true }));
+      } catch (error) {
+        console.error("Error fetching claims:", error);
+        setDataLoaded(prev => ({ ...prev, pendingClaims: true }));
+      }
+    };
+    fetchPendingClaims();
+
+    const fetchApprovedClaims = async () => {
+      try {
+        const data = await claimService.getApprovedClaims();
+        setApprovedClaims(data.data.pageData);
+        setDataLoaded(prev => ({ ...prev, approvedClaims: true }));
+      } catch (error) {
+        console.error("Error fetching claims:", error);
+        setDataLoaded(prev => ({ ...prev, approvedClaims: true }));
+      }
+    };
+    fetchApprovedClaims();
+
+    const fetchRejectedClaims = async () => {
+      try {
+        const data = await claimService.getRejectedClaims();
+        setRejectedClaims(data.data.pageData);
+        setDataLoaded(prev => ({ ...prev, rejectedClaims: true }));
+      } catch (error) {
+        console.error("Error fetching claims:", error);
+        setDataLoaded(prev => ({ ...prev, rejectedClaims: true }));
+      }
+    };
+    fetchRejectedClaims();
+
+    const fetchPaidClaims = async () => {
+      try {
+        const data = await claimService.getPaidClaims();
+        setPaidClaims(data.data.pageData);
+        setDataLoaded(prev => ({ ...prev, paidClaims: true }));
+      } catch (error) {
+        console.error("Error fetching claims:", error);
+        setDataLoaded(prev => ({ ...prev, paidClaims: true }));
+      }
+    };
+    fetchPaidClaims();
+
+    const fetchDraftClaims = async () => {
+      try {
+        const data = await claimService.getDraftClaims();
+        setDraftClaims(data.data.pageData);
+        setDataLoaded(prev => ({ ...prev, draftClaims: true }));
+      } catch (error) {
+        console.error("Error fetching claims:", error);
+        setDataLoaded(prev => ({ ...prev, draftClaims: true }));
+      }
+    };
+    fetchDraftClaims();
+
+    const fetchCanceledClaims = async () => {
+      try {
+        const data = await claimService.getCanceledClaims();
+        setCanceledClaims(data.data.pageData);
+        setDataLoaded(prev => ({ ...prev, canceledClaims: true }));
+      } catch (error) {
+        console.error("Error fetching claims:", error);
+        setDataLoaded(prev => ({ ...prev, canceledClaims: true }));
+      }
+    };
+    fetchCanceledClaims();
+  }, []);
+
+  {/*lấy data của Projects*/ }
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const params = {
+          searchCondition: {
+            keyword: "",
+            project_start_date: "",
+            project_end_date: "",
+            is_deleted: false,
+          },
+          pageInfo: {
+            pageNum: 1,
+            pageSize: 10,
+            totalItems: 0,
+            totalPages: 0
+          },
+        };
+        const data = await projectService.searchProjects(params);
+        console.log(data)
+        setProjects(data.data.pageData);
+        setDataLoaded(prev => ({ ...prev, projects: true }));
+      } catch (error) {
+        console.error("Error fetching claims:", error);
+        setDataLoaded(prev => ({ ...prev, projects: true }));
+      }
+    };
+    fetchProjects();
+    const fetchOngoingProjects = async () => {
+      try {
+        const params = {
+          searchCondition: {
+            project_status: "Active",
+          },
+          pageInfo: {
+            pageNum: 1,
+            pageSize: 10,
+            totalItems: 0,
+            totalPages: 0
+          },
+        };
+        const data = await projectService.searchProjects(params);
+        setOngoingProjects(data.data.pageData);
+        setDataLoaded(prev => ({ ...prev, ongoingProjects: true }));
+      } catch (error) {
+        console.error("Error fetching claims:", error);
+        setDataLoaded(prev => ({ ...prev, ongoingProjects: true }));
+      }
+    }
+    fetchOngoingProjects();
+    const completedProjects = async () => {
+      try {
+        const params = {
+          searchCondition: {
+            project_status: "Closed",
+          },
+          pageInfo: {
+            pageNum: 1,
+            pageSize: 10,
+            totalItems: 0,
+            totalPages: 0
+          },
+        };
+        const data = await projectService.searchProjects(params);
+        setCompletedProjects(data.data.pageData);
+        setDataLoaded(prev => ({ ...prev, completedProjects: true }));
+      } catch (error) {
+        console.error("Error fetching claims:", error);
+        setDataLoaded(prev => ({ ...prev, completedProjects: true }));
+      }
+    }
+    completedProjects()
+  }, []);
+  {/*tính số project trong một tháng*/ }
+
+  const processMonthlyActiveProjectData = (ongoingProjects: Projects[]) => {
+    const counts: Record<string, number> = {};
+    if(ongoingProjects.length<=0) return 0;
+    ongoingProjects.forEach(({ project_start_date }) => {
+      const date = new Date(project_start_date);
+      const month = date.toLocaleString("en-US", { month: "short" }); // "Feb", "Mar", etc.
+
+      counts[month] = (counts[month] || 0) + 1;
+    });
+
+    return Object.entries(counts).map(([month, projects]) => ({ month, projects }));
+  };
+
+  const activeProjectData = processMonthlyActiveProjectData(ongoingProjects)
+
+  const processMonthlyCompletedProjectData = (completedProjects: Projects[]) => {
+    const counts: Record<string, number> = {};
+    if(completedProjects.length>0){
+    completedProjects.forEach(({ project_start_date }) => {
+      const date = new Date(project_start_date);
+      const month = date.toLocaleString("en-US", { month: "short" }); // "Feb", "Mar", etc.
+
+      counts[month] = (counts[month] || 0) + 1;
+    });
+
+
+
+    return Object.entries(counts).map(([month, projects]) => ({ month, projects }));
+  }
+  return 0;
+  };
+  const completedProjectData = processMonthlyCompletedProjectData(completedProjects)
+  {/*lấy data của Users*/ }
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const params = {
+          searchCondition: {
+            keyword: "",
+            claim_start_date: "",
+            claim_end_date: "",
+            is_deleted: false,
+          },
+          pageInfo: {
+            pageNum: 1,
+            pageSize: 10,
+          },
+        };
+        const data = await userService.searchUsers(params);
+        console.log(data)
+        setUsers(data.data.pageData);
+        
+        setDataLoaded(prev => ({ ...prev, users: true }));
+      } catch (error) {
+        console.error("Error fetching claims:", error);
+        setDataLoaded(prev => ({ ...prev, users: true }));
+      }
+    };
+    fetchUsers();
+  }, []);
+  console.log(users)
   const handleFilterChange = (value: string) => {
     setSelectedRange(value);
 
@@ -159,15 +478,43 @@ const AdminDashboard: React.FC = () => {
       const itemDate = dayjs(item.date);
       return itemDate.isAfter(startDate) && itemDate.isBefore(endDate);
     });
-    
+
     setFilteredClaimData(filtered);
   };
-  
+
+  console.log(filteredClaimData)
+
+  useEffect(() => {
+    const allDataLoaded = Object.values(dataLoaded).every(status => status === true);
+    if (allDataLoaded) {
+      setIsLoading(false);
+    }
+  }, [dataLoaded]);
+
+  const loadingIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+
+  if (isLoading) {
+    return (
+      <Layout style={{ 
+        height: "100vh", 
+        display: "flex", 
+        justifyContent: "center", 
+        alignItems: "center",
+        background: "#f0f2f5"
+      }}>
+        <div style={{ textAlign: "center" }}>
+          <Spin indicator={loadingIcon} />
+          <h2 style={{ marginTop: 20, color: "#1890ff" }}>Loading Dashboard Data...</h2>
+          <p style={{ color: "#8c8c8c" }}>Please wait while we prepare your dashboard</p>
+        </div>
+      </Layout>
+    );
+  }
   return (
     <>
-    <div className="flex items-center justify-between p-5">
-    <div className="flex items-center gap-5 justify-end w-full">
-    <Dropdown menu={{ items: menu }} trigger={["click"]}>
+      <div className="flex items-center justify-between p-5">
+        <div className="flex items-center gap-5 justify-end w-full">
+          <Dropdown menu={{ items: menu }} trigger={["click"]}>
             <img
               src={avatar}
               alt="User Avatar"
@@ -175,9 +522,9 @@ const AdminDashboard: React.FC = () => {
               height={40}
               className="cursor-pointer"
             />
-        </Dropdown>
+          </Dropdown>
         </div>
-        </div>
+      </div>
       <div className="flex min-h-screen bg-gray-100">
         <AdminSidebar />
         <div className="flex-1 ml-64  bg-sky-50">
@@ -188,20 +535,21 @@ const AdminDashboard: React.FC = () => {
               <Col lg={8} md={24} xs={24}>
                 <Card style={{
                   backgroundColor: "#138dcf",
-                  
+
                 }}
-                className="relative overflow-hidden">
+                  className="relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-12 h-12 bg-[#1a6b96] opacity-50 rounded-full transform translate-x-4 -translate-y-4"></div>
                   <div className="absolute top-0 right-0 w-14 h-14 bg-[#266b90] opacity-50 rounded-full transform translate-x-4 -translate-y-4"></div>
                   <Statistic
                     title={<span style={{ color: "white" }}>Total Users</span>}
                     className="font-bold"
-                    value={userStats}
-                    prefix={<UserOutlined style={{ color: "white", 
-                      backgroundColor:"#126896",
-                      padding:"8px",
-                      borderRadius:"50%"
-                     }} />}
+                    value={users.length}
+                    prefix={<UserOutlined style={{
+                      color: "white",
+                      backgroundColor: "#126896",
+                      padding: "8px",
+                      borderRadius: "50%"
+                    }} />}
                     valueStyle={{ color: "white" }}
                   />
                 </Card>
@@ -211,17 +559,19 @@ const AdminDashboard: React.FC = () => {
                 <Card style={{
                   backgroundColor: "#f2b00c"
                 }}
-                className="relative overflow-hidden">
+                  className="relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-12 h-12 bg-[#b1861a] opacity-50 rounded-full transform translate-x-4 -translate-y-4"></div>
                   <div className="absolute top-0 right-0 w-14 h-14 bg-[#b08519] opacity-50 rounded-full transform translate-x-4 -translate-y-4"></div>
                   <Statistic
                     title={<span style={{ color: "white" }}>Total Claims</span>}
                     className="font-bold"
-                    value={claimStats.total}
-                    prefix={<FileTextOutlined style={{ color: "white", 
-                      backgroundColor:"#c7920e",
-                      padding:"9px",
-                      borderRadius:"50%" }} />}
+                    value={claims.length}
+                    prefix={<FileTextOutlined style={{
+                      color: "white",
+                      backgroundColor: "#c7920e",
+                      padding: "9px",
+                      borderRadius: "50%"
+                    }} />}
                     valueStyle={{ color: "white" }}
                   />
                 </Card>
@@ -231,90 +581,91 @@ const AdminDashboard: React.FC = () => {
                 <Card style={{
                   backgroundColor: "#f25050"
                 }}
-                className="relative overflow-hidden">
+                  className="relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-12 h-12 bg-[#b83535] opacity-50 rounded-full transform translate-x-4 -translate-y-4"></div>
                   <div className="absolute top-0 right-0 w-14 h-14 bg-[#8f3232] opacity-50 rounded-full transform translate-x-4 -translate-y-4"></div>
                   <Statistic
                     title={<span style={{ color: "white" }}>Pending Claims</span>}
                     className="font-bold"
-                    value={claimStats.pending}
-                    prefix={<ClockCircleOutlined style={{ color: "white", 
-                      backgroundColor:"#ba3a3a",
-                      padding:"9px",
-                      borderRadius:"50%" }} />}
+                    value={pendingClaims.length}
+                    prefix={<ClockCircleOutlined style={{
+                      color: "white",
+                      backgroundColor: "#ba3a3a",
+                      padding: "9px",
+                      borderRadius: "50%"
+                    }} />}
                     valueStyle={{ color: "white" }}
                   />
                 </Card>
               </Col>
             </Row>
-   
+
             <div className="mt-4">
               <Card
-              title={
-                <div className="flex justify-between items-center">
-                  <span>Claim Request Charts</span>
-                </div>
-              }
-              extra={
-                <Select 
-                  defaultValue="this_month" 
-                  style={{ width: 150 }} 
-                  onChange={handleFilterChange}
-                  value={selectedRange}
-                >
-                  <Option value="this_week">This Week</Option>
-                  <Option value="this_month">This Month</Option>
-                  <Option value="this_year">This Year</Option>
-                </Select>
-              }
-              style={{
-                boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
-              }}>
-              <Row gutter={[16, 16]}>
-                <Col lg={12} md={24}>
-                  <Card title="Claim Request Overview">
-                    <ResponsiveContainer width="100%" height={300} >
-                      <BarChart data={claimsData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="status" />
-                        <YAxis />
-                        <Tooltip />
-                        <Bar dataKey="count" fill="#8884d8" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </Card>
-                </Col>
-                <Col lg={12} md={24}>
-                  <Card title="Claims By Department">
-                    <ResponsiveContainer width="100%" height={300}>
-                      <PieChart>
-                        <Pie
-                          data={claimCategories}
-                          dataKey="value"
-                          nameKey="name"
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={100}
-                          fill="#8884d8"
-                          label
-                        >
-                          {claimCategories.map((_, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </Card>
-                </Col>
-              </Row>
+                title={
+                  <div className="flex justify-between items-center">
+                    <span>Claim Request Charts</span>
+                  </div>
+                }
+                extra={
+                  <Select
+                    defaultValue="this_month"
+                    style={{ width: 150 }}
+                    onChange={handleFilterChange}
+                    value={selectedRange}
+                  >
+                    <Option value="this_week">This Week</Option>
+                    <Option value="this_month">This Month</Option>
+                    <Option value="this_year">This Year</Option>
+                  </Select>
+                }
+                style={{
+                  boxShadow: "10px 10px 25px -19px rgba(0,0,0,0.75)"
+                }}>
+                <Row gutter={[16, 16]}>
+                  <Col lg={12} md={24}>
+                    <Card title="Claim Request Overview">
+                      <ResponsiveContainer width="100%" height={300} >
+                        <BarChart data={claimsData}>
+                          <XAxis dataKey="status" />
+                          <YAxis />
+                          <Tooltip contentStyle={{ backgroundColor: "#fff", borderRadius: 8 }} />
+                          <Bar dataKey="count" fill="#4faadb" barSize={40} radius={[5, 5, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </Card>
+                  </Col>
+                  <Col lg={12} md={24}>
+                    <Card title="Claims By Department">
+                      <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                          <Pie
+                            data={claimCategories}
+                            dataKey="value"
+                            nameKey="name"
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={100}
+                            fill="#8884d8"
+                            label
+                          >
+                            {claimCategories.map((_, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </Card>
+                  </Col>
+                </Row>
               </Card>
               <Row gutter={[16, 16]} className="mt-4">
                 <Col md={24} xs={24}>
                   <Card title="Recent Claims"
-                  style={{
-                    boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
-                  }}>
+                    style={{
+                      boxShadow: "10px 10px 25px -19px rgba(0,0,0,0.75)"
+                    }}>
                     <Table dataSource={recentClaims} columns={columns} rowKey="id" pagination={false} />
                     <Pagination align="center" defaultCurrent={1} total={50} style={{
                       marginTop: "2%"
@@ -324,42 +675,42 @@ const AdminDashboard: React.FC = () => {
               </Row>
             </div>
 
-            
+
             <Row gutter={[16, 16]}>
               <Col lg={8} md={24}>
                 <Row gutter={[24, 24]} className="mt-4">
                   <Col xs={24}>
                     <Card style={{
-                      boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
+                      boxShadow: "10px 10px 25px -19px rgba(0,0,0,0.75)"
                     }}>
                       <Statistic
                         title="Total Projects"
                         className="font-bold"
-                        value={projectStats}
+                        value={projects.length}
                         prefix={<ProjectOutlined style={{ color: "#2196f3" }} />}
                       />
                     </Card>
                   </Col>
                   <Col xs={24}>
                     <Card style={{
-                      boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
+                      boxShadow: "10px 10px 25px -19px rgba(0,0,0,0.75)"
                     }}>
                       <Statistic
                         title="Ongoing Projects"
                         className="font-bold"
-                        value={projectStats}
+                        value={ongoingProjects.length}
                         prefix={<CheckCircleOutlined style={{ color: "#ded26a" }} />}
                       />
                     </Card>
                   </Col>
                   <Col xs={24}>
                     <Card style={{
-                      boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
+                      boxShadow: "10px 10px 25px -19px rgba(0,0,0,0.75)"
                     }}>
                       <Statistic
                         title="Completed Projects"
                         className="font-bold"
-                        value={projectStats}
+                        value={completedProjects.length}
                         prefix={<CheckOutlined style={{ color: "#53d459" }} />}
                       />
                     </Card>
@@ -370,14 +721,14 @@ const AdminDashboard: React.FC = () => {
               <Col lg={16} md={24}>
                 <div className="mt-4">
                   <Card title="Monthly Newly Started Project" style={{
-                boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
-              }} className="text-3xl" extra={
-                <Select defaultValue="this_month" style={{ width: 150 }} onChange={handleFilterChange}>
-          <Option value="this_week">This Week</Option>
-          <Option value="this_month">This Month</Option>
-          <Option value="this_year">This Year</Option>
-        </Select>
-              }>
+                    boxShadow: "10px 10px 25px -19px rgba(0,0,0,0.75)"
+                  }} className="text-3xl" extra={
+                    <Select defaultValue="this_month" style={{ width: 150 }} onChange={handleFilterChange}>
+                      <Option value="this_week">This Week</Option>
+                      <Option value="this_month">This Month</Option>
+                      <Option value="this_year">This Year</Option>
+                    </Select>
+                  }>
                     <ResponsiveContainer width="100%" height={300}>
                       <BarChart data={projectTrendData}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#ccc" />
@@ -392,34 +743,38 @@ const AdminDashboard: React.FC = () => {
                 </div>
               </Col>
             </Row>
-<div className="mt-5">
-            <Card
-            title="Claims Payout Trends"
-            style={{
-              boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
-            }}
-            extra={
-              <Select defaultValue="this_month" style={{ width: 150 }} onChange={handleFilterChange}>
-        <Option value="this_week">This Week</Option>
-        <Option value="this_month">This Month</Option>
-        <Option value="this_year">This Year</Option>
-      </Select>
-            }>
-                       <ResponsiveContainer width="100%" height={300}>
-  <LineChart data={financialData}>
-    <CartesianGrid strokeDasharray="3 3" />
-    <XAxis dataKey="month" />
-    <YAxis tickFormatter={(value) => `${value / 1000000}M`} />
-    <Tooltip />
-    <Legend />
-    <Line type="monotone" dataKey="claimsPaid" stroke="#8884d8" name="Claims Paid" />
-  </LineChart>
-</ResponsiveContainer>
-            </Card>
+            <div className="mt-5">
+              <Card
+                title="Project Workload"
+                style={{
+                  boxShadow: "10px 10px 25px -19px rgba(0,0,0,0.75)"
+                }}
+                extra={
+                  <Select defaultValue="this_month" style={{ width: 150 }} onChange={handleFilterChange}>
+                    <Option value="this_week">This Week</Option>
+                    <Option value="this_month">This Month</Option>
+                    <Option value="this_year">This Year</Option>
+                  </Select>
+                }>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    {/* Active Projects Line */}
+                    <Line type="monotone" data={activeProjectData} dataKey="projects" stroke="#FF7300" name="Active Projects" />
+
+                    {/* Completed Projects Line */}
+                    <Line type="monotone" data={completedProjectData} dataKey="projects" stroke="#00C49F" name="Completed Projects" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </Card>
             </div>
             <div className="mt-5">
               <Card title="Recent Activities" style={{
-                boxShadow:"10px 10px 25px -19px rgba(0,0,0,0.75)"
+                boxShadow: "10px 10px 25px -19px rgba(0,0,0,0.75)"
               }}>
                 <List dataSource={recentActivities} renderItem={(item: any) => (
                   <List.Item><List.Item.Meta title={item.activity} description={item.time} />

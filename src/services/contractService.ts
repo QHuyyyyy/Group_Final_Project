@@ -1,23 +1,16 @@
 import api from '../api/axios';
+import { ApiResponse } from '../models/ApiResponse';
+import { Contract } from '../models/ContractModel';
 
-interface Contract {
-    _id: string;
-    job_rank: string;
-    job_title: string;
-    is_deleted: boolean;
-    created_at: string;
-    updated_at: string;
-    __v: number;
-}
+const CONTRACTS_ENDPOINT = '/api/contracts';
 
 export const contractService = {
     // Lấy tất cả contracts hoặc tìm kiếm theo từ khóa
-    getAllContracts: async (keyword?: string): Promise<Contract[]> => {
-        const response = await api.get('/api/contracts/get-all', {
-            params: { keyword }
+    getAllContracts: async (keyword?: string): Promise<ApiResponse<Contract[]>> => {
+        const response = await api.get(`${CONTRACTS_ENDPOINT}/get-all`, {
+            params: keyword ? { keyword } : {},
         });
-        console.log("fetch data:",response.data.data)
-        return response.data.data;
+        console.log("fetch data:", response.data);
+        return response.data;
     },
-
 };

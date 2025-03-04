@@ -68,11 +68,11 @@ const AdminUserManager: React.FC = () => {
   const [isBlockedFilter, setIsBlockedFilter] = useState<boolean | undefined>(undefined);
 
   useEffect(() => {
-    fetchUsers();
+    fetchUsers(pagination.current);
     fetchRoles();
   }, [pagination.current, pagination.pageSize, searchText, isBlockedFilter]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (pageNum: number) => {
     try {
       setLoading(true);
       const params: SearchParams = {
@@ -84,7 +84,7 @@ const AdminUserManager: React.FC = () => {
           is_verified: ""
         },
         pageInfo: {
-          pageNum: pagination.current,
+          pageNum: pageNum,
           pageSize: pagination.pageSize
         }
       };
@@ -92,12 +92,13 @@ const AdminUserManager: React.FC = () => {
       const response = await userService.searchUsers(params);
       console.log('Search response:', response);
       
-      if (response && response.pageData) {
-        setStaffData(response.pageData);
+      if (response && response.data) {
+        setStaffData(response.data.pageData);
         setPagination(prev => ({
           ...prev,
-          totalItems: response.pageInfo.totalItems,
-          totalPages: response.pageInfo.totalPages
+          totalItems: response.data.pageInfo.totalItems,
+          totalPages: response.data.pageInfo.totalPages,
+          current: pageNum
         }));
       }
     } catch (error) {
@@ -111,14 +112,13 @@ const AdminUserManager: React.FC = () => {
   const fetchRoles = async () => {
     try {
       const roles = await roleService.getAllRoles();
-      const options = roles.map(role => ({
-        label: role.role_name, // Hiển thị role_name
-        value: role.role_code  // Giá trị thực sự là role_code
+      const options = roles.data.map(role => ({
+        label: role.role_name,
+        value: role.role_code
       }));
       setRoleOptions(options);
     } catch (error) {
       console.error('Error fetching roles:', error);
-      message.error('Không thể tải danh sách vai trò');
     }
   };
 
@@ -155,7 +155,7 @@ const AdminUserManager: React.FC = () => {
     {
       title: 'No.',
       key: 'index',
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => pagination.pageSize * (pagination.current - 1) + index + 1,
       width: 50,
     },
     {
@@ -203,7 +203,7 @@ const AdminUserManager: React.FC = () => {
       key: 'is_verified',
       width: 100,
       render: (verified: boolean) => (
-        <Tag color={verified ? 'success' : 'warning'}>
+        <Tag color={verified ? 'success' : 'error'}>
           {verified ? 'Verified' : 'Unverified'}
         </Tag>
       )
@@ -232,13 +232,13 @@ const AdminUserManager: React.FC = () => {
             userId={record._id}
             isBlocked={record.is_blocked}
             onSuccess={() => {
-              fetchUsers();
+              fetchUsers(pagination.current);
             }}
           />
           <BlockUserButton
             userId={record._id}
             isBlocked={record.is_blocked}
-            onSuccess={fetchUsers}
+            onSuccess={() => fetchUsers(pagination.current)}
           />
         </Space>
       ),
@@ -303,7 +303,7 @@ const AdminUserManager: React.FC = () => {
                     current: page,
                     pageSize: pageSize || 10
                   }));
-                  fetchUsers();
+                  fetchUsers(page);
                 },
                 showSizeChanger: true,
                 showQuickJumper: true,
@@ -319,7 +319,7 @@ const AdminUserManager: React.FC = () => {
           onCancel={() => setIsAddModalVisible(false)}
           onSuccess={() => {
             setIsAddModalVisible(false);
-            fetchUsers();
+            fetchUsers(pagination.current);
           }}
           roleOptions={roleOptions}
         />
@@ -332,7 +332,7 @@ const AdminUserManager: React.FC = () => {
           }}
           onSuccess={() => {
             setIsEditModalVisible(false);
-            fetchUsers();
+            fetchUsers(pagination.current);
           }}
           editingRecord={editingRecord}
           roleOptions={roleOptions}

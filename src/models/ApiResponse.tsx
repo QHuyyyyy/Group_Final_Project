@@ -2,15 +2,15 @@
 export interface ApiResponse<T> {
     success: boolean;
     data: T;
-    message: string;
+    message?: string;
   }
   export interface ErrorResponse {
-    success: boolean;
+    success?: boolean;
     data: {
       message?: string,
     }
-    error: [
-      message: string,
-      field: string,
+    error?: [
+      message?: string,
+      field?: string,
     ]
   }
