@@ -32,8 +32,10 @@ interface Claims {
   is_deleted: boolean;
   created_at: string;
   updated_at: string;
-  employee_info?: {
-    department_name: string
+  data: {
+    employee_info?: {
+      department_name: string
+    }
   }
   __v: number;
 }
@@ -158,10 +160,22 @@ const AdminDashboard: React.FC = () => {
   ];
 
   const claimCategories = [
-    { name: "Department 01", value: claims.filter((claim) => claim.employee_info && claim.employee_info.department_name === "Department 01").length },
-    { name: "Department 02", value: claims.filter((claim) => claim.employee_info && claim.employee_info.department_name === "Department 02").length },
-    { name: "Department 03", value: claims.filter((claim) => claim.employee_info && claim.employee_info.department_name === "Department 03").length },
-    { name: "Department 04", value: claims.filter((claim) => claim.employee_info && claim.employee_info.department_name === "Department 04").length },
+    { 
+      name: "Department 01", 
+      value: claims.filter((claim) => claim.data?.employee_info?.department_name === "Department 01").length 
+    },
+    { 
+      name: "Department 02", 
+      value: claims.filter((claim) => claim.data?.employee_info?.department_name === "Department 02").length 
+    },
+    { 
+      name: "Department 03", 
+      value: claims.filter((claim) => claim.data?.employee_info?.department_name === "Department 03").length 
+    },
+    { 
+      name: "Department 04", 
+      value: claims.filter((claim) => claim.data?.employee_info?.department_name === "Department 04").length 
+    },
   ];
 
   const [projects, setProjects] = useState<Projects[]>([]);
@@ -217,8 +231,8 @@ const AdminDashboard: React.FC = () => {
             pageSize: 10,
           },
         };
-        const data = await claimService.searchClaims(params);
-        setClaims(data.pageData);
+        const response = await claimService.searchClaims(params);
+        setClaims(response.data.pageData);
         setDataLoaded(prev => ({ ...prev, claims: true }));
       } catch (error) {
         console.error("Error fetching claims:", error);
