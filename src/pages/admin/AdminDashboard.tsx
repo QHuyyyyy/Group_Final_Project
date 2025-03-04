@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Legend, Cell, LineChart, Line } from "recharts";
-import { Col, Row, Card, Statistic, Tag, Table, List, Pagination, Select, Dropdown, Spin, Layout } from "antd"
-import { LoadingOutlined } from "@ant-design/icons";
+import { Col, Row, Card, Statistic, Tag, Table, List, Pagination, Select, Dropdown} from "antd"
 import { UserOutlined, ProjectOutlined, FileTextOutlined, ClockCircleOutlined, CheckCircleOutlined, CheckOutlined, LogoutOutlined } from '@ant-design/icons';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import dayjs from "dayjs"
@@ -29,9 +28,7 @@ interface ClaimData {
 
 const { Option } = Select
 const AdminDashboard: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(true);
 
-  
   const recentClaims = [
     { id: 1, name: "Overtime Payment", status: "Pending", claimer: "John Doe" },
     { id: 2, name: "Travel Reimbursement", status: "Approved", claimer: "Jane Smith" },
@@ -148,6 +145,7 @@ const AdminDashboard: React.FC = () => {
     completedProjects: false,
     users: false
   });
+  
 
   const processProjectData = (projects: Project[]) => {
     const counts: Record<string, number> = {};
@@ -165,6 +163,8 @@ const AdminDashboard: React.FC = () => {
   const projectTrendData = processProjectData(projects);
 
 
+
+  console.log(dataLoaded)
   {/*lấy data của claims*/ }
   useEffect(() => {
     const fetchClaims = async () => {
@@ -638,32 +638,8 @@ const AdminDashboard: React.FC = () => {
 
   console.log(filteredClaimData)
 
-  useEffect(() => {
-    const allDataLoaded = Object.values(dataLoaded).every(status => status === true);
-    if (allDataLoaded) {
-      setIsLoading(false);
-    }
-  }, [dataLoaded]);
 
-  const loadingIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
-  if (isLoading) {
-    return (
-      <Layout style={{ 
-        height: "100vh", 
-        display: "flex", 
-        justifyContent: "center", 
-        alignItems: "center",
-        background: "#f0f2f5"
-      }}>
-        <div style={{ textAlign: "center" }}>
-          <Spin indicator={loadingIcon} />
-          <h2 style={{ marginTop: 20, color: "#1890ff" }}>Loading Dashboard Data...</h2>
-          <p style={{ color: "#8c8c8c" }}>Please wait while we prepare your dashboard</p>
-        </div>
-      </Layout>
-    );
-  }
   return (
     <>
       <div className="flex items-center justify-between p-5">
