@@ -15,10 +15,10 @@ export default function ResendToken() {
 
   const handleSubmit = async (values: { email: string }) => {
     try {
-      await authService.resendToken({ email: values.email });
+      await authService.resendToken({ email: values.email.trim() });
       localStorage.setItem('verifyEmail', values.email);
       toast.success('New token has been sent to your email!');
-      navigate('/verify/token');
+      navigate('/login');
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Error sending token');
     }
@@ -84,10 +84,10 @@ export default function ResendToken() {
             <div className="text-center">
               <Button 
                 type="link" 
-                onClick={() => navigate('/verify/token')}
+                onClick={() => navigate('/login')}
                 className="text-white/80 hover:text-white"
               >
-                Back to Verification Page
+                Back to Login
               </Button>
             </div>
           </Form>

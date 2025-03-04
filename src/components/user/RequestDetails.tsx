@@ -2,22 +2,11 @@ import { Modal, Descriptions, Tag, message } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { claimService } from "../../services/claimService";
+import { ClaimById } from "../../models/ClaimModel";
 
 interface RequestDetailsProps {
     visible: boolean;
-    claim?: {
-        _id: string;
-        claim_name: string;
-        total_work_time: number;
-        claim_status: string;
-        created_at: string;
-        claim_start_date: string;
-        claim_end_date: string;
-        description?: string;
-        project_info?: {
-            project_name: string;
-    }
-} | null;
+    claim?: ClaimById;
     onClose: () => void;
 }
 
@@ -75,8 +64,8 @@ const RequestDetails: React.FC<RequestDetailsProps> = ({ visible, claim, onClose
                     pageSize: 1
                 },
             });
-            if (response && response.data && response.data.project_name) {
-                setProjectName(response.data.project_name);
+            if (response && response.data && response.data.pageData) {
+                setProjectName(response.data.pageData[0].project_info.project_name);
             }
         } catch (error) {
             console.error('Error fetching project details:', error);
@@ -101,7 +90,7 @@ const RequestDetails: React.FC<RequestDetailsProps> = ({ visible, claim, onClose
                     {claim.claim_name}
                 </Descriptions.Item>
                 <Descriptions.Item label="Project Name" span={1}>
-                    {claim.project_info?.project_name}
+                    {claim.project_id}
                 </Descriptions.Item>
                 <Descriptions.Item label="Status" span={1}>
                     <Tag color={
@@ -124,11 +113,7 @@ const RequestDetails: React.FC<RequestDetailsProps> = ({ visible, claim, onClose
                 <Descriptions.Item label="End Date" span={1}>
                     {dayjs(claim.claim_end_date).format('YYYY-MM-DD')}
                 </Descriptions.Item>
-                {claim.description && (
-                    <Descriptions.Item label="Description" span={2}>
-                        {claim.description}
-                    </Descriptions.Item>
-                )}
+                
             </Descriptions>
         </Modal>
     );
