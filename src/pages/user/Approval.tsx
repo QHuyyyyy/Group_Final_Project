@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Table, Tag, Space, Button, Modal, Card, Input } from "antd";
 import { CheckOutlined, CloseOutlined, UndoOutlined } from "@ant-design/icons";
-
-const { Search } = Input;
+import { debounce } from "lodash";
 
 type Claim = {
   id: number;
@@ -123,6 +122,14 @@ function ApprovalPage() {
   const [, setSearchQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
+  const { Search } = Input;
+
+  const [, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    totalItems: 0,
+    totalPages: 0
+  });
 
   const filterClaims = (query: string, status: string) => {
     let filtered = DUMMY_CLAIMS.filter(claim => claim.status !== "Draft");
@@ -142,12 +149,15 @@ function ApprovalPage() {
     return filtered;
   };
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    setCurrentPage(1);
-    const filteredClaims = filterClaims(query, "");
+  const handleSearch = debounce((value: string) => {
+    setSearchQuery(value);
+    const filteredClaims = filterClaims(value, "");
     setClaims(filteredClaims);
-  };
+    setPagination(prev => ({
+      ...prev,
+      current: 1
+    }));
+  }, 500);
 
   const handleApprove = (id: number) => {
     setClaims((prevClaims) =>
