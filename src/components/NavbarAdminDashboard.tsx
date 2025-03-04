@@ -41,7 +41,7 @@ const NavbarAdminDashboard: React.FC = () => {
   );
 
   return (
-    <div className="flex justify-between items-center bg-white dark:bg-gray-900 text-gray-900 dark:text-white px-6 py-3 shadow-md">
+    <div className="flex justify-between items-center bg-white   dark:text-white px-6 py-3 shadow-md">
       
       <div className="flex items-center space-x-4">
       </div>

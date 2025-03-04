@@ -19,7 +19,11 @@ interface Claim {
     created_at: string;
     updated_at: string;
     total_work_time: number;
-    claim_status: string;
+    claim_status: string; 
+    project_info: {
+      project_name: string;
+    }
+    
 }
 
 interface SearchParams {
@@ -110,7 +114,6 @@ const Claim = () => {
     try {
       const response = await claimService.getClaimById(claimId);
       console.log('Total hours response:', response);
-      
       if (response && response.data && response.data.total_work_time) {
         setTotalHoursMap(prev => ({
           ...prev,
@@ -121,6 +124,7 @@ const Claim = () => {
       console.error('Error fetching total hours:', error);
     }
   };
+
 
   const handleSearch = (value: string) => {
     setSearchText(value);
@@ -138,13 +142,6 @@ const Claim = () => {
   const handleCloseModal = () => {
     setIsModalVisible(false);
     setSelectedRequest(null);
-  };
-
-  
-
-  const formatWorkTime = (hours: number) => { 
-    if (!hours && hours !== 0) return '-';
-    return `${hours}h`;
   };
 
   return (
@@ -175,23 +172,39 @@ const Claim = () => {
                 title: "No.",
                 key: "index",
                 render: (_, __, index) => index + 1,
-                width: 50,
+                width: 60,
+                align: 'center'
               },
               {
-                title: "Claim Name",
-                dataIndex: "claim_name",
-                key: "claim_name",
+                title: "Staff Name",
+                dataIndex: ["staff_name", "staff_email"],
+                key: "staff_name",
                 width: 120,
+                render: (_, record) => record.staff_name
               },
               {
-                title: "Created At",
-                dataIndex: "created_at",
-                key: "created_at",
-                width: 120,
-                render: (date: string) => dayjs(date).format('YYYY-MM-DD'),
+                title: "Project Name",
+                dataIndex: ["project_info", "project_name"],
+                key: "project_name",
+                width: 150,
+                render: (_, record) => record.project_info?.project_name || '-'
+              },
+              {
+                title: "Project Duration",
+                dataIndex: "duration",
+                key: "duration",
+                width: 180,
+                align: 'center',
+                render: (_, record) => (
+                  <span>
+                    {dayjs(record.claim_start_date).format('YYYY-MM-DD')} 
+                    {' - '} 
+                    {dayjs(record.claim_end_date).format('YYYY-MM-DD')}
+                  </span>
+                ),
                 sorter: (a, b) => {
-                  const dateA = new Date(a.created_at).getTime();
-                  const dateB = new Date(b.created_at).getTime();
+                  const dateA = new Date(a.claim_start_date).getTime();
+                  const dateB = new Date(b.claim_start_date).getTime();
                   return dateA - dateB;
                 },
                 defaultSortOrder: 'descend'
@@ -201,13 +214,18 @@ const Claim = () => {
                 dataIndex: "total_work_time",
                 key: "total_work_time",
                 width: 100,
-                render: (_, record) => formatWorkTime(totalHoursMap[record._id] || 0)
+                align: 'center',
+                render: (_, record) => {
+                  const hours = totalHoursMap[record._id];
+                  return hours !== undefined ? `${hours}h` : '-';
+                }
               },
               {
                 title: "Status",
                 dataIndex: "claim_status",
                 key: "claim_status",
-                width: 100,
+                width: 120,
+                align: 'center',
                 render: (status: string) => (
                   <Tag color={
                     !status || status === "Draft" ? "gold" :
@@ -222,7 +240,8 @@ const Claim = () => {
               {
                 title: "Actions",
                 key: "actions",
-                width: 200,
+                width: 100,
+                align: 'center',
                 render: (_, record) => (
                   <Space size="middle">
                     <Button 
@@ -231,7 +250,6 @@ const Claim = () => {
                       onClick={() => handleView(record)}
                       title="View"
                     />
-                   
                   </Space>
                 )
               }
