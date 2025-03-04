@@ -33,20 +33,7 @@ const projectService = {
       console.log('API response in service:', response);
 
       // Kiểm tra và trả về dữ liệu
-      if (response && response.data) {
-        return {
-          success: true,
-          data: {
-            pageData: response.data.pageData || [],
-            pageInfo: {
-              pageNum: response.data.pageInfo?.pageNum || 1,
-              pageSize: response.data.pageInfo?.pageSize || 10,
-              totalItems: response.data.pageInfo?.totalItems || 0,
-              totalPages: response.data.pageInfo?.totalPages || 0
-            }
-          }
-        };
-      }
+      return response.data;
 
       throw new Error('Invalid response format');
     } catch (error) {
