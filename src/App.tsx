@@ -112,6 +112,7 @@ const App = () => {
             </ProtectedRoute>
           } />
           <Route path='/dashboard/settings' element={<Settings />} />
+          <Route path='/dashboard/settings' element={<Settings />} />
 
           <Route path='*' element={<NotFound />} />
         </Routes>
