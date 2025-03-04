@@ -7,7 +7,4 @@ export interface Contract {
     updated_at: string;
 }
 
-export interface ContractsResponse {
-    success: boolean;
-    data: Contract[];
-}
+

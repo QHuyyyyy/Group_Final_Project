@@ -1,10 +1,11 @@
 // src/services/userService.ts
 import api from '../api/axios';
-import { CreateUser,  SearchParams, UserResponse, PaginatedResponse,  UpdateUserData, DeleteUserResponse, ChangePasswordRequest,  ChangeStatusRequest,ChangeRoleRequest, ChangeResponse } from '../models/UserModel';
+import { ApiResponse } from '../models/ApiResponse';
+import { CreateUser,  SearchParams, PaginatedResponse,  UpdateUserData, ChangePasswordRequest,  ChangeStatusRequest,ChangeRoleRequest, UserData } from '../models/UserModel';
 
 
 export const userService = {
-  createUser: async (userData: CreateUser): Promise<UserResponse> => {
+  createUser: async (userData: CreateUser): Promise<ApiResponse<UserData>> => {
     try {
       const response= await api.post('/api/users', userData);
       console.log("fetch data:", response.data);
@@ -15,42 +16,46 @@ export const userService = {
     }
   }, 
 
-  searchUsers: async (params: SearchParams): Promise<PaginatedResponse> => {
+  searchUsers: async (params: SearchParams): Promise<ApiResponse<PaginatedResponse>> => {
     const response = await api.post('/api/users/search', params);
-    console.log("fetch data:", response.data.data);
+    console.log("fetch data:", response.data);
     return response.data;
   },
 
-  getUserById: async (id: string): Promise<UserResponse> => {
+  getUserById: async (id: string): Promise<ApiResponse<UserData>> => {
     const response = await api.get(`/api/users/${id}`);
-    console.log("fetch data:", response.data.data);
-    return response.data.data;
+    console.log("fetch data:", response.data);
+    return response.data;
   },
 
   
-  updateUser: async (id: string, userData: UpdateUserData): Promise<UserResponse> => {
+  updateUser: async (id: string, userData: UpdateUserData): Promise<ApiResponse<UserData>> => {
     const response = await api.put(`/api/users/${id}`, userData);
-    return response.data.data;
+    console.log("fetch data:", response.data);
+    return response.data;
   },
 
-  deleteUser: async (id: string): Promise<DeleteUserResponse> => {
+  deleteUser: async (id: string): Promise<ApiResponse<null>> => {
     const response = await api.delete(`/api/users/${id}`);
+    console.log("fetch data:", response.data);
     return response.data;
   },
 
-  changePassword: async (password: ChangePasswordRequest): Promise<ChangeResponse> => {
+  changePassword: async (password: ChangePasswordRequest): Promise<ApiResponse<null>> => {
     const response = await api.put(`/api/users/change-password`,password);
+    console.log("fetch data:", response.data);
     return response.data;
   },
 
-
-  changeStatus: async (statusData: ChangeStatusRequest): Promise<ChangeResponse> => {
+  changeStatus: async (statusData: ChangeStatusRequest): Promise<ApiResponse<null>> => {
     const response = await api.put(`/api/users/change-status`, statusData);
+    console.log("fetch data:", response.data);
     return response.data;
   },
 
-  changeRole: async (roleData: ChangeRoleRequest): Promise<ChangeResponse> => {
+  changeRole: async (roleData: ChangeRoleRequest): Promise<ApiResponse<null>> => {
     const response = await api.put(`/api/users/change-role`, roleData);
-    return response.data.data;
+    console.log("fetch data:", response.data);
+    return response.data;
   }
 };

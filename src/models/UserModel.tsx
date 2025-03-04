@@ -65,21 +65,11 @@ export interface UpdateUserData {
 }
 
 export interface PaginatedResponse {
-    success: boolean;
-    data: {
         pageData: User[];
         pageInfo: PageInfo;
-    };
 }
 
-export interface UserResponse {
-    success: boolean;
-    data: UserData;
-}
-export interface DeleteUserResponse {
-    success: boolean;
-    data: {};
-}
+
 
 export interface ChangePasswordRequest {
     old_password: string;
