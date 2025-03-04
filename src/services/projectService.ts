@@ -1,21 +1,20 @@
-import api from '../api/axios';
+import { apiUtils } from '../api/axios';
+import { PROJECTS_ENDPOINT } from '../constants/authURL';
 import { ApiResponse } from '../models/ApiResponse';
 import {
   CreateProjectRequest,
   SearchParams,
-  SearchResponse,
+  ProjectResponse,
   UpdateProjectRequest,
   ChangeProjectStatusRequest,
   Project,
   ProjectData
 } from '../models/ProjectModel';
 
-const PROJECTS_ENDPOINT = '/api/projects';
-
 const projectService = {
   // Tạo dự án mới
   createProject: async (projectData: CreateProjectRequest): Promise<ApiResponse<Project>> => {
-    const response = await api.post(`${PROJECTS_ENDPOINT}`, projectData);
+    const response = await apiUtils.post<ApiResponse<Project>> (`${PROJECTS_ENDPOINT}`, projectData);
     console.log("fetch data:", response.data);
     return response.data;
   },
@@ -24,10 +23,10 @@ const projectService = {
   searchProjects: async (params: SearchParams = {
     searchCondition: {},
     pageInfo: { pageNum: 1, pageSize: 10, totalItems: 0, totalPages: 0 }
-  }): Promise<ApiResponse<SearchResponse>> => {
+  }): Promise<ApiResponse<ProjectResponse>> => {
     try {
       console.log('Calling searchProjects with params:', params);
-      const response = await api.post(`${PROJECTS_ENDPOINT}/search`, {
+      const response = await apiUtils.post<ApiResponse<ProjectResponse>>(`${PROJECTS_ENDPOINT}/search`, {
         searchCondition: {
           keyword: params.searchCondition.keyword || "",
           project_status: params.searchCondition.project_status,
@@ -50,28 +49,28 @@ const projectService = {
 
   // Lấy thông tin dự án theo ID
   getProjectById: async (id: string): Promise<ApiResponse<ProjectData>> => {
-    const response = await api.get(`${PROJECTS_ENDPOINT}/${id}`);
+    const response = await apiUtils.get<ApiResponse<ProjectData>>(`${PROJECTS_ENDPOINT}/${id}`);
     console.log("fetch project data:", response.data);
     return response.data;
   },
 
   // Cập nhật thông tin dự án
   updateProject: async (id: string, projectData: UpdateProjectRequest): Promise<ApiResponse<ProjectData>> => {
-    const response = await api.put(`${PROJECTS_ENDPOINT}/${id}`, projectData);
+    const response = await apiUtils.put<ApiResponse<ProjectData>>(`${PROJECTS_ENDPOINT}/${id}`, projectData);
     console.log("fetch data:", response.data);
     return response.data;
   },
 
   // Xóa dự án
   deleteProject: async (id: string): Promise<ApiResponse<null>> => {
-    const response = await api.delete(`${PROJECTS_ENDPOINT}/${id}`);
+    const response = await apiUtils.delete<ApiResponse<null>>(`${PROJECTS_ENDPOINT}/${id}`);
     console.log("fetch data:", response.data);
     return response.data;
   },
 
   // Thay đổi trạng thái dự án
   changeProjectStatus: async (statusData: ChangeProjectStatusRequest): Promise<ApiResponse<null>> => {
-    const response = await api.put<ApiResponse<null>>(`${PROJECTS_ENDPOINT}/change-status`, statusData);
+    const response = await apiUtils.put<ApiResponse<null>>(`${PROJECTS_ENDPOINT}/change-status`, statusData);
     console.log("fetch data:", response.data);
     return response.data;
   }

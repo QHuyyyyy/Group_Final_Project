@@ -6,6 +6,12 @@ import { EditOutlined, DeleteOutlined, EyeOutlined, ArrowLeftOutlined, SearchOut
 import dayjs from 'dayjs';
 import projectService from '../../services/projectService';
 import { userService } from '../../services/userService';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.tz.setDefault('Asia/Ho_Chi_Minh'); // Set default timezone to UTC+7
 
 // Thêm interface để định nghĩa kiểu dữ liệu
 
@@ -196,14 +202,14 @@ const AdminProjectManager: React.FC = () => {
       dataIndex: 'project_start_date',
       key: 'project_start_date',
       width: 120,
-      render: (date: string) => dayjs(date).format('YYYY-MM-DD'),
+      render: (date: string) => dayjs(date).tz('Asia/Ho_Chi_Minh').format('DD/MM/YYYY'),
     },
     {
       title: 'To',
       dataIndex: 'project_end_date',
       key: 'project_end_date',
       width: 120,
-      render: (date: string) => dayjs(date).format('YYYY-MM-DD'),
+      render: (date: string) => dayjs(date).tz('Asia/Ho_Chi_Minh').format('DD/MM/YYYY'),
     },
     {
       title: 'Favorite',
@@ -328,8 +334,8 @@ const AdminProjectManager: React.FC = () => {
         project_department: values.project_department || 'HR',
         project_description: values.project_description || '',
         project_status: values.project_status,
-        project_start_date: dayjs(values.startDate).format('YYYY-MM-DD'),
-        project_end_date: dayjs(values.endDate).format('YYYY-MM-DD'),
+        project_start_date: dayjs(values.startDate).tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD'),
+        project_end_date: dayjs(values.endDate).tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD'),
         project_members: [
           // PM - single select
           {
@@ -437,8 +443,8 @@ const AdminProjectManager: React.FC = () => {
         project_department: values.project_department,
         project_description: values.project_description,
         project_status: values.project_status,
-        project_start_date: values.startDate.format('YYYY-MM-DD'),
-        project_end_date: values.endDate.format('YYYY-MM-DD'),
+        project_start_date: values.startDate.tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD'),
+        project_end_date: values.endDate.tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD'),
         project_members: [
           // PM - single select
           {
@@ -705,12 +711,12 @@ const AdminProjectManager: React.FC = () => {
                     <div className="flex justify-between items-center">
                       <div>
                         <p className="text-sm text-gray-500">Start</p>
-                        <p className="font-medium">{dayjs(selectedProject.project_start_date).format('DD/MM/YYYY')}</p>
+                        <p className="font-medium">{dayjs(selectedProject.project_start_date).tz('Asia/Ho_Chi_Minh').format('DD/MM/YYYY HH:mm')}</p>
                       </div>
                       <div className="text-gray-400">→</div>
                       <div>
                         <p className="text-sm text-gray-500">End</p>
-                        <p className="font-medium">{dayjs(selectedProject.project_end_date).format('DD/MM/YYYY')}</p>
+                        <p className="font-medium">{dayjs(selectedProject.project_end_date).tz('Asia/Ho_Chi_Minh').format('DD/MM/YYYY HH:mm')}</p>
                       </div>
                     </div>
                   </div>
@@ -760,8 +766,8 @@ const AdminProjectManager: React.FC = () => {
               {/* Footer - Metadata */}
               <div className="mt-6 pt-4 border-t border-gray-200 text-sm text-gray-500">
                 <div className="flex justify-between items-center">
-                  <span>Created: {dayjs(selectedProject.created_at).format('DD/MM/YYYY HH:mm')}</span>
-                  <span>Last updated: {dayjs(selectedProject.updated_at).format('DD/MM/YYYY HH:mm')}</span>
+                  <span>Created: {dayjs(selectedProject.created_at).tz('Asia/Ho_Chi_Minh').format('DD/MM/YYYY HH:mm')}</span>
+                  <span>Last updated: {dayjs(selectedProject.updated_at).tz('Asia/Ho_Chi_Minh').format('DD/MM/YYYY HH:mm')}</span>
                   <span>By: {selectedProject.updated_by}</span>
                 </div>
               </div>
