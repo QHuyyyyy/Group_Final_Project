@@ -119,7 +119,6 @@ const AdminUserManager: React.FC = () => {
       setRoleOptions(options);
     } catch (error) {
       console.error('Error fetching roles:', error);
-      message.error('Cannot load role list');
     }
   };
 
