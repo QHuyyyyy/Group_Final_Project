@@ -4,41 +4,9 @@ import { claimService } from "../../services/claimService";
 import dayjs from 'dayjs';
 import RequestDetails from "../../components/user/RequestDetails";
 import { EyeOutlined } from "@ant-design/icons";
+import type { Claim, ClaimById, SearchParams } from "../../models/ClaimModel";
 
-interface Claim {
-  _id: string;
-    staff_id: string;
-    staff_name: string;
-    staff_email: string;
-    staff_role: string;
-    role_in_project: string;
-    claim_name: string;
-    claim_start_date: string;
-    claim_end_date: string;
-    is_deleted: boolean;
-    created_at: string;
-    updated_at: string;
-    total_work_time: number;
-    claim_status: string;
-}
 
-interface SearchParams {
-  searchCondition: {
-    keyword: string;
-    claim_status: string;
-    claim_start_date: string;
-    claim_end_date: string;
-    is_delete: boolean;
-  };
-  pageInfo: {
-    pageNum: number;
-    pageSize: number;
-  };
-  sortInfo: {
-    field: string;
-    order: string;
-  };
-}
 
 const { Search } = Input;
 
@@ -51,7 +19,7 @@ const Claim = () => {
     pageSize: 10,
     total: 0
   });
-  const [selectedRequest, setSelectedRequest] = useState<Claim | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<ClaimById |undefined>(undefined);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [totalHoursMap, setTotalHoursMap] = useState<Record<string, number>>({});
 
@@ -82,10 +50,8 @@ const Claim = () => {
           pageNum: pagination.current,
           pageSize: pagination.pageSize
         },
-        sortInfo: {
-          field: "created_at",
-          order: "desc"
-        }
+      
+  
       };
 
       const response = await claimService.searchClaims(params);
@@ -111,15 +77,14 @@ const Claim = () => {
       const response = await claimService.getClaimById(claimId);
       console.log('Total hours response:', response);
       
-      if (response && response.total_work_time) {
+      if (response && response.data && response.data.total_work_time) {
         setTotalHoursMap(prev => ({
           ...prev,
-          [claimId]: response.total_work_time
+          [claimId]: response.data.total_work_time
         }));
       }
     } catch (error) {
       console.error('Error fetching total hours:', error);
-      message.error('An error occurred while fetching total hours.');
     }
   };
 
@@ -131,14 +96,21 @@ const Claim = () => {
     }));
   };
 
-  const handleView = (record: Claim) => {
-    setSelectedRequest(record);
-    setIsModalVisible(true);
+  const handleView = async (record: Claim) => {
+    try {
+      const response = await claimService.getClaimById(record._id);
+      if (response && response.data) {
+        setSelectedRequest(response.data);
+        setIsModalVisible(true);
+      }
+    } catch (error) {
+      message.error('Failed to fetch claim details');
+    }
   };
 
   const handleCloseModal = () => {
     setIsModalVisible(false);
-    setSelectedRequest(null);
+    setSelectedRequest(undefined);
   };
 
   
@@ -211,12 +183,12 @@ const Claim = () => {
                 width: 100,
                 render: (status: string) => (
                   <Tag color={
-                    !status || status === "DRAFT" ? "gold" :
-                    status === "PENDING" ? "blue" :
-                    status === "APPROVED" ? "green" :
+                    !status || status === "Draft" ? "gold" :
+                    status === "Pending Approval" ? "blue" :
+                    status === "Approved" ? "green" :
                     "red"
                   }>
-                    {status || "DRAFT"}
+                    {status || "Draft"}
                   </Tag>
                 )
               },

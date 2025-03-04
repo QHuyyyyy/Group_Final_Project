@@ -82,6 +82,7 @@ const Menu = () => {
     }))
     .filter(section => section.items.length > 0);
 
+
   return (
     <div className="bg-[#1E2640] min-h-screen w-60 max-w-[250px] fixed left-0 top-0 text-white">
       <div className="p-6">
@@ -117,13 +118,13 @@ const Menu = () => {
                     <span>{item.label}</span>
                   </Link>
                 ))}
+
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
-    </div>
-  );
-};
-
-export default Menu;
+    );
+  };
+  
+  export default Menu;
