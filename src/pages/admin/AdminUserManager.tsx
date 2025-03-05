@@ -16,42 +16,19 @@ import StaffDetails from '../../components/admin/StaffDetails';
 import { userService } from '../../services/userService';
 import { message } from 'antd';
 import { roleService } from '../../services/roleService';
+import { UserData } from '../../models/UserModel';
 
 import AddUserModal from '../../components/admin/AddUserModal';
 import DeleteUserButton from '../../components/admin/DeleteUserButton';
 import EditUserModal from '../../components/admin/EditUserModal';
 import { debounce } from 'lodash';
 import BlockUserButton from '../../components/admin/BlockUserButton';
-
-interface StaffMember {
-  _id: string;
-  user_name: string;
-  email: string;
-  role_code: string;  // A001, A002, A003, A004
-  is_blocked: boolean;
-  is_verified: boolean;
-  created_at: string;
-  updated_at: string;
-  is_deleted: boolean;
-}
-interface SearchParams {
-  searchCondition: {
-    keyword: string;
-    role_code: string;
-    is_blocked: boolean;
-    is_delete: boolean;
-    is_verified: string;
-  };
-  pageInfo: {
-    pageNum: number;
-    pageSize: number;
-  };
-}
+import { SearchParams } from '../../models/UserModel';
 
 const AdminUserManager: React.FC = () => {
   const navigate = useNavigate();
-  const [editingRecord, setEditingRecord] = useState<StaffMember | null>(null);
-  const [staffData, setStaffData] = useState<StaffMember[]>([]);
+  const [editingRecord, setEditingRecord] = useState<UserData | null>(null);
+  const [staffData, setStaffData] = useState<UserData[]>([]);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<any>(null);
@@ -93,7 +70,7 @@ const AdminUserManager: React.FC = () => {
       console.log('Search response:', response);
       
       if (response && response.data) {
-        setStaffData(response.data.pageData);
+        setStaffData(response.data.pageData as UserData[]);
         setPagination(prev => ({
           ...prev,
           totalItems: response.data.pageInfo.totalItems,
@@ -136,7 +113,7 @@ const AdminUserManager: React.FC = () => {
     setIsAddModalVisible(true);
   };
 
-  const handleEdit = (record: StaffMember) => {
+  const handleEdit = (record: UserData) => {
     setEditingRecord(record);
     setIsEditModalVisible(true);
   };
@@ -151,7 +128,7 @@ const AdminUserManager: React.FC = () => {
     setSelectedStaff(null);
   };
 
-  const columns: ColumnsType<StaffMember> = [
+  const columns: ColumnsType<UserData> = [
     {
       title: 'No.',
       key: 'index',
@@ -213,7 +190,7 @@ const AdminUserManager: React.FC = () => {
       key: 'actions',
       fixed: 'right' as const,
       width: 150,
-      render: (_, record: StaffMember) => (
+      render: (_, record: UserData) => (
         <Space size="middle">
           <Button 
             type="text" 
