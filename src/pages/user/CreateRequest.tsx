@@ -1,152 +1,157 @@
 import React, { useState } from "react";
-import { Form, Input, Button, Select, DatePicker, notification } from "antd";
-import moment, { Moment } from "moment";
-
+import { Form, Input, Button, DatePicker, notification } from "antd";
 import { Modal } from "antd";
 import dayjs from 'dayjs';
+import { claimService } from "../../services/claimService";
+import type { CreateClaimRequest } from "../../models/ClaimModel";
 
 interface CreateRequestProps {
     visible: boolean;
     onClose: () => void;
-}
-const { Option } = Select;
-
-interface RequestFormValues {
-    name: string;
-    project: string;
-    startDate: Moment;
-    endDate: Moment;
-    totalHours: number;
-    description: string;
+    onSuccess: () => void;
 }
 
-// Thêm hàm disabledDate
-// const disabledDate = (current: dayjs.Dayjs) => {
-//   return current && current < dayjs().startOf('day');
-// };
 
-const CreateRequest: React.FC<CreateRequestProps> = ({ visible, onClose }) => {
-    const [form] = Form.useForm<RequestFormValues>();
+const CreateRequest: React.FC<CreateRequestProps> = ({ 
+    visible, 
+    onClose, 
+    onSuccess,
+}) => {
+    const [form] = Form.useForm<CreateClaimRequest>();
     const [loading, setLoading] = useState<boolean>(false);
     const [startDate, setStartDate] = useState<dayjs.Dayjs | null>(null);
 
-
-    // Hàm disabledEndDate
-    const disabledEndDate = (current: dayjs.Dayjs) => {
-        if (!startDate) {
-            return false;
-        }
-        return current && current < startDate;
-    };
-
-
-    // Xử lý khi startDate thay đổi
     const handleStartDateChange = (date: dayjs.Dayjs | null) => {
         setStartDate(date);
-        // Reset end date nếu end date nhỏ hơn start date mới
-        const endDate = form.getFieldValue('endDate');
+        const endDate = form.getFieldValue('claim_end_date'); 
         if (date && endDate && endDate < date) {
-            form.setFieldValue('endDate', null);
+            form.setFieldValue('claim_end_date', null);
         }
     };
 
-    const handleSubmit = async (values: RequestFormValues) => {
-        setLoading(true);
-        const newRequest = {
-            ...values,
-            startDate: moment(values.startDate).format("YYYY-MM-DD"),
-            endDate: moment(values.endDate).format("YYYY-MM-DD"),
-            status: "Draft",
-        };
+    const handleSubmit = async (values: CreateClaimRequest) => {
+        try {
+            setLoading(true);
+            
+            const newRequest: CreateClaimRequest = {
+                project_id: values.project_id,
+                approval_id: values.approval_id,
+                claim_name: values.claim_name,
+                claim_start_date: dayjs(values.claim_start_date).format("YYYY-MM-DD"),
+                claim_end_date: dayjs(values.claim_end_date).format("YYYY-MM-DD"),
+                total_work_time: Number(values.total_work_time),
+                remark: values.remark || undefined
+            };
 
-        console.log('Request to be sent:', newRequest);
-
-
-        setTimeout(() => {
-
-            notification.success({
-                message: "Request Created",
-                description: "Your request has been created and saved as a Draft.",
+            const response = await claimService.createClaim(newRequest);
+            
+            if (response.success) {
+                notification.success({
+                    message: "Claim Created",
+                    description: "Your claim has been created successfully.",
+                });
+                form.resetFields();
+                onSuccess();
+                onClose();
+            } else {
+                throw new Error(response.message || 'Failed to create claim');
+            }
+        } catch (error: any) {
+            notification.error({
+                message: "Error",
+                description: error.message || "Failed to create claim. Please try again.",
             });
-
-            form.resetFields();
+        } finally {
             setLoading(false);
-
-
-        }, 1000);
+        }
     };
 
     return (
-        <div style={{ padding: "20px", maxWidth: "1000px", margin: "auto" }}>
-            <Modal
-                title="Create New Request"
-                open={visible}
-                onCancel={onClose}
-                footer={null}
+        <Modal
+            className="justify text-center"
+            title="Create New Claim"
+            open={visible}
+            onCancel={onClose}
+            footer={null}
+            destroyOnClose
+        >
+            <Form 
+                form={form} 
+                layout="vertical" 
+                onFinish={handleSubmit}
+                preserve={false}
             >
-                <Form form={form} layout="vertical" onFinish={handleSubmit}>
+                <Form.Item
+                    label="Claim Name"
+                    name="claim_name"
+                    rules={[{ required: true, message: "Please enter claim name!" }]}
+                >
+                    <Input placeholder="Enter claim name" />
+                </Form.Item>
 
+                <Form.Item
+                    label="Project Name"
+                    name="project_name"
+                    rules={[{ required: true, message: "Please select the project!" }]}
+                >
+                    <Input placeholder="Enter project name" />
+                </Form.Item>
 
-                    <Form.Item
-                        label="Project"
-                        name="project"
-                        rules={[{ required: true, message: "Please select the project!" }]}
-                    >
-                        <Select placeholder="Select project">
-                            <Option value="Project A">Project A</Option>
-                            <Option value="Project B">Project B</Option>
-                            <Option value="Project C">Project C</Option>
-                        </Select>
-                    </Form.Item>
+                <Form.Item
+                    label="Approval Name"
+                    name="approval_name"
+                    rules={[{ required: true, message: "Please select the approval!" }]}
+                >
+                    <Input placeholder="Enter approval name" />
+                </Form.Item>
 
-                    <Form.Item
-                        label="Start Date"
-                        name="startDate"
-                        rules={[{ required: true, message: "Please select the start date!" }]}
-                    >
-                        <DatePicker
-                            style={{ width: "100%" }}
+                <Form.Item
+                    label="Start Date"
+                    name="claim_start_date"
+                    rules={[{ required: true, message: "Please select the start date!" }]}
+                >
+                    <DatePicker
+                        style={{ width: "100%" }}
+                        onChange={handleStartDateChange}
+                    />
+                </Form.Item>
 
-                            onChange={handleStartDateChange}
-                        />
-                    </Form.Item>
+                <Form.Item 
+                    label="End Date"
+                    name="claim_end_date"
+                    rules={[{ required: true, message: "Please select the end date!" }]}
+                >
+                    <DatePicker
+                        style={{ width: "100%" }}
+                        disabledDate={(current) => {
+                            if (!startDate) return false;
+                            return current && current < startDate;
+                        }}
+                    />
+                </Form.Item>
 
-                    <Form.Item
-                        label="End Date"
-                        name="endDate"
-                        rules={[{ required: true, message: "Please select the end date!" }]}
-                    >
-                        <DatePicker
-                            style={{ width: "100%" }}
-                            disabledDate={disabledEndDate}
-                        />
-                    </Form.Item>
+                <Form.Item
+                    label="Total Hours Worked"
+                    name="total_work_time"
+                    rules={[{ required: true, message: "Please enter total hours worked!" }]}
+                >
+                    <Input type="number" placeholder="Enter total hours worked" />
+                </Form.Item>
 
-                    <Form.Item
-                        label="Total Hours Worked"
-                        name="totalHours"
-                        rules={[{ required: true, message: "Please enter total hours worked!" }]}
-                    >
-                        <Input type="number" placeholder="Enter total hours worked" />
-                    </Form.Item>
+                <Form.Item
+                    label="Remark"
+                    name="remark"
+                >
+                    <Input.TextArea rows={4} placeholder="Enter remark (optional)" />
+                </Form.Item>
 
-                    <Form.Item
-                        label="Description"
-                        name="description"
-                        rules={[{ required: true, message: "Please enter a description!" }]}
-                    >
-                        <Input.TextArea rows={4} placeholder="Enter description" />
-                    </Form.Item>
-
-                    <Form.Item>
-                        <Button type="primary" htmlType="submit" loading={loading}>
-                            Submit Request
-                        </Button>
-                    </Form.Item>
-                </Form>
-            </Modal>
-
-        </div>
+                <Form.Item className="">
+                    <Button type="primary" htmlType="submit" loading={loading}>
+                        Submit 
+                    </Button>
+                </Form.Item>
+            </Form>
+        </Modal>
     );
 };
 
