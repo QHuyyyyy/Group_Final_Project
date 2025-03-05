@@ -3,6 +3,7 @@ import { ApiResponse} from '../models/ApiResponse';
 import { createRoot } from 'react-dom/client';
 import React from 'react';
 import UserSpinner from '../components/user/UserSpinner';
+import { toast } from 'react-toastify';
 
 const loadingManager = {
   count: 0,
@@ -80,14 +81,29 @@ api.interceptors.response.use(
     return response as AxiosResponse<T>;
   },
   (error) => {
-    if (error.config?.showSpinner !== false) {
-      loadingManager.hide();
+    loadingManager.hide();
+    if (error.response) {
+    // Global error handling
+    switch (error.response.status) {
+      case 400:
+        toast.error(error.response?.data?.errors[0]?.message || error.response?.data?.message)
+        break;
+      case 401:
+        toast.error('Unauthorized: Please log in again');
+        break;
+      case 403:
+        toast.error('Forbidden: You do not have permission');
+        break;
+      case 404:
+        toast.error('Resource not found');
+        break;
+      case 500:
+        toast.error('Server error. Please try again later');
+        break;
+      default:
+        toast.error( error.response?.data?.message || 'An unexpected error occurred');
     }
-    // if (error.response?.status === 401) {
-    //   localStorage.removeItem("token");
-    //   window.location.href = "/login";
-    // }
-    console.log(error);
+  }
     return Promise.reject(error);
   }
 );

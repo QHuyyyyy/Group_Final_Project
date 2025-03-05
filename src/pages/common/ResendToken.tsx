@@ -1,7 +1,6 @@
 import { Button, Typography, Form, Input } from 'antd';
 import {  MailOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { useApiStore } from '../../stores/apiStore';
 import { authService } from '../../services/authService';
 import { toast } from 'react-toastify';
 import loginBackground from '../../assets/login-background.png';
@@ -11,17 +10,13 @@ const { Title } = Typography;
 export default function ResendToken() {
   const [form] = Form.useForm();
   const navigate = useNavigate();
-  const { isLoading } = useApiStore();
+
 
   const handleSubmit = async (values: { email: string }) => {
-    try {
       await authService.resendToken({ email: values.email.trim() });
       localStorage.setItem('verifyEmail', values.email);
       toast.success('New token has been sent to your email!');
       navigate('/login');
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Error sending token');
-    }
   };
 
   return (
@@ -70,7 +65,6 @@ export default function ResendToken() {
               <Button
                 type="primary"
                 htmlType="submit"
-                loading={isLoading}
                 size="large"
                 block
                 className="h-12 bg-[#1a4f95] hover:bg-[#0d3d7a] border-0 
