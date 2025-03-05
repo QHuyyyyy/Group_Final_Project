@@ -430,7 +430,8 @@ const AdminProjectManager: React.FC = () => {
   };
 
   const handleCreateModalClose = () => {
-    form.resetFields();  // Đặt lại form khi đóng modal
+    // Đặt lại form khi đóng modal
+    form.resetFields();
     setIsCreateModalVisible(false);
   };
 
