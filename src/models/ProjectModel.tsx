@@ -54,7 +54,7 @@ export interface ProjectData {
     is_deleted: boolean;
     created_at: string;
     updated_at: string;
-    
+    __v:number;
 }
 
 export interface SearchParams {
