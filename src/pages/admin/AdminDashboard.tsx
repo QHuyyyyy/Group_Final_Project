@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Legend, Cell, LineChart, Line } from "recharts";
 import { Col, Row, Card, Statistic, Tag, Table, List, Pagination, Select, Dropdown} from "antd"
-import { UserOutlined, ProjectOutlined, FileTextOutlined, ClockCircleOutlined, CheckCircleOutlined, CheckOutlined, LogoutOutlined } from '@ant-design/icons';
+import { UserOutlined, ProjectOutlined, FileTextOutlined, ClockCircleOutlined, CheckCircleOutlined, CheckOutlined, LogoutOutlined, SettingOutlined } from '@ant-design/icons';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import dayjs from "dayjs"
 import { Link, useNavigate } from "react-router-dom";
