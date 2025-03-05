@@ -1,3 +1,6 @@
+import { SearchProjectCondition } from "./SearchConditionModel";
+import { PageInfo } from "./PageModel";
+
 export interface ProjectMember {
     user_id: string;
     project_role: string;
@@ -51,33 +54,17 @@ export interface ProjectData {
     is_deleted: boolean;
     created_at: string;
     updated_at: string;
-    
-}
-
-export interface SearchCondition {
-    keyword?: string;
-    project_status?:string;
-    project_start_date?: string;
-    project_end_date?: string;
-    is_delete?: boolean;
-}
-
-export interface PageInfo {
-    pageNum: number;
-    pageSize: number;
-    totalItems: number;
-    totalPages: number;
+    __v:number;
 }
 
 export interface SearchParams {
-    searchCondition: SearchCondition;
+    searchCondition: SearchProjectCondition;
     pageInfo: PageInfo;
 }
 
-export interface SearchResponse {
+export interface ProjectResponse {
     pageData: ProjectData[];
-        pageInfo: PageInfo;
-  
+    pageInfo: PageInfo;
 }
 
 
