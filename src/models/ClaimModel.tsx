@@ -54,6 +54,7 @@ export interface CreateClaim {
       created_at: string;
       updated_at: string;
       __v: number;
+      project_comment: string;
     };
     role_in_project: string | null;
     claim_name: string;
