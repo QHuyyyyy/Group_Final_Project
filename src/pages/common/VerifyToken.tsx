@@ -30,7 +30,9 @@ export default function VerifyToken() {
     try {
 
 
+
       await authService.verifyToken( token );
+
 
 
       toast.success('Tài khoản đã được xác thực thành công!');
