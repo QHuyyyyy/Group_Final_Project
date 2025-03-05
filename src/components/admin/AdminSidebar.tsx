@@ -1,6 +1,6 @@
 
 import { Link, useLocation } from 'react-router-dom';
-import { ProjectOutlined, UserOutlined, HomeOutlined, ProfileOutlined } from '@ant-design/icons';
+import { ProjectOutlined, UserOutlined, HomeOutlined, ProfileOutlined} from '@ant-design/icons';
 
 const AdminSidebar = () => {
   const location = useLocation();

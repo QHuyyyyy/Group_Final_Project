@@ -28,7 +28,13 @@ export default function VerifyToken() {
 
   const handleVerify = async (token: string) => {
     try {
-      await authService.verifyToken(token);
+
+
+
+      await authService.verifyToken( token );
+
+
+
       toast.success('Tài khoản đã được xác thực thành công!');
       navigate('/login');
     } catch (error: any) {

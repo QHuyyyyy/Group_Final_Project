@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Legend, Cell, LineChart, Line } from "recharts";
-import { Col, Row, Card, Statistic, Tag, Table, List, Pagination, Select, Dropdown, Spin, Layout } from "antd"
-import { LoadingOutlined } from "@ant-design/icons";
-import { UserOutlined, ProjectOutlined, FileTextOutlined, ClockCircleOutlined, CheckCircleOutlined, CheckOutlined, LogoutOutlined } from '@ant-design/icons';
+import { Col, Row, Card, Statistic, Tag, Table, List, Pagination, Select, Dropdown} from "antd"
+import { UserOutlined, ProjectOutlined, FileTextOutlined, ClockCircleOutlined, CheckCircleOutlined, CheckOutlined, LogoutOutlined, SettingOutlined } from '@ant-design/icons';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import dayjs from "dayjs"
 import { Link, useNavigate } from "react-router-dom";
@@ -11,50 +10,14 @@ import avatar from "../../assets/avatar.png";
 import { claimService } from "../../services/claimService";
 import  projectService from "../../services/projectService";
 import { userService } from "../../services/userService";
-
-interface Claim {
+import { Claim } from "../../models/ClaimModel";
+import { Project } from "../../models/ProjectModel";
+import { User } from "../../models/UserModel";
+interface ClaimStatus {
   id: number;
   name: string;
   status: "Pending" | "Approved" | "Rejected" | "Paid";
   claimer: string;
-}
-
-interface Claims {
-  _id: string;
-  user_id: string;
-  project_id: string;
-  approval_id: string;
-  claim_name: string;
-  claim_status: string;
-  claim_start_date: string;
-  claim_end_date: string;
-  total_work_time: number;
-  is_deleted: boolean;
-  created_at: string;
-  updated_at: string;
-  data: {
-    employee_info?: {
-      department_name: string
-    }
-  }
-  __v: number;
-}
-
-
-interface ProjectMember {
-  user_id: string;
-  project_role: string;
-}
-
-
-interface Projects {
-  project_name: string;
-  project_code: string;
-  project_department: string;
-  project_description: string;
-  project_start_date: string;
-  project_end_date: string;
-  project_members: ProjectMember[];
 }
 
 interface ClaimData {
@@ -63,23 +26,9 @@ interface ClaimData {
   date?: string;
 }
 
-interface User {
-  _id: string;
-  email: string;
-  user_name: string;
-  role_code: string;
-  is_verified: boolean;
-  is_blocked: boolean;
-  is_deleted: boolean;
-  created_at: string;
-  updated_at: string;
-  token_version: number;
-}
 const { Option } = Select
 const AdminDashboard: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(true);
 
-  
   const recentClaims = [
     { id: 1, name: "Overtime Payment", status: "Pending", claimer: "John Doe" },
     { id: 2, name: "Travel Reimbursement", status: "Approved", claimer: "Jane Smith" },
@@ -93,7 +42,7 @@ const AdminDashboard: React.FC = () => {
     { activity: "Admin assigned a user to Project Beta", time: "2 days ago" },
   ];
 
-  const statusColors: Record<Claim["status"], string> = {
+  const statusColors: Record<ClaimStatus["status"], string> = {
     Pending: "gold",
     Approved: "green",
     Rejected: "red",
@@ -106,7 +55,7 @@ const AdminDashboard: React.FC = () => {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status: Claim["status"]) => (
+      render: (status: ClaimStatus["status"]) => (
         <Tag color={statusColors[status] || "default"}>{status}</Tag>
       ),
     },
@@ -134,6 +83,15 @@ const AdminDashboard: React.FC = () => {
     {
       key: "2",
       label: (
+        <Link to="/dashboard/settingadmin">
+          <SettingOutlined className="pr-2" />
+          Setting
+        </Link>
+      ),
+    },
+    {
+      key: "3",
+      label: (
         <span onClick={handleLogout} className="cursor-pointer">
           <LogoutOutlined className="pr-2" />
           Logout
@@ -142,13 +100,13 @@ const AdminDashboard: React.FC = () => {
     },
   ];
 
-  const [claims, setClaims] = useState<Claims[]>([]);
-  const [pendingClaims, setPendingClaims] = useState<Claims[]>([]);
-  const [approvedClaims, setApprovedClaims] = useState<Claims[]>([]);
-  const [rejectedClaims, setRejectedClaims] = useState<Claims[]>([]);
-  const [paidClaims, setPaidClaims] = useState<Claims[]>([]);
-  const [draftClaims, setDraftClaims] = useState<Claims[]>([]);
-  const [canceledClaims, setCanceledClaims] = useState<Claims[]>([]);
+  const [claims, setClaims] = useState<Claim[]>([]);
+  const [pendingClaims, setPendingClaims] = useState<Claim[]>([]);
+  const [approvedClaims, setApprovedClaims] = useState<Claim[]>([]);
+  const [rejectedClaims, setRejectedClaims] = useState<Claim[]>([]);
+  const [paidClaims, setPaidClaims] = useState<Claim[]>([]);
+  const [draftClaims, setDraftClaims] = useState<Claim[]>([]);
+  const [canceledClaims, setCanceledClaims] = useState<Claim[]>([]);
   const claimsData: ClaimData[] = [
     { status: "Pending", count: pendingClaims.length, date: "2024-03-25" },
     { status: "Approved", count: approvedClaims.length, date: "2024-03-24" },
@@ -161,25 +119,25 @@ const AdminDashboard: React.FC = () => {
   const claimCategories = [
     { 
       name: "Department 01", 
-      value: claims.filter((claim) => claim.data?.employee_info?.department_name === "Department 01").length 
+      value: claims.filter((claim) => claim.employee_info?.department_name === "Department 01").length 
     },
     { 
       name: "Department 02", 
-      value: claims.filter((claim) => claim.data?.employee_info?.department_name === "Department 02").length 
+      value: claims.filter((claim) => claim.employee_info?.department_name === "Department 02").length 
     },
     { 
       name: "Department 03", 
-      value: claims.filter((claim) => claim.data?.employee_info?.department_name === "Department 03").length 
+      value: claims.filter((claim) => claim.employee_info?.department_name === "Department 03").length 
     },
     { 
       name: "Department 04", 
-      value: claims.filter((claim) => claim.data?.employee_info?.department_name === "Department 04").length 
+      value: claims.filter((claim) => claim.employee_info?.department_name === "Department 04").length 
     },
   ];
 
-  const [projects, setProjects] = useState<Projects[]>([]);
-  const [ongoingProjects, setOngoingProjects] = useState<Projects[]>([])
-  const [completedProjects, setCompletedProjects] = useState<Projects[]>([])
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [ongoingProjects, setOngoingProjects] = useState<Project[]>([])
+  const [completedProjects, setCompletedProjects] = useState<Project[]>([])
   const [users, setUsers] = useState<User[]>([])
   const [filteredClaimData, setFilteredClaimData] = useState<ClaimData[]>(claimsData);
   const [selectedRange, setSelectedRange] = useState<string | null>(null);
@@ -196,8 +154,9 @@ const AdminDashboard: React.FC = () => {
     completedProjects: false,
     users: false
   });
+  
 
-  const processProjectData = (projects: Projects[]) => {
+  const processProjectData = (projects: Project[]) => {
     const counts: Record<string, number> = {};
 
     projects.forEach(({ project_start_date }) => {
@@ -213,10 +172,18 @@ const AdminDashboard: React.FC = () => {
   const projectTrendData = processProjectData(projects);
 
 
+
+  console.log(dataLoaded)
   {/*lấy data của claims*/ }
   useEffect(() => {
     const fetchClaims = async () => {
       try {
+        let pageNum = 1;
+        const pageSize = 10;
+        let allClaims: Claim[] = [];
+        while(true){
+
+        
         const params = {
           searchCondition: {
             keyword: "",
@@ -226,15 +193,25 @@ const AdminDashboard: React.FC = () => {
             is_delete: false,
           },
           pageInfo: {
-            pageNum: 1,
-            pageSize: 10,
+            pageNum,
+            pageSize,
           },
         };
         const response = await claimService.searchClaims(params);
-        setClaims(response.data.pageData);
-        setDataLoaded(prev => ({ ...prev, claims: true }));
+        console.log(response)
+        if (!response|| !response.data.pageData || !response.data) break;
+
+        const newClaims = response.data.pageData;
+        if(newClaims.length===0) break;
+
+        allClaims = [...allClaims, ...newClaims]
+        pageNum++;
+      }
+        setClaims(allClaims);
       } catch (error) {
         console.error("Error fetching claims:", error);
+      }
+      finally{
         setDataLoaded(prev => ({ ...prev, claims: true }));
       }
     };
@@ -242,11 +219,37 @@ const AdminDashboard: React.FC = () => {
 
     const fetchPendingClaims = async () => {
       try {
-        const data = await claimService.getPendingClaims();
-        setPendingClaims(data.data.pageData);
-        setDataLoaded(prev => ({ ...prev, pendingClaims: true }));
+        let pageNum = 1;
+        const pageSize = 10;
+        let allPendingClaims:Claim[] = []
+        while(true){
+        const params = {
+          searchCondition: {
+            keyword: "",
+            claim_status:"Pending Approval",
+            claim_start_date: "",
+            claim_end_date: "",
+            is_delete: false,
+          },
+          pageInfo: {
+            pageNum,
+            pageSize
+          },
+        };   
+        const data = await claimService.searchClaims(params);
+        if (!data || !data.data || !data.data.pageData) break;
+
+        const newClaims = data.data.pageData;
+        if(newClaims.length===0) break;
+
+        allPendingClaims = [...allPendingClaims, ...newClaims]
+        pageNum++;
+      }
+        setPendingClaims(allPendingClaims);
       } catch (error) {
         console.error("Error fetching claims:", error);
+      }
+      finally{
         setDataLoaded(prev => ({ ...prev, pendingClaims: true }));
       }
     };
@@ -254,11 +257,37 @@ const AdminDashboard: React.FC = () => {
 
     const fetchApprovedClaims = async () => {
       try {
-        const data = await claimService.getApprovedClaims();
-        setApprovedClaims(data.data.pageData);
-        setDataLoaded(prev => ({ ...prev, approvedClaims: true }));
+        let pageNum = 1;
+        const pageSize = 10;
+        let allApprovedClaims:Claim[] = []
+        while(true){
+        const params = {
+          searchCondition: {
+            keyword: "",
+            claim_status:"Approved",
+            claim_start_date: "",
+            claim_end_date: "",
+            is_delete: false,
+          },
+          pageInfo: {
+            pageNum,
+            pageSize
+          },
+        };   
+        const data = await claimService.searchClaims(params);
+        if (!data || !data.data || !data.data.pageData) break;
+
+        const newClaims = data.data.pageData;
+        if(newClaims.length===0) break;
+
+        allApprovedClaims = [...allApprovedClaims, ...newClaims]
+        pageNum++;
+      }
+        setApprovedClaims(allApprovedClaims);
       } catch (error) {
         console.error("Error fetching claims:", error);
+      }
+      finally{
         setDataLoaded(prev => ({ ...prev, approvedClaims: true }));
       }
     };
@@ -266,11 +295,37 @@ const AdminDashboard: React.FC = () => {
 
     const fetchRejectedClaims = async () => {
       try {
-        const data = await claimService.getRejectedClaims();
-        setRejectedClaims(data.data.pageData);
-        setDataLoaded(prev => ({ ...prev, rejectedClaims: true }));
+        let pageNum = 1;
+        const pageSize = 10;
+        let allRejectedClaims:Claim[] = []
+        while(true){
+        const params = {
+          searchCondition: {
+            keyword: "",
+            claim_status:"Rejected",
+            claim_start_date: "",
+            claim_end_date: "",
+            is_delete: false,
+          },
+          pageInfo: {
+            pageNum,
+            pageSize
+          },
+        };   
+        const data = await claimService.searchClaims(params);
+        if (!data || !data.data || !data.data.pageData) break;
+
+        const newClaims = data.data.pageData;
+        if(newClaims.length===0) break;
+
+        allRejectedClaims = [...allRejectedClaims, ...newClaims]
+        pageNum++;
+      }
+        setRejectedClaims(allRejectedClaims);
       } catch (error) {
         console.error("Error fetching claims:", error);
+      }
+      finally{
         setDataLoaded(prev => ({ ...prev, rejectedClaims: true }));
       }
     };
@@ -278,11 +333,37 @@ const AdminDashboard: React.FC = () => {
 
     const fetchPaidClaims = async () => {
       try {
-        const data = await claimService.getPaidClaims();
-        setPaidClaims(data.data.pageData);
-        setDataLoaded(prev => ({ ...prev, paidClaims: true }));
+        let pageNum = 1;
+        const pageSize = 10;
+        let allPaidClaims:Claim[] = []
+        while(true){
+        const params = {
+          searchCondition: {
+            keyword: "",
+            claim_status:"Paid",
+            claim_start_date: "",
+            claim_end_date: "",
+            is_delete: false,
+          },
+          pageInfo: {
+            pageNum,
+            pageSize
+          },
+        };   
+        const data = await claimService.searchClaims(params);
+        if (!data || !data.data || !data.data.pageData) break;
+
+        const newClaims = data.data.pageData;
+        if(newClaims.length===0) break;
+
+        allPaidClaims = [...allPaidClaims, ...newClaims]
+        pageNum++;
+      }
+        setPaidClaims(allPaidClaims);
       } catch (error) {
         console.error("Error fetching claims:", error);
+      }
+      finally{
         setDataLoaded(prev => ({ ...prev, paidClaims: true }));
       }
     };
@@ -290,11 +371,37 @@ const AdminDashboard: React.FC = () => {
 
     const fetchDraftClaims = async () => {
       try {
-        const data = await claimService.getDraftClaims();
-        setDraftClaims(data.data.pageData);
-        setDataLoaded(prev => ({ ...prev, draftClaims: true }));
+        let pageNum = 1;
+        const pageSize = 10;
+        let allDraftClaims:Claim[] = []
+        while(true){
+        const params = {
+          searchCondition: {
+            keyword: "",
+            claim_status:"Draft",
+            claim_start_date: "",
+            claim_end_date: "",
+            is_delete: false,
+          },
+          pageInfo: {
+            pageNum,
+            pageSize
+          },
+        };   
+        const data = await claimService.searchClaims(params);
+        if (!data || !data.data || !data.data.pageData) break;
+
+        const newClaims = data.data.pageData;
+        if(newClaims.length===0) break;
+
+        allDraftClaims = [...allDraftClaims, ...newClaims]
+        pageNum++;
+      }
+        setDraftClaims(allDraftClaims);
       } catch (error) {
         console.error("Error fetching claims:", error);
+      }
+      finally{
         setDataLoaded(prev => ({ ...prev, draftClaims: true }));
       }
     };
@@ -302,11 +409,37 @@ const AdminDashboard: React.FC = () => {
 
     const fetchCanceledClaims = async () => {
       try {
-        const data = await claimService.getCanceledClaims();
-        setCanceledClaims(data.data.pageData);
-        setDataLoaded(prev => ({ ...prev, canceledClaims: true }));
+        let pageNum = 1;
+        const pageSize = 10;
+        let allCanceledClaims:Claim[] = []
+        while(true){
+        const params = {
+          searchCondition: {
+            keyword: "",
+            claim_status:"Canceled",
+            claim_start_date: "",
+            claim_end_date: "",
+            is_delete: false,
+          },
+          pageInfo: {
+            pageNum,
+            pageSize
+          },
+        };   
+        const data = await claimService.searchClaims(params);
+        if (!data || !data.data || !data.data.pageData) break;
+
+        const newClaims = data.data.pageData;
+        if(newClaims.length===0) break;
+
+        allCanceledClaims = [...allCanceledClaims, ...newClaims]
+        pageNum++;
+      }
+        setCanceledClaims(allCanceledClaims);
       } catch (error) {
         console.error("Error fetching claims:", error);
+      }
+      finally{
         setDataLoaded(prev => ({ ...prev, canceledClaims: true }));
       }
     };
@@ -317,6 +450,12 @@ const AdminDashboard: React.FC = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
+        let pageNum = 1;
+        const pageSize = 10;
+        let allProjects: Project[] = [];
+        while(true){
+
+        
         const params = {
           searchCondition: {
             keyword: "",
@@ -325,18 +464,29 @@ const AdminDashboard: React.FC = () => {
             is_deleted: false,
           },
           pageInfo: {
-            pageNum: 1,
-            pageSize: 10,
+            pageNum,
+            pageSize,
             totalItems: 0,
             totalPages: 0
           },
         };
         const data = await projectService.searchProjects(params);
         console.log(data)
-        setProjects(data.data.pageData);
-        setDataLoaded(prev => ({ ...prev, projects: true }));
+
+        if (!data || !data.data || !data.data.pageData) break;
+
+
+        const newProjects = data.data.pageData;
+        if (newProjects.length === 0) break;
+
+        allProjects = [...allProjects, ...newProjects];
+        pageNum++;
+        }
+        setProjects(allProjects);
       } catch (error) {
         console.error("Error fetching claims:", error);
+      }
+      finally{
         setDataLoaded(prev => ({ ...prev, projects: true }));
       }
     };
@@ -388,12 +538,12 @@ const AdminDashboard: React.FC = () => {
   }, []);
   {/*tính số project trong một tháng*/ }
 
-  const processMonthlyActiveProjectData = (ongoingProjects: Projects[]) => {
+  const processMonthlyActiveProjectData = (ongoingProjects: Project[]) => {
     const counts: Record<string, number> = {};
     if(ongoingProjects.length<=0) return 0;
     ongoingProjects.forEach(({ project_start_date }) => {
       const date = new Date(project_start_date);
-      const month = date.toLocaleString("en-US", { month: "short" }); // "Feb", "Mar", etc.
+      const month = date.toLocaleString("en-US", { month: "short" }); // "Feb", "Mar"...
 
       counts[month] = (counts[month] || 0) + 1;
     });
@@ -403,13 +553,12 @@ const AdminDashboard: React.FC = () => {
 
   const activeProjectData = processMonthlyActiveProjectData(ongoingProjects)
 
-  const processMonthlyCompletedProjectData = (completedProjects: Projects[]) => {
+  const processMonthlyCompletedProjectData = (completedProjects: Project[]) => {
     const counts: Record<string, number> = {};
     if(completedProjects.length>0){
     completedProjects.forEach(({ project_start_date }) => {
       const date = new Date(project_start_date);
-      const month = date.toLocaleString("en-US", { month: "short" }); // "Feb", "Mar", etc.
-
+      const month = date.toLocaleString("en-US", { month: "short" }); // "Feb", "Mar"...
       counts[month] = (counts[month] || 0) + 1;
     });
 
@@ -424,26 +573,40 @@ const AdminDashboard: React.FC = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const params = {
-          searchCondition: {
-            keyword: "",
-            claim_start_date: "",
-            claim_end_date: "",
-            is_deleted: false,
-          },
-          pageInfo: {
-            pageNum: 1,
-            pageSize: 10,
-          },
-        };
-        const data = await userService.searchUsers(params);
-        console.log(data)
-        setUsers(data.data.pageData);
-        
-        setDataLoaded(prev => ({ ...prev, users: true }));
+        let pageNum = 1;
+        const pageSize = 10;
+        let allUsers: User[] = [];
+    
+        while (true) {
+          const params = {
+            searchCondition: {
+              keyword: "",
+              claim_start_date: "",
+              claim_end_date: "",
+              is_delete: false,
+            },
+            pageInfo: {
+              pageNum,
+              pageSize,
+            },
+          };
+    
+          const data = await userService.searchUsers(params);
+          if (!data || !data.data || !data.data.pageData) break;
+    
+          const newUsers = data.data.pageData;
+          if (newUsers.length === 0) break;
+    
+          allUsers = [...allUsers, ...newUsers];
+          pageNum++;
+        }
+    
+        console.log(allUsers);
+        setUsers(allUsers);
       } catch (error) {
-        console.error("Error fetching claims:", error);
-        setDataLoaded(prev => ({ ...prev, users: true }));
+        console.error("Error fetching users:", error);
+      } finally {
+        setDataLoaded((prev) => ({ ...prev, users: true }));
       }
     };
     fetchUsers();
@@ -484,32 +647,8 @@ const AdminDashboard: React.FC = () => {
 
   console.log(filteredClaimData)
 
-  useEffect(() => {
-    const allDataLoaded = Object.values(dataLoaded).every(status => status === true);
-    if (allDataLoaded) {
-      setIsLoading(false);
-    }
-  }, [dataLoaded]);
 
-  const loadingIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
-  if (isLoading) {
-    return (
-      <Layout style={{ 
-        height: "100vh", 
-        display: "flex", 
-        justifyContent: "center", 
-        alignItems: "center",
-        background: "#f0f2f5"
-      }}>
-        <div style={{ textAlign: "center" }}>
-          <Spin indicator={loadingIcon} />
-          <h2 style={{ marginTop: 20, color: "#1890ff" }}>Loading Dashboard Data...</h2>
-          <p style={{ color: "#8c8c8c" }}>Please wait while we prepare your dashboard</p>
-        </div>
-      </Layout>
-    );
-  }
   return (
     <>
       <div className="flex items-center justify-between p-5">
