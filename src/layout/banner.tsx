@@ -12,7 +12,7 @@ const Banner: React.FC<BannerProps> = ({ title, description }) => {
       <div 
         className="absolute inset-0 w-full h-full"
         style={{
-          backgroundImage: 'url("https://png.pngtree.com/thumb_back/fw800/background/20240321/pngtree-earth-view-from-space-background-image_15657499.jpg")',
+          backgroundImage: 'url("https://file.hstatic.net/200000280679/article/1_9477034d29244e629554224b25d3671c.jpg")',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           filter: 'brightness(0.5)'
