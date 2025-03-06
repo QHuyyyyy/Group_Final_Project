@@ -8,6 +8,8 @@ import projectService from '../../services/project.service';
 import { userService } from '../../services/user.service';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import { toast } from 'react-toastify';
+import { Project, ProjectData } from '../../models/ProjectModel';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -15,35 +17,11 @@ dayjs.tz.setDefault('Asia/Ho_Chi_Minh'); // Set default timezone to UTC+7
 
 // Thêm interface để định nghĩa kiểu dữ liệu
 
-interface ProjectMember {
-  project_role: string;
-  user_id: string;
-  employee_id: string;
-  user_name: string;
-  full_name: string;
-}
-
-interface Project {
-  _id: string;
-  project_name: string;
-  project_code: string;
-  project_department: string;
-  project_description: string;
-  project_status: string;
-  project_start_date: string;
-  project_end_date: string;
-  project_comment: string | null;
-  project_members: ProjectMember[];
-  updated_by: string;
-  is_deleted: boolean;
-  created_at: string;
-  updated_at: string;
-}
 
 const AdminProjectManager: React.FC = () => {
   const navigate = useNavigate();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [selectedProject, setSelectedProject] = useState<ProjectData | null>(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [favoriteProjects, setFavoriteProjects] = useState<string[]>([]);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
@@ -51,7 +29,7 @@ const AdminProjectManager: React.FC = () => {
   const [editForm] = Form.useForm();
   const [createForm] = Form.useForm();
   const [startDate, setStartDate] = useState<dayjs.Dayjs | null>(null);
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<ProjectData[]>([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
     current: 1,
@@ -240,7 +218,7 @@ const AdminProjectManager: React.FC = () => {
       title: 'Actions',
       key: 'actions',
       width: 150,
-      render: (_: any, record: Project) => (
+      render: (_: any, record: ProjectData) => (
         <Space size="middle">
           <Button
             type="text"
@@ -263,14 +241,18 @@ const AdminProjectManager: React.FC = () => {
     },
   ];
 
-  const handleViewDetails = async (record: Project) => {
+  const handleViewDetails = async (record: ProjectData) => {
     try {
       setLoading(true);
-      setSelectedProject(record);
+      
+      // Lấy thông tin chi tiết của project bao gồm cả thông tin member
+      const projectDetail = await projectService.getProjectById(record._id);
+      
+      if (projectDetail && projectDetail.data) {
+        setSelectedProject(projectDetail.data);
+      }
+      
       setIsModalVisible(true);
-
-      // Giả lập thời gian loading
-      await new Promise((resolve) => setTimeout(resolve, 1000));
     } catch (error) {
       console.error('Lỗi khi lấy thông tin dự án:', error);
       message.error('Đã xảy ra lỗi khi lấy thông tin dự án');
@@ -285,7 +267,7 @@ const AdminProjectManager: React.FC = () => {
     setSelectedProject(null);
   };
 
-  const handleEdit = async (record: Project) => {
+  const handleEdit = async (record: ProjectData) => {
     try {
       setLoading(true); // Bắt đầu trạng thái loading
       setSelectedProject(record);
@@ -423,7 +405,8 @@ const AdminProjectManager: React.FC = () => {
       const response = await projectService.updateProject(selectedProject._id, projectData);
 
       if (response) {
-        message.success('Cập nhật dự án thành công');
+        console.log(response)
+        toast.success('Cập nhật dự án thành công');
         setIsEditModalVisible(false);
         editForm.resetFields();
         fetchProjects();
@@ -432,7 +415,7 @@ const AdminProjectManager: React.FC = () => {
 
     } catch (error) {
       console.error('Error updating project:', error);
-      message.error('Có lỗi xảy ra khi cập nhật dự án');
+      toast.error('Có lỗi xảy ra khi cập nhật dự án');
     } finally {
       setLoading(false);
     }
@@ -539,14 +522,14 @@ const AdminProjectManager: React.FC = () => {
 
       const response = await projectService.createProject(projectData);
       if (response.success) {
-        message.success('Project created successfully');
+        toast.success('Project created successfully');
         setIsCreateModalVisible(false);
         createForm.resetFields();
         fetchProjects(); // Refresh danh sách
       }
     } catch (error) {
       console.error('Error creating project:', error);
-      message.error('Failed to create project');
+      toast.error('Failed to create project');
     } finally {
       setLoading(false);
     }
@@ -804,8 +787,8 @@ const AdminProjectManager: React.FC = () => {
                     {[
                       { role: 'Project Manager', color: 'gold' },
                       { role: 'Quality Analytics', color: 'green' },
-                      { role: 'Technical Lead', color: 'blue' },
-                      { role: 'Business Analyst', color: 'purple' },
+                      { role: 'Technical Leader', color: 'blue' },
+                      { role: 'Business Analytics', color: 'purple' },
                       { role: 'Developer', color: 'cyan' },
                       { role: 'Tester', color: 'magenta' },
                       { role: 'Technical Consultant', color: 'geekblue' }
