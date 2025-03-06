@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SideBarAdminProject from '../../components/admin/SideBarAdminProject';
 import { Card, Table, Tag, Space, Button, Modal, Form, Input, Select, DatePicker, message, Spin, Empty } from 'antd';
-import { EditOutlined, DeleteOutlined, EyeOutlined, ArrowLeftOutlined, SearchOutlined, StarOutlined, StarFilled } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, EyeOutlined, ArrowLeftOutlined, SearchOutlined, StarOutlined, StarFilled, PlusOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import projectService from '../../services/projectService';
 import { userService } from '../../services/userService';
@@ -258,9 +258,6 @@ const AdminProjectManager: React.FC = () => {
       setLoading(true);
       setSelectedProject(record);
       setIsModalVisible(true);
-
-      // Giả lập thời gian loading
-      await new Promise((resolve) => setTimeout(resolve, 1000));
     } catch (error) {
       console.error('Lỗi khi lấy thông tin dự án:', error);
       message.error('Đã xảy ra lỗi khi lấy thông tin dự án');
@@ -269,15 +266,13 @@ const AdminProjectManager: React.FC = () => {
     }
   };
 
-
   const handleModalClose = () => {
     setIsModalVisible(false);
     setSelectedProject(null);
   };
 
-  const handleEdit = async (record: Project) => {
+  const handleEdit = (record: Project) => {
     try {
-      setLoading(true); // Bắt đầu trạng thái loading
       setSelectedProject(record);
 
       // Set giá trị mặc định cho form từ record
@@ -310,19 +305,12 @@ const AdminProjectManager: React.FC = () => {
           .map(m => m.user_id)
       });
 
-      // Giả lập thời gian loading
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
       setIsEditModalVisible(true);
     } catch (error) {
       console.error('Error in handleEdit:', error);
       message.error('Có lỗi xảy ra khi mở form chỉnh sửa');
-    } finally {
-      setLoading(false); // Kết thúc trạng thái loading
     }
   };
-
-
 
   const handleEditModalClose = () => {
     setIsEditModalVisible(false);
@@ -437,14 +425,14 @@ const AdminProjectManager: React.FC = () => {
     });
   };
 
-  const handleCreate = () => {
-    setIsCreateModalVisible(true);
+  const handleCreateModalClose = () => {
+    setIsCreateModalVisible(false);
+    form.resetFields(); // Reset form khi đóng modal
   };
 
-  const handleCreateModalClose = () => {
-    form.resetFields();  // Đặt lại form khi đóng modal
-    setIsCreateModalVisible(false);
-
+  const handleCreateProject = () => {
+    form.resetFields(); // Reset form khi nhấn nút tạo mới
+    setIsCreateModalVisible(true);
   };
 
   const handleCreateSubmit = async (values: any) => {
@@ -633,7 +621,7 @@ const AdminProjectManager: React.FC = () => {
       <SideBarAdminProject
         favoriteProjects={favoriteProjects}
         projects={projects}
-        onCreateProject={handleCreate}
+        onCreateProject={handleCreateProject}
       />
       <div className="flex-1 ml-64 p-8">
         <div className="flex items-center justify-between mb-6">
@@ -1035,6 +1023,11 @@ const AdminProjectManager: React.FC = () => {
                   type="primary"
                   htmlType="submit"
                   loading={loading}
+                  style={{
+                    background: "linear-gradient(to right,  #ff7e5f, #feb47b)",
+                    border: "none",
+                    color: "#fff",
+                  }}
                 >
                   Update Project
                 </Button>
@@ -1270,7 +1263,13 @@ const AdminProjectManager: React.FC = () => {
             {/* Buttons */}
             <div className="flex justify-end space-x-4 pt-6 border-t">
               <Button onClick={handleCreateModalClose}>Cancel</Button>
-              <Button type="primary" htmlType="submit">Create Project</Button>
+              <Button type="primary" htmlType="submit"
+              style={{
+                background: "linear-gradient(to right,  #ff7e5f, #feb47b)",
+                border: "none",
+                color: "#fff",
+              }}
+              >Create Project</Button>
             </div>
           </Form>
         </Modal>

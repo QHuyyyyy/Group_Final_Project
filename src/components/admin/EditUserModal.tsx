@@ -93,7 +93,17 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
         <Button key="cancel" onClick={onCancel}>
           Cancel
         </Button>,
-        <Button key="submit" type="primary" onClick={form.submit}>
+        <Button
+        key="submit"
+          type="primary"
+          onClick={form.submit}
+          style={{
+            background: "linear-gradient(to right,  #ff7e5f, #feb47b)",
+            border: "none",
+            color: "#fff",
+          }}
+        > 
+          
           Save
         </Button>
       ]}

@@ -80,7 +80,11 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
           key="submit"
           type="primary"
           onClick={form.submit}
-          className="bg-blue-600 hover:bg-blue-700"
+          style={{
+            background: "linear-gradient(to right,  #ff7e5f, #feb47b)",
+            border: "none",
+            color: "#fff",
+          }}
         >
           Save
         </Button>,
