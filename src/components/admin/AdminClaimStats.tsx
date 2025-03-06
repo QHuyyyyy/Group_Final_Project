@@ -5,8 +5,8 @@ import { User } from "../../models/UserModel";
 import { Claim } from "../../models/ClaimModel";
 import dayjs from "dayjs"
 import { Bar, BarChart, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell  } from "recharts";
-import { userService } from "../../services/userService";
-import { claimService } from "../../services/claimService";
+import { userService } from "../../services/user.service";
+import { claimService } from "../../services/claim.service";
 interface ClaimStatus {
     id: number;
     name: string;
