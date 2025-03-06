@@ -44,7 +44,7 @@ export default function AdminProjectStats() {
         const fetchData = async () => {
           try {
       
-            const fetchProjects = async (status = '', pageSize = 10) => {
+            const fetchProjects = async (status = '', pageSize = 200) => {
               let allProjects: Project[] = [];
               let pageNum = 1;
       
