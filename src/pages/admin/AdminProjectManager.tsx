@@ -40,6 +40,7 @@ const AdminProjectManager: React.FC = () => {
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
   const [users, setUsers] = useState<any[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+  const [teamMembers, setTeamMembers] = useState<Array<{userId: string, role: string}>>([]);
 
   // Hàm disabledStartDate
   const disabledStartDate = (current: dayjs.Dayjs) => {
@@ -442,9 +443,9 @@ const AdminProjectManager: React.FC = () => {
   };
 
   const handleCreateModalClose = () => {
-    createForm.resetFields();  // Đặt lại form khi đóng modal
+    createForm.resetFields();
+    setTeamMembers([]); // Reset team members khi đóng modal
     setIsCreateModalVisible(false);
-
   };
 
   const handleCreateSubmit = async (values: any) => {
@@ -456,68 +457,15 @@ const AdminProjectManager: React.FC = () => {
         project_department: values.project_department,
         project_description: values.project_description,
         project_status: values.project_status,
-        project_start_date:dayjs(values.startDate).utc().format('YYYY-MM-DD'),
-        project_end_date: dayjs(values.endDate)
-        .utc()
-        .format('YYYY-MM-DD'),
-        project_members: [
-          // PM - single select
-          {
-            user_id: values.project_manager,
-            project_role: 'Project Manager',
-            employee_id: '',
-            user_name: '',
-            full_name: ''
-          },
-          // QA - single select
-          {
-            user_id: values.qa_leader,
-            project_role: 'Quality Analytics',
-            employee_id: '',
-            user_name: '',
-            full_name: ''
-          },
-          // Technical Lead - multiple select
-          ...values.technical_leader.map((id: string) => ({
-            user_id: id,
-            project_role: 'Technical Leader',
-            employee_id: '',
-            user_name: '',
-            full_name: ''
-          })),
-          // BA - multiple select
-          ...values.business_analyst.map((id: string) => ({
-            user_id: id,
-            project_role: 'Business Analytics',
-            employee_id: '',
-            user_name: '',
-            full_name: ''
-          })),
-          // Developers - multiple select
-          ...values.developers.map((id: string) => ({
-            user_id: id,
-            project_role: 'Developer',
-            employee_id: '',
-            user_name: '',
-            full_name: ''
-          })),
-          // Testers - multiple select
-          ...values.testers.map((id: string) => ({
-            user_id: id,
-            project_role: 'Tester',
-            employee_id: '',
-            user_name: '',
-            full_name: ''
-          })),
-          // Technical Consultant - multiple select
-          ...values.technical_consultant.map((id: string) => ({
-            user_id: id,
-            project_role: 'Technical Consultant',
-            employee_id: '',
-            user_name: '',
-            full_name: ''
-          }))
-        ]
+        project_start_date: dayjs(values.startDate).utc().format('YYYY-MM-DD'),
+        project_end_date: dayjs(values.endDate).utc().format('YYYY-MM-DD'),
+        project_members: teamMembers.map(member => ({
+          user_id: member.userId,
+          project_role: member.role,
+          employee_id: '',
+          user_name: '',
+          full_name: ''
+        }))
       };
 
       const response = await projectService.createProject(projectData);
@@ -525,6 +473,7 @@ const AdminProjectManager: React.FC = () => {
         toast.success('Project created successfully');
         setIsCreateModalVisible(false);
         createForm.resetFields();
+        setTeamMembers([]); // Reset team members
         fetchProjects(); // Refresh danh sách
       }
     } catch (error) {
@@ -843,81 +792,77 @@ const AdminProjectManager: React.FC = () => {
               initialValues={selectedProject}
             >
               {/* Project Information */}
-              <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                <div className="col-span-2">
-                  <Form.Item
-                    name="project_name"
-                    label="Project Name"
-                    rules={[{ required: true, message: 'Please specify value for this field.' }]}
-                  >
-                    <Input className="rounded-md" />
-                  </Form.Item>
-                </div>
+              <div className="grid grid-cols-3 gap-x-6 mb-4">
+                <Form.Item
+                  name="project_code"
+                  label="Project Code"
+                  rules={[{ required: true, message: 'Please input project code!' }]}
+                >
+                  <Input placeholder="Enter project code" />
+                </Form.Item>
 
-                <div className="col-span-2">
-                  <Form.Item
-                    name="project_code"
-                    label="Project Code"
-                    rules={[{ required: true, message: 'Please specify value for this field.' }]}
-                  >
-                    <Input className="rounded-md" />
-                  </Form.Item>
-                </div>
+                <Form.Item
+                  name="project_name"
+                  label="Project Name"
+                  rules={[{ required: true, message: 'Please input project name!' }]}
+                >
+                  <Input placeholder="Enter project name" />
+                </Form.Item>
 
-                <div className="col-span-2">
-                  <Form.Item
-                    name="project_department"
-                    label="Department"
-                  >
-                    <Select placeholder="Select department">
-                      <Select.Option value="CMS">CMS</Select.Option>
-                      <Select.Option value="ERP">ERP</Select.Option>
-                      <Select.Option value="Blockchain">Blockchain</Select.Option>
-                    </Select>
-                  </Form.Item>
-                </div>
+                <Form.Item
+                  name="project_department"
+                  label="Department"
+                  rules={[{ required: true, message: 'Please select department!' }]}
+                >
+                  <Select placeholder="Select department">
+                    <Select.Option value="IT">IT Department</Select.Option>
+                    <Select.Option value="HR">HR Department</Select.Option>
+                    <Select.Option value="Marketing">Marketing Department</Select.Option>
+                    <Select.Option value="Sales">Sales Department</Select.Option>
+                    <Select.Option value="Finance">Finance Department</Select.Option>
+                  </Select>
+                </Form.Item>
+              </div>
 
-                <div className="col-span-2">
-                  <Form.Item
-                    name="project_description"
-                    label="Description"
-                    rules={[{ required: true, message: 'Please specify value for this field.' }]}
-                  >
-                    <Input.TextArea
-                      rows={4}
-                      placeholder="Enter project description"
-                      className="rounded-md"
-                    />
-                  </Form.Item>
-                </div>
+              <div className="mb-4">
+                <Form.Item
+                  name="project_description"
+                  label="Description"
+                  rules={[{ required: true, message: 'Please input project description!' }]}
+                >
+                  <Input.TextArea
+                    rows={4}
+                    placeholder="Enter project description"
+                  />
+                </Form.Item>
+              </div>
 
-                {/* Date Selection in 2 columns */}
-                <div>
-                  <Form.Item
-                    label="Start Date"
-                    name="startDate"
-                  >
-                    <DatePicker
-                      style={{ width: '100%' }}
-                      className="rounded-md"
-                      disabledDate={disabledStartDate}
-                      onChange={handleEditStartDateChange}
-                    />
-                  </Form.Item>
-                </div>
+              {/* Date Selection in 2 columns */}
+              <div>
+                <Form.Item
+                  label="Start Date"
+                  name="startDate"
+                >
+                  <DatePicker
+                    style={{ width: '100%' }}
+                    className="rounded-md"
+                    disabledDate={disabledStartDate}
+                    onChange={handleEditStartDateChange}
+                  />
+                </Form.Item>
+              </div>
 
-                <div>
-                  <Form.Item
-                    label="End Date"
-                    name="endDate"
-                  >
-                    <DatePicker
-                      style={{ width: '100%' }}
-                      className="rounded-md"
-                      disabledDate={disabledEndDate}
-                    />
-                  </Form.Item>
-                </div>
+              <div>
+                <Form.Item
+                  label="End Date"
+                  name="endDate"
+                >
+                  <DatePicker
+                    style={{ width: '100%' }}
+                    className="rounded-md"
+                    disabledDate={disabledEndDate}
+                  />
+                </Form.Item>
               </div>
 
               {/* Team Members Section */}
@@ -1086,7 +1031,7 @@ const AdminProjectManager: React.FC = () => {
           onCancel={handleCreateModalClose}
           footer={null}
           width={800}
-          className="custom-modal"
+       
         >
           <Form
             form={createForm}
@@ -1097,7 +1042,7 @@ const AdminProjectManager: React.FC = () => {
             {/* Project Information */}
             <div className="mb-8">
               <h3 className="text-lg font-medium text-gray-700 mb-4 pb-2 border-b">Project Information</h3>
-              <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+              <div className="grid grid-cols-3 gap-x-6 mb-4">
                 <Form.Item
                   name="project_code"
                   label="Project Code"
@@ -1127,7 +1072,9 @@ const AdminProjectManager: React.FC = () => {
                     <Select.Option value="Finance">Finance Department</Select.Option>
                   </Select>
                 </Form.Item>
+              </div>
 
+              <div className="mb-4">
                 <Form.Item
                   name="project_description"
                   label="Description"
@@ -1138,170 +1085,106 @@ const AdminProjectManager: React.FC = () => {
                     placeholder="Enter project description"
                   />
                 </Form.Item>
+              </div>
+              <div className="grid grid-cols-2 gap-x-6 mb-4">
+              <Form.Item
+                label="Start Date"
+                name="startDate"
+                rules={[{ required: true, message: 'Please select start date!' }]}
+              >
+                <DatePicker
+                  style={{ width: '100%' }}
+                  className="rounded-md"
+                  disabledDate={disabledStartDate}
+                  onChange={handleCreateStartDateChange}
+                />
+              </Form.Item>
 
-                <Form.Item
-                  label="Start Date"
-                  name="startDate"
-                  rules={[{ required: true, message: 'Please select start date!' }]}
-                >
-                  <DatePicker
-                    style={{ width: '100%' }}
-                    className="rounded-md"
-                    disabledDate={disabledStartDate}
-                    onChange={handleCreateStartDateChange}
-                  />
-                </Form.Item>
-
-                <Form.Item
-                  label="End Date"
-                  name="endDate"
-                  rules={[{ required: true, message: 'Please select end date!' }]}
-                >
-                  <DatePicker
-                    style={{ width: '100%' }}
-                    disabledDate={disabledEndDate}
-                  />
-                </Form.Item>
+              <Form.Item
+                label="End Date"
+                name="endDate"
+                rules={[{ required: true, message: 'Please select end date!' }]}
+              >
+                <DatePicker
+                  style={{ width: '100%' }}
+                  disabledDate={disabledEndDate}
+                />
+              </Form.Item>
               </div>
             </div>
 
             {/* Team Members Section */}
             <div className="mb-8">
               <h3 className="text-lg font-medium text-gray-700 mb-4 pb-2 border-b">Team Members</h3>
-              <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                <Form.Item
-                  name="project_manager"
-                  label="Project Manager"
-                  rules={[{ required: true, message: 'Vui lòng chọn Project Manager!' }]}
-                >
-                  <Select
-                    showSearch
-                    placeholder="Chọn Project Manager"
-                    onSearch={handleUserSearch}
-                    filterOption={false}
-                    options={users.filter(user =>
-                      !selectedUsers.has(user.value) ||
-                      user.value === createForm.getFieldValue('project_manager')
-                    )}
-                    notFoundContent={loading ? <Spin size="small" /> : null}
-                    onChange={(value) => handleCreateUserSelect(value, 'project_manager')}
-                  />
-                </Form.Item>
+              
+              {/* Hiển thị danh sách thành viên đã thêm */}
+              {teamMembers.map((member, index) => (
+                <div key={index} className="grid grid-cols-2 gap-4 mb-4 items-start">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Thành viên
+                    </label>
+                    <Select
+                      showSearch
+                      style={{ width: '100%' }}
+                      placeholder="Chọn thành viên"
+                      value={member.userId}
+                      onChange={(value) => {
+                        const newMembers = [...teamMembers];
+                        newMembers[index].userId = value;
+                        setTeamMembers(newMembers);
+                      }}
+                      options={users}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Vai trò
+                    </label>
+                    <div className="flex gap-2">
+                      <Select
+                        style={{ width: '100%' }}
+                        placeholder="Chọn vai trò"
+                        value={member.role}
+                        onChange={(value) => {
+                          const newMembers = [...teamMembers];
+                          newMembers[index].role = value;
+                          setTeamMembers(newMembers);
+                        }}
+                        options={[
+                          { value: 'Project Manager', label: 'Project Manager' },
+                          { value: 'Quality Analytics', label: 'Quality Analytics' },
+                          { value: 'Technical Leader', label: 'Technical Leader' },
+                          { value: 'Business Analytics', label: 'Business Analytics' },
+                          { value: 'Developer', label: 'Developer' },
+                          { value: 'Tester', label: 'Tester' },
+                          { value: 'Technical Consultant', label: 'Technical Consultant' }
+                        ]}
+                      />
+                      <Button 
+                        danger
+                        onClick={() => {
+                          setTeamMembers(teamMembers.filter((_, i) => i !== index));
+                        }}
+                      >
+                        Xóa
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
 
-                <Form.Item
-                  name="qa_leader"
-                  label="Quality Analytics"
-                  rules={[{ required: true, message: 'Vui lòng chọn QA!' }]}
-                >
-                  <Select
-                    showSearch
-                    placeholder="Chọn QA"
-                    onSearch={handleUserSearch}
-                    filterOption={false}
-                    options={users.filter(user =>
-                      !selectedUsers.has(user.value) ||
-                      user.value === createForm.getFieldValue('qa_leader')
-                    )}
-                    notFoundContent={loading ? <Spin size="small" /> : null}
-                    onChange={(value) => handleCreateUserSelect(value, 'qa_leader')}
-                  />
-                </Form.Item>
-
-                <Form.Item
-                  name="technical_leader"
-                  label="Technical Lead"
-                >
-                  <Select
-                    mode="multiple"
-                    showSearch
-                    placeholder="Select Technical Lead"
-                    onSearch={handleUserSearch}
-                    filterOption={false}
-                    options={users.filter(user =>
-                      !selectedUsers.has(user.value) ||
-                      (createForm.getFieldValue('technical_leader') || []).includes(user.value)
-                    )}
-                    notFoundContent={loading ? <Spin size="small" /> : null}
-                    onChange={(value) => handleCreateUserSelect(value, 'technical_leader')}
-                  />
-                </Form.Item>
-
-                <Form.Item
-                  name="business_analyst"
-                  label="Business Analyst"
-                >
-                  <Select
-                    mode="multiple"
-                    showSearch
-                    placeholder="Select Business Analyst"
-                    onSearch={handleUserSearch}
-                    filterOption={false}
-                    options={users.filter(user =>
-                      !selectedUsers.has(user.value) ||
-                      (createForm.getFieldValue('business_analyst') || []).includes(user.value)
-                    )}
-                    notFoundContent={loading ? <Spin size="small" /> : null}
-                    onChange={(value) => handleCreateUserSelect(value, 'business_analyst')}
-                  />
-                </Form.Item>
-
-                <Form.Item
-                  name="developers"
-                  label="Developers"
-                >
-                  <Select
-                    mode="multiple"
-                    showSearch
-                    placeholder="Select Developers"
-                    onSearch={handleUserSearch}
-                    filterOption={false}
-                    options={users.filter(user =>
-                      !selectedUsers.has(user.value) ||
-                      (createForm.getFieldValue('developers') || []).includes(user.value)
-                    )}
-                    notFoundContent={loading ? <Spin size="small" /> : null}
-                    onChange={(value) => handleCreateUserSelect(value, 'developers')}
-                  />
-                </Form.Item>
-
-                <Form.Item
-                  name="testers"
-                  label="Testers"
-                >
-                  <Select
-                    mode="multiple"
-                    showSearch
-                    placeholder="Select Testers"
-                    onSearch={handleUserSearch}
-                    filterOption={false}
-                    options={users.filter(user =>
-                      !selectedUsers.has(user.value) ||
-                      (createForm.getFieldValue('testers') || []).includes(user.value)
-                    )}
-                    notFoundContent={loading ? <Spin size="small" /> : null}
-                    onChange={(value) => handleCreateUserSelect(value, 'testers')}
-                  />
-                </Form.Item>
-
-                <Form.Item
-                  name="technical_consultant"
-                  label="Technical Consultancy"
-                >
-                  <Select
-                    mode="multiple"
-                    showSearch
-                    placeholder="Select Technical Consultant"
-                    onSearch={handleUserSearch}
-                    filterOption={false}
-                    options={users.filter(user =>
-                      !selectedUsers.has(user.value) ||
-                      (createForm.getFieldValue('technical_consultant') || []).includes(user.value)
-                    )}
-                    notFoundContent={loading ? <Spin size="small" /> : null}
-                    onChange={(value) => handleCreateUserSelect(value, 'technical_consultant')}
-                  />
-                </Form.Item>
-              </div>
+              {/* Nút thêm thành viên mới */}
+              <Button
+                type="dashed"
+                block
+                onClick={() => {
+                  setTeamMembers([...teamMembers, { userId: '', role: '' }]);
+                }}
+                className="mt-4"
+              >
+                + Thêm thành viên
+              </Button>
             </div>
 
             {/* Buttons */}
