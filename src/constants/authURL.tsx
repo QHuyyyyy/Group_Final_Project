@@ -6,3 +6,4 @@ export const JOB_ENDPOINT = '/api/jobs';
 export const PROJECTS_ENDPOINT = '/api/projects'; 
 export const ROLES_ENDPOINT = '/api/roles';
 export const USERS_ENDPOINT = '/api/users';
+export const DEPARTMENT_ENDPOINT = '/api/departments';
