@@ -104,7 +104,7 @@ const AdminProjectManager: React.FC = () => {
         }
       });
 
-      console.log('API Response:', response.data); // Kiểm tra response
+
 
       // Kiểm tra cấu trúc response và cập nhật state
       if (response && response.data) {
@@ -400,7 +400,6 @@ const AdminProjectManager: React.FC = () => {
         ].filter(member => member.user_id) // Lọc bỏ các member không có user_id
       };
 
-      console.log('Sending update data:', projectData);
 
       const response = await projectService.updateProject(selectedProject._id, projectData);
 
