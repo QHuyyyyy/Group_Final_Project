@@ -22,6 +22,17 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
     form.resetFields();
     onCancel();
   };
+  const ValidatePassword = [
+    { required: true, message: "Please input password!" },
+    { min: 6, message: "Password must be at least 6 characters!" },
+    {
+      pattern: InputVaild.password,
+      message: "Password must contain at least one uppercase & one special character!",
+    },
+  ]
+  const UserNameValidate = {
+    password:ValidatePassword
+  }
 
   const handleSave = async (values: any) => {
     const loadingMessage = message.loading("Creating user...", 0);
@@ -127,14 +138,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
             <Form.Item
               name="password"
               label="Password"
-              rules={[
-                { required: true, message: "Please input password!" },
-                { min: 6, message: "Password must be at least 6 characters!" },
-                {
-                  pattern: InputVaild.password,
-                  message: "Password must contain at least one uppercase & one special character!",
-                },
-              ]}
+              rules={UserNameValidate.password}
               validateDebounce={500}
               validateFirst={true}
             >

@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from "react";
-import { UserOutlined,LogoutOutlined, SettingOutlined } from '@ant-design/icons';
+import { UserOutlined,LogoutOutlined } from '@ant-design/icons';
 import {Dropdown} from "antd"
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import { Link, useNavigate } from "react-router-dom";
@@ -27,17 +27,9 @@ const AdminDashboard: React.FC = () => {
         </Link>
       ),
     },
+
     {
       key: "2",
-      label: (
-        <Link to="/dashboard/settingadmin">
-          <SettingOutlined className="pr-2" />
-          Setting
-        </Link>
-      ),
-    },
-    {
-      key: "3",
       label: (
         <span onClick={handleLogout} className="cursor-pointer">
           <LogoutOutlined className="pr-2" />
