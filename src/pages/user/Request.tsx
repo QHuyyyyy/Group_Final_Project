@@ -24,16 +24,8 @@ const Claim = () => {
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
 
   useEffect(() => {
-      fetchClaims();
+    fetchClaims();
   }, [pagination.current, pagination.pageSize, searchText]);
-
-  useEffect(() => {
-    if (claims.length > 0) {
-      claims.forEach(claim => {
-        fetchTotal_Hours(claim._id);
-      });
-    }
-  }, [claims]);
 
   const fetchClaims = async () => {
     try {
@@ -52,36 +44,37 @@ const Claim = () => {
         },
       };
 
-      const response = await claimService.searchClaims(params);
+      const response = await claimService.searchClaimsByClaimer(params);
       
       if (response && response.data && response.data.pageData) {
-        setClaims(response.data.pageData);
+        const claimsData = response.data.pageData;
+        setClaims(claimsData);
         setPagination(prev => ({
           ...prev,
           total: response.data.pageInfo.totalItems || 0
         }));
+
+        // Fetch total hours in one batch
+        const hoursMap: Record<string, number> = {};
+        await Promise.all(
+          claimsData.map(async (claim) => {
+            try {
+              const response = await claimService.getClaimById(claim._id);
+              if (response?.data?.total_work_time) {
+                hoursMap[claim._id] = response.data.total_work_time;
+              }
+            } catch (error) {
+              console.error(`Error fetching hours for claim ${claim._id}:`, error);
+            }
+          })
+        );
+        setTotalHoursMap(hoursMap);
       }
     } catch (error) {
       console.error('Error fetching claims:', error);
       message.error('An error occurred while fetching claims.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchTotal_Hours = async (claimId: string) => {
-    try {
-      const response = await claimService.getClaimById(claimId);
-      console.log('Total hours response:', response);
-      
-      if (response && response.data && response.data.total_work_time) {
-        setTotalHoursMap(prev => ({
-          ...prev,
-          [claimId]: response.data.total_work_time
-        }));
-      }
-    } catch (error) {
-      console.error('Error fetching total hours:', error);
     }
   };
 
@@ -186,7 +179,7 @@ const Claim = () => {
                 render: (_, record) => (
                   <span>
                     {dayjs(record.claim_start_date).format('YYYY-MM-DD')} 
-                    {' to '} 
+                    {' - '} 
                     {dayjs(record.claim_end_date).format('YYYY-MM-DD')}
                   </span>
                 ),
@@ -262,6 +255,10 @@ const Claim = () => {
         <RequestDetails
           visible={isModalVisible}
           claim={selectedRequest}
+          projectInfo={{
+            project_name: claims.find(c => c._id === selectedRequest?._id)?.project_info?.project_name || '',
+            project_comment: claims.find(c => c._id === selectedRequest?._id)?.project_info?.project_comment
+          }}
           onClose={handleCloseModal}
         />
         <CreateRequest
