@@ -75,16 +75,16 @@ const RequestDetails: React.FC<RequestDetailsProps> = ({ visible, claim, project
                     </Tag>
                 </Descriptions.Item>
                 <Descriptions.Item label="Created Date" span={1}>
-                    {dayjs(claim.created_at).format('YYYY-MM-DD')}
+                    {dayjs(claim.created_at).format('DD/MM/YYYY HH:mm')}
                 </Descriptions.Item>
                 <Descriptions.Item label="Total Hours" span={1}>
                     {formatWorkTime(totalHoursMap[claim._id])}
                 </Descriptions.Item>
                 <Descriptions.Item label="Start Date" span={1}>
-                    {dayjs(claim.claim_start_date).format('YYYY-MM-DD')}
+                    {dayjs(claim.claim_start_date).format('DD/MM/YYYY HH:mm')}
                 </Descriptions.Item>
                 <Descriptions.Item label="End Date" span={1}>
-                    {dayjs(claim.claim_end_date).format('YYYY-MM-DD')}
+                    {dayjs(claim.claim_end_date).format('DD/MM/YYYY HH:mm')}
                 </Descriptions.Item>
                 {projectInfo?.project_comment && (
                     <Descriptions.Item label="Project Comment" span={2}>

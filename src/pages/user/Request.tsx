@@ -174,14 +174,19 @@ const Claim = () => {
                 title: "Project Duration",
                 dataIndex: "duration",
                 key: "duration",
-                width: 200,
+                width: 250,
                 align: 'center',
                 render: (_, record) => (
-                  <span>
-                    {dayjs(record.claim_start_date).format('YYYY-MM-DD')} 
-                    {' - '} 
-                    {dayjs(record.claim_end_date).format('YYYY-MM-DD')}
-                  </span>
+                  <div className="flex flex-col items-center text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">From:</span>
+                      {dayjs(record.claim_start_date).format('DD/MM/YYYY HH:mm')}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">To:</span>
+                      {dayjs(record.claim_end_date).format('DD/MM/YYYY HH:mm')}
+                    </div>
+                  </div>
                 ),
                 sorter: (a, b) => {
                   const dateA = new Date(a.claim_start_date).getTime();
