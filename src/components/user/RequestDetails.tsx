@@ -1,13 +1,13 @@
-import { Modal, Descriptions, Tag, message } from "antd";
+import { Modal, Tag } from "antd";
 import dayjs from "dayjs";
-import { useEffect, useState } from "react";
-import { claimService } from "../../services/claim.service";
+import { useMemo } from "react";
 import { ClaimById } from "../../models/ClaimModel";
 
 interface RequestDetailsProps {
     visible: boolean;
     claim?: ClaimById;
     projectInfo?: {
+        _id: string;
         project_name: string;
         project_comment?: string;
     };
@@ -15,85 +15,109 @@ interface RequestDetailsProps {
 }
 
 const RequestDetails: React.FC<RequestDetailsProps> = ({ visible, claim, projectInfo, onClose }) => {
-    const [totalHoursMap, setTotalHoursMap] = useState<Record<string, number>>({});
-
-    useEffect(() => {
-        if (claim?._id) {
-            fetchTotal_Hours(claim._id);
-        }
-    }, [claim]);
-
-    const fetchTotal_Hours = async (claimId: string) => {
-        try {
-            const response = await claimService.getClaimById(claimId);
-            console.log('Total hours response:', response);
-            
-            if (response && response.data && response.data.total_work_time) {
-                setTotalHoursMap(prev => ({
-                    ...prev,
-                    [claimId]: response.data.total_work_time
-                }));
-            }
-        } catch (error) {
-            console.error('Error fetching total hours:', error);
-            message.error('An error occurred while fetching total hours.');
-        }
-    };
-
-    const formatWorkTime = (hours: number) => {
+    const formatWorkTime = (hours: number | undefined) => {
         if (!hours && hours !== 0) return '-';
         return `${hours}h`;
     };
+
+    const modalTitle = useMemo(() => (
+        <div className="flex items-center gap-3">
+            <h2 className="text-xl font-semibold">Claim Details</h2>
+            {claim && (
+                <Tag color={
+                    !claim.claim_status || claim.claim_status === "Draft" ? "gold" :
+                    claim.claim_status === "Pending Approval" ? "blue" :
+                    claim.claim_status === "Approved" ? "green" : "red"
+                }>
+                    {claim.claim_status || "Draft"}
+                </Tag>
+            )}
+        </div>
+    ), [claim?.claim_status]);
 
     if (!claim) return null;
 
     return (
         <Modal
-            title={<h2 className="text-2xl font-bold">Claim Details</h2>}
+            title={modalTitle}
             open={visible}
             onCancel={onClose}
             footer={null}
-            width={800}
+            width={600}
+            className="custom-modal"
         >
-            <Descriptions bordered column={2} className="mt-4">
-                <Descriptions.Item label="Claim ID" span={1}>
-                    {claim._id}
-                </Descriptions.Item>
-                <Descriptions.Item label="Claim Name" span={1}>
-                    {claim.claim_name}
-                </Descriptions.Item>
-                <Descriptions.Item label="Project Name" span={1}>
-                    {projectInfo?.project_name || claim.project_id}
-                </Descriptions.Item>
-                <Descriptions.Item label="Status" span={1}>
-                    <Tag color={
-                        !claim.claim_status || claim.claim_status === "Draft" ? "gold" :
-                        claim.claim_status === "Pending Approval" ? "blue" :
-                        claim.claim_status === "Approved" ? "green" : "red"
-                    }>
-                        {claim.claim_status || "Draft"}
-                    </Tag>
-                </Descriptions.Item>
-                <Descriptions.Item label="Created Date" span={1}>
-                    {dayjs(claim.created_at).format('YYYY-MM-DD')}
-                </Descriptions.Item>
-                <Descriptions.Item label="Total Hours" span={1}>
-                    {formatWorkTime(totalHoursMap[claim._id])}
-                </Descriptions.Item>
-                <Descriptions.Item label="Start Date" span={1}>
-                    {dayjs(claim.claim_start_date).format('YYYY-MM-DD')}
-                </Descriptions.Item>
-                <Descriptions.Item label="End Date" span={1}>
-                    {dayjs(claim.claim_end_date).format('YYYY-MM-DD')}
-                </Descriptions.Item>
-                {projectInfo?.project_comment && (
-                    <Descriptions.Item label="Project Comment" span={2}>
-                        {projectInfo.project_comment}
-                    </Descriptions.Item>
-                )}
-            </Descriptions>
+            <div className="py-3">
+                {/* Basic Information */}
+                <div className="mb-6">
+                    <h3 className="text-base font-medium mb-3 flex items-center">
+                        <div className="w-1 h-4 bg-blue-500 rounded mr-2"></div>
+                        Basic Information
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p className="text-gray-500">Claim ID</p>
+                            <p className="font-medium">{claim._id}</p>
+                        </div>
+                        <div>
+                            <p className="text-gray-500">Claim Name</p>
+                            <p className="font-medium">{claim.claim_name}</p>
+                        </div>
+                        <div>
+                            <p className="text-gray-500">Created Date</p>
+                            <p className="font-medium">{dayjs(claim.created_at).format('YYYY-MM-DD')}</p>
+                        </div>
+                        <div>
+                            <p className="text-gray-500">Total Hours</p>
+                            <p className="font-medium">{formatWorkTime(claim.total_work_time)}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Project Details */}
+                <div className="mb-6">
+                    <h3 className="text-base font-medium mb-3 flex items-center">
+                        <div className="w-1 h-4 bg-green-500 rounded mr-2"></div>
+                        Project Details
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p className="text-gray-500">Project ID</p>
+                            <p className="font-medium">{projectInfo?._id}</p>
+                        </div>
+                        <div>
+                            <p className="text-gray-500">Project Name</p>
+                            <p className="font-medium">{projectInfo?.project_name || claim.project_id}</p>
+                        </div>
+                        {projectInfo?.project_comment && (
+                            <div className="col-span-2">
+                                <p className="text-gray-500">Project Comment</p>
+                                <p className="font-medium">{projectInfo.project_comment}</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Time Period */}
+                <div>
+                    <h3 className="text-base font-medium mb-3 flex items-center">
+                        <div className="w-1 h-4 bg-purple-500 rounded mr-2"></div>
+                        Time Period
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p className="text-gray-500">Start Date</p>
+                            <p className="font-medium">{dayjs(claim.claim_start_date).format('YYYY-MM-DD')}</p>
+                        </div>
+                        <div>
+                            <p className="text-gray-500">End Date</p>
+                            <p className="font-medium">{dayjs(claim.claim_end_date).format('YYYY-MM-DD')}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </Modal>
     );
 };
 
 export default RequestDetails;
+
