@@ -8,9 +8,10 @@ import ForgotPassword from './components/common/ForgotPassword';
 import NotFound from './pages/NotFound';
 import VerifyToken from './pages/common/VerifyToken';
 import ResendToken from './pages/common/ResendToken';
-import Settings from "./pages/Settings";
 import ProtectedRoute from './routes/ProtectedRoute';
 import { RoutePermissions } from './routes/RoutePermissions';
+import SettingUser from './pages/user/SettingUser';
+import SettingAdmin from './pages/admin/SettingAdmin';
 
 // Lazy load components
 const Homepage = lazy(() => import('./pages/Homepage'));
@@ -79,6 +80,12 @@ const App = () => {
                 <Finance />
               </ProtectedRoute>
             } />
+            <Route path='settinguser' element={
+            <ProtectedRoute allowedRoles={RoutePermissions.user} redirectPath="/">
+              <SettingUser />
+            </ProtectedRoute>
+          } />
+            
             {/* <Route path="create-request" element={
               <UserRoute>
                 <CreateRequest />
@@ -113,8 +120,11 @@ const App = () => {
               <Profile />
             </ProtectedRoute>
           } />
-          <Route path='/dashboard/settings' element={<Settings />} />
-          <Route path='/dashboard/settings' element={<Settings />} />
+          <Route path='/dashboard/settingadmin' element={
+            <ProtectedRoute allowedRoles={RoutePermissions.admin} redirectPath="/">
+              <SettingAdmin />
+            </ProtectedRoute>
+          } />
 
           <Route path='*' element={<NotFound />} />
         </Routes>

@@ -7,13 +7,15 @@ import { ClaimById } from "../../models/ClaimModel";
 interface RequestDetailsProps {
     visible: boolean;
     claim?: ClaimById;
+    projectInfo?: {
+        project_name: string;
+        project_comment?: string;
+    };
     onClose: () => void;
 }
 
-const RequestDetails: React.FC<RequestDetailsProps> = ({ visible, claim, onClose }) => {
+const RequestDetails: React.FC<RequestDetailsProps> = ({ visible, claim, projectInfo, onClose }) => {
     const [totalHoursMap, setTotalHoursMap] = useState<Record<string, number>>({});
-    const [, setProjectName] = useState<string>("");
-
 
     useEffect(() => {
         if (claim?._id) {
@@ -43,35 +45,6 @@ const RequestDetails: React.FC<RequestDetailsProps> = ({ visible, claim, onClose
         return `${hours}h`;
     };
 
-    useEffect(() => {
-        if (claim?._id) {
-            fetchProjectName(claim._id);
-        }
-    }, [claim]);
-
-    const fetchProjectName = async (claimId: string) => {
-        try {
-            const response = await claimService.searchClaims({
-                searchCondition: {
-                    keyword: claimId,
-                    claim_status: "",
-                    claim_start_date: "",
-                    claim_end_date: "",
-                    is_delete: false
-                },
-                pageInfo: {
-                    pageNum: 1,
-                    pageSize: 1
-                },
-            });
-            if (response && response.data && response.data.pageData) {
-                setProjectName(response.data.pageData[0].project_info.project_name);
-            }
-        } catch (error) {
-            console.error('Error fetching project details:', error);
-        }
-    };
-
     if (!claim) return null;
 
     return (
@@ -90,7 +63,7 @@ const RequestDetails: React.FC<RequestDetailsProps> = ({ visible, claim, onClose
                     {claim.claim_name}
                 </Descriptions.Item>
                 <Descriptions.Item label="Project Name" span={1}>
-                    {claim.project_id}
+                    {projectInfo?.project_name || claim.project_id}
                 </Descriptions.Item>
                 <Descriptions.Item label="Status" span={1}>
                     <Tag color={
@@ -102,18 +75,22 @@ const RequestDetails: React.FC<RequestDetailsProps> = ({ visible, claim, onClose
                     </Tag>
                 </Descriptions.Item>
                 <Descriptions.Item label="Created Date" span={1}>
-                    {dayjs(claim.created_at).format('YYYY-MM-DD')}
+                    {dayjs(claim.created_at).format('DD/MM/YYYY HH:mm')}
                 </Descriptions.Item>
                 <Descriptions.Item label="Total Hours" span={1}>
                     {formatWorkTime(totalHoursMap[claim._id])}
                 </Descriptions.Item>
                 <Descriptions.Item label="Start Date" span={1}>
-                    {dayjs(claim.claim_start_date).format('YYYY-MM-DD')}
+                    {dayjs(claim.claim_start_date).format('DD/MM/YYYY HH:mm')}
                 </Descriptions.Item>
                 <Descriptions.Item label="End Date" span={1}>
-                    {dayjs(claim.claim_end_date).format('YYYY-MM-DD')}
+                    {dayjs(claim.claim_end_date).format('DD/MM/YYYY HH:mm')}
                 </Descriptions.Item>
-                
+                {projectInfo?.project_comment && (
+                    <Descriptions.Item label="Project Comment" span={2}>
+                        {projectInfo.project_comment}
+                    </Descriptions.Item>
+                )}
             </Descriptions>
         </Modal>
     );

@@ -1,6 +1,50 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { ApiResponse} from '../models/ApiResponse';
+import { createRoot } from 'react-dom/client';
+import React from 'react';
+import UserSpinner from '../components/user/UserSpinner';
+import { toast } from 'react-toastify';
 
+const loadingManager = {
+  count: 0,
+  spinnerElement: null as HTMLDivElement | null,
+  spinnerRoot: null as any,
+
+  show() {
+    this.count++;
+    if (this.count === 1) {
+      this.spinnerElement = document.createElement('div');
+      this.spinnerElement.id = 'global-loading-spinner';
+      
+      Object.assign(this.spinnerElement.style, {
+        position: 'fixed',
+        top: '0',
+        left: '0',
+        width: '100%',
+        height: '100%',
+        zIndex: '9999'
+      });
+      
+      document.body.appendChild(this.spinnerElement);
+      
+      this.spinnerRoot = createRoot(this.spinnerElement);
+      this.spinnerRoot.render(React.createElement(UserSpinner));
+    }
+  },
+
+  hide() {
+    this.count--;
+    if (this.count <= 0) {
+      this.count = 0;
+      if (this.spinnerElement && this.spinnerRoot) {
+        this.spinnerRoot.unmount();
+        document.body.removeChild(this.spinnerElement);
+        this.spinnerElement = null;
+        this.spinnerRoot = null;
+      }
+    }
+  }
+};
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -13,30 +57,62 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
+    if (config.showSpinner !== false) {
+      loadingManager.show();
+    }
+    
     const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    loadingManager.hide();
+    return Promise.reject(error);
+  }
 );
 
 api.interceptors.response.use(
   <T>(response: AxiosResponse<ApiResponse<T>>): AxiosResponse<T> => {
-  
-      return response as AxiosResponse<T>; 
-      
+    if (response.config.showSpinner !== false) {
+      loadingManager.hide();
+    }
+    return response as AxiosResponse<T>;
   },
   (error) => {
-    // if (error.response?.status === 401) {
-    //   localStorage.removeItem("token");
-    //   window.location.href = "/login";
-    // }
-    console.log(error)
+    loadingManager.hide();
+    if (error.response) {
+    // Global error handling
+    switch (error.response.status) {
+      case 400:
+        toast.error(error.response?.data?.errors[0]?.message || error.response?.data?.message)
+        break;
+      case 401:
+        toast.error('Unauthorized: Please log in again');
+        break;
+      case 403:
+        toast.error('Forbidden: You do not have permission');
+        break;
+      case 404:
+        toast.error('Resource not found');
+        break;
+      case 500:
+        toast.error(error.response?.data?.errors[0]?.message || error.response?.data?.message || 'Server error. Please try again later');
+        break;
+      default:
+        toast.error( error.response?.data?.message || 'An unexpected error occurred');
+    }
+  }
     return Promise.reject(error);
   }
 );
+
+declare module 'axios' {
+  interface AxiosRequestConfig {
+    showSpinner?: boolean;
+  }
+}
 
 // Common API utility functions
 export const apiUtils = {

@@ -1,3 +1,6 @@
+import { Page, PageInfo } from "./PageModel";
+import { SearchUserCondition } from "./SearchConditionModel";
+
 export interface CreateUser{
     email: string;
     password: string;
@@ -21,21 +24,9 @@ export interface UserData{
     __v:number
 }
 
-export interface SearchCondition {
-    keyword?: string;
-    role_code?: string;
-    is_blocked?: boolean;
-    is_delete?: boolean;
-    is_verified?: string;
-}
-
-export interface Page {
-    pageNum: number;
-    pageSize: number;
-}
 
 export interface SearchParams {
-    searchCondition: SearchCondition;
+    searchCondition: SearchUserCondition;
     pageInfo: Page;
 }
 
@@ -52,13 +43,6 @@ export interface User {
     token_version: number;
 }
 
-export interface PageInfo {
-    pageNum: number;
-    pageSize: number;
-    totalItems: number;  
-    totalPages: number;
-}
-
 export interface UpdateUserData {
     email?: string;     
     user_name?: string;  
@@ -68,8 +52,6 @@ export interface PaginatedResponse {
         pageData: User[];
         pageInfo: PageInfo;
 }
-
-
 
 export interface ChangePasswordRequest {
     old_password: string;

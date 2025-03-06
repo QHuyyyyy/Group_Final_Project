@@ -1,191 +1,130 @@
-import { useState } from "react";
-import { Table, Tag, Space, Button, Modal, Card, Input } from "antd";
+import { useEffect, useState, useCallback } from "react";
+import { Table, Tag, Space, Button, Modal, Card, Input, message } from "antd";
 import { CheckOutlined, CloseOutlined, UndoOutlined } from "@ant-design/icons";
+import { claimService } from "../../services/claimService";
+import type { Claim, SearchParams } from "../../models/ClaimModel";
 import { debounce } from "lodash";
+import dayjs from 'dayjs';
 
-type Claim = {
-  id: number;
-  submittedBy: string;
-  department: string;
-  employeeId: string;
-  overtimeType: string;
-  startTime: string;
-  endTime: string;
-  submittedDate: string;
-  amount: number;
-  description: string;
-  status: "Pending" | "Approved" | "Rejected" | "Draft";
-};
+const { Search } = Input;
 
-const DUMMY_CLAIMS: Claim[] = [
-  {
-    id: 1,
-    amount: 2.5,
-    status: "Pending",
-    submittedBy: "John Doe",
-    employeeId: "SE180000",
-    submittedDate: "2025-02-10",
-    description: "Travel expenses for client meeting",
-    overtimeType: "Holiday",
-    startTime: "18:00",
-    endTime: "20:30",
-    department: "IT",
-  },
-  {
-    id: 2,
-    amount: 3,
-    status: "Pending",
-    submittedBy: "Jane Smith",
-    employeeId: "SE180001",
-    submittedDate: "2025-02-09",
-    description: "Monthly office supplies purchase",
-    overtimeType: "Normal day",
-    startTime: "18:00",
-    endTime: "21:00",
-    department: "IT",
-  },
-  {
-    id: 3,
-    amount: 4,
-    status: "Approved",
-    submittedBy: "Alice Johnson",
-    employeeId: "SE180002",
-    submittedDate: "2025-02-08",
-    description: "Extra work on project deadline",
-    overtimeType: "Weekend",
-    startTime: "14:00",
-    endTime: "18:00",
-    department: "HR",
-  },
-  {
-    id: 4,
-    amount: 2,
-    status: "Rejected",
-    submittedBy: "Michael Brown",
-    employeeId: "SE180003",
-    submittedDate: "2025-02-07",
-    description: "Business trip preparation",
-    overtimeType: "Holiday",
-    startTime: "19:00",
-    endTime: "21:00",
-    department: "Finance",
-  },
-  {
-    id: 5,
-    amount: 5,
-    status: "Pending",
-    submittedBy: "Emma Wilson",
-    employeeId: "SE180004",
-    submittedDate: "2025-02-06",
-    description: "Assisting in system migration",
-    overtimeType: "Normal day",
-    startTime: "17:30",
-    endTime: "22:30",
-    department: "IT",
-  },
-  {
-    id: 6,
-    amount: 3.5,
-    status: "Approved",
-    submittedBy: "Robert Davis",
-    employeeId: "SE180005",
-    submittedDate: "2025-02-05",
-    description: "Emergency server maintenance",
-    overtimeType: "Weekend",
-    startTime: "20:00",
-    endTime: "23:30",
-    department: "IT",
-  },
-  {
-    id: 7,
-    amount: 4.5,
-    status: "Pending",
-    submittedBy: "Sophia Miller",
-    employeeId: "SE180006",
-    submittedDate: "2025-02-04",
-    description: "Finalizing financial report",
-    overtimeType: "Normal day",
-    startTime: "18:00",
-    endTime: "22:30",
-    department: "Finance",
-  },
-];
+interface PaginationState {
+  current: number;
+  pageSize: number;
+  total: number;
+}
 
 function ApprovalPage() {
-  const initialClaims = DUMMY_CLAIMS.filter(claim => 
-    claim.status !== "Draft"
-  );
-  
-  const [claims, setClaims] = useState<Claim[]>(initialClaims);
-  const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
-  const [confirmationType, setConfirmationType] = useState<"approve" | "reject" | "return" | null>(null);
-  const [, setSearchQuery] = useState<string>("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 5;
-  const { Search } = Input;
-
-  const [, setPagination] = useState({
+  const [claims, setClaims] = useState<Claim[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [pagination, setPagination] = useState<PaginationState>({
     current: 1,
     pageSize: 10,
-    totalItems: 0,
-    totalPages: 0
+    total: 0
   });
+  const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
+  const [confirmationType, setConfirmationType] = useState<"Approved" | "Rejected" | "Returned" | null>(null);
+
+  useEffect(() => {
+    fetchClaims();
+  }, [pagination.current, pagination.pageSize, searchText]);
+
+  const fetchClaims = async () => {
+    try {
+      setLoading(true);
+      const params: SearchParams = {
+        searchCondition: {
+          keyword: searchText || "",
+          claim_status: "",
+          claim_start_date: "",
+          claim_end_date: "",
+          is_delete: false,
+        },
+        pageInfo: {
+          pageNum: pagination.current,
+          pageSize: pagination.pageSize
+        },
+      };
+
+      const response = await claimService.searchClaimsForApproval(params);
+
+      if (response && response.data && response.data.pageData) {
+        const claimsData = response.data.pageData;
+        setClaims(claimsData);
+        setPagination(prev => ({
+          ...prev,
+          total: response.data.pageInfo.totalItems || 0
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching claims:', error);
+      message.error('An error occurred while fetching claims.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTableChange = (newPagination: any) => {
+    setPagination(prev => ({
+      ...prev,
+      current: newPagination.current,
+      pageSize: newPagination.pageSize
+    }));
+  };
 
   const filterClaims = (query: string, status: string) => {
-    let filtered = DUMMY_CLAIMS.filter(claim => claim.status !== "Draft");
-    
+    let filtered = claims;
     if (query) {
-      filtered = filtered.filter(claim => 
-        claim.description.toLowerCase().includes(query.toLowerCase()) ||
-        claim.submittedBy.toLowerCase().includes(query.toLowerCase()) ||
-        claim.employeeId.toLowerCase().includes(query.toLowerCase())
+      filtered = filtered.filter(claim =>
+        claim.claim_name.toLowerCase().includes(query.toLowerCase()) ||
+        claim.staff_name.toLowerCase().includes(query.toLowerCase()) ||
+        claim.staff_id.toLowerCase().includes(query.toLowerCase())
       );
     }
-    
+
     if (status) {
-      filtered = filtered.filter(claim => claim.status === status);
+      filtered = filtered.filter(claim => claim.claim_status === status);
     }
-    
+
     return filtered;
   };
 
-  const handleSearch = debounce((value: string) => {
-    setSearchQuery(value);
-    const filteredClaims = filterClaims(value, "");
-    setClaims(filteredClaims);
+  const handleSearch = useCallback(debounce((query: string) => {
+    setSearchText(query);
     setPagination(prev => ({
       ...prev,
       current: 1
     }));
-  }, 500);
+  }, 500), []);
 
-  const handleApprove = (id: number) => {
-    setClaims((prevClaims) =>
-      prevClaims.map((claim) =>
-        claim.id === id ? { ...claim, status: "Approved" } : claim
+  const filteredClaims = filterClaims(searchText, "");
+
+  const handleApprove = (id: string) => {
+    setClaims(prevClaims =>
+      prevClaims.map(claim =>
+        claim._id === id ? { ...claim, status: "Approved" } : claim
       )
     );
   };
 
-  const handleReject = (id: number) => {
-    setClaims((prevClaims) =>
-      prevClaims.map((claim) =>
-        claim.id === id ? { ...claim, status: "Rejected" } : claim
+  const handleReject = (id: string) => {
+    setClaims(prevClaims =>
+      prevClaims.map(claim =>
+        claim._id === id ? { ...claim, status: "Rejected" } : claim
       )
     );
   };
 
-  const handleReturn = (id: number) => {
-    setClaims(prevClaims => {
-      const newClaims = prevClaims.filter(claim => claim.id !== id);
-      if (newClaims.length <= (currentPage - 1) * pageSize && currentPage > 1) {
-        setCurrentPage(currentPage - 1);
-      }
-      return newClaims;
-    });
+  const handleReturn = (id: string) => {
+    setClaims(prevClaims =>
+      prevClaims.map(claim =>
+        claim._id === id ? { ...claim, claim_status: "Returned" } : claim
+      )
+    );
   };
 
-  const showConfirmation = (claim: Claim, type: "approve" | "reject" | "return") => {
+  const showConfirmation = (claim: Claim, type: "Approved" | "Rejected" | "Returned") => {
     setSelectedClaim(claim);
     setConfirmationType(type);
   };
@@ -194,14 +133,14 @@ function ApprovalPage() {
     if (!selectedClaim || !confirmationType) return;
 
     switch (confirmationType) {
-      case "approve":
-        handleApprove(selectedClaim.id);
+      case "Approved":
+        handleApprove(selectedClaim._id);
         break;
-      case "reject":
-        handleReject(selectedClaim.id);
+      case "Rejected":
+        handleReject(selectedClaim._id);
         break;
-      case "return":
-        handleReturn(selectedClaim.id);
+      case "Returned":
+        handleReturn(selectedClaim._id);
         break;
     }
 
@@ -214,16 +153,13 @@ function ApprovalPage() {
     setConfirmationType(null);
   };
 
-  const startIndex = (currentPage - 1) * pageSize;
-  const currentClaims = claims.slice(startIndex, startIndex + pageSize);
-
   return (
     <div className="overflow-x-auto">
       <Card className="shadow-md">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-800">Claim Approvals</h1>
         </div>
-        
+
         <div className="overflow-auto custom-scrollbar">
           <div className="flex flex-wrap gap-4 items-center mb-5 mx-2">
             <Search
@@ -236,62 +172,59 @@ function ApprovalPage() {
           </div>
 
           <Table
-            dataSource={currentClaims}
+            dataSource={filteredClaims}
+            loading={loading}
             columns={[
               {
-                title: <span className="font-bold">Employee</span>,
-                key: "employee",
+                title: "Staff name",
+                dataIndex: "staff_name",
+                key: "staff_name",
                 width: "15%",
+              },
+              {
+                title: "Role in project",
+                dataIndex: "role_in_project",
+                key: "role_in_project",
+                width: "10%",
+              },
+              {
+                title: "Claim name",
+                dataIndex: "claim_name",
+                key: "claim_name",
+                width: "10%",
+              },
+              {
+                title: "Date",
+                key: "time",
+                width: "15%",
+                align: 'center',
                 render: (_, record) => (
-                  <div className="flex items-center">
-                    <div className="">
-                      <div className="font-medium text-gray-900">
-                        {record.submittedBy}
-                      </div>
-                      <div className="text-gray-500 text-center">
-                        {record.department}
-                      </div>
+                  <div className="flex flex-col items-center text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">From:</span>
+                      {dayjs(record.claim_start_date).format('DD/MM/YYYY HH:mm')}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">To:</span>
+                      {dayjs(record.claim_end_date).format('DD/MM/YYYY HH:mm')}
                     </div>
                   </div>
                 ),
               },
               {
-                title: <span className="font-bold">Employee ID</span>,
-                dataIndex: "employeeId",
-                key: "employeeId",
-                width: "10%",
-              },
-              {
-                title: <span className="font-bold">Overtime Type</span>,
-                dataIndex: "overtimeType",
-                key: "overtimeType",
-                width: "10%",
-              },
-              {
-                title: <span className="font-bold">Time</span>,
+                title: "End date",
                 key: "time",
                 width: "15%",
                 render: (_, record) => (
                   <div>
-                    <div>
-                      {record.startTime} - {record.endTime}
-                    </div>
-                    <div className="text-sm text-gray-500 ml-1">
-                      {record.submittedDate}
-                    </div>
+                    <div className="text-sm">{dayjs(record.claim_end_date).format('HH:mm:ss')}</div>
+                    <div className="text-xs text-gray-500">{dayjs(record.claim_end_date).format('DD/MM/YYYY')}</div>
                   </div>
-                ),
-              },
-              {
-                title: <span className="font-bold">Hours</span>,
-                key: "hours",
-                width: "8%",
-                render: (_, record) => `${record.amount.toFixed(1)}h`,
-              },
+                ),              },
               {
                 title: <span className="font-bold">Reason</span>,
-                dataIndex: "description",
-                key: "description",
+                dataIndex: "claim_name",
+                key: "claim_name",
                 width: "20%",
               },
               {
@@ -301,14 +234,14 @@ function ApprovalPage() {
                 render: (_, record) => (
                   <Tag
                     color={
-                      record.status === "Approved"
+                      record.claim_status === "Approved"
                         ? "success"
-                        : record.status === "Rejected"
-                        ? "error"
-                        : "warning"
+                        : record.claim_status === "Rejected"
+                          ? "error"
+                          : "warning"
                     }
                   >
-                    {record.status}
+                    {record.claim_status}
                   </Tag>
                 ),
               },
@@ -317,13 +250,13 @@ function ApprovalPage() {
                 key: "actions",
                 width: "15%",
                 render: (_, record) => {
-                  if (record.status === "Pending") {
+                  if (record.claim_status === "Pending") {
                     return (
                       <Space>
                         <Button
                           type="primary"
                           icon={<CheckOutlined />}
-                          onClick={() => showConfirmation(record, "approve")}
+                          onClick={() => showConfirmation(record, "Approved")}
                           style={{ backgroundColor: '#52c41a' }}
                           className="hover:!bg-[#52c41a]"
                         />
@@ -331,32 +264,33 @@ function ApprovalPage() {
                           type="primary"
                           danger
                           icon={<CloseOutlined />}
-                          onClick={() => showConfirmation(record, "reject")}
+                          onClick={() => showConfirmation(record, "Rejected")}
                         />
                         <Button
                           type="primary"
                           icon={<UndoOutlined />}
-                          onClick={() => showConfirmation(record, "return")}
+                          onClick={() => showConfirmation(record, "Returned")}
                           style={{ backgroundColor: '#faad14' }}
                           className="hover:!bg-[#ffeb29]"
                         />
                       </Space>
                     );
                   }
-                  
+
                   return <span className="text-gray-500">Processed</span>;
                 },
               },
             ]}
             pagination={{
-              pageSize: pageSize,
-              total: claims.length,
-              showSizeChanger: false,
+              current: pagination.current,
+              pageSize: pagination.pageSize,
+              total: pagination.total,
+              showSizeChanger: true,
               showQuickJumper: true,
-              current: currentPage,
-              onChange: (page) => setCurrentPage(page),
+              showTotal: (total) => `Total ${total} transactions`,
+              onChange: (page, pageSize) => handleTableChange({ current: page, pageSize }),
             }}
-            className="overflow-hidden"
+            className="overflow-x-auto"
             scroll={{ x: 1000 }}
           />
         </div>
@@ -370,13 +304,13 @@ function ApprovalPage() {
         okText="Confirm"
         cancelText="Cancel"
       >
-        {confirmationType === "approve" && (
+        {confirmationType === "Approved" && (
           <p>Are you sure you want to <b>approve</b> this claim?</p>
         )}
-        {confirmationType === "reject" && (
+        {confirmationType === "Rejected" && (
           <p>Are you sure you want to <b>reject</b> this claim?</p>
         )}
-        {confirmationType === "return" && (
+        {confirmationType === "Returned" && (
           <p>Are you sure you want to <b>return</b> this claim?</p>
         )}
       </Modal>

@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react';
 import { Form, Input, Button, InputNumber, message,Avatar, Upload, DatePicker } from 'antd';
 import { UserOutlined, UploadOutlined } from '@ant-design/icons';
-import { useUserStore } from '../stores/userStore';
-import { employeeService } from '../services/employeeService';
+import { useUserStore } from '../../stores/userStore';
+import { employeeService } from '../../services/employeeService';
 import moment from 'moment';
 import type { UploadProps } from 'antd';
-import NavbarAdminDashboard from '../components/NavbarAdminDashboard';
-import AdminSidebar from '../components/admin/AdminSidebar';
-import { Employee } from '../models/EmployeeModel';
+import NavbarAdminDashboard from '../../components/NavbarAdminDashboard';
+import AdminSidebar from '../../components/admin/AdminSidebar';
+import { Employee } from '../../models/EmployeeModel';
 
 // Define the Employee interface
 
 
-const Settings = () => {
+const SettingAdmin = () => {
   const [form] = Form.useForm();
   const user = useUserStore((state) => state);
   const [employeeData, setEmployeeData] = useState<Employee | null>(null);
@@ -256,4 +256,4 @@ const Settings = () => {
   );
 };
 
-export default Settings;
+export default SettingAdmin;
