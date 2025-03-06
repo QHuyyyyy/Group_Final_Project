@@ -105,7 +105,7 @@ export default function AdminClaimStats() {
               paidClaims,
               draftClaims,
               canceledClaims,
-              allUsers
+              allUsers,
             ] = await Promise.all([
               fetchClaims(),
               fetchClaims('Pending Approval'),

@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Tag, Card, Button, message } from 'antd';
+import { Table, Tag, Card, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { ArrowLeftOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { useNavigate } from 'react-router-dom';
 import { claimLogService } from '../../services/claimLog.service';
 import { useUserStore } from '../../stores/userStore';
 
@@ -26,7 +24,6 @@ interface PaginationState {
 }
 
 const TransactionPage: React.FC = () => {
-  const navigate = useNavigate();
   const user = useUserStore((state) => state);
   
   const [loading, setLoading] = useState(false);
@@ -145,16 +142,6 @@ const TransactionPage: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <Button 
-          type="default"
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate('/dashboard')}
-          className="flex items-center hover:bg-gray-100"
-        >
-          Back to Dashboard
-        </Button>
-      </div>
 
       <Card className="shadow-lg rounded-lg">
         <div className="mb-6">
