@@ -1,4 +1,3 @@
-
 import { Modal, Form, Input, Select, Button } from "antd";
 import { userService } from "../../services/userService";
 import { message } from "antd";
@@ -69,29 +68,30 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
 
   return (
     <Modal
-      title={<h2 className="text-2xl font-bold">Add Account Staff</h2>}
+      title={<h2 className="text-2xl font-bold text-center">Add Account Staff</h2>}
       open={visible}
       onCancel={handleCancel}
       width={800}
       footer={[
-        <Button key="cancel" onClick={handleCancel}>
+        <Button key="cancel" onClick={handleCancel} className="bg-gray-300 hover:bg-gray-400">
           Cancel
         </Button>,
         <Button
           key="submit"
           type="primary"
           onClick={form.submit}
-       
+          className="bg-blue-600 hover:bg-blue-700"
         >
           Save
         </Button>,
       ]}
+      className="rounded-lg shadow-lg"
     >
       <Form
         form={form}
         layout="vertical"
         onFinish={handleSave}
-       
+        className="space-y-4"
       >
         <div className="flex flex-col items-center gap-4 w-full">
           <div className="w-full max-w-md">
@@ -101,7 +101,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
               rules={[{ required: true, message: "Please input username!" }]}
               validateDebounce={500}
             >
-              <Input onBlur={() => form.validateFields(["user_name"])} />
+              <Input className="border rounded-md p-2" onBlur={() => form.validateFields(["user_name"])} />
             </Form.Item>
 
             <Form.Item
@@ -113,7 +113,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
               ]}
               validateDebounce={1000}
             >
-              <Input onBlur={() => form.validateFields(["email"])} />
+              <Input className="border rounded-md p-2" onBlur={() => form.validateFields(["email"])} />
             </Form.Item>
 
             <Form.Item
@@ -121,7 +121,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
               label="Role"
               rules={[{ required: true, message: "Please select role!" }]}
             >
-              <Select placeholder="Select role" options={roleOptions} />
+              <Select placeholder="Select role" options={roleOptions} className="border rounded-md" />
             </Form.Item>
 
             <Form.Item
@@ -138,7 +138,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
               validateDebounce={500}
               validateFirst={true}
             >
-              <Input.Password />
+              <Input.Password className="border rounded-md p-2" />
             </Form.Item>
 
             <Form.Item
@@ -160,7 +160,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
               ]}
               validateDebounce={500}
             >
-              <Input.Password />
+              <Input.Password className="border rounded-md p-2" />
             </Form.Item>
           </div>
         </div>
