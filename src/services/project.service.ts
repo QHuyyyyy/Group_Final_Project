@@ -32,7 +32,8 @@ const projectService = {
           project_status: params.searchCondition.project_status,
           project_start_date: params.searchCondition.project_start_date,
           project_end_date: params.searchCondition.project_end_date,
-          is_delete: params.searchCondition.is_delete || false
+          is_delete: params.searchCondition.is_delete || false,
+          user_id: params.searchCondition.user_id
         },
         pageInfo: {
           pageNum: params.pageInfo.pageNum,

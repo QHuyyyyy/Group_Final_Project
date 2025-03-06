@@ -7,6 +7,8 @@ import type { CreateClaimRequest } from "../../models/ClaimModel";
 import type { ProjectData } from "../../models/ProjectModel";
 import type { User } from "../../models/UserModel";
 import { useUserStore } from "../../stores/userStore";
+import projectService from "../../services/project.service";
+import { userService } from "../../services/user.service";
 
 interface CreateRequestProps {
     visible: boolean;
@@ -26,6 +28,7 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
     const [approvers, setApprovers] = useState<User[]>([]);
     const [fetchingProjects, setFetchingProjects] = useState<boolean>(false);
     const [fetchingApprovers, setFetchingApprovers] = useState<boolean>(false);
+    const userId = useUserStore((state) => state.id);
 
     useEffect(() => {
         if (visible) {
@@ -37,11 +40,10 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
     const fetchProjects = async () => {
         try {
             setFetchingProjects(true);
-            const id = useUserStore.getState().id;
             const response = await projectService.searchProjects({
                 searchCondition: {
                     is_delete: false,
-                    user_id: id,
+                    user_id: userId,
                 },
                 pageInfo: {
                     pageNum: 1,
@@ -220,14 +222,7 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                 >
                     <Input type="number" placeholder="Enter total hours worked" />
                 </Form.Item>
-
-                <Form.Item
-                    label="Remark"
-                    name="remark"
-                >
-                    <Input.TextArea rows={4} placeholder="Enter remark (optional)" />
-                </Form.Item>
-
+                
                 <Form.Item className="">
                     <Button type="primary" htmlType="submit" loading={loading}>
                         Submit 
