@@ -777,12 +777,12 @@ const AdminProjectManager: React.FC = () => {
                     <div className="flex justify-between items-center">
                       <div>
                         <p className="text-sm text-gray-500">Start</p>
-                        <p className="font-medium">{dayjs(selectedProject.project_start_date).tz('Asia/Ho_Chi_Minh').format('DD/MM/YYYY HH:mm')}</p>
+                        <p className="font-medium">{dayjs(selectedProject.project_start_date).format('DD/MM/YYYY')}</p>
                       </div>
                       <div className="text-gray-400">→</div>
                       <div>
                         <p className="text-sm text-gray-500">End</p>
-                        <p className="font-medium">{dayjs(selectedProject.project_end_date).tz('Asia/Ho_Chi_Minh').format('DD/MM/YYYY HH:mm')}</p>
+                        <p className="font-medium">{dayjs(selectedProject.project_end_date).format('DD/MM/YYYY')}</p>
                       </div>
                     </div>
                   </div>
