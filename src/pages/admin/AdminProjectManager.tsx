@@ -545,40 +545,6 @@ const AdminProjectManager: React.FC = () => {
     }
   };
 
-  // Hàm xử lý chọn user cho form tạo mới
-  const handleCreateUserSelect = (value: string | string[], fieldName: string) => {
-    const allFormValues = createForm.getFieldsValue();
-    const newSelectedUsers = new Set<string>();
-
-    // Lấy tất cả users đã chọn từ các trường khác
-    Object.entries(allFormValues).forEach(([key, val]) => {
-      if (key !== fieldName && val) {
-        if (Array.isArray(val)) {
-          val.forEach(v => {
-            if (typeof v === 'string') {
-              newSelectedUsers.add(v);
-            }
-          });
-        } else if (typeof val === 'string') {
-          newSelectedUsers.add(val);
-        }
-      }
-    });
-
-    // Thêm user(s) mới được chọn
-    if (Array.isArray(value)) {
-      value.forEach(v => {
-        if (typeof v === 'string') {
-          newSelectedUsers.add(v);
-        }
-      });
-    } else if (typeof value === 'string') {
-      newSelectedUsers.add(value);
-    }
-
-    setSelectedUsers(newSelectedUsers);
-  };
-
   // Hàm xử lý chọn user cho form chỉnh sửa
   const handleEditUserSelect = (value: string | string[], fieldName: string) => {
     const allFormValues = editForm.getFieldsValue();
@@ -868,140 +834,142 @@ const AdminProjectManager: React.FC = () => {
               {/* Team Members Section */}
               <div className="mb-8">
                 <h3 className="text-lg font-medium text-gray-700 mb-4 pb-2 border-b">Team Members</h3>
-                <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                  <Form.Item
-                    name="project_manager"
-                    label="Project Manager"
-                    rules={[{ required: true, message: 'Vui lòng chọn Project Manager!' }]}
-                  >
-                    <Select
-                      showSearch
-                      placeholder="Chọn Project Manager"
-                      onSearch={handleUserSearch}
-                      filterOption={false}
-                      options={users.filter(user =>
-                        !selectedUsers.has(user.value) ||
-                        user.value === editForm.getFieldValue('project_manager')
-                      )}
-                      notFoundContent={loading ? <Spin size="small" /> : null}
-                      onChange={(value) => handleEditUserSelect(value, 'project_manager')}
-                    />
-                  </Form.Item>
+                <div className="max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                    <Form.Item
+                      name="project_manager"
+                      label="Project Manager"
+                      rules={[{ required: true, message: 'Vui lòng chọn Project Manager!' }]}
+                    >
+                      <Select
+                        showSearch
+                        placeholder="Chọn Project Manager"
+                        onSearch={handleUserSearch}
+                        filterOption={false}
+                        options={users.filter(user =>
+                          !selectedUsers.has(user.value) ||
+                          user.value === editForm.getFieldValue('project_manager')
+                        )}
+                        notFoundContent={loading ? <Spin size="small" /> : null}
+                        onChange={(value) => handleEditUserSelect(value, 'project_manager')}
+                      />
+                    </Form.Item>
 
-                  <Form.Item
-                    name="qa_leader"
-                    label="Quality Analytics"
-                    rules={[{ required: true, message: 'Vui lòng chọn QA!' }]}
-                  >
-                    <Select
-                      showSearch
-                      placeholder="Chọn QA"
-                      onSearch={handleUserSearch}
-                      filterOption={false}
-                      options={users.filter(user =>
-                        !selectedUsers.has(user.value) ||
-                        user.value === editForm.getFieldValue('qa_leader')
-                      )}
-                      notFoundContent={loading ? <Spin size="small" /> : null}
-                      onChange={(value) => handleEditUserSelect(value, 'qa_leader')}
-                    />
-                  </Form.Item>
+                    <Form.Item
+                      name="qa_leader"
+                      label="Quality Analytics"
+                      rules={[{ required: true, message: 'Vui lòng chọn QA!' }]}
+                    >
+                      <Select
+                        showSearch
+                        placeholder="Chọn QA"
+                        onSearch={handleUserSearch}
+                        filterOption={false}
+                        options={users.filter(user =>
+                          !selectedUsers.has(user.value) ||
+                          user.value === editForm.getFieldValue('qa_leader')
+                        )}
+                        notFoundContent={loading ? <Spin size="small" /> : null}
+                        onChange={(value) => handleEditUserSelect(value, 'qa_leader')}
+                      />
+                    </Form.Item>
 
-                  {/* Các role khác tương tự, bỏ rules */}
-                  <Form.Item
-                    name="technical_leader"
-                    label="Technical Lead"
-                  >
-                    <Select
-                      mode="multiple"
-                      showSearch
-                      placeholder="Select Technical Lead"
-                      onSearch={handleUserSearch}
-                      filterOption={false}
-                      options={users.filter(user =>
-                        !selectedUsers.has(user.value) ||
-                        (editForm.getFieldValue('technical_leader') || []).includes(user.value)
-                      )}
-                      notFoundContent={loading ? <Spin size="small" /> : null}
-                      onChange={(value) => handleEditUserSelect(value, 'technical_leader')}
-                    />
-                  </Form.Item>
+                    {/* Các role khác tương tự, bỏ rules */}
+                    <Form.Item
+                      name="technical_leader"
+                      label="Technical Lead"
+                    >
+                      <Select
+                        mode="multiple"
+                        showSearch
+                        placeholder="Select Technical Lead"
+                        onSearch={handleUserSearch}
+                        filterOption={false}
+                        options={users.filter(user =>
+                          !selectedUsers.has(user.value) ||
+                          (editForm.getFieldValue('technical_leader') || []).includes(user.value)
+                        )}
+                        notFoundContent={loading ? <Spin size="small" /> : null}
+                        onChange={(value) => handleEditUserSelect(value, 'technical_leader')}
+                      />
+                    </Form.Item>
 
-                  <Form.Item
-                    name="business_analyst"
-                    label="Business Analyst"
-                  >
-                    <Select
-                      mode="multiple"
-                      showSearch
-                      placeholder="Select Business Analyst"
-                      onSearch={handleUserSearch}
-                      filterOption={false}
-                      options={users.filter(user =>
-                        !selectedUsers.has(user.value) ||
-                        (editForm.getFieldValue('business_analyst') || []).includes(user.value)
-                      )}
-                      notFoundContent={loading ? <Spin size="small" /> : null}
-                      onChange={(value) => handleEditUserSelect(value, 'business_analyst')}
-                    />
-                  </Form.Item>
+                    <Form.Item
+                      name="business_analyst"
+                      label="Business Analyst"
+                    >
+                      <Select
+                        mode="multiple"
+                        showSearch
+                        placeholder="Select Business Analyst"
+                        onSearch={handleUserSearch}
+                        filterOption={false}
+                        options={users.filter(user =>
+                          !selectedUsers.has(user.value) ||
+                          (editForm.getFieldValue('business_analyst') || []).includes(user.value)
+                        )}
+                        notFoundContent={loading ? <Spin size="small" /> : null}
+                        onChange={(value) => handleEditUserSelect(value, 'business_analyst')}
+                      />
+                    </Form.Item>
 
-                  <Form.Item
-                    name="developers"
-                    label="Developers"
-                  >
-                    <Select
-                      mode="multiple"
-                      showSearch
-                      placeholder="Select Developers"
-                      onSearch={handleUserSearch}
-                      filterOption={false}
-                      options={users.filter(user =>
-                        !selectedUsers.has(user.value) ||
-                        (editForm.getFieldValue('developers') || []).includes(user.value)
-                      )}
-                      notFoundContent={loading ? <Spin size="small" /> : null}
-                      onChange={(value) => handleEditUserSelect(value, 'developers')}
-                    />
-                  </Form.Item>
+                    <Form.Item
+                      name="developers"
+                      label="Developers"
+                    >
+                      <Select
+                        mode="multiple"
+                        showSearch
+                        placeholder="Select Developers"
+                        onSearch={handleUserSearch}
+                        filterOption={false}
+                        options={users.filter(user =>
+                          !selectedUsers.has(user.value) ||
+                          (editForm.getFieldValue('developers') || []).includes(user.value)
+                        )}
+                        notFoundContent={loading ? <Spin size="small" /> : null}
+                        onChange={(value) => handleEditUserSelect(value, 'developers')}
+                      />
+                    </Form.Item>
 
-                  <Form.Item
-                    name="testers"
-                    label="Testers"
-                  >
-                    <Select
-                      mode="multiple"
-                      showSearch
-                      placeholder="Select Testers"
-                      onSearch={handleUserSearch}
-                      filterOption={false}
-                      options={users.filter(user =>
-                        !selectedUsers.has(user.value) ||
-                        (editForm.getFieldValue('testers') || []).includes(user.value)
-                      )}
-                      notFoundContent={loading ? <Spin size="small" /> : null}
-                      onChange={(value) => handleEditUserSelect(value, 'testers')}
-                    />
-                  </Form.Item>
+                    <Form.Item
+                      name="testers"
+                      label="Testers"
+                    >
+                      <Select
+                        mode="multiple"
+                        showSearch
+                        placeholder="Select Testers"
+                        onSearch={handleUserSearch}
+                        filterOption={false}
+                        options={users.filter(user =>
+                          !selectedUsers.has(user.value) ||
+                          (editForm.getFieldValue('testers') || []).includes(user.value)
+                        )}
+                        notFoundContent={loading ? <Spin size="small" /> : null}
+                        onChange={(value) => handleEditUserSelect(value, 'testers')}
+                      />
+                    </Form.Item>
 
-                  <Form.Item
-                    name="technical_consultant"
-                    label="Technical Consultancy"
-                  >
-                    <Select
-                      mode="multiple"
-                      showSearch
-                      placeholder="Select Technical Consultant"
-                      onSearch={handleUserSearch}
-                      filterOption={false}
-                      options={users.filter(user =>
-                        !selectedUsers.has(user.value) ||
-                        (editForm.getFieldValue('technical_consultant') || []).includes(user.value)
-                      )}
-                      notFoundContent={loading ? <Spin size="small" /> : null}
-                      onChange={(value) => handleEditUserSelect(value, 'technical_consultant')}
-                    />
-                  </Form.Item>
+                    <Form.Item
+                      name="technical_consultant"
+                      label="Technical Consultancy"
+                    >
+                      <Select
+                        mode="multiple"
+                        showSearch
+                        placeholder="Select Technical Consultant"
+                        onSearch={handleUserSearch}
+                        filterOption={false}
+                        options={users.filter(user =>
+                          !selectedUsers.has(user.value) ||
+                          (editForm.getFieldValue('technical_consultant') || []).includes(user.value)
+                        )}
+                        notFoundContent={loading ? <Spin size="small" /> : null}
+                        onChange={(value) => handleEditUserSelect(value, 'technical_consultant')}
+                      />
+                    </Form.Item>
+                  </div>
                 </div>
               </div>
 
@@ -1116,75 +1084,76 @@ const AdminProjectManager: React.FC = () => {
             {/* Team Members Section */}
             <div className="mb-8">
               <h3 className="text-lg font-medium text-gray-700 mb-4 pb-2 border-b">Team Members</h3>
-              
-              {/* Hiển thị danh sách thành viên đã thêm */}
-              {teamMembers.map((member, index) => (
-                <div key={index} className="grid grid-cols-2 gap-4 mb-4 items-start">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Thành viên
-                    </label>
-                    <Select
-                      showSearch
-                      style={{ width: '100%' }}
-                      placeholder="Chọn thành viên"
-                      value={member.userId}
-                      onChange={(value) => {
-                        const newMembers = [...teamMembers];
-                        newMembers[index].userId = value;
-                        setTeamMembers(newMembers);
-                      }}
-                      options={users}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Vai trò
-                    </label>
-                    <div className="flex gap-2">
+              <div className="max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                {/* Hiển thị danh sách thành viên đã thêm */}
+                {teamMembers.map((member, index) => (
+                  <div key={index} className="grid grid-cols-2 gap-4 mb-4 items-start">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Thành viên
+                      </label>
                       <Select
+                        showSearch
                         style={{ width: '100%' }}
-                        placeholder="Chọn vai trò"
-                        value={member.role}
+                        placeholder="Chọn thành viên"
+                        value={member.userId}
                         onChange={(value) => {
                           const newMembers = [...teamMembers];
-                          newMembers[index].role = value;
+                          newMembers[index].userId = value;
                           setTeamMembers(newMembers);
                         }}
-                        options={[
-                          { value: 'Project Manager', label: 'Project Manager' },
-                          { value: 'Quality Analytics', label: 'Quality Analytics' },
-                          { value: 'Technical Leader', label: 'Technical Leader' },
-                          { value: 'Business Analytics', label: 'Business Analytics' },
-                          { value: 'Developer', label: 'Developer' },
-                          { value: 'Tester', label: 'Tester' },
-                          { value: 'Technical Consultant', label: 'Technical Consultant' }
-                        ]}
+                        options={users}
                       />
-                      <Button 
-                        danger
-                        onClick={() => {
-                          setTeamMembers(teamMembers.filter((_, i) => i !== index));
-                        }}
-                      >
-                        Xóa
-                      </Button>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Vai trò
+                      </label>
+                      <div className="flex gap-2">
+                        <Select
+                          style={{ width: '100%' }}
+                          placeholder="Chọn vai trò"
+                          value={member.role}
+                          onChange={(value) => {
+                            const newMembers = [...teamMembers];
+                            newMembers[index].role = value;
+                            setTeamMembers(newMembers);
+                          }}
+                          options={[
+                            { value: 'Project Manager', label: 'Project Manager' },
+                            { value: 'Quality Analytics', label: 'Quality Analytics' },
+                            { value: 'Technical Leader', label: 'Technical Leader' },
+                            { value: 'Business Analytics', label: 'Business Analytics' },
+                            { value: 'Developer', label: 'Developer' },
+                            { value: 'Tester', label: 'Tester' },
+                            { value: 'Technical Consultant', label: 'Technical Consultant' }
+                          ]}
+                        />
+                        <Button 
+                          danger
+                          onClick={() => {
+                            setTeamMembers(teamMembers.filter((_, i) => i !== index));
+                          }}
+                        >
+                          Xóa
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
 
-              {/* Nút thêm thành viên mới */}
-              <Button
-                type="dashed"
-                block
-                onClick={() => {
-                  setTeamMembers([...teamMembers, { userId: '', role: '' }]);
-                }}
-                className="mt-4"
-              >
-                + Thêm thành viên
-              </Button>
+                {/* Nút thêm thành viên mới */}
+                <Button
+                  type="dashed"
+                  block
+                  onClick={() => {
+                    setTeamMembers([...teamMembers, { userId: '', role: '' }]);
+                  }}
+                  className="mt-4"
+                >
+                  + Thêm thành viên
+                </Button>
+              </div>
             </div>
 
             {/* Buttons */}
