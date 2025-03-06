@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Form, Input, Button, DatePicker, notification } from "antd";
 import { Modal } from "antd";
 import dayjs from 'dayjs';
-import { claimService } from "../../services/claimService";
+import { claimService } from "../../services/claim.service";
 import type { CreateClaimRequest } from "../../models/ClaimModel";
 
 interface CreateRequestProps {

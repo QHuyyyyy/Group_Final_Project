@@ -4,10 +4,12 @@ import SideBarAdminProject from '../../components/admin/SideBarAdminProject';
 import { Card, Table, Tag, Space, Button, Modal, Form, Input, Select, DatePicker, message, Spin, Empty } from 'antd';
 import { EditOutlined, DeleteOutlined, EyeOutlined, ArrowLeftOutlined, SearchOutlined, StarOutlined, StarFilled } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import projectService from '../../services/projectService';
-import { userService } from '../../services/userService';
+import projectService from '../../services/project.service';
+import { userService } from '../../services/user.service';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import { toast } from 'react-toastify';
+import { Project, ProjectData } from '../../models/ProjectModel';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -15,42 +17,19 @@ dayjs.tz.setDefault('Asia/Ho_Chi_Minh'); // Set default timezone to UTC+7
 
 // Thêm interface để định nghĩa kiểu dữ liệu
 
-interface ProjectMember {
-  project_role: string;
-  user_id: string;
-  employee_id: string;
-  user_name: string;
-  full_name: string;
-}
-
-interface Project {
-  _id: string;
-  project_name: string;
-  project_code: string;
-  project_department: string;
-  project_description: string;
-  project_status: string;
-  project_start_date: string;
-  project_end_date: string;
-  project_comment: string | null;
-  project_members: ProjectMember[];
-  updated_by: string;
-  is_deleted: boolean;
-  created_at: string;
-  updated_at: string;
-}
 
 const AdminProjectManager: React.FC = () => {
   const navigate = useNavigate();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [selectedProject, setSelectedProject] = useState<ProjectData | null>(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [favoriteProjects, setFavoriteProjects] = useState<string[]>([]);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
-  const [form] = Form.useForm();
+  const [editForm] = Form.useForm();
+  const [createForm] = Form.useForm();
   const [startDate, setStartDate] = useState<dayjs.Dayjs | null>(null);
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<ProjectData[]>([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
     current: 1,
@@ -75,13 +54,22 @@ const AdminProjectManager: React.FC = () => {
     return current && (current < dayjs().startOf('day') || current < startDate);
   };
 
-  // Xử lý khi startDate thay đổi
-  const handleStartDateChange = (date: dayjs.Dayjs | null) => {
+
+  // Hàm xử lý thay đổi ngày bắt đầu cho form tạo mới
+  const handleCreateStartDateChange = (date: dayjs.Dayjs | null) => {
     setStartDate(date);
-    // Reset end date nếu end date nhỏ hơn start date mới
-    const endDate = form.getFieldValue('endDate');
+    const endDate = createForm.getFieldValue('endDate');
     if (date && endDate && endDate < date) {
-      form.setFieldValue('endDate', null);
+      createForm.setFieldValue('endDate', null);
+    }
+  };
+
+  // Hàm xử lý thay đổi ngày bắt đầu cho form chỉnh sửa  
+  const handleEditStartDateChange = (date: dayjs.Dayjs | null) => {
+    setStartDate(date);
+    const endDate = editForm.getFieldValue('endDate');
+    if (date && endDate && endDate < date) {
+      editForm.setFieldValue('endDate', null);
     }
   };
 
@@ -201,14 +189,14 @@ const AdminProjectManager: React.FC = () => {
       title: 'From',
       dataIndex: 'project_start_date',
       key: 'project_start_date',
-      width: 120,
+      width: 150, // Tăng width để hiển thị thêm giờ
       render: (date: string) => dayjs(date).tz('Asia/Ho_Chi_Minh').format('DD/MM/YYYY'),
     },
     {
       title: 'To',
       dataIndex: 'project_end_date',
       key: 'project_end_date',
-      width: 120,
+      width: 150, // Tăng width để hiển thị thêm giờ
       render: (date: string) => dayjs(date).tz('Asia/Ho_Chi_Minh').format('DD/MM/YYYY'),
     },
     {
@@ -230,7 +218,7 @@ const AdminProjectManager: React.FC = () => {
       title: 'Actions',
       key: 'actions',
       width: 150,
-      render: (_: any, record: Project) => (
+      render: (_: any, record: ProjectData) => (
         <Space size="middle">
           <Button
             type="text"
@@ -253,14 +241,18 @@ const AdminProjectManager: React.FC = () => {
     },
   ];
 
-  const handleViewDetails = async (record: Project) => {
+  const handleViewDetails = async (record: ProjectData) => {
     try {
       setLoading(true);
-      setSelectedProject(record);
+      
+      // Lấy thông tin chi tiết của project bao gồm cả thông tin member
+      const projectDetail = await projectService.getProjectById(record._id);
+      
+      if (projectDetail && projectDetail.data) {
+        setSelectedProject(projectDetail.data);
+      }
+      
       setIsModalVisible(true);
-
-      // Giả lập thời gian loading
-      await new Promise((resolve) => setTimeout(resolve, 1000));
     } catch (error) {
       console.error('Lỗi khi lấy thông tin dự án:', error);
       message.error('Đã xảy ra lỗi khi lấy thông tin dự án');
@@ -275,13 +267,13 @@ const AdminProjectManager: React.FC = () => {
     setSelectedProject(null);
   };
 
-  const handleEdit = async (record: Project) => {
+  const handleEdit = async (record: ProjectData) => {
     try {
       setLoading(true); // Bắt đầu trạng thái loading
       setSelectedProject(record);
 
       // Set giá trị mặc định cho form từ record
-      form.setFieldsValue({
+      editForm.setFieldsValue({
         project_name: record.project_name,
         project_code: record.project_code,
         project_department: record.project_department,
@@ -294,10 +286,10 @@ const AdminProjectManager: React.FC = () => {
         project_manager: record.project_members.find(m => m.project_role === 'Project Manager')?.user_id,
         qa_leader: record.project_members.find(m => m.project_role === 'Quality Analytics')?.user_id,
         technical_leader: record.project_members
-          .filter(m => m.project_role === 'Technical Lead')
+          .filter(m => m.project_role === 'Technical Leader')
           .map(m => m.user_id),
         business_analyst: record.project_members
-          .filter(m => m.project_role === 'Business Analyst')
+          .filter(m => m.project_role === 'Business Analytics')
           .map(m => m.user_id),
         developers: record.project_members
           .filter(m => m.project_role === 'Developer')
@@ -368,7 +360,7 @@ const AdminProjectManager: React.FC = () => {
           // Technical Lead - multiple select
           ...(values.technical_leader || []).map((id: string) => ({
             user_id: id,
-            project_role: 'Technical Lead',
+            project_role: 'Technical Leader',
             employee_id: '',
             user_name: '',
             full_name: ''
@@ -376,7 +368,7 @@ const AdminProjectManager: React.FC = () => {
           // BA - multiple select
           ...(values.business_analyst || []).map((id: string) => ({
             user_id: id,
-            project_role: 'Business Analyst',
+            project_role: 'Business Analytics',
             employee_id: '',
             user_name: '',
             full_name: ''
@@ -413,16 +405,17 @@ const AdminProjectManager: React.FC = () => {
       const response = await projectService.updateProject(selectedProject._id, projectData);
 
       if (response) {
-        message.success('Cập nhật dự án thành công');
+        console.log(response)
+        toast.success('Cập nhật dự án thành công');
         setIsEditModalVisible(false);
-        form.resetFields();
+        editForm.resetFields();
         fetchProjects();
         setSelectedUsers(new Set());
       }
 
     } catch (error) {
       console.error('Error updating project:', error);
-      message.error('Có lỗi xảy ra khi cập nhật dự án');
+      toast.error('Có lỗi xảy ra khi cập nhật dự án');
     } finally {
       setLoading(false);
     }
@@ -438,11 +431,18 @@ const AdminProjectManager: React.FC = () => {
   };
 
   const handleCreate = () => {
+    createForm.setFieldsValue({
+      technical_leader: [],
+      business_analyst: [],
+      developers: [],
+      testers: [],
+      technical_consultant: []
+    });
     setIsCreateModalVisible(true);
   };
 
   const handleCreateModalClose = () => {
-    form.resetFields();  // Đặt lại form khi đóng modal
+    createForm.resetFields();  // Đặt lại form khi đóng modal
     setIsCreateModalVisible(false);
 
   };
@@ -456,8 +456,10 @@ const AdminProjectManager: React.FC = () => {
         project_department: values.project_department,
         project_description: values.project_description,
         project_status: values.project_status,
-        project_start_date: values.startDate.tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD'),
-        project_end_date: values.endDate.tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD'),
+        project_start_date:dayjs(values.startDate).utc().format('YYYY-MM-DD'),
+        project_end_date: dayjs(values.endDate)
+        .utc()
+        .format('YYYY-MM-DD'),
         project_members: [
           // PM - single select
           {
@@ -478,7 +480,7 @@ const AdminProjectManager: React.FC = () => {
           // Technical Lead - multiple select
           ...values.technical_leader.map((id: string) => ({
             user_id: id,
-            project_role: 'Technical Lead',
+            project_role: 'Technical Leader',
             employee_id: '',
             user_name: '',
             full_name: ''
@@ -486,7 +488,7 @@ const AdminProjectManager: React.FC = () => {
           // BA - multiple select
           ...values.business_analyst.map((id: string) => ({
             user_id: id,
-            project_role: 'Business Analyst',
+            project_role: 'Business Analytics',
             employee_id: '',
             user_name: '',
             full_name: ''
@@ -520,14 +522,14 @@ const AdminProjectManager: React.FC = () => {
 
       const response = await projectService.createProject(projectData);
       if (response.success) {
-        message.success('Project created successfully');
+        toast.success('Project created successfully');
         setIsCreateModalVisible(false);
-        form.resetFields();
+        createForm.resetFields();
         fetchProjects(); // Refresh danh sách
       }
     } catch (error) {
       console.error('Error creating project:', error);
-      message.error('Failed to create project');
+      toast.error('Failed to create project');
     } finally {
       setLoading(false);
     }
@@ -594,21 +596,21 @@ const AdminProjectManager: React.FC = () => {
     }
   };
 
-  // Thêm hàm để cập nhật selectedUsers khi có thay đổi trong form
-  const handleUserSelect = (value: string | string[], fieldName: string) => {
-    const allFormValues = form.getFieldsValue();
+  // Hàm xử lý chọn user cho form tạo mới
+  const handleCreateUserSelect = (value: string | string[], fieldName: string) => {
+    const allFormValues = createForm.getFieldsValue();
     const newSelectedUsers = new Set<string>();
 
     // Lấy tất cả users đã chọn từ các trường khác
     Object.entries(allFormValues).forEach(([key, val]) => {
-      if (key !== fieldName && val) { // Bỏ qua trường hiện tại
+      if (key !== fieldName && val) {
         if (Array.isArray(val)) {
           val.forEach(v => {
-            if (typeof v === 'string') { // Kiểm tra kiểu dữ liệu
+            if (typeof v === 'string') {
               newSelectedUsers.add(v);
             }
           });
-        } else if (typeof val === 'string') { // Kiểm tra kiểu dữ liệu
+        } else if (typeof val === 'string') {
           newSelectedUsers.add(val);
         }
       }
@@ -617,11 +619,45 @@ const AdminProjectManager: React.FC = () => {
     // Thêm user(s) mới được chọn
     if (Array.isArray(value)) {
       value.forEach(v => {
-        if (typeof v === 'string') { // Kiểm tra kiểu dữ liệu
+        if (typeof v === 'string') {
           newSelectedUsers.add(v);
         }
       });
-    } else if (typeof value === 'string') { // Kiểm tra kiểu dữ liệu
+    } else if (typeof value === 'string') {
+      newSelectedUsers.add(value);
+    }
+
+    setSelectedUsers(newSelectedUsers);
+  };
+
+  // Hàm xử lý chọn user cho form chỉnh sửa
+  const handleEditUserSelect = (value: string | string[], fieldName: string) => {
+    const allFormValues = editForm.getFieldsValue();
+    const newSelectedUsers = new Set<string>();
+
+    // Lấy tất cả users đã chọn từ các trường khác
+    Object.entries(allFormValues).forEach(([key, val]) => {
+      if (key !== fieldName && val) {
+        if (Array.isArray(val)) {
+          val.forEach(v => {
+            if (typeof v === 'string') {
+              newSelectedUsers.add(v);
+            }
+          });
+        } else if (typeof val === 'string') {
+          newSelectedUsers.add(val);
+        }
+      }
+    });
+
+    // Thêm user(s) mới được chọn
+    if (Array.isArray(value)) {
+      value.forEach(v => {
+        if (typeof v === 'string') {
+          newSelectedUsers.add(v);
+        }
+      });
+    } else if (typeof value === 'string') {
       newSelectedUsers.add(value);
     }
 
@@ -724,12 +760,12 @@ const AdminProjectManager: React.FC = () => {
                     <div className="flex justify-between items-center">
                       <div>
                         <p className="text-sm text-gray-500">Start</p>
-                        <p className="font-medium">{dayjs(selectedProject.project_start_date).tz('Asia/Ho_Chi_Minh').format('DD/MM/YYYY HH:mm')}</p>
+                        <p className="font-medium">{dayjs(selectedProject.project_start_date).format('DD/MM/YYYY')}</p>
                       </div>
                       <div className="text-gray-400">→</div>
                       <div>
                         <p className="text-sm text-gray-500">End</p>
-                        <p className="font-medium">{dayjs(selectedProject.project_end_date).tz('Asia/Ho_Chi_Minh').format('DD/MM/YYYY HH:mm')}</p>
+                        <p className="font-medium">{dayjs(selectedProject.project_end_date).format('DD/MM/YYYY')}</p>
                       </div>
                     </div>
                   </div>
@@ -751,8 +787,8 @@ const AdminProjectManager: React.FC = () => {
                     {[
                       { role: 'Project Manager', color: 'gold' },
                       { role: 'Quality Analytics', color: 'green' },
-                      { role: 'Technical Lead', color: 'blue' },
-                      { role: 'Business Analyst', color: 'purple' },
+                      { role: 'Technical Leader', color: 'blue' },
+                      { role: 'Business Analytics', color: 'purple' },
                       { role: 'Developer', color: 'cyan' },
                       { role: 'Tester', color: 'magenta' },
                       { role: 'Technical Consultant', color: 'geekblue' }
@@ -801,7 +837,7 @@ const AdminProjectManager: React.FC = () => {
         >
           {selectedProject && (
             <Form
-              form={form}
+              form={editForm}
               layout="vertical"
               onFinish={handleEditSubmit}
               initialValues={selectedProject}
@@ -865,7 +901,7 @@ const AdminProjectManager: React.FC = () => {
                       style={{ width: '100%' }}
                       className="rounded-md"
                       disabledDate={disabledStartDate}
-                      onChange={handleStartDateChange}
+                      onChange={handleEditStartDateChange}
                     />
                   </Form.Item>
                 </div>
@@ -900,10 +936,10 @@ const AdminProjectManager: React.FC = () => {
                       filterOption={false}
                       options={users.filter(user =>
                         !selectedUsers.has(user.value) ||
-                        user.value === form.getFieldValue('project_manager')
+                        user.value === editForm.getFieldValue('project_manager')
                       )}
                       notFoundContent={loading ? <Spin size="small" /> : null}
-                      onChange={(value) => handleUserSelect(value, 'project_manager')}
+                      onChange={(value) => handleEditUserSelect(value, 'project_manager')}
                     />
                   </Form.Item>
 
@@ -919,10 +955,10 @@ const AdminProjectManager: React.FC = () => {
                       filterOption={false}
                       options={users.filter(user =>
                         !selectedUsers.has(user.value) ||
-                        user.value === form.getFieldValue('qa_leader')
+                        user.value === editForm.getFieldValue('qa_leader')
                       )}
                       notFoundContent={loading ? <Spin size="small" /> : null}
-                      onChange={(value) => handleUserSelect(value, 'qa_leader')}
+                      onChange={(value) => handleEditUserSelect(value, 'qa_leader')}
                     />
                   </Form.Item>
 
@@ -939,10 +975,10 @@ const AdminProjectManager: React.FC = () => {
                       filterOption={false}
                       options={users.filter(user =>
                         !selectedUsers.has(user.value) ||
-                        (form.getFieldValue('technical_leader') || []).includes(user.value)
+                        (editForm.getFieldValue('technical_leader') || []).includes(user.value)
                       )}
                       notFoundContent={loading ? <Spin size="small" /> : null}
-                      onChange={(value) => handleUserSelect(value, 'technical_leader')}
+                      onChange={(value) => handleEditUserSelect(value, 'technical_leader')}
                     />
                   </Form.Item>
 
@@ -958,10 +994,10 @@ const AdminProjectManager: React.FC = () => {
                       filterOption={false}
                       options={users.filter(user =>
                         !selectedUsers.has(user.value) ||
-                        (form.getFieldValue('business_analyst') || []).includes(user.value)
+                        (editForm.getFieldValue('business_analyst') || []).includes(user.value)
                       )}
                       notFoundContent={loading ? <Spin size="small" /> : null}
-                      onChange={(value) => handleUserSelect(value, 'business_analyst')}
+                      onChange={(value) => handleEditUserSelect(value, 'business_analyst')}
                     />
                   </Form.Item>
 
@@ -977,10 +1013,10 @@ const AdminProjectManager: React.FC = () => {
                       filterOption={false}
                       options={users.filter(user =>
                         !selectedUsers.has(user.value) ||
-                        (form.getFieldValue('developers') || []).includes(user.value)
+                        (editForm.getFieldValue('developers') || []).includes(user.value)
                       )}
                       notFoundContent={loading ? <Spin size="small" /> : null}
-                      onChange={(value) => handleUserSelect(value, 'developers')}
+                      onChange={(value) => handleEditUserSelect(value, 'developers')}
                     />
                   </Form.Item>
 
@@ -996,10 +1032,10 @@ const AdminProjectManager: React.FC = () => {
                       filterOption={false}
                       options={users.filter(user =>
                         !selectedUsers.has(user.value) ||
-                        (form.getFieldValue('testers') || []).includes(user.value)
+                        (editForm.getFieldValue('testers') || []).includes(user.value)
                       )}
                       notFoundContent={loading ? <Spin size="small" /> : null}
-                      onChange={(value) => handleUserSelect(value, 'testers')}
+                      onChange={(value) => handleEditUserSelect(value, 'testers')}
                     />
                   </Form.Item>
 
@@ -1015,10 +1051,10 @@ const AdminProjectManager: React.FC = () => {
                       filterOption={false}
                       options={users.filter(user =>
                         !selectedUsers.has(user.value) ||
-                        (form.getFieldValue('technical_consultant') || []).includes(user.value)
+                        (editForm.getFieldValue('technical_consultant') || []).includes(user.value)
                       )}
                       notFoundContent={loading ? <Spin size="small" /> : null}
-                      onChange={(value) => handleUserSelect(value, 'technical_consultant')}
+                      onChange={(value) => handleEditUserSelect(value, 'technical_consultant')}
                     />
                   </Form.Item>
                 </div>
@@ -1053,7 +1089,7 @@ const AdminProjectManager: React.FC = () => {
           className="custom-modal"
         >
           <Form
-            form={form}
+            form={createForm}
             layout="vertical"
             onFinish={handleCreateSubmit}
             className="bg-white p-4"
@@ -1110,8 +1146,9 @@ const AdminProjectManager: React.FC = () => {
                 >
                   <DatePicker
                     style={{ width: '100%' }}
+                    className="rounded-md"
                     disabledDate={disabledStartDate}
-                    onChange={handleStartDateChange}
+                    onChange={handleCreateStartDateChange}
                   />
                 </Form.Item>
 
@@ -1144,10 +1181,10 @@ const AdminProjectManager: React.FC = () => {
                     filterOption={false}
                     options={users.filter(user =>
                       !selectedUsers.has(user.value) ||
-                      user.value === form.getFieldValue('project_manager')
+                      user.value === createForm.getFieldValue('project_manager')
                     )}
                     notFoundContent={loading ? <Spin size="small" /> : null}
-                    onChange={(value) => handleUserSelect(value, 'project_manager')}
+                    onChange={(value) => handleCreateUserSelect(value, 'project_manager')}
                   />
                 </Form.Item>
 
@@ -1163,10 +1200,10 @@ const AdminProjectManager: React.FC = () => {
                     filterOption={false}
                     options={users.filter(user =>
                       !selectedUsers.has(user.value) ||
-                      user.value === form.getFieldValue('qa_leader')
+                      user.value === createForm.getFieldValue('qa_leader')
                     )}
                     notFoundContent={loading ? <Spin size="small" /> : null}
-                    onChange={(value) => handleUserSelect(value, 'qa_leader')}
+                    onChange={(value) => handleCreateUserSelect(value, 'qa_leader')}
                   />
                 </Form.Item>
 
@@ -1182,10 +1219,10 @@ const AdminProjectManager: React.FC = () => {
                     filterOption={false}
                     options={users.filter(user =>
                       !selectedUsers.has(user.value) ||
-                      (form.getFieldValue('technical_leader') || []).includes(user.value)
+                      (createForm.getFieldValue('technical_leader') || []).includes(user.value)
                     )}
                     notFoundContent={loading ? <Spin size="small" /> : null}
-                    onChange={(value) => handleUserSelect(value, 'technical_leader')}
+                    onChange={(value) => handleCreateUserSelect(value, 'technical_leader')}
                   />
                 </Form.Item>
 
@@ -1201,10 +1238,10 @@ const AdminProjectManager: React.FC = () => {
                     filterOption={false}
                     options={users.filter(user =>
                       !selectedUsers.has(user.value) ||
-                      (form.getFieldValue('business_analyst') || []).includes(user.value)
+                      (createForm.getFieldValue('business_analyst') || []).includes(user.value)
                     )}
                     notFoundContent={loading ? <Spin size="small" /> : null}
-                    onChange={(value) => handleUserSelect(value, 'business_analyst')}
+                    onChange={(value) => handleCreateUserSelect(value, 'business_analyst')}
                   />
                 </Form.Item>
 
@@ -1220,10 +1257,10 @@ const AdminProjectManager: React.FC = () => {
                     filterOption={false}
                     options={users.filter(user =>
                       !selectedUsers.has(user.value) ||
-                      (form.getFieldValue('developers') || []).includes(user.value)
+                      (createForm.getFieldValue('developers') || []).includes(user.value)
                     )}
                     notFoundContent={loading ? <Spin size="small" /> : null}
-                    onChange={(value) => handleUserSelect(value, 'developers')}
+                    onChange={(value) => handleCreateUserSelect(value, 'developers')}
                   />
                 </Form.Item>
 
@@ -1239,10 +1276,10 @@ const AdminProjectManager: React.FC = () => {
                     filterOption={false}
                     options={users.filter(user =>
                       !selectedUsers.has(user.value) ||
-                      (form.getFieldValue('testers') || []).includes(user.value)
+                      (createForm.getFieldValue('testers') || []).includes(user.value)
                     )}
                     notFoundContent={loading ? <Spin size="small" /> : null}
-                    onChange={(value) => handleUserSelect(value, 'testers')}
+                    onChange={(value) => handleCreateUserSelect(value, 'testers')}
                   />
                 </Form.Item>
 
@@ -1258,10 +1295,10 @@ const AdminProjectManager: React.FC = () => {
                     filterOption={false}
                     options={users.filter(user =>
                       !selectedUsers.has(user.value) ||
-                      (form.getFieldValue('technical_consultant') || []).includes(user.value)
+                      (createForm.getFieldValue('technical_consultant') || []).includes(user.value)
                     )}
                     notFoundContent={loading ? <Spin size="small" /> : null}
-                    onChange={(value) => handleUserSelect(value, 'technical_consultant')}
+                    onChange={(value) => handleCreateUserSelect(value, 'technical_consultant')}
                   />
                 </Form.Item>
               </div>

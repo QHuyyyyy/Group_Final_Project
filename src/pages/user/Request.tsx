@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Input, Card, Table, Tag, message, Button, Space } from "antd";
-import { claimService } from "../../services/claimService";
+import { claimService } from "../../services/claim.service";
 import dayjs from 'dayjs';
 import RequestDetails from "../../components/user/RequestDetails";
 import { EyeOutlined } from "@ant-design/icons";

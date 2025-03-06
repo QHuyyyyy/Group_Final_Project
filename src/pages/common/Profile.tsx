@@ -20,7 +20,7 @@ import NavbarAdminDashboard from '../../components/NavbarAdminDashboard';
 import { useUserStore } from '../../stores/userStore';
 import { useRoleMapping } from '../../hooks/useRoleMapping';
 
-import { employeeService } from '../../services/employeeService';
+import { employeeService } from '../../services/employee.service';
 import { useEffect, useState } from 'react';
 
 

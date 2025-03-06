@@ -1,5 +1,5 @@
 import { Modal, Form, Input, Select, Button } from "antd";
-import { userService } from "../../services/userService";
+import { userService } from "../../services/user.service";
 import { message } from "antd";
 import { toast } from "react-toastify";
 import { InputVaild } from "../../constants/InputVaild";

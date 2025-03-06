@@ -12,10 +12,12 @@ import {
   SearchOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import StaffDetails from '../../components/admin/StaffDetails';
-import { userService } from '../../services/userService';
+import { userService } from '../../services/user.service';
 import { message } from 'antd';
-import { roleService } from '../../services/roleService';
+import { roleService } from '../../services/role.service';
 import { UserData } from '../../models/UserModel';
 
 import AddUserModal from '../../components/admin/AddUserModal';
@@ -25,6 +27,9 @@ import { debounce } from 'lodash';
 import BlockUserButton from '../../components/admin/BlockUserButton';
 import { SearchParams } from '../../models/UserModel';
 
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.tz.setDefault('Asia/Ho_Chi_Minh');
 const AdminUserManager: React.FC = () => {
   const navigate = useNavigate();
   const [editingRecord, setEditingRecord] = useState<UserData | null>(null);
@@ -165,14 +170,14 @@ const AdminUserManager: React.FC = () => {
       dataIndex: 'created_at',
       key: 'created_at',
       width: 120,
-      render: (date: string) => dayjs(date).format('YYYY-MM-DD')
+      render: (date: string) => dayjs(date).tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss')
     },
     {
       title: 'Updated At',
       dataIndex: 'updated_at',
       key: 'updated_at',
       width: 120,
-      render: (date: string) => dayjs(date).format('YYYY-MM-DD')
+      render: (date: string) => dayjs(date).tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss') 
     },
     {
       title: 'Verified',
