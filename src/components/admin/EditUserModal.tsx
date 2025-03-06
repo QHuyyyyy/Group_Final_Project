@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, Form, Input, Button, Select } from 'antd';
 import dayjs from 'dayjs';
-import { userService } from '../../services/userService';
+import { userService } from '../../services/user.service';
 
 interface StaffMember {
   _id: string;
