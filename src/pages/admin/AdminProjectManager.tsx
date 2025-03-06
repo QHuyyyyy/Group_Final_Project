@@ -153,7 +153,7 @@ const AdminProjectManager: React.FC = () => {
 
   const handleConfirmDelete = async () => {
     if (!projectToDelete) return;
-    
+
     try {
       setLoading(true);
       await projectService.deleteProject(projectToDelete);
@@ -189,9 +189,9 @@ const AdminProjectManager: React.FC = () => {
       width: 120,
       render: (status: string) => (
         <Tag color={
-          status === 'New' ? 'blue' : 
-          status === 'Pending' ? 'orange' : 
-          'green'
+          status === 'New' ? 'blue' :
+            status === 'Pending' ? 'orange' :
+              'green'
         }>
           {status}
         </Tag>
@@ -232,19 +232,19 @@ const AdminProjectManager: React.FC = () => {
       width: 150,
       render: (_: any, record: Project) => (
         <Space size="middle">
-          <Button 
-            type="text" 
+          <Button
+            type="text"
             icon={<EyeOutlined />}
             onClick={() => handleViewDetails(record)}
           />
-          <Button 
-            type="text" 
+          <Button
+            type="text"
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
           />
-          <Button 
-            type="text" 
-            danger 
+          <Button
+            type="text"
+            danger
             icon={<DeleteOutlined />}
             onClick={() => handleDelete(record._id)}
           />
@@ -258,6 +258,9 @@ const AdminProjectManager: React.FC = () => {
       setLoading(true);
       setSelectedProject(record);
       setIsModalVisible(true);
+
+      // Giả lập thời gian loading
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     } catch (error) {
       console.error('Lỗi khi lấy thông tin dự án:', error);
       message.error('Đã xảy ra lỗi khi lấy thông tin dự án');
@@ -266,15 +269,17 @@ const AdminProjectManager: React.FC = () => {
     }
   };
 
+
   const handleModalClose = () => {
     setIsModalVisible(false);
     setSelectedProject(null);
   };
 
-  const handleEdit = (record: Project) => {
+  const handleEdit = async (record: Project) => {
     try {
+      setLoading(true); // Bắt đầu trạng thái loading
       setSelectedProject(record);
-      
+
       // Set giá trị mặc định cho form từ record
       form.setFieldsValue({
         project_name: record.project_name,
@@ -284,7 +289,7 @@ const AdminProjectManager: React.FC = () => {
         project_status: record.project_status,
         startDate: dayjs(record.project_start_date), // Convert string to dayjs
         endDate: dayjs(record.project_end_date), // Convert string to dayjs
-        
+
         // Set giá trị cho các role từ project_members
         project_manager: record.project_members.find(m => m.project_role === 'Project Manager')?.user_id,
         qa_leader: record.project_members.find(m => m.project_role === 'Quality Analytics')?.user_id,
@@ -305,17 +310,24 @@ const AdminProjectManager: React.FC = () => {
           .map(m => m.user_id)
       });
 
+      // Giả lập thời gian loading
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       setIsEditModalVisible(true);
     } catch (error) {
       console.error('Error in handleEdit:', error);
       message.error('Có lỗi xảy ra khi mở form chỉnh sửa');
+    } finally {
+      setLoading(false); // Kết thúc trạng thái loading
     }
   };
+
+
 
   const handleEditModalClose = () => {
     setIsEditModalVisible(false);
     setSelectedProject(null);
-    
+
   };
 
   const handleEditSubmit = async (values: any) => {
@@ -399,7 +411,7 @@ const AdminProjectManager: React.FC = () => {
       console.log('Sending update data:', projectData);
 
       const response = await projectService.updateProject(selectedProject._id, projectData);
-      
+
       if (response) {
         message.success('Cập nhật dự án thành công');
         setIsEditModalVisible(false);
@@ -430,8 +442,9 @@ const AdminProjectManager: React.FC = () => {
   };
 
   const handleCreateModalClose = () => {
+    form.resetFields();  // Đặt lại form khi đóng modal
     setIsCreateModalVisible(false);
-    
+
   };
 
   const handleCreateSubmit = async (values: any) => {
@@ -568,7 +581,7 @@ const AdminProjectManager: React.FC = () => {
           pageSize: 100
         }
       });
-      
+
       if (response && response.data.pageData) {
         const formattedUsers = response.data.pageData.map((user: any) => ({
           value: user._id,
@@ -585,7 +598,7 @@ const AdminProjectManager: React.FC = () => {
   const handleUserSelect = (value: string | string[], fieldName: string) => {
     const allFormValues = form.getFieldsValue();
     const newSelectedUsers = new Set<string>();
-    
+
     // Lấy tất cả users đã chọn từ các trường khác
     Object.entries(allFormValues).forEach(([key, val]) => {
       if (key !== fieldName && val) { // Bỏ qua trường hiện tại
@@ -617,22 +630,22 @@ const AdminProjectManager: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <SideBarAdminProject 
+      <SideBarAdminProject
         favoriteProjects={favoriteProjects}
         projects={projects}
         onCreateProject={handleCreate}
       />
       <div className="flex-1 ml-64 p-8">
         <div className="flex items-center justify-between mb-6">
-          <Button 
-            type="default" 
+          <Button
+            type="default"
             icon={<ArrowLeftOutlined />}
             onClick={() => navigate('/dashboard')}
             className="flex items-center"
           >
             Back to Dashboard
           </Button>
-          
+
           <Input
             placeholder="Tìm kiếm dự án..."
             prefix={<SearchOutlined className="text-gray-400" />}
@@ -648,7 +661,7 @@ const AdminProjectManager: React.FC = () => {
             <h1 className="text-2xl font-bold text-gray-800">Projects Overview</h1>
           </div>
           <div className="overflow-auto custom-scrollbar">
-            <Table 
+            <Table
               columns={columns}
               dataSource={projects}
               rowKey="_id"
@@ -691,9 +704,9 @@ const AdminProjectManager: React.FC = () => {
                   </div>
                   <div className="text-right">
                     <Tag color={
-                      selectedProject.project_status === 'New' ? 'blue' : 
-                      selectedProject.project_status === 'Pending' ? 'orange' : 
-                      'green'
+                      selectedProject.project_status === 'New' ? 'blue' :
+                        selectedProject.project_status === 'Pending' ? 'orange' :
+                          'green'
                     } className="text-base px-4 py-1">
                       {selectedProject.project_status}
                     </Tag>
@@ -713,7 +726,7 @@ const AdminProjectManager: React.FC = () => {
                         <p className="text-sm text-gray-500">Start</p>
                         <p className="font-medium">{dayjs(selectedProject.project_start_date).tz('Asia/Ho_Chi_Minh').format('DD/MM/YYYY HH:mm')}</p>
                       </div>
-                      <div className="text-gray-400">→</div>
+                      <div className="text-gray-400 mt-5">→</div>
                       <div>
                         <p className="text-sm text-gray-500">End</p>
                         <p className="font-medium">{dayjs(selectedProject.project_end_date).tz('Asia/Ho_Chi_Minh').format('DD/MM/YYYY HH:mm')}</p>
@@ -725,7 +738,7 @@ const AdminProjectManager: React.FC = () => {
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <h3 className="font-semibold text-gray-800 mb-3">Department</h3>
                     <p className="text-gray-700 mb-4">{selectedProject.project_department}</p>
-                    
+
                     <h3 className="font-semibold text-gray-800 mb-3">Description</h3>
                     <p className="text-gray-700">{selectedProject.project_description}</p>
                   </div>
@@ -747,12 +760,12 @@ const AdminProjectManager: React.FC = () => {
                       const members = selectedProject.project_members.filter(
                         member => member.project_role === role
                       );
-                      
+
                       return (
                         <div key={role} className="flex items-center justify-between py-2 border-b border-gray-200 last:border-0">
                           <Tag color={color} className="min-w-[140px]">{role}</Tag>
                           <span className="text-gray-700 text-right">
-                            {members.length > 0 
+                            {members.length > 0
                               ? members.map(m => m.full_name || m.user_name).join(', ')
                               : <span className="text-gray-400 italic">No information available</span>}
                           </span>
@@ -834,7 +847,7 @@ const AdminProjectManager: React.FC = () => {
                     label="Description"
                     rules={[{ required: true, message: 'Please specify value for this field.' }]}
                   >
-                    <Input.TextArea 
+                    <Input.TextArea
                       rows={4}
                       placeholder="Enter project description"
                       className="rounded-md"
@@ -848,7 +861,7 @@ const AdminProjectManager: React.FC = () => {
                     label="Start Date"
                     name="startDate"
                   >
-                    <DatePicker 
+                    <DatePicker
                       style={{ width: '100%' }}
                       className="rounded-md"
                       disabledDate={disabledStartDate}
@@ -862,7 +875,7 @@ const AdminProjectManager: React.FC = () => {
                     label="End Date"
                     name="endDate"
                   >
-                    <DatePicker 
+                    <DatePicker
                       style={{ width: '100%' }}
                       className="rounded-md"
                       disabledDate={disabledEndDate}
@@ -885,8 +898,8 @@ const AdminProjectManager: React.FC = () => {
                       placeholder="Chọn Project Manager"
                       onSearch={handleUserSearch}
                       filterOption={false}
-                      options={users.filter(user => 
-                        !selectedUsers.has(user.value) || 
+                      options={users.filter(user =>
+                        !selectedUsers.has(user.value) ||
                         user.value === form.getFieldValue('project_manager')
                       )}
                       notFoundContent={loading ? <Spin size="small" /> : null}
@@ -904,8 +917,8 @@ const AdminProjectManager: React.FC = () => {
                       placeholder="Chọn QA"
                       onSearch={handleUserSearch}
                       filterOption={false}
-                      options={users.filter(user => 
-                        !selectedUsers.has(user.value) || 
+                      options={users.filter(user =>
+                        !selectedUsers.has(user.value) ||
                         user.value === form.getFieldValue('qa_leader')
                       )}
                       notFoundContent={loading ? <Spin size="small" /> : null}
@@ -924,8 +937,8 @@ const AdminProjectManager: React.FC = () => {
                       placeholder="Select Technical Lead"
                       onSearch={handleUserSearch}
                       filterOption={false}
-                      options={users.filter(user => 
-                        !selectedUsers.has(user.value) || 
+                      options={users.filter(user =>
+                        !selectedUsers.has(user.value) ||
                         (form.getFieldValue('technical_leader') || []).includes(user.value)
                       )}
                       notFoundContent={loading ? <Spin size="small" /> : null}
@@ -943,8 +956,8 @@ const AdminProjectManager: React.FC = () => {
                       placeholder="Select Business Analyst"
                       onSearch={handleUserSearch}
                       filterOption={false}
-                      options={users.filter(user => 
-                        !selectedUsers.has(user.value) || 
+                      options={users.filter(user =>
+                        !selectedUsers.has(user.value) ||
                         (form.getFieldValue('business_analyst') || []).includes(user.value)
                       )}
                       notFoundContent={loading ? <Spin size="small" /> : null}
@@ -962,8 +975,8 @@ const AdminProjectManager: React.FC = () => {
                       placeholder="Select Developers"
                       onSearch={handleUserSearch}
                       filterOption={false}
-                      options={users.filter(user => 
-                        !selectedUsers.has(user.value) || 
+                      options={users.filter(user =>
+                        !selectedUsers.has(user.value) ||
                         (form.getFieldValue('developers') || []).includes(user.value)
                       )}
                       notFoundContent={loading ? <Spin size="small" /> : null}
@@ -981,8 +994,8 @@ const AdminProjectManager: React.FC = () => {
                       placeholder="Select Testers"
                       onSearch={handleUserSearch}
                       filterOption={false}
-                      options={users.filter(user => 
-                        !selectedUsers.has(user.value) || 
+                      options={users.filter(user =>
+                        !selectedUsers.has(user.value) ||
                         (form.getFieldValue('testers') || []).includes(user.value)
                       )}
                       notFoundContent={loading ? <Spin size="small" /> : null}
@@ -1000,8 +1013,8 @@ const AdminProjectManager: React.FC = () => {
                       placeholder="Select Technical Consultant"
                       onSearch={handleUserSearch}
                       filterOption={false}
-                      options={users.filter(user => 
-                        !selectedUsers.has(user.value) || 
+                      options={users.filter(user =>
+                        !selectedUsers.has(user.value) ||
                         (form.getFieldValue('technical_consultant') || []).includes(user.value)
                       )}
                       notFoundContent={loading ? <Spin size="small" /> : null}
@@ -1012,14 +1025,14 @@ const AdminProjectManager: React.FC = () => {
               </div>
 
               <div className="flex justify-end space-x-4 pt-6 border-t">
-                <Button 
+                <Button
                   onClick={handleEditModalClose}
                   className="px-6 rounded-md"
                 >
                   Cancel
                 </Button>
-                <Button 
-                  type="primary" 
+                <Button
+                  type="primary"
                   htmlType="submit"
                   loading={loading}
                 >
@@ -1084,7 +1097,7 @@ const AdminProjectManager: React.FC = () => {
                   label="Description"
                   rules={[{ required: true, message: 'Please input project description!' }]}
                 >
-                  <Input.TextArea 
+                  <Input.TextArea
                     rows={4}
                     placeholder="Enter project description"
                   />
@@ -1095,7 +1108,7 @@ const AdminProjectManager: React.FC = () => {
                   name="startDate"
                   rules={[{ required: true, message: 'Please select start date!' }]}
                 >
-                  <DatePicker 
+                  <DatePicker
                     style={{ width: '100%' }}
                     disabledDate={disabledStartDate}
                     onChange={handleStartDateChange}
@@ -1107,7 +1120,7 @@ const AdminProjectManager: React.FC = () => {
                   name="endDate"
                   rules={[{ required: true, message: 'Please select end date!' }]}
                 >
-                  <DatePicker 
+                  <DatePicker
                     style={{ width: '100%' }}
                     disabledDate={disabledEndDate}
                   />
@@ -1129,8 +1142,8 @@ const AdminProjectManager: React.FC = () => {
                     placeholder="Chọn Project Manager"
                     onSearch={handleUserSearch}
                     filterOption={false}
-                    options={users.filter(user => 
-                      !selectedUsers.has(user.value) || 
+                    options={users.filter(user =>
+                      !selectedUsers.has(user.value) ||
                       user.value === form.getFieldValue('project_manager')
                     )}
                     notFoundContent={loading ? <Spin size="small" /> : null}
@@ -1148,8 +1161,8 @@ const AdminProjectManager: React.FC = () => {
                     placeholder="Chọn QA"
                     onSearch={handleUserSearch}
                     filterOption={false}
-                    options={users.filter(user => 
-                      !selectedUsers.has(user.value) || 
+                    options={users.filter(user =>
+                      !selectedUsers.has(user.value) ||
                       user.value === form.getFieldValue('qa_leader')
                     )}
                     notFoundContent={loading ? <Spin size="small" /> : null}
@@ -1167,8 +1180,8 @@ const AdminProjectManager: React.FC = () => {
                     placeholder="Select Technical Lead"
                     onSearch={handleUserSearch}
                     filterOption={false}
-                    options={users.filter(user => 
-                      !selectedUsers.has(user.value) || 
+                    options={users.filter(user =>
+                      !selectedUsers.has(user.value) ||
                       (form.getFieldValue('technical_leader') || []).includes(user.value)
                     )}
                     notFoundContent={loading ? <Spin size="small" /> : null}
@@ -1186,8 +1199,8 @@ const AdminProjectManager: React.FC = () => {
                     placeholder="Select Business Analyst"
                     onSearch={handleUserSearch}
                     filterOption={false}
-                    options={users.filter(user => 
-                      !selectedUsers.has(user.value) || 
+                    options={users.filter(user =>
+                      !selectedUsers.has(user.value) ||
                       (form.getFieldValue('business_analyst') || []).includes(user.value)
                     )}
                     notFoundContent={loading ? <Spin size="small" /> : null}
@@ -1205,8 +1218,8 @@ const AdminProjectManager: React.FC = () => {
                     placeholder="Select Developers"
                     onSearch={handleUserSearch}
                     filterOption={false}
-                    options={users.filter(user => 
-                      !selectedUsers.has(user.value) || 
+                    options={users.filter(user =>
+                      !selectedUsers.has(user.value) ||
                       (form.getFieldValue('developers') || []).includes(user.value)
                     )}
                     notFoundContent={loading ? <Spin size="small" /> : null}
@@ -1224,8 +1237,8 @@ const AdminProjectManager: React.FC = () => {
                     placeholder="Select Testers"
                     onSearch={handleUserSearch}
                     filterOption={false}
-                    options={users.filter(user => 
-                      !selectedUsers.has(user.value) || 
+                    options={users.filter(user =>
+                      !selectedUsers.has(user.value) ||
                       (form.getFieldValue('testers') || []).includes(user.value)
                     )}
                     notFoundContent={loading ? <Spin size="small" /> : null}
@@ -1243,8 +1256,8 @@ const AdminProjectManager: React.FC = () => {
                     placeholder="Select Technical Consultant"
                     onSearch={handleUserSearch}
                     filterOption={false}
-                    options={users.filter(user => 
-                      !selectedUsers.has(user.value) || 
+                    options={users.filter(user =>
+                      !selectedUsers.has(user.value) ||
                       (form.getFieldValue('technical_consultant') || []).includes(user.value)
                     )}
                     notFoundContent={loading ? <Spin size="small" /> : null}

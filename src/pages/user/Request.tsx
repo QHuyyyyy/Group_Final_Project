@@ -5,8 +5,7 @@ import dayjs from 'dayjs';
 import RequestDetails from "../../components/user/RequestDetails";
 import { EyeOutlined } from "@ant-design/icons";
 import type { Claim, ClaimById, SearchParams } from "../../models/ClaimModel";
-
-
+import CreateRequest from "./CreateRequest";
 
 const { Search } = Input;
 
@@ -22,18 +21,11 @@ const Claim = () => {
   const [selectedRequest, setSelectedRequest] = useState<ClaimById |undefined>(undefined);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [totalHoursMap, setTotalHoursMap] = useState<Record<string, number>>({});
+  const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
 
   useEffect(() => {
     fetchClaims();
   }, [pagination.current, pagination.pageSize, searchText]);
-
-  useEffect(() => {
-    if (claims.length > 0) {
-      claims.forEach(claim => {
-        fetchTotal_Hours(claim._id);
-      });
-    }
-  }, [claims]);
 
   const fetchClaims = async () => {
     try {
@@ -50,41 +42,39 @@ const Claim = () => {
           pageNum: pagination.current,
           pageSize: pagination.pageSize
         },
-      
-  
       };
 
-      const response = await claimService.searchClaims(params);
-      console.log('Search response:', response);
+      const response = await claimService.searchClaimsByClaimer(params);
       
       if (response && response.data && response.data.pageData) {
-        setClaims(response.data.pageData);
+        const claimsData = response.data.pageData;
+        setClaims(claimsData);
         setPagination(prev => ({
           ...prev,
           total: response.data.pageInfo.totalItems || 0
         }));
+
+        // Fetch total hours in one batch
+        const hoursMap: Record<string, number> = {};
+        await Promise.all(
+          claimsData.map(async (claim) => {
+            try {
+              const response = await claimService.getClaimById(claim._id);
+              if (response?.data?.total_work_time) {
+                hoursMap[claim._id] = response.data.total_work_time;
+              }
+            } catch (error) {
+              console.error(`Error fetching hours for claim ${claim._id}:`, error);
+            }
+          })
+        );
+        setTotalHoursMap(hoursMap);
       }
     } catch (error) {
       console.error('Error fetching claims:', error);
       message.error('An error occurred while fetching claims.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchTotal_Hours = async (claimId: string) => {
-    try {
-      const response = await claimService.getClaimById(claimId);
-      console.log('Total hours response:', response);
-      
-      if (response && response.data && response.data.total_work_time) {
-        setTotalHoursMap(prev => ({
-          ...prev,
-          [claimId]: response.data.total_work_time
-        }));
-      }
-    } catch (error) {
-      console.error('Error fetching total hours:', error);
     }
   };
 
@@ -113,7 +103,19 @@ const Claim = () => {
     setSelectedRequest(undefined);
   };
 
-  
+  const handleOpenCreateModal = () => {
+    setIsCreateModalVisible(true);
+  };
+
+  const handleCloseCreateModal = () => {
+    setIsCreateModalVisible(false);
+  };
+
+  const handleCreateSuccess = () => {
+    setIsCreateModalVisible(false);
+    fetchClaims();
+    message.success('Claim created successfully');
+  };
 
   const formatWorkTime = (hours: number) => { 
     if (!hours && hours !== 0) return '-';
@@ -131,10 +133,13 @@ const Claim = () => {
             style={{ width: 300 }}
             className="ml-0"
           />
-          <Button type="primary" onClick={() => console.log('Add new claim')}>
+          <Button 
+            type="primary" 
+            onClick={handleOpenCreateModal}
+          >
             Add New Claim
           </Button>
-        </div>
+        </div>  
 
         <Card className="shadow-md">
           <div className="mb-6">
@@ -148,23 +153,44 @@ const Claim = () => {
                 title: "No.",
                 key: "index",
                 render: (_, __, index) => index + 1,
-                width: 50,
+                width: 60,
+                align: 'center',
               },
               {
-                title: "Claim Name",
-                dataIndex: "claim_name",
-                key: "claim_name",
+                title: "Staff Name",
+                dataIndex: ["staff_name", "staff_email"],
+                key: "staff_name",
                 width: 120,
+                render: (_, record) => record.staff_name
               },
               {
-                title: "Created At",
-                dataIndex: "created_at",
-                key: "created_at",
-                width: 120,
-                render: (date: string) => dayjs(date).format('YYYY-MM-DD'),
+                title: "Project Name",
+                dataIndex: ["project_info", "project_name"],
+                key: "project_name",
+                width: 180,
+                render: (_, record) => record.project_info?.project_name || '-'
+              },
+              {
+                title: "Project Duration",
+                dataIndex: "duration",
+                key: "duration",
+                width: 250,
+                align: 'center',
+                render: (_, record) => (
+                  <div className="flex flex-col items-center text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">From:</span>
+                      {dayjs(record.claim_start_date).format('DD/MM/YYYY HH:mm')}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">To:</span>
+                      {dayjs(record.claim_end_date).format('DD/MM/YYYY HH:mm')}
+                    </div>
+                  </div>
+                ),
                 sorter: (a, b) => {
-                  const dateA = new Date(a.created_at).getTime();
-                  const dateB = new Date(b.created_at).getTime();
+                  const dateA = new Date(a.claim_start_date).getTime();
+                  const dateB = new Date(b.claim_start_date).getTime();
                   return dateA - dateB;
                 },
                 defaultSortOrder: 'descend'
@@ -174,13 +200,15 @@ const Claim = () => {
                 dataIndex: "total_work_time",
                 key: "total_work_time",
                 width: 100,
-                render: (_, record) => formatWorkTime(totalHoursMap[record._id] || 0)
+                align: 'center',
+                render: (_, record) => formatWorkTime(totalHoursMap[record._id])
               },
               {
                 title: "Status",
                 dataIndex: "claim_status",
                 key: "claim_status",
-                width: 100,
+                width: 120,
+                align: 'center',
                 render: (status: string) => (
                   <Tag color={
                     !status || status === "Draft" ? "gold" :
@@ -195,7 +223,8 @@ const Claim = () => {
               {
                 title: "Actions",
                 key: "actions",
-                width: 200,
+                width: 100,
+                align: 'center',
                 render: (_, record) => (
                   <Space size="middle">
                     <Button 
@@ -204,7 +233,6 @@ const Claim = () => {
                       onClick={() => handleView(record)}
                       title="View"
                     />
-                   
                   </Space>
                 )
               }
@@ -231,8 +259,17 @@ const Claim = () => {
         
         <RequestDetails
           visible={isModalVisible}
-          claim={selectedRequest }
+          claim={selectedRequest}
+          projectInfo={{
+            project_name: claims.find(c => c._id === selectedRequest?._id)?.project_info?.project_name || '',
+            project_comment: claims.find(c => c._id === selectedRequest?._id)?.project_info?.project_comment
+          }}
           onClose={handleCloseModal}
+        />
+        <CreateRequest
+          visible={isCreateModalVisible}
+          onClose={handleCloseCreateModal}
+          onSuccess={handleCreateSuccess}
         />
       </div>
     </div>

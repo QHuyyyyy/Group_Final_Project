@@ -4,11 +4,12 @@ import { LoadingOutlined } from "@ant-design/icons";
 import { authService } from '../../services/authService';
 import { toast } from 'react-toastify';
 import loginBackground from '../../assets/login-background.png';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 
 export default function VerifyToken() {
   const navigate = useNavigate();
+  const [isVerifying, setIsVerifying] = useState(false);
   
   useEffect(() => {
     let isSubscribed = true;
@@ -16,7 +17,8 @@ export default function VerifyToken() {
     const path = window.location.pathname;
     const tokenMatch = path.match(/verify-email\/([a-f0-9]+)/);
     
-    if (tokenMatch && tokenMatch[1] && isSubscribed) {
+    if (tokenMatch && tokenMatch[1] && isSubscribed && !isVerifying) {
+      setIsVerifying(true);
       const token = tokenMatch[1];
       handleVerify(token);
     }
@@ -24,17 +26,14 @@ export default function VerifyToken() {
     return () => {
       isSubscribed = false;
     };
-  }, []);
+  }, [isVerifying]);
 
   const handleVerify = async (token: string) => {
     try {
-
-      await authService.verifyToken( token );
-
+      await authService.verifyToken(token);
       toast.success('Tài khoản đã được xác thực thành công!');
       navigate('/login');
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Lỗi xác thực');
+    } catch (error) {
       navigate('/login');
     }
   };
