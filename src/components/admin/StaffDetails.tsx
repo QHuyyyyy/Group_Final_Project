@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Descriptions, Tag } from 'antd';
+import { Modal,  Tag } from 'antd';
 
 interface Staff {
   _id: string;
@@ -28,7 +28,6 @@ const StaffDetails: React.FC<StaffDetailsProps> = ({ visible, staff, onClose }) 
     A001: { name: 'Administrator', color: 'red' },
     A002: { name: 'Finance', color: 'blue' },
     A003: { name: 'BUL, PM', color: 'yellow' },
-    // A004: { name: 'All Members', color: ' purple' },
     A004: { name: 'All Members', color: 'default' }
   };
 
@@ -55,38 +54,46 @@ const StaffDetails: React.FC<StaffDetailsProps> = ({ visible, staff, onClose }) 
       className="custom-modal"
     >
       <div className="py-4">
-        <Descriptions column={2} bordered className="custom-descriptions">
-          <Descriptions.Item label="Username" span={1}>
-            {staff?.user_name}
-          </Descriptions.Item>
-          <Descriptions.Item label="Email" span={1}>
-            {staff?.email}
-          </Descriptions.Item>
-          <Descriptions.Item label="Role" span={1}>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white p-4 rounded-lg shadow-md">
+            <h4 className="font-semibold">Username</h4>
+            <p>{staff?.user_name}</p>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow-md">
+            <h4 className="font-semibold">Email</h4>
+            <p>{staff?.email}</p>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow-md">
+            <h4 className="font-semibold">Role</h4>
             <Tag color={roleMap[staff?.role_code]?.color || 'default'}>
               {roleMap[staff?.role_code]?.name || staff?.role_code}
             </Tag>
-          </Descriptions.Item>
-          <Descriptions.Item label="Verification Status" span={1}>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow-md">
+            <h4 className="font-semibold">Verification Status</h4>
             <Tag color={staff?.is_verified ? 'success' : 'error'}>
               {staff?.is_verified ? 'Verified' : 'Unverified'}
             </Tag>
-          </Descriptions.Item>
-          <Descriptions.Item label="Account Status" span={1}>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow-md">
+            <h4 className="font-semibold">Account Status</h4>
             <Tag color={staff?.is_blocked ? 'error' : 'success'}>
               {staff?.is_blocked ? 'Blocked' : 'Active'}
             </Tag>
-          </Descriptions.Item>
-          <Descriptions.Item label="Created At" span={1}>
-            {staff?.created_at ? formatDate(staff.created_at) : ''}
-          </Descriptions.Item>
-          <Descriptions.Item label="Updated At" span={1}>
-            {staff?.updated_at ? formatDate(staff.updated_at) : ''}
-          </Descriptions.Item>
-          <Descriptions.Item label="Version" span={1}>
-            {staff?.__v}
-          </Descriptions.Item>
-        </Descriptions>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow-md">
+            <h4 className="font-semibold">Created At</h4>
+            <p>{staff?.created_at ? formatDate(staff.created_at) : ''}</p>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow-md">
+            <h4 className="font-semibold">Updated At</h4>
+            <p>{staff?.updated_at ? formatDate(staff.updated_at) : ''}</p>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow-md">
+            <h4 className="font-semibold">Version</h4>
+            <p>{staff?.__v}</p>
+          </div>
+        </div>
       </div>
     </Modal>
   );
