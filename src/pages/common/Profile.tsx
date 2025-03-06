@@ -19,7 +19,7 @@ import Menu from '../../components/user/Menu';
 import NavbarAdminDashboard from '../../components/NavbarAdminDashboard';
 import { useUserStore } from '../../stores/userStore';
 import { useRoleMapping } from '../../hooks/useRoleMapping';
-import { useApiStore } from '../../stores/apiStore';
+
 import { employeeService } from '../../services/employeeService';
 import { useEffect, useState } from 'react';
 
@@ -63,7 +63,7 @@ const Profile = () => {
   const location = useLocation();
   const isAdminDashboard = location.pathname === '/dashboard/profile';
   const { getRoleName } = useRoleMapping();
-  const {isLoading} = useApiStore()
+
   const user = useUserStore((state) => state);
   const [employeeData, setEmployeeData] = useState<Employee | null>(null);
   // Add state for projects
@@ -153,7 +153,7 @@ const Profile = () => {
                           <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
                             <Badge 
                               status="success"
-                              text={isLoading ? 'Loading...' : getRoleName(user.role_code)}
+                              text={getRoleName(user.role_code)}
                               className="px-4 py-1.5 bg-emerald-50 text-emerald-700 rounded-full text-sm font-medium border border-emerald-100" 
                             />
                           </div>
@@ -274,7 +274,7 @@ const Profile = () => {
                         <p className="text-gray-500 font-medium">{employeeData?.job_rank || 'Employee'}</p>
                         <Badge 
                           status="processing" 
-                          text={isLoading ? 'Loading...' : getRoleName(user.role_code)}
+                          text={ getRoleName(user.role_code)}
                           className="mt-3 px-3 py-1 bg-blue-50 text-blue-600 rounded-full" 
                         />
                       </div>

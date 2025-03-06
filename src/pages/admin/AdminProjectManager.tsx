@@ -258,6 +258,9 @@ const AdminProjectManager: React.FC = () => {
       setLoading(true);
       setSelectedProject(record);
       setIsModalVisible(true);
+
+      // Giả lập thời gian loading
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     } catch (error) {
       console.error('Lỗi khi lấy thông tin dự án:', error);
       message.error('Đã xảy ra lỗi khi lấy thông tin dự án');
@@ -266,13 +269,15 @@ const AdminProjectManager: React.FC = () => {
     }
   };
 
+
   const handleModalClose = () => {
     setIsModalVisible(false);
     setSelectedProject(null);
   };
 
-  const handleEdit = (record: Project) => {
+  const handleEdit = async (record: Project) => {
     try {
+      setLoading(true); // Bắt đầu trạng thái loading
       setSelectedProject(record);
 
       // Set giá trị mặc định cho form từ record
@@ -305,12 +310,19 @@ const AdminProjectManager: React.FC = () => {
           .map(m => m.user_id)
       });
 
+      // Giả lập thời gian loading
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       setIsEditModalVisible(true);
     } catch (error) {
       console.error('Error in handleEdit:', error);
       message.error('Có lỗi xảy ra khi mở form chỉnh sửa');
+    } finally {
+      setLoading(false); // Kết thúc trạng thái loading
     }
   };
+
+
 
   const handleEditModalClose = () => {
     setIsEditModalVisible(false);
