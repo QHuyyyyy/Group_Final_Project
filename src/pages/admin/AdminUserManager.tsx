@@ -27,6 +27,9 @@ import { debounce } from 'lodash';
 import BlockUserButton from '../../components/admin/BlockUserButton';
 import { SearchParams } from '../../models/UserModel';
 
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.tz.setDefault('Asia/Ho_Chi_Minh');
 const AdminUserManager: React.FC = () => {
   const navigate = useNavigate();
   const [editingRecord, setEditingRecord] = useState<UserData | null>(null);
@@ -167,14 +170,14 @@ const AdminUserManager: React.FC = () => {
       dataIndex: 'created_at',
       key: 'created_at',
       width: 120,
-      render: (date: string) => dayjs(date).utc().tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss')
+      render: (date: string) => dayjs(date).tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss')
     },
     {
       title: 'Updated At',
       dataIndex: 'updated_at',
       key: 'updated_at',
       width: 120,
-      render: (date: string) => dayjs(date).utc().tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss')
+      render: (date: string) => dayjs(date).tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss') 
     },
     {
       title: 'Verified',
