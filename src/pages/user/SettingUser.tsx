@@ -177,14 +177,6 @@ const SettingUser = () => {
                   </Form.Item>
 
                   <Form.Item
-                    name="account"
-                    label="Bank Account"
-                    rules={[{ required: true, message: 'Please enter your bank account' }]}
-                  >
-                    <Input placeholder="Enter your bank account" />
-                  </Form.Item>
-
-                  <Form.Item
                     name="job_rank"
                     label="Job Rank"
                   >
@@ -202,7 +194,7 @@ const SettingUser = () => {
                     name="department_name"
                     label="Department"
                   >
-                    <Input disabled placeholder="Department" />
+                    <Input disabled placeholder="Department" /> 
                   </Form.Item>
 
                   <Form.Item
@@ -210,10 +202,11 @@ const SettingUser = () => {
                     label="Salary"
                   >
                     <InputNumber 
-                      className="w-full" 
-                      formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                      parser={value => value!.replace(/\$\s?|(,*)/g, '')}
+                      // className="w-full" 
+                      // formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                      // parser={value => value!.replace(/\$\s?|(,*)/g, '')}
                       placeholder="Salary"
+                      disabled
                     />
                   </Form.Item>
 
