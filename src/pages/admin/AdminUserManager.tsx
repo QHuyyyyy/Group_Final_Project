@@ -12,6 +12,8 @@ import {
   SearchOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import StaffDetails from '../../components/admin/StaffDetails';
 import { userService } from '../../services/userService';
 import { message } from 'antd';
@@ -165,14 +167,14 @@ const AdminUserManager: React.FC = () => {
       dataIndex: 'created_at',
       key: 'created_at',
       width: 120,
-      render: (date: string) => dayjs(date).format('YYYY-MM-DD')
+      render: (date: string) => dayjs(date).utc().tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss')
     },
     {
       title: 'Updated At',
       dataIndex: 'updated_at',
       key: 'updated_at',
       width: 120,
-      render: (date: string) => dayjs(date).format('YYYY-MM-DD')
+      render: (date: string) => dayjs(date).utc().tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss')
     },
     {
       title: 'Verified',
