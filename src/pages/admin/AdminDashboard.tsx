@@ -6,6 +6,20 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import avatar from "../../assets/avatar.png";
 
+import { claimService } from "../../services/claim.service";
+import  projectService from "../../services/project.service";
+import { userService } from "../../services/user.service";
+import { Claim } from "../../models/ClaimModel";
+import { Project } from "../../models/ProjectModel";
+import { User } from "../../models/UserModel";
+interface ClaimStatus {
+  id: number;
+  name: string;
+  status: "Pending" | "Approved" | "Rejected" | "Paid";
+  claimer: string;
+}
+
+
 
 const AdminClaimStats = lazy(() => import('../../components/admin/AdminClaimStats'));
 const AdminProjectStats = lazy(() => import('../../components/admin/AdminProjectStats'))

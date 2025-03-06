@@ -16,19 +16,23 @@ export interface CreateProjectRequest {
     project_members: ProjectMember[];
 }
 
+
 export interface Project {
     _id: string;
     project_name: string;
     project_code: string;
     project_department: string;
     project_description: string;
+    project_status: string;
     project_start_date: string;
     project_end_date: string;
+    project_comment: string | null;
     project_members: ProjectMember[];
+    updated_by: string;
+    is_deleted: boolean;
     created_at: string;
     updated_at: string;
-    __v: number;
-}
+  }
 
 
 export interface ProjectMemberInfo {

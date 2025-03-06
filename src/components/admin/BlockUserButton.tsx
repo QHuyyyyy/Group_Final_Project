@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, message } from 'antd';
 import { LockOutlined, UnlockOutlined } from '@ant-design/icons';
-import { userService } from '../../services/userService';
+import { userService } from '../../services/user.service';
 
 interface BlockUserButtonProps {
   userId: string;
