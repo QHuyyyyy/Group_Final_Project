@@ -3,12 +3,11 @@ export interface Employee {
     user_id: string;
     job_rank: string;
     contract_type: string;
-    account: string;
     address: string;
     phone: string;
     full_name: string;
     avatar_url: string;
-    department_name: string;
+    department_code: string;
     salary: number;
     start_date: string;
     end_date: string;
@@ -26,10 +25,11 @@ export interface EmployeeUpdateData {
     job_rank?: string;
     contract_type?: string;
     address?: string;
+    account?: string;
     phone?: string;
     full_name?: string;
     avatar_url?: string;
-    department_name?: string;
+    department_code?: string;
     salary?: number;
     start_date?: string;
     end_date?: string;

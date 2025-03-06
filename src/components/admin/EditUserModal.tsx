@@ -131,7 +131,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
             </Form.Item>
           )}
         </div>
-      </Form>
+        </Form>
     </Modal>
   );
 };
