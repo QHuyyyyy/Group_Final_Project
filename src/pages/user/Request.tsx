@@ -53,7 +53,7 @@ const Claim = () => {
         },
       };
 
-      const response = await claimService.searchClaimsByClaimer(params);
+      const response = await claimService.searchClaimsByClaimer(params, {showSpinner:false});
 
       if (response && response.data && response.data.pageData) {
         const claimsData = response.data.pageData;
@@ -68,7 +68,7 @@ const Claim = () => {
         await Promise.all(
           claimsData.map(async (claim) => {
             try {
-              const response = await claimService.getClaimById(claim._id);
+              const response = await claimService.getClaimById(claim._id, {showSpinner:false});
               if (response?.data?.total_work_time) {
                 hoursMap[claim._id] = response.data.total_work_time;
               }
@@ -100,7 +100,7 @@ const Claim = () => {
 
   const handleView = async (record: Claim) => {
     try {
-      const response = await claimService.getClaimById(record._id);
+      const response = await claimService.getClaimById(record._id, {showSpinner:false});
       if (response && response.data) {
         setSelectedRequest(response.data);
         setIsModalVisible(true);
