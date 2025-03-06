@@ -72,7 +72,7 @@ const AdminUserManager: React.FC = () => {
       };
 
       const response = await userService.searchUsers(params);
-      console.log('Search response:', response);
+    
       
       if (response && response.data) {
         setStaffData(response.data.pageData as UserData[]);
