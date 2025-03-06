@@ -13,9 +13,9 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import StaffDetails from '../../components/admin/StaffDetails';
-import { userService } from '../../services/userService';
+import { userService } from '../../services/user.service';
 import { message } from 'antd';
-import { roleService } from '../../services/roleService';
+import { roleService } from '../../services/role.service';
 import { UserData } from '../../models/UserModel';
 
 import AddUserModal from '../../components/admin/AddUserModal';

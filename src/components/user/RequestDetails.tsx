@@ -1,7 +1,7 @@
 import { Modal, Descriptions, Tag, message } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
-import { claimService } from "../../services/claimService";
+import { claimService } from "../../services/claim.service";
 import { ClaimById } from "../../models/ClaimModel";
 
 interface RequestDetailsProps {

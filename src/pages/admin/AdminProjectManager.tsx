@@ -4,8 +4,8 @@ import SideBarAdminProject from '../../components/admin/SideBarAdminProject';
 import { Card, Table, Tag, Space, Button, Modal, Form, Input, Select, DatePicker, message, Spin, Empty } from 'antd';
 import { EditOutlined, DeleteOutlined, EyeOutlined, ArrowLeftOutlined, SearchOutlined, StarOutlined, StarFilled } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import projectService from '../../services/projectService';
-import { userService } from '../../services/userService';
+import projectService from '../../services/project.service';
+import { userService } from '../../services/user.service';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 

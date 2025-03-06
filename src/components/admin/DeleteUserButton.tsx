@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, Popconfirm, message } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
-import { userService } from '../../services/userService';
+import { userService } from '../../services/user.service';
 
 interface DeleteUserButtonProps {
   userId: string;

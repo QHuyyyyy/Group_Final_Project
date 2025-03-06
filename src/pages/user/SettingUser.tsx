@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Form, Input, Button, InputNumber, message,Avatar, Upload, DatePicker } from 'antd';
 import { UserOutlined, UploadOutlined } from '@ant-design/icons';
 import { useUserStore } from '../../stores/userStore';
-import { employeeService } from '../../services/employeeService';
+import { employeeService } from '../../services/employee.service';
 import moment from 'moment';
 import type { UploadProps } from 'antd';
 

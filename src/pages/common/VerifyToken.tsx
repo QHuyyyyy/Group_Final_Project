@@ -1,7 +1,7 @@
 import { Spin, Layout } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { LoadingOutlined } from "@ant-design/icons";
-import { authService } from '../../services/authService';
+import { authService } from '../../services/auth.service';
 import { toast } from 'react-toastify';
 import loginBackground from '../../assets/login-background.png';
 import { useEffect, useState } from 'react';

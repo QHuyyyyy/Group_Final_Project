@@ -7,9 +7,9 @@ import dayjs from "dayjs"
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import avatar from "../../assets/avatar.png";
-import { claimService } from "../../services/claimService";
-import  projectService from "../../services/projectService";
-import { userService } from "../../services/userService";
+import { claimService } from "../../services/claim.service";
+import  projectService from "../../services/project.service";
+import { userService } from "../../services/user.service";
 import { Claim } from "../../models/ClaimModel";
 import { Project } from "../../models/ProjectModel";
 import { User } from "../../models/UserModel";
