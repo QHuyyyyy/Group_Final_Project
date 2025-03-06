@@ -39,8 +39,8 @@ const AdminProjectManager: React.FC = () => {
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
   const [users, setUsers] = useState<any[]>([]);
-  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [teamMembers, setTeamMembers] = useState<Array<{userId: string, role: string}>>([]);
+  const [editTeamMembers, setEditTeamMembers] = useState<Array<{userId: string, role: string}>>([]);
 
   // Hàm disabledStartDate
   const disabledStartDate = (current: dayjs.Dayjs) => {
@@ -270,48 +270,34 @@ const AdminProjectManager: React.FC = () => {
 
   const handleEdit = async (record: ProjectData) => {
     try {
-      setLoading(true); // Bắt đầu trạng thái loading
+      setLoading(true);
       setSelectedProject(record);
 
-      // Set giá trị mặc định cho form từ record
+      // Khởi tạo team members từ project_members
+      const initialTeamMembers = record.project_members.map(member => ({
+        userId: member.user_id,
+        role: member.project_role
+      }));
+      setEditTeamMembers(initialTeamMembers);
+
+      // Set các giá trị khác cho form
       editForm.setFieldsValue({
         project_name: record.project_name,
         project_code: record.project_code,
         project_department: record.project_department,
         project_description: record.project_description,
         project_status: record.project_status,
-        startDate: dayjs(record.project_start_date), // Convert string to dayjs
-        endDate: dayjs(record.project_end_date), // Convert string to dayjs
-
-        // Set giá trị cho các role từ project_members
-        project_manager: record.project_members.find(m => m.project_role === 'Project Manager')?.user_id,
-        qa_leader: record.project_members.find(m => m.project_role === 'Quality Analytics')?.user_id,
-        technical_leader: record.project_members
-          .filter(m => m.project_role === 'Technical Leader')
-          .map(m => m.user_id),
-        business_analyst: record.project_members
-          .filter(m => m.project_role === 'Business Analytics')
-          .map(m => m.user_id),
-        developers: record.project_members
-          .filter(m => m.project_role === 'Developer')
-          .map(m => m.user_id),
-        testers: record.project_members
-          .filter(m => m.project_role === 'Tester')
-          .map(m => m.user_id),
-        technical_consultant: record.project_members
-          .filter(m => m.project_role === 'Technical Consultant')
-          .map(m => m.user_id)
+        startDate: dayjs(record.project_start_date),
+        endDate: dayjs(record.project_end_date),
       });
 
-      // Giả lập thời gian loading
       await new Promise((resolve) => setTimeout(resolve, 1000));
-
       setIsEditModalVisible(true);
     } catch (error) {
       console.error('Error in handleEdit:', error);
       message.error('Có lỗi xảy ra khi mở form chỉnh sửa');
     } finally {
-      setLoading(false); // Kết thúc trạng thái loading
+      setLoading(false);
     }
   };
 
@@ -332,7 +318,6 @@ const AdminProjectManager: React.FC = () => {
 
       setLoading(true);
 
-      // Format dữ liệu để update với cùng cấu trúc như create
       const projectData = {
         project_name: values.project_name,
         project_code: values.project_code,
@@ -341,79 +326,24 @@ const AdminProjectManager: React.FC = () => {
         project_status: values.project_status,
         project_start_date: dayjs(values.startDate).tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD'),
         project_end_date: dayjs(values.endDate).tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD'),
-        project_members: [
-          // PM - single select
-          {
-            user_id: values.project_manager,
-            project_role: 'Project Manager',
-            employee_id: '',
-            user_name: '',
-            full_name: ''
-          },
-          // QA - single select
-          {
-            user_id: values.qa_leader,
-            project_role: 'Quality Analytics',
-            employee_id: '',
-            user_name: '',
-            full_name: ''
-          },
-          // Technical Lead - multiple select
-          ...(values.technical_leader || []).map((id: string) => ({
-            user_id: id,
-            project_role: 'Technical Leader',
-            employee_id: '',
-            user_name: '',
-            full_name: ''
-          })),
-          // BA - multiple select
-          ...(values.business_analyst || []).map((id: string) => ({
-            user_id: id,
-            project_role: 'Business Analytics',
-            employee_id: '',
-            user_name: '',
-            full_name: ''
-          })),
-          // Developers - multiple select
-          ...(values.developers || []).map((id: string) => ({
-            user_id: id,
-            project_role: 'Developer',
-            employee_id: '',
-            user_name: '',
-            full_name: ''
-          })),
-          // Testers - multiple select
-          ...(values.testers || []).map((id: string) => ({
-            user_id: id,
-            project_role: 'Tester',
-            employee_id: '',
-            user_name: '',
-            full_name: ''
-          })),
-          // Technical Consultant - multiple select
-          ...(values.technical_consultant || []).map((id: string) => ({
-            user_id: id,
-            project_role: 'Technical Consultant',
-            employee_id: '',
-            user_name: '',
-            full_name: ''
-          }))
-        ].filter(member => member.user_id) // Lọc bỏ các member không có user_id
+        project_members: editTeamMembers.map(member => ({
+          user_id: member.userId,
+          project_role: member.role,
+          employee_id: '',
+          user_name: '',
+          full_name: ''
+        })).filter(member => member.user_id && member.project_role)
       };
-
-      console.log('Sending update data:', projectData);
 
       const response = await projectService.updateProject(selectedProject._id, projectData);
 
       if (response) {
-        console.log(response)
         toast.success('Cập nhật dự án thành công');
         setIsEditModalVisible(false);
         editForm.resetFields();
         fetchProjects();
-        setSelectedUsers(new Set());
+        setEditTeamMembers([]);
       }
-
     } catch (error) {
       console.error('Error updating project:', error);
       toast.error('Có lỗi xảy ra khi cập nhật dự án');
@@ -519,65 +449,8 @@ const AdminProjectManager: React.FC = () => {
     fetchUsers();
   }, []);
 
-  // Thêm hàm xử lý search users
-  const handleUserSearch = async (searchText: string) => {
-    try {
-      const response = await userService.searchUsers({
-        searchCondition: {
-          keyword: searchText,
-          is_delete: false
-        },
-        pageInfo: {
-          pageNum: 1,
-          pageSize: 100
-        }
-      });
 
-      if (response && response.data.pageData) {
-        const formattedUsers = response.data.pageData.map((user: any) => ({
-          value: user._id,
-          label: `${user.full_name || user.user_name} (${user.email})`
-        }));
-        setUsers(formattedUsers);
-      }
-    } catch (error) {
-      console.error('Error searching users:', error);
-    }
-  };
-
-  // Hàm xử lý chọn user cho form chỉnh sửa
-  const handleEditUserSelect = (value: string | string[], fieldName: string) => {
-    const allFormValues = editForm.getFieldsValue();
-    const newSelectedUsers = new Set<string>();
-
-    // Lấy tất cả users đã chọn từ các trường khác
-    Object.entries(allFormValues).forEach(([key, val]) => {
-      if (key !== fieldName && val) {
-        if (Array.isArray(val)) {
-          val.forEach(v => {
-            if (typeof v === 'string') {
-              newSelectedUsers.add(v);
-            }
-          });
-        } else if (typeof val === 'string') {
-          newSelectedUsers.add(val);
-        }
-      }
-    });
-
-    // Thêm user(s) mới được chọn
-    if (Array.isArray(value)) {
-      value.forEach(v => {
-        if (typeof v === 'string') {
-          newSelectedUsers.add(v);
-        }
-      });
-    } else if (typeof value === 'string') {
-      newSelectedUsers.add(value);
-    }
-
-    setSelectedUsers(newSelectedUsers);
-  };
+ 
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -835,141 +708,72 @@ const AdminProjectManager: React.FC = () => {
               <div className="mb-8">
                 <h3 className="text-lg font-medium text-gray-700 mb-4 pb-2 border-b">Team Members</h3>
                 <div className="max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                    <Form.Item
-                      name="project_manager"
-                      label="Project Manager"
-                      rules={[{ required: true, message: 'Vui lòng chọn Project Manager!' }]}
-                    >
-                      <Select
-                        showSearch
-                        placeholder="Chọn Project Manager"
-                        onSearch={handleUserSearch}
-                        filterOption={false}
-                        options={users.filter(user =>
-                          !selectedUsers.has(user.value) ||
-                          user.value === editForm.getFieldValue('project_manager')
-                        )}
-                        notFoundContent={loading ? <Spin size="small" /> : null}
-                        onChange={(value) => handleEditUserSelect(value, 'project_manager')}
-                      />
-                    </Form.Item>
+                  {editTeamMembers.map((member, index) => (
+                    <div key={index} className="grid grid-cols-2 gap-4 mb-4 items-start">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Thành viên
+                        </label>
+                        <Select
+                          showSearch
+                          style={{ width: '100%' }}
+                          placeholder="Chọn thành viên"
+                          value={member.userId}
+                          onChange={(value) => {
+                            const newMembers = [...editTeamMembers];
+                            newMembers[index].userId = value;
+                            setEditTeamMembers(newMembers);
+                          }}
+                          options={users}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Vai trò
+                        </label>
+                        <div className="flex gap-2">
+                          <Select
+                            style={{ width: '100%' }}
+                            placeholder="Chọn vai trò"
+                            value={member.role}
+                            onChange={(value) => {
+                              const newMembers = [...editTeamMembers];
+                              newMembers[index].role = value;
+                              setEditTeamMembers(newMembers);
+                            }}
+                            options={[
+                              { value: 'Project Manager', label: 'Project Manager' },
+                              { value: 'Quality Analytics', label: 'Quality Analytics' },
+                              { value: 'Technical Leader', label: 'Technical Leader' },
+                              { value: 'Business Analytics', label: 'Business Analytics' },
+                              { value: 'Developer', label: 'Developer' },
+                              { value: 'Tester', label: 'Tester' },
+                              { value: 'Technical Consultant', label: 'Technical Consultant' }
+                            ]}
+                          />
+                          <Button 
+                            danger
+                            onClick={() => {
+                              setEditTeamMembers(editTeamMembers.filter((_, i) => i !== index));
+                            }}
+                          >
+                            Xóa
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
 
-                    <Form.Item
-                      name="qa_leader"
-                      label="Quality Analytics"
-                      rules={[{ required: true, message: 'Vui lòng chọn QA!' }]}
-                    >
-                      <Select
-                        showSearch
-                        placeholder="Chọn QA"
-                        onSearch={handleUserSearch}
-                        filterOption={false}
-                        options={users.filter(user =>
-                          !selectedUsers.has(user.value) ||
-                          user.value === editForm.getFieldValue('qa_leader')
-                        )}
-                        notFoundContent={loading ? <Spin size="small" /> : null}
-                        onChange={(value) => handleEditUserSelect(value, 'qa_leader')}
-                      />
-                    </Form.Item>
-
-                    {/* Các role khác tương tự, bỏ rules */}
-                    <Form.Item
-                      name="technical_leader"
-                      label="Technical Lead"
-                    >
-                      <Select
-                        mode="multiple"
-                        showSearch
-                        placeholder="Select Technical Lead"
-                        onSearch={handleUserSearch}
-                        filterOption={false}
-                        options={users.filter(user =>
-                          !selectedUsers.has(user.value) ||
-                          (editForm.getFieldValue('technical_leader') || []).includes(user.value)
-                        )}
-                        notFoundContent={loading ? <Spin size="small" /> : null}
-                        onChange={(value) => handleEditUserSelect(value, 'technical_leader')}
-                      />
-                    </Form.Item>
-
-                    <Form.Item
-                      name="business_analyst"
-                      label="Business Analyst"
-                    >
-                      <Select
-                        mode="multiple"
-                        showSearch
-                        placeholder="Select Business Analyst"
-                        onSearch={handleUserSearch}
-                        filterOption={false}
-                        options={users.filter(user =>
-                          !selectedUsers.has(user.value) ||
-                          (editForm.getFieldValue('business_analyst') || []).includes(user.value)
-                        )}
-                        notFoundContent={loading ? <Spin size="small" /> : null}
-                        onChange={(value) => handleEditUserSelect(value, 'business_analyst')}
-                      />
-                    </Form.Item>
-
-                    <Form.Item
-                      name="developers"
-                      label="Developers"
-                    >
-                      <Select
-                        mode="multiple"
-                        showSearch
-                        placeholder="Select Developers"
-                        onSearch={handleUserSearch}
-                        filterOption={false}
-                        options={users.filter(user =>
-                          !selectedUsers.has(user.value) ||
-                          (editForm.getFieldValue('developers') || []).includes(user.value)
-                        )}
-                        notFoundContent={loading ? <Spin size="small" /> : null}
-                        onChange={(value) => handleEditUserSelect(value, 'developers')}
-                      />
-                    </Form.Item>
-
-                    <Form.Item
-                      name="testers"
-                      label="Testers"
-                    >
-                      <Select
-                        mode="multiple"
-                        showSearch
-                        placeholder="Select Testers"
-                        onSearch={handleUserSearch}
-                        filterOption={false}
-                        options={users.filter(user =>
-                          !selectedUsers.has(user.value) ||
-                          (editForm.getFieldValue('testers') || []).includes(user.value)
-                        )}
-                        notFoundContent={loading ? <Spin size="small" /> : null}
-                        onChange={(value) => handleEditUserSelect(value, 'testers')}
-                      />
-                    </Form.Item>
-
-                    <Form.Item
-                      name="technical_consultant"
-                      label="Technical Consultancy"
-                    >
-                      <Select
-                        mode="multiple"
-                        showSearch
-                        placeholder="Select Technical Consultant"
-                        onSearch={handleUserSearch}
-                        filterOption={false}
-                        options={users.filter(user =>
-                          !selectedUsers.has(user.value) ||
-                          (editForm.getFieldValue('technical_consultant') || []).includes(user.value)
-                        )}
-                        notFoundContent={loading ? <Spin size="small" /> : null}
-                        onChange={(value) => handleEditUserSelect(value, 'technical_consultant')}
-                      />
-                    </Form.Item>
-                  </div>
+                  <Button
+                    type="dashed"
+                    block
+                    onClick={() => {
+                      setEditTeamMembers([...editTeamMembers, { userId: '', role: '' }]);
+                    }}
+                    className="mt-4"
+                  >
+                    + Thêm thành viên
+                  </Button>
                 </div>
               </div>
 
@@ -1085,7 +889,6 @@ const AdminProjectManager: React.FC = () => {
             <div className="mb-8">
               <h3 className="text-lg font-medium text-gray-700 mb-4 pb-2 border-b">Team Members</h3>
               <div className="max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                {/* Hiển thị danh sách thành viên đã thêm */}
                 {teamMembers.map((member, index) => (
                   <div key={index} className="grid grid-cols-2 gap-4 mb-4 items-start">
                     <div>
@@ -1142,7 +945,6 @@ const AdminProjectManager: React.FC = () => {
                   </div>
                 ))}
 
-                {/* Nút thêm thành viên mới */}
                 <Button
                   type="dashed"
                   block
