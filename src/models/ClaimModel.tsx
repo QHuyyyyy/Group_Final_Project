@@ -61,6 +61,7 @@ export interface CreateClaim {
     claim_name: string;
     claim_start_date: string;
     claim_end_date: string;
+    total_work_time: number;
     claim_status: string;
     is_deleted: boolean;
     created_at: string;
