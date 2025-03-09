@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
-import { Table, Tag, Space, Button, Modal, Card, Input, message, Form, Typography, Tabs } from "antd";
-import { CheckOutlined, CloseOutlined, UndoOutlined, EyeOutlined } from "@ant-design/icons";
+import { Table, Tag, Space, Button, Modal, Card, Input, message, Form, Typography, Tabs, Avatar } from "antd";
+import { CheckOutlined, CloseOutlined, UndoOutlined, EyeOutlined, ClockCircleOutlined, FilterOutlined, CalendarOutlined, UserOutlined } from "@ant-design/icons";
 import { claimService } from "../../services/claimService";
 import type { Claim, SearchParams } from "../../models/ClaimModel";
 import { debounce } from "lodash";
@@ -231,21 +231,21 @@ function ApprovalPage() {
   return (
     <div className="overflow-x-auto">
       <Card className="shadow-md">
-        <div className="mb-6 flex">
+        <div className="mb-4 flex">
           <h1 className="text-2xl font-bold text-gray-800">Claim Approvals</h1>
           <Search
-            placeholder="Search by claim name"
-            onSearch={handleSearch}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="ml-10 !w-72"
-            allowClear
-          />
+              placeholder="Search by claim name"
+              onSearch={handleSearch}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="ml-10 !w-72"
+              allowClear
+            />
         </div>
 
         <div className="overflow-auto custom-scrollbar">
-          <div className="flex flex-wrap gap-4 items-center mb-5 mx-2">
-
+          <div className="flex flex-wrap gap-18 items-center mb-5 mx-2">
             <div className="flex items-center">
+              <FilterOutlined className="mr-4 mb-2 text-gray-600" />
               <Tabs
                 activeKey={statusFilter || ""}
                 onChange={handleStatusFilterChange}
@@ -305,7 +305,7 @@ function ApprovalPage() {
                         </span>
                       </span>
                     )
-                  },
+                  }
                 ]}
               />
             </div>
@@ -317,10 +317,22 @@ function ApprovalPage() {
             rowKey="_id"
             columns={[
               {
-                title: "Staff name",
-                dataIndex: "staff_name",
-                key: "staff_name",
-                width: "15%",
+                title: "Staff",
+                key: "staff",
+                width: "18%",
+                render: (_, record) => (
+                  <div className="flex items-center gap-4">
+                    <Avatar
+                      size="large"
+                      icon={<UserOutlined />}
+                      className="bg-blue-500"
+                    />
+                    <div className="mb-1">
+                      <div className="font-medium">{record.staff_name}</div>
+                      <div className="text-xs text-gray-500">{record.staff_email}</div>
+                    </div>
+                  </div>
+                ),
               },
               {
                 title: "Claim name",
@@ -329,29 +341,20 @@ function ApprovalPage() {
                 width: "15%",
               },
               {
-                title: "Start date",
-                key: "time",
-                width: "15%",
+                title: "Period",
+                key: "period",
+                width: "22%",
                 render: (_, record) => (
                   <div>
-                    <div>
-                      {dayjs(record.claim_start_date).format(
-                        "DD MMM YYYY - HH:mm"
-                      )}
+                    <div className="flex items-center gap-1 mb-1">
+                      <CalendarOutlined className="text-gray-400" />
+                      <span>
+                        {dayjs(record.claim_start_date).format("DD MMM YYYY")} - {dayjs(record.claim_end_date).format("DD MMM YYYY")}
+                      </span>
                     </div>
-                  </div>
-                ),
-              },
-              {
-                title: "End date",
-                key: "time",
-                width: "15%",
-                render: (_, record) => (
-                  <div>
-                    <div>
-                      {dayjs(record.claim_end_date).format(
-                        "DD MMM YYYY - HH:mm"
-                      )}
+                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                      <ClockCircleOutlined />
+                      <span>{record.total_work_time} hours</span>
                     </div>
                   </div>
                 ),
