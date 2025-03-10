@@ -352,15 +352,22 @@ function ApprovalPage() {
                         {dayjs(record.claim_start_date).format("DD MMM YYYY")} - {dayjs(record.claim_end_date).format("DD MMM YYYY")}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1 text-xs text-gray-500">
-                      <ClockCircleOutlined />
-                      <span>{record.total_work_time} hours</span>
-                    </div>
                   </div>
                 ),
               },
               {
-                title: <span className="font-bold">Status</span>,
+                title: "Total work time",
+                dataIndex: "total_work_time",
+                key: "total_work_time",
+                width: "15%",
+                render: (_, record) => (
+                  <div className="flex items-center gap-1 mb-1">
+                      <span>{record.total_work_time} hours</span>
+                  </div>
+                ),
+              },
+              {
+                title: "Status",
                 key: "status",
                 width: "7%",
                 render: (_, record) => (
@@ -370,7 +377,7 @@ function ApprovalPage() {
                 ),
               },
               {
-                title: <span className="font-bold">Actions</span>,
+                title: "Actions",
                 key: "actions",
                 width: "15%",
                 render: (_, record) => {
