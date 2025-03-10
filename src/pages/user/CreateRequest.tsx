@@ -49,7 +49,7 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
         phone: '',
         full_name: '',
         avatar_url: '',
-        department_name: '',
+        department_code: '',
         salary: 0,
         start_date: '',
         end_date: '',
@@ -247,7 +247,7 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <span style={{ fontWeight: 500 }}>Department:</span>
-                                <span>{employeeInfo.department_name}</span>
+                                <span>{employeeInfo.department_code}</span>
                             </div>
                         </div>
                     </Card>

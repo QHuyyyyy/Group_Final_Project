@@ -17,7 +17,7 @@ export interface Employee {
     updated_at: string;
     is_deleted: boolean;
     __v:number;
-}
+} 
 
 
 export interface EmployeeUpdateData {

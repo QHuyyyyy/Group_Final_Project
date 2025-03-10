@@ -35,7 +35,7 @@ const SettingUser = () => {
             account: data.data.account,
             job_rank: data.data.job_rank,
             contract_type: data.data.contract_type,
-            department_name: data.data.department_name,
+            department_code: data.data.department_code,
             salary: data.data.salary,
             start_date: data.data.start_date ? moment(data.data.start_date) : null,
             end_date: data.data.end_date ? moment(data.data.end_date) : null,
@@ -70,7 +70,7 @@ const SettingUser = () => {
         // Keep these fields from the original data since they're displayed as disabled
         job_rank: employeeData.job_rank,
         contract_type: employeeData.contract_type,
-        department_name: employeeData.department_name,
+        department_code: employeeData.department_code,
         salary: employeeData.salary,
         start_date: employeeData.start_date,
         end_date: employeeData.end_date,
