@@ -4,17 +4,14 @@ import Navbar from "../../components/user/NavbarUser";
 
 export default function UserDashBoard() {
   return (
+    <div className="flex min-h-screen">
+      <Menu />
 
-    <div className="h-screen flex">
-      {/* Sidebar */}
-      <div className="">
-        <Menu/>
-      </div>
-      {/* Content Area */}
-      <div className="w-[82%] md:w-[90%] lg:w-[82%] xl:w-[82%] flex-1 bg-[#F7F8FA] overflow-scroll ml-60 max-w-[calc(100%-250px)]">
-        <Navbar/>
-        <Outlet />
-
+      <div className="flex-1 ml-64 bg-gray-100">
+        <Navbar />
+        <div className="p-8 mt-1">
+          <Outlet />
+        </div>
       </div>
     </div>
   );

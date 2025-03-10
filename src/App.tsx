@@ -11,7 +11,8 @@ import ResendToken from './pages/common/ResendToken';
 import ProtectedRoute from './routes/ProtectedRoute';
 import { RoutePermissions } from './routes/RoutePermissions';
 import SettingUser from './pages/user/SettingUser';
-import SettingAdmin from './pages/admin/SettingAdmin';
+import EmployeeDetails from './components/admin/EmployeeDetails';
+
 
 // Lazy load components
 const Homepage = lazy(() => import('./pages/Homepage'));
@@ -120,11 +121,8 @@ const App = () => {
               <Profile />
             </ProtectedRoute>
           } />
-          <Route path='/dashboard/settingadmin' element={
-            <ProtectedRoute allowedRoles={RoutePermissions.admin} redirectPath="/">
-              <SettingAdmin />
-            </ProtectedRoute>
-          } />
+
+          <Route path='/admin/employees/:id' element={<EmployeeDetails />} />
 
           <Route path='*' element={<NotFound />} />
         </Routes>

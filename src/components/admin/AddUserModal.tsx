@@ -1,8 +1,9 @@
-import { Modal, Form, Input, Select, Button } from "antd";
+import { Modal, Form, Button } from "antd";
 import { userService } from "../../services/user.service";
 import { message } from "antd";
 import { toast } from "react-toastify";
 import { InputVaild } from "../../constants/InputVaild";
+import CommonField from "./CommonFieldAddUser";
 
 interface AddUserModalProps {
   visible: boolean;
@@ -11,13 +12,9 @@ interface AddUserModalProps {
   roleOptions: { label: string; value: string }[];
 }
 
-const AddUserModal: React.FC<AddUserModalProps> = ({
-  visible,
-  onCancel,
-  onSuccess,
-  roleOptions,
-}) => {
+const AddUserModal: React.FC<AddUserModalProps> = ({ visible, onCancel, onSuccess, roleOptions }) => {
   const [form] = Form.useForm();
+
   const handleCancel = () => {
     form.resetFields();
     onCancel();
@@ -34,17 +31,6 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
         role_code: values.role_code.trim(),
       };
 
-      if (
-        !userData.email ||
-        !userData.password ||
-        !userData.user_name ||
-        !userData.role_code
-      ) {
-        loadingMessage();
-        message.error("Please fill in all required fields");
-        return;
-      }
-
       const response = await userService.createUser(userData);
       loadingMessage();
 
@@ -55,14 +41,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
       }
     } catch (apiError: any) {
       loadingMessage();
-      if (apiError.response?.status === 400) {
-        toast.error(
-          apiError.response?.data?.message ||
-            "Invalid user data. Please check your inputs."
-        );
-      } else {
-        toast.error("An error occurred while creating the user.");
-      }
+      toast.error(apiError.response?.data?.message || "An error occurred while creating the user.");
     }
   };
 
@@ -76,92 +55,20 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
         <Button key="cancel" onClick={handleCancel} className="bg-gray-300 hover:bg-gray-400">
           Cancel
         </Button>,
-        <Button
-          key="submit"
-          type="primary"
-          onClick={form.submit}
-          className="bg-blue-600 hover:bg-blue-700"
-        >
+        <Button key="submit" type="primary" onClick={form.submit} className="bg-blue-600 hover:bg-blue-700">
           Save
         </Button>,
       ]}
       className="rounded-lg shadow-lg"
     >
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSave}
-        className="space-y-4"
-      >
+      <Form form={form} layout="vertical" onFinish={handleSave} className="space-y-4">
         <div className="flex flex-col items-center gap-4 w-full">
           <div className="w-full max-w-md">
-            <Form.Item
-              name="user_name"
-              label="Username"
-              rules={[{ required: true, message: "Please input username!" }]}
-              validateDebounce={500}
-            >
-              <Input className="border rounded-md p-2" onBlur={() => form.validateFields(["user_name"])} />
-            </Form.Item>
-
-            <Form.Item
-              name="email"
-              label="Email"
-              rules={[
-                { required: true, message: "Please input email!" },
-                { type: "email", message: "Please enter a valid email!" },
-              ]}
-              validateDebounce={1000}
-            >
-              <Input className="border rounded-md p-2" onBlur={() => form.validateFields(["email"])} />
-            </Form.Item>
-
-            <Form.Item
-              name="role_code"
-              label="Role"
-              rules={[{ required: true, message: "Please select role!" }]}
-            >
-              <Select placeholder="Select role" options={roleOptions} className="border rounded-md" />
-            </Form.Item>
-
-            <Form.Item
-              name="password"
-              label="Password"
-              rules={[
-                { required: true, message: "Please input password!" },
-                { min: 6, message: "Password must be at least 6 characters!" },
-                {
-                  pattern: InputVaild.password,
-                  message: "Password must contain at least one uppercase & one special character!",
-                },
-              ]}
-              validateDebounce={500}
-              validateFirst={true}
-            >
-              <Input.Password className="border rounded-md p-2" />
-            </Form.Item>
-
-            <Form.Item
-              name="confirmPassword"
-              label="Confirm Password"
-              dependencies={["password"]}
-              rules={[
-                { required: true, message: "Please confirm your password!" },
-                ({ getFieldValue }) => ({
-                  validator(_, value) {
-                    if (!value || getFieldValue("password") === value) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject(
-                      new Error("The passwords do not match!")
-                    );
-                  },
-                }),
-              ]}
-              validateDebounce={500}
-            >
-              <Input.Password className="border rounded-md p-2" />
-            </Form.Item>
+            <CommonField name="user_name" label="Username" rules={InputVaild.required("Please input username!")} />
+            <CommonField name="email" label="Email" type="email" rules={InputVaild.email} />
+            <CommonField name="role_code" label="Role" type="select" options={roleOptions} rules={InputVaild.required("Please select role!")} />
+            <CommonField name="password" label="Password" type="password" rules={InputVaild.password} />
+            <CommonField name="confirmPassword" label="Confirm Password" type="password" rules={InputVaild.confirmPassword(form.getFieldValue)} />
           </div>
         </div>
       </Form>

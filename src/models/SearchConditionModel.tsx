@@ -12,6 +12,7 @@ export interface SearchProjectCondition {
     project_start_date?: string;
     project_end_date?: string;
     is_delete?: boolean;
+    user_id?: string;
 }
  
 export interface SearchClaimCondition {
