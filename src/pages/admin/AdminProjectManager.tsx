@@ -551,7 +551,7 @@ const AdminProjectManager: React.FC = () => {
                         <p className="text-sm text-gray-500">Start</p>
                         <p className="font-medium">{dayjs(selectedProject.project_start_date).format('DD/MM/YYYY')}</p>
                       </div>
-                      <div className="text-gray-400">→</div>
+                      <div className="text-gray-400 mt-5">→</div>
                       <div>
                         <p className="text-sm text-gray-500">End</p>
                         <p className="font-medium">{dayjs(selectedProject.project_end_date).format('DD/MM/YYYY')}</p>
