@@ -4,8 +4,9 @@ import type { ColumnsType } from 'antd/es/table';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
-import { claimLogService } from '../../services/claimLogService';
+import { claimLogService } from '../../services/claimLog.service';
 import { useUserStore } from '../../stores/userStore';
+
 interface Transaction {
   _id: string;
   claim_name: string;
