@@ -1,6 +1,6 @@
 // src/hooks/useRoleMapping.ts
 import { useState, useEffect } from 'react';
-import { roleService } from '../services/roleService';
+import { roleService } from '../services/role.service';
 
 interface RoleMapping {
   [key: string]: string;

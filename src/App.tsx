@@ -11,7 +11,6 @@ import ResendToken from './pages/common/ResendToken';
 import ProtectedRoute from './routes/ProtectedRoute';
 import { RoutePermissions } from './routes/RoutePermissions';
 import SettingUser from './pages/user/SettingUser';
-import SettingAdmin from './pages/admin/SettingAdmin';
 
 // Lazy load components
 const Homepage = lazy(() => import('./pages/Homepage'));
@@ -118,11 +117,6 @@ const App = () => {
           <Route path='/dashboard/profile' element={
             <ProtectedRoute allowedRoles={RoutePermissions.admin} redirectPath="/">
               <Profile />
-            </ProtectedRoute>
-          } />
-          <Route path='/dashboard/settingadmin' element={
-            <ProtectedRoute allowedRoles={RoutePermissions.admin} redirectPath="/">
-              <SettingAdmin />
             </ProtectedRoute>
           } />
 

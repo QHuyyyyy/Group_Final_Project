@@ -20,7 +20,7 @@ import NavbarAdminDashboard from '../../components/NavbarAdminDashboard';
 import { useUserStore } from '../../stores/userStore';
 import { useRoleMapping } from '../../hooks/useRoleMapping';
 
-import { employeeService } from '../../services/employeeService';
+import { employeeService } from '../../services/employee.service';
 import { useEffect, useState } from 'react';
 
 
@@ -41,7 +41,7 @@ interface Employee {
   phone: string;
   full_name: string;
   avatar_url: string;
-  department_name: string;
+  department_code: string;
   salary: number;
   start_date: string;
   end_date: string;
@@ -167,7 +167,7 @@ const Profile = () => {
                         {[
                           { label: "Email", value: user.email, icon: <MailOutlined className="text-blue-500" /> },
                           { label: "Phone", value: employeeData?.phone, icon: <PhoneOutlined className="text-green-500" /> },
-                          { label: "Department", value: employeeData?.department_name, icon: <TeamOutlined className="text-purple-500" /> },
+                          { label: "Department", value: employeeData?.department_code, icon: <TeamOutlined className="text-purple-500" /> },
                           { label: "Job Rank", value: employeeData?.job_rank, icon: <BankOutlined className="text-indigo-500" /> },
                           { label: "Address", value: employeeData?.address, icon: <EnvironmentOutlined className="text-red-500" /> },
                           { label: "Start Date", value: formatDate(employeeData?.start_date), icon: <CalendarOutlined className="text-orange-500" /> },
@@ -290,7 +290,7 @@ const Profile = () => {
                         </div>
                         <div className="flex items-center p-3 bg-gray-50 rounded-lg">
                           <span className="text-gray-500 w-24">Department:</span>
-                          <span className="text-gray-800 font-medium">{employeeData?.department_name || 'N/A'}</span>
+                          <span className="text-gray-800 font-medium">{employeeData?.department_code || 'N/A'}</span>
                         </div>
                         <div className="flex items-center p-3 bg-gray-50 rounded-lg">
                           <span className="text-gray-500 w-24">Job Rank:</span>

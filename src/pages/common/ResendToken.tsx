@@ -1,7 +1,7 @@
 import { Button, Typography, Form, Input } from 'antd';
 import {  MailOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { authService } from '../../services/authService';
+import { authService } from '../../services/auth.service';
 import { toast } from 'react-toastify';
 import loginBackground from '../../assets/login-background.png';
 

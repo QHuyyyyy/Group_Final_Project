@@ -1,21 +1,14 @@
 import React, { useState } from 'react';
 import { Modal, Form, Input, Button, Select } from 'antd';
 import dayjs from 'dayjs';
-import { userService } from '../../services/userService';
-
-interface StaffMember {
-  _id: string;
-  email: string;
-  role_code: string;
-  user_name: string;
-  created_at: string;
-}
+import { userService } from '../../services/user.service';
+import { UserData } from '../../models/UserModel';
 
 interface EditUserModalProps {
   visible: boolean;
   onCancel: () => void;
   onSuccess: () => void;
-  editingRecord: StaffMember | null;
+  editingRecord: UserData | null;
   roleOptions: { label: string; value: string }[];
 }
 
@@ -58,7 +51,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
         });
       }
 
-      console.log('Staff member updated:', values);
+  
       onSuccess();
       form.resetFields();
       setIsRoleEdit(false);

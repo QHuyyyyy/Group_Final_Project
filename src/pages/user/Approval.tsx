@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Table, Tag, Space, Button, Modal, Card, Input, message } from "antd";
 import { CheckOutlined, CloseOutlined, UndoOutlined } from "@ant-design/icons";
-import { claimService } from "../../services/claimService";
+import { claimService } from "../../services/claim.service";
 import type { Claim, SearchParams } from "../../models/ClaimModel";
 import { debounce } from "lodash";
 import dayjs from 'dayjs';

@@ -5,8 +5,8 @@ import { User } from "../../models/UserModel";
 import { Claim } from "../../models/ClaimModel";
 import dayjs from "dayjs"
 import { Bar, BarChart, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell  } from "recharts";
-import { userService } from "../../services/userService";
-import { claimService } from "../../services/claimService";
+import { userService } from "../../services/user.service";
+import { claimService } from "../../services/claim.service";
 interface ClaimStatus {
     id: number;
     name: string;
@@ -43,7 +43,7 @@ export default function AdminClaimStats() {
         const fetchData = async () => {
           try {
     
-            const fetchClaims = async (status = '', pageSize = 10) => {
+            const fetchClaims = async (status = '', pageSize = 200) => {
               let allItems: Claim[] = [];
               let pageNum = 1;
       
@@ -70,7 +70,7 @@ export default function AdminClaimStats() {
       
               return allItems;
             };
-            const fetchUsers = async (pageSize = 10) => {
+            const fetchUsers = async (pageSize = 200) => {
               let allUsers: User[] = [];
               let pageNum = 1;
       
