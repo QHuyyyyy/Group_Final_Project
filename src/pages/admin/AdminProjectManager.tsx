@@ -10,7 +10,6 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import { toast } from 'react-toastify';
 import { Project, ProjectData } from '../../models/ProjectModel';
-import ProjectModal from '../../components/admin/ProjectModal';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -147,11 +146,11 @@ const AdminProjectManager: React.FC = () => {
     try {
       setLoading(true);
       await projectService.deleteProject(projectToDelete);
-      message.success('Xóa dự án thành công');
+      message.success('Project deleted successfully');
       fetchProjects();
     } catch (error) {
       console.error('Error deleting project:', error);
-      message.error('Có lỗi xảy ra khi xóa dự án');
+      message.error('An error occurred while deleting the project');
     } finally {
       setLoading(false);
       setIsDeleteModalVisible(false);
@@ -310,10 +309,31 @@ const AdminProjectManager: React.FC = () => {
 
   };
 
+  // Đổi tên hàm validateTeamMembers thành validateTeamMembersData để tránh conflict
+  const validateTeamMembersData = (members: Array<{userId: string, role: string}>) => {
+    if (members.length === 0) {
+      message.error('Please add at least one member to the project');
+      return false;
+    }
+
+    const isValid = members.every(member => member.userId && member.role);
+    if (!isValid) {
+      message.error('Please fill in all member information and roles');
+      return false;
+    }
+
+    return true;
+  };
+
+  // Sửa lại hàm handleEditSubmit
   const handleEditSubmit = async (values: any) => {
     try {
       if (!selectedProject?._id) {
-        message.error('Không tìm thấy project ID');
+        message.error('Project ID not found');
+        return;
+      }
+
+      if (!validateTeamMembersData(editTeamMembers)) {
         return;
       }
 
@@ -333,7 +353,7 @@ const AdminProjectManager: React.FC = () => {
           employee_id: '',
           user_name: '',
           full_name: ''
-        })).filter(member => member.user_id && member.project_role)
+        }))
       };
 
       const response = await projectService.updateProject(selectedProject._id, projectData);
@@ -343,11 +363,10 @@ const AdminProjectManager: React.FC = () => {
         setIsEditModalVisible(false);
         editForm.resetFields();
         fetchProjects();
-        setEditTeamMembers([]);
       }
     } catch (error) {
       console.error('Error updating project:', error);
-      toast.error('Có lỗi xảy ra khi cập nhật dự án');
+      message.error('An error occurred while updating the project');
     } finally {
       setLoading(false);
     }
@@ -379,8 +398,13 @@ const AdminProjectManager: React.FC = () => {
     setIsCreateModalVisible(false);
   };
 
+  // Sửa lại hàm handleCreateSubmit
   const handleCreateSubmit = async (values: any) => {
     try {
+      if (!validateTeamMembersData(teamMembers)) {
+        return;
+      }
+
       setLoading(true);
       const projectData = {
         project_name: values.project_name,
@@ -409,7 +433,7 @@ const AdminProjectManager: React.FC = () => {
       }
     } catch (error) {
       console.error('Error creating project:', error);
-      toast.error('Failed to create project');
+      message.error('An error occurred while creating the project');
     } finally {
       setLoading(false);
     }
@@ -450,8 +474,36 @@ const AdminProjectManager: React.FC = () => {
     fetchUsers();
   }, []);
 
+  // Thêm hàm kiểm tra member đã tồn tại
+  const isMemberExist = (userId: string, members: Array<{userId: string, role: string}>, currentIndex?: number) => {
+    return members.some((member, index) => 
+      member.userId === userId && (currentIndex === undefined || index !== currentIndex)
+    );
+  };
 
- 
+  // Tạo hàm lấy danh sách role có thể chọn
+  const getAvailableRoles = (members: Array<{userId: string, role: string}>, currentRole?: string) => {
+    const baseRoles = [
+      { value: 'Project Manager', label: 'Project Manager' },
+      { value: 'Quality Analytics', label: 'Quality Analytics' },
+      { value: 'Technical Leader', label: 'Technical Leader' },
+      { value: 'Business Analytics', label: 'Business Analytics' },
+      { value: 'Developer', label: 'Developer' },
+      { value: 'Tester', label: 'Tester' },
+      { value: 'Technical Consultant', label: 'Technical Consultant' }
+    ];
+
+    return baseRoles.filter(role => {
+      if (role.value === currentRole) return true;
+      
+      // Kiểm tra nếu là PM hoặc QA và đã có người giữ role đó
+      if ((role.value === 'Project Manager' || role.value === 'Quality Analytics') 
+          && members.some(m => m.role === role.value)) {
+        return false;
+      }
+      return true;
+    });
+  };
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -551,7 +603,7 @@ const AdminProjectManager: React.FC = () => {
                         <p className="text-sm text-gray-500">Start</p>
                         <p className="font-medium">{dayjs(selectedProject.project_start_date).format('DD/MM/YYYY')}</p>
                       </div>
-                      <div className="text-gray-400 mt-5">→</div>
+                      <div className="text-gray-400">→</div>
                       <div>
                         <p className="text-sm text-gray-500">End</p>
                         <p className="font-medium">{dayjs(selectedProject.project_end_date).format('DD/MM/YYYY')}</p>
@@ -615,32 +667,357 @@ const AdminProjectManager: React.FC = () => {
           )}
         </Modal>
 
-        {/* Modal Create Project */}
-        <ProjectModal
-          visible={isCreateModalVisible}
-          onCancel={handleCreateModalClose}
-          onSubmit={handleCreateSubmit}
-          isEditMode={false}
-          users={users}
-          disabledStartDate={disabledStartDate}
-          disabledEndDate={disabledEndDate}
-          teamMembers={teamMembers}
-          setTeamMembers={setTeamMembers}
-        />
-
         {/* Modal Edit Project */}
-        <ProjectModal
-          visible={isEditModalVisible}
+        <Modal
+          title={<h2 className="text-2xl font-semibold text-gray-800 mb-4">Update Project</h2>}
+          open={isEditModalVisible}
           onCancel={handleEditModalClose}
-          onSubmit={handleEditSubmit}
-          initialValues={selectedProject}
-          isEditMode={true}
-          users={users}
-          disabledStartDate={disabledStartDate}
-          disabledEndDate={disabledEndDate}
-          teamMembers={editTeamMembers}
-          setTeamMembers={setEditTeamMembers}
-        />
+          footer={null}
+          width={800}
+          className="custom-modal"
+        >
+          {selectedProject && (
+            <Form
+              form={editForm}
+              layout="vertical"
+              onFinish={handleEditSubmit}
+              initialValues={selectedProject}
+            >
+              {/* Project Information */}
+              <div className="grid grid-cols-3 gap-x-6 mb-4">
+                <Form.Item
+                  name="project_code"
+                  label="Project Code"
+                  rules={[{ required: true, message: 'Please input project code!' }]}
+                >
+                  <Input placeholder="Enter project code" />
+                </Form.Item>
+
+                <Form.Item
+                  name="project_name"
+                  label="Project Name"
+                  rules={[{ required: true, message: 'Please input project name!' }]}
+                >
+                  <Input placeholder="Enter project name" />
+                </Form.Item>
+
+                <Form.Item
+                  name="project_department"
+                  label="Department"
+                  rules={[{ required: true, message: 'Please select department!' }]}
+                >
+                  <Select placeholder="Select department">
+                    <Select.Option value="IT">IT Department</Select.Option>
+                    <Select.Option value="HR">HR Department</Select.Option>
+                    <Select.Option value="Marketing">Marketing Department</Select.Option>
+                    <Select.Option value="Sales">Sales Department</Select.Option>
+                    <Select.Option value="Finance">Finance Department</Select.Option>
+                  </Select>
+                </Form.Item>
+              </div>
+
+              <div className="mb-4">
+                <Form.Item
+                  name="project_description"
+                  label="Description"
+                  rules={[{ required: true, message: 'Please input project description!' }]}
+                >
+                  <Input.TextArea
+                    rows={4}
+                    placeholder="Enter project description"
+                  />
+                </Form.Item>
+              </div>
+
+              {/* Date Selection in 2 columns */}
+              <div>
+                <Form.Item
+                  label="Start Date"
+                  name="startDate"
+                >
+                  <DatePicker
+                    style={{ width: '100%' }}
+                    className="rounded-md"
+                    disabledDate={disabledStartDate}
+                    onChange={handleEditStartDateChange}
+                  />
+                </Form.Item>
+              </div>
+
+              <div>
+                <Form.Item
+                  label="End Date"
+                  name="endDate"
+                >
+                  <DatePicker
+                    style={{ width: '100%' }}
+                    className="rounded-md"
+                    disabledDate={disabledEndDate}
+                  />
+                </Form.Item>
+              </div>
+
+              {/* Team Members Section */}
+              <div className="mb-8">
+                <h3 className="text-lg font-medium text-gray-700 mb-4 pb-2 border-b">Team Members</h3>
+                <div className="max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                  {editTeamMembers.map((member, index) => (
+                    <div key={index} className="grid grid-cols-2 gap-4 mb-4 items-start">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Member <span className="text-red-500">*</span>
+                        </label>
+                        <Select
+                          showSearch
+                          style={{ width: '100%' }}
+                          placeholder="Select member"
+                          value={member.userId}
+                          status={!member.userId && editTeamMembers.length > 0 ? 'error' : ''}
+                          onChange={(value) => {
+                            const newMembers = [...editTeamMembers];
+                            newMembers[index].userId = value;
+                            setEditTeamMembers(newMembers);
+                          }}
+                          options={users.filter(user => !isMemberExist(user.value, editTeamMembers, index))}
+                        />
+                        {!member.userId && editTeamMembers.length > 0 && (
+                          <div className="text-red-500 text-sm mt-1">Please select a member</div>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Role <span className="text-red-500">*</span>
+                        </label>
+                        <div className="flex gap-2">
+                          <Select
+                            style={{ width: '100%' }}
+                            placeholder="Select role"
+                            value={member.role}
+                            status={!member.role && editTeamMembers.length > 0 ? 'error' : ''}
+                            onChange={(value) => {
+                              const newMembers = [...editTeamMembers];
+                              newMembers[index].role = value;
+                              setEditTeamMembers(newMembers);
+                            }}
+                            options={getAvailableRoles(editTeamMembers, member.role)}
+                          />
+                          <Button 
+                            danger
+                            onClick={() => {
+                              setEditTeamMembers(editTeamMembers.filter((_, i) => i !== index));
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                        {!member.role && editTeamMembers.length > 0 && (
+                          <div className="text-red-500 text-sm mt-1">Please select a role</div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+
+                  <Button
+                    type="dashed"
+                    block
+                    onClick={() => {
+                      setEditTeamMembers([...editTeamMembers, { userId: '', role: '' }]);
+                    }}
+                    className="mt-4"
+                  >
+                    + Add Member
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-4 pt-6 border-t">
+                <Button
+                  onClick={handleEditModalClose}
+                  className="px-6 rounded-md"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={loading}
+                >
+                  Update Project
+                </Button>
+              </div>
+            </Form>
+          )}
+        </Modal>
+
+        {/* Modal Create Project */}
+        <Modal
+          title={<h2 className="text-2xl font-semibold text-gray-800 mb-4">Create New Project</h2>}
+          open={isCreateModalVisible}
+          onCancel={handleCreateModalClose}
+          footer={null}
+          width={800}
+       
+        >
+          <Form
+            form={createForm}
+            layout="vertical"
+            onFinish={handleCreateSubmit}
+            className="bg-white p-4"
+          >
+            {/* Project Information */}
+            <div className="mb-8">
+              <h3 className="text-lg font-medium text-gray-700 mb-4 pb-2 border-b">Project Information</h3>
+              <div className="grid grid-cols-3 gap-x-6 mb-4">
+                <Form.Item
+                  name="project_code"
+                  label="Project Code"
+                  rules={[{ required: true, message: 'Please input project code!' }]}
+                >
+                  <Input placeholder="Enter project code" />
+                </Form.Item>
+
+                <Form.Item
+                  name="project_name"
+                  label="Project Name"
+                  rules={[{ required: true, message: 'Please input project name!' }]}
+                >
+                  <Input placeholder="Enter project name" />
+                </Form.Item>
+
+                <Form.Item
+                  name="project_department"
+                  label="Department"
+                  rules={[{ required: true, message: 'Please select department!' }]}
+                >
+                  <Select placeholder="Select department">
+                    <Select.Option value="IT">IT Department</Select.Option>
+                    <Select.Option value="HR">HR Department</Select.Option>
+                    <Select.Option value="Marketing">Marketing Department</Select.Option>
+                    <Select.Option value="Sales">Sales Department</Select.Option>
+                    <Select.Option value="Finance">Finance Department</Select.Option>
+                  </Select>
+                </Form.Item>
+              </div>
+
+              <div className="mb-4">
+                <Form.Item
+                  name="project_description"
+                  label="Description"
+                  rules={[{ required: true, message: 'Please input project description!' }]}
+                >
+                  <Input.TextArea
+                    rows={4}
+                    placeholder="Enter project description"
+                  />
+                </Form.Item>
+              </div>
+              <div className="grid grid-cols-2 gap-x-6 mb-4">
+              <Form.Item
+                label="Start Date"
+                name="startDate"
+                rules={[{ required: true, message: 'Please select start date!' }]}
+              >
+                <DatePicker
+                  style={{ width: '100%' }}
+                  className="rounded-md"
+                  disabledDate={disabledStartDate}
+                  onChange={handleCreateStartDateChange}
+                />
+              </Form.Item>
+
+              <Form.Item
+                label="End Date"
+                name="endDate"
+                rules={[{ required: true, message: 'Please select end date!' }]}
+              >
+                <DatePicker
+                  style={{ width: '100%' }}
+                  disabledDate={disabledEndDate}
+                />
+              </Form.Item>
+              </div>
+            </div>
+
+            {/* Team Members Section */}
+            <div className="mb-8">
+              <h3 className="text-lg font-medium text-gray-700 mb-4 pb-2 border-b">Team Members</h3>
+              <div className="max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                {teamMembers.map((member, index) => (
+                  <div key={index} className="grid grid-cols-2 gap-4 mb-4 items-start">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Member <span className="text-red-500">*</span>
+                      </label>
+                      <Select
+                        showSearch
+                        style={{ width: '100%' }}
+                        placeholder="Select member"
+                        value={member.userId}
+                        status={!member.userId && teamMembers.length > 0 ? 'error' : ''}
+                        onChange={(value) => {
+                          const newMembers = [...teamMembers];
+                          newMembers[index].userId = value;
+                          setTeamMembers(newMembers);
+                        }}
+                        options={users.filter(user => !isMemberExist(user.value, teamMembers, index))}
+                      />
+                      {!member.userId && teamMembers.length > 0 && (
+                        <div className="text-red-500 text-sm mt-1">Please select a member</div>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Role <span className="text-red-500">*</span>
+                      </label>
+                      <div className="flex gap-2">
+                        <Select
+                          style={{ width: '100%' }}
+                          placeholder="Select role"
+                          value={member.role}
+                          status={!member.role && teamMembers.length > 0 ? 'error' : ''}
+                          onChange={(value) => {
+                            const newMembers = [...teamMembers];
+                            newMembers[index].role = value;
+                            setTeamMembers(newMembers);
+                          }}
+                          options={getAvailableRoles(teamMembers, member.role)}
+                        />
+                        <Button 
+                          danger
+                          onClick={() => {
+                            setTeamMembers(teamMembers.filter((_, i) => i !== index));
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                      {!member.role && teamMembers.length > 0 && (
+                        <div className="text-red-500 text-sm mt-1">Please select a role</div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                <Button
+                  type="dashed"
+                  block
+                  onClick={() => {
+                    setTeamMembers([...teamMembers, { userId: '', role: '' }]);
+                  }}
+                  className="mt-4"
+                >
+                  + Add Member
+                </Button>
+              </div>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex justify-end space-x-4 pt-6 border-t">
+              <Button onClick={handleCreateModalClose}>Cancel</Button>
+              <Button type="primary" htmlType="submit">Create Project</Button>
+            </div>
+          </Form>
+        </Modal>
 
         <Modal
           title="Confirm Delete Project"
