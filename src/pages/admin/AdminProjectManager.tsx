@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SideBarAdminProject from '../../components/admin/SideBarAdminProject';
-import { Card, Table, Tag, Space, Button, Modal, Form, Input, Select, DatePicker, message, Spin, Empty } from 'antd';
-import { EditOutlined, DeleteOutlined, EyeOutlined, ArrowLeftOutlined, SearchOutlined, StarOutlined, StarFilled } from '@ant-design/icons';
+import { Card, Table, Tag, Button, Modal, Form, Input,   message, Spin, Empty } from 'antd';
+import {  ArrowLeftOutlined, SearchOutlined,  } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import projectService from '../../services/project.service';
 import { userService } from '../../services/user.service';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import { toast } from 'react-toastify';
-import { Project, ProjectData } from '../../models/ProjectModel';
+import {  ProjectData } from '../../models/ProjectModel';
+import { getProjectColumns } from '../../components/admin/ProjectColumns';
+import ProjectModal from '../../components/admin/ProjectModal';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -84,13 +86,7 @@ const AdminProjectManager: React.FC = () => {
   const fetchProjects = async () => {
     try {
       setLoading(true);
-      console.log('Fetching projects with params:', {
-        searchText,
-        pagination: {
-          current: pagination.current,
-          pageSize: pagination.pageSize
-        }
-      });
+      ;
 
       const response = await projectService.searchProjects({
         searchCondition: {
@@ -116,11 +112,11 @@ const AdminProjectManager: React.FC = () => {
         }));
         console.log('Updated projects:', response.data.pageData);
       } else {
-        message.error('Không thể tải dữ liệu dự án');
+        message.error(' Cannot load project data');
       }
     } catch (error) {
       console.error('Error fetching projects:', error);
-      message.error('Có lỗi xảy ra khi tải dữ liệu dự án');
+      message.error(' An error occurred while fetching the project data');
     } finally {
       setLoading(false);
     }
@@ -157,90 +153,6 @@ const AdminProjectManager: React.FC = () => {
       setProjectToDelete(null);
     }
   };
-
-  const columns = [
-    {
-      title: 'Project Code',
-      dataIndex: 'project_code',
-      key: 'project_code',
-      width: 120,
-    },
-    {
-      title: 'Project Name',
-      dataIndex: 'project_name',
-      key: 'project_name',
-      width: 200,
-    },
-    {
-      title: 'Status',
-      dataIndex: 'project_status',
-      key: 'project_status',
-      width: 120,
-      render: (status: string) => (
-        <Tag color={
-          status === 'New' ? 'blue' :
-            status === 'Pending' ? 'orange' :
-              'green'
-        }>
-          {status}
-        </Tag>
-      ),
-    },
-    {
-      title: 'From',
-      dataIndex: 'project_start_date',
-      key: 'project_start_date',
-      width: 150, // Tăng width để hiển thị thêm giờ
-      render: (date: string) => dayjs(date).tz('Asia/Ho_Chi_Minh').format('DD/MM/YYYY'),
-    },
-    {
-      title: 'To',
-      dataIndex: 'project_end_date',
-      key: 'project_end_date',
-      width: 150, // Tăng width để hiển thị thêm giờ
-      render: (date: string) => dayjs(date).tz('Asia/Ho_Chi_Minh').format('DD/MM/YYYY'),
-    },
-    {
-      title: 'Favorite',
-      key: 'favorite',
-      width: 80,
-      render: (_: any, record: Project) => (
-        <Button
-          type="text"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleToggleFavorite(record._id);
-          }}
-          icon={favoriteProjects.includes(record._id) ? <StarFilled className="text-yellow-400" /> : <StarOutlined />}
-        />
-      ),
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      width: 150,
-      render: (_: any, record: ProjectData) => (
-        <Space size="middle">
-          <Button
-            type="text"
-            icon={<EyeOutlined />}
-            onClick={() => handleViewDetails(record)}
-          />
-          <Button
-            type="text"
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-          />
-          <Button
-            type="text"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record._id)}
-          />
-        </Space>
-      ),
-    },
-  ];
 
   const handleViewDetails = async (record: ProjectData) => {
     try {
@@ -279,20 +191,8 @@ const AdminProjectManager: React.FC = () => {
         role: member.project_role
       }));
       setEditTeamMembers(initialTeamMembers);
-
-      // Set các giá trị khác cho form
-      editForm.setFieldsValue({
-        project_name: record.project_name,
-        project_code: record.project_code,
-        project_department: record.project_department,
-        project_description: record.project_description,
-        project_status: record.project_status,
-        startDate: dayjs(record.project_start_date),
-        endDate: dayjs(record.project_end_date),
-      });
-
-      await new Promise((resolve) => setTimeout(resolve, 1000));
       setIsEditModalVisible(true);
+
     } catch (error) {
       console.error('Error in handleEdit:', error);
       message.error('Có lỗi xảy ra khi mở form chỉnh sửa');
@@ -322,6 +222,20 @@ const AdminProjectManager: React.FC = () => {
       return false;
     }
 
+    // Kiểm tra có đúng 1 PM và tối đa 1 QA
+    const pmCount = members.filter(m => m.role === 'Project Manager').length;
+    const qaCount = members.filter(m => m.role === 'Quality Analytics').length;
+
+    if (pmCount !== 1) {
+      message.error('Project must have exactly one Project Manager');
+      return false;
+    }
+
+    if (qaCount > 1) {
+      message.error('Project can have at most one Quality Analytics');
+      return false;
+    }
+
     return true;
   };
 
@@ -342,11 +256,11 @@ const AdminProjectManager: React.FC = () => {
       const projectData = {
         project_name: values.project_name,
         project_code: values.project_code,
-        project_department: values.project_department || 'HR',
-        project_description: values.project_description || '',
+        project_department: values.project_department,
+        project_description: values.project_description,
         project_status: values.project_status,
-        project_start_date: dayjs(values.startDate).tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD'),
-        project_end_date: dayjs(values.endDate).tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD'),
+        project_start_date: dayjs(values.startDate).format('YYYY-MM-DD'),
+        project_end_date: dayjs(values.endDate).format('YYYY-MM-DD'),
         project_members: editTeamMembers.map(member => ({
           user_id: member.userId,
           project_role: member.role,
@@ -357,11 +271,9 @@ const AdminProjectManager: React.FC = () => {
       };
 
       const response = await projectService.updateProject(selectedProject._id, projectData);
-
       if (response) {
-        toast.success('Cập nhật dự án thành công');
+        toast.success('Project updated successfully');
         setIsEditModalVisible(false);
-        editForm.resetFields();
         fetchProjects();
       }
     } catch (error) {
@@ -474,36 +386,14 @@ const AdminProjectManager: React.FC = () => {
     fetchUsers();
   }, []);
 
-  // Thêm hàm kiểm tra member đã tồn tại
-  const isMemberExist = (userId: string, members: Array<{userId: string, role: string}>, currentIndex?: number) => {
-    return members.some((member, index) => 
-      member.userId === userId && (currentIndex === undefined || index !== currentIndex)
-    );
-  };
-
-  // Tạo hàm lấy danh sách role có thể chọn
-  const getAvailableRoles = (members: Array<{userId: string, role: string}>, currentRole?: string) => {
-    const baseRoles = [
-      { value: 'Project Manager', label: 'Project Manager' },
-      { value: 'Quality Analytics', label: 'Quality Analytics' },
-      { value: 'Technical Leader', label: 'Technical Leader' },
-      { value: 'Business Analytics', label: 'Business Analytics' },
-      { value: 'Developer', label: 'Developer' },
-      { value: 'Tester', label: 'Tester' },
-      { value: 'Technical Consultant', label: 'Technical Consultant' }
-    ];
-
-    return baseRoles.filter(role => {
-      if (role.value === currentRole) return true;
-      
-      // Kiểm tra nếu là PM hoặc QA và đã có người giữ role đó
-      if ((role.value === 'Project Manager' || role.value === 'Quality Analytics') 
-          && members.some(m => m.role === role.value)) {
-        return false;
-      }
-      return true;
-    });
-  };
+  // Di chuyển khai báo columns xuống sau khi đã định nghĩa đầy đủ các hàm xử lý
+  const columns = getProjectColumns({
+    handleViewDetails,
+    handleEdit,
+    handleDelete,
+    handleToggleFavorite,
+    favoriteProjects,
+  });
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -667,357 +557,32 @@ const AdminProjectManager: React.FC = () => {
           )}
         </Modal>
 
-        {/* Modal Edit Project */}
-        <Modal
-          title={<h2 className="text-2xl font-semibold text-gray-800 mb-4">Update Project</h2>}
-          open={isEditModalVisible}
-          onCancel={handleEditModalClose}
-          footer={null}
-          width={800}
-          className="custom-modal"
-        >
-          {selectedProject && (
-            <Form
-              form={editForm}
-              layout="vertical"
-              onFinish={handleEditSubmit}
-              initialValues={selectedProject}
-            >
-              {/* Project Information */}
-              <div className="grid grid-cols-3 gap-x-6 mb-4">
-                <Form.Item
-                  name="project_code"
-                  label="Project Code"
-                  rules={[{ required: true, message: 'Please input project code!' }]}
-                >
-                  <Input placeholder="Enter project code" />
-                </Form.Item>
-
-                <Form.Item
-                  name="project_name"
-                  label="Project Name"
-                  rules={[{ required: true, message: 'Please input project name!' }]}
-                >
-                  <Input placeholder="Enter project name" />
-                </Form.Item>
-
-                <Form.Item
-                  name="project_department"
-                  label="Department"
-                  rules={[{ required: true, message: 'Please select department!' }]}
-                >
-                  <Select placeholder="Select department">
-                    <Select.Option value="IT">IT Department</Select.Option>
-                    <Select.Option value="HR">HR Department</Select.Option>
-                    <Select.Option value="Marketing">Marketing Department</Select.Option>
-                    <Select.Option value="Sales">Sales Department</Select.Option>
-                    <Select.Option value="Finance">Finance Department</Select.Option>
-                  </Select>
-                </Form.Item>
-              </div>
-
-              <div className="mb-4">
-                <Form.Item
-                  name="project_description"
-                  label="Description"
-                  rules={[{ required: true, message: 'Please input project description!' }]}
-                >
-                  <Input.TextArea
-                    rows={4}
-                    placeholder="Enter project description"
-                  />
-                </Form.Item>
-              </div>
-
-              {/* Date Selection in 2 columns */}
-              <div>
-                <Form.Item
-                  label="Start Date"
-                  name="startDate"
-                >
-                  <DatePicker
-                    style={{ width: '100%' }}
-                    className="rounded-md"
-                    disabledDate={disabledStartDate}
-                    onChange={handleEditStartDateChange}
-                  />
-                </Form.Item>
-              </div>
-
-              <div>
-                <Form.Item
-                  label="End Date"
-                  name="endDate"
-                >
-                  <DatePicker
-                    style={{ width: '100%' }}
-                    className="rounded-md"
-                    disabledDate={disabledEndDate}
-                  />
-                </Form.Item>
-              </div>
-
-              {/* Team Members Section */}
-              <div className="mb-8">
-                <h3 className="text-lg font-medium text-gray-700 mb-4 pb-2 border-b">Team Members</h3>
-                <div className="max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                  {editTeamMembers.map((member, index) => (
-                    <div key={index} className="grid grid-cols-2 gap-4 mb-4 items-start">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Member <span className="text-red-500">*</span>
-                        </label>
-                        <Select
-                          showSearch
-                          style={{ width: '100%' }}
-                          placeholder="Select member"
-                          value={member.userId}
-                          status={!member.userId && editTeamMembers.length > 0 ? 'error' : ''}
-                          onChange={(value) => {
-                            const newMembers = [...editTeamMembers];
-                            newMembers[index].userId = value;
-                            setEditTeamMembers(newMembers);
-                          }}
-                          options={users.filter(user => !isMemberExist(user.value, editTeamMembers, index))}
-                        />
-                        {!member.userId && editTeamMembers.length > 0 && (
-                          <div className="text-red-500 text-sm mt-1">Please select a member</div>
-                        )}
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Role <span className="text-red-500">*</span>
-                        </label>
-                        <div className="flex gap-2">
-                          <Select
-                            style={{ width: '100%' }}
-                            placeholder="Select role"
-                            value={member.role}
-                            status={!member.role && editTeamMembers.length > 0 ? 'error' : ''}
-                            onChange={(value) => {
-                              const newMembers = [...editTeamMembers];
-                              newMembers[index].role = value;
-                              setEditTeamMembers(newMembers);
-                            }}
-                            options={getAvailableRoles(editTeamMembers, member.role)}
-                          />
-                          <Button 
-                            danger
-                            onClick={() => {
-                              setEditTeamMembers(editTeamMembers.filter((_, i) => i !== index));
-                            }}
-                          >
-                            Delete
-                          </Button>
-                        </div>
-                        {!member.role && editTeamMembers.length > 0 && (
-                          <div className="text-red-500 text-sm mt-1">Please select a role</div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-
-                  <Button
-                    type="dashed"
-                    block
-                    onClick={() => {
-                      setEditTeamMembers([...editTeamMembers, { userId: '', role: '' }]);
-                    }}
-                    className="mt-4"
-                  >
-                    + Add Member
-                  </Button>
-                </div>
-              </div>
-
-              <div className="flex justify-end space-x-4 pt-6 border-t">
-                <Button
-                  onClick={handleEditModalClose}
-                  className="px-6 rounded-md"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={loading}
-                >
-                  Update Project
-                </Button>
-              </div>
-            </Form>
-          )}
-        </Modal>
-
-        {/* Modal Create Project */}
-        <Modal
-          title={<h2 className="text-2xl font-semibold text-gray-800 mb-4">Create New Project</h2>}
-          open={isCreateModalVisible}
+        <ProjectModal
+          visible={isCreateModalVisible}
           onCancel={handleCreateModalClose}
-          footer={null}
-          width={800}
-       
-        >
-          <Form
-            form={createForm}
-            layout="vertical"
-            onFinish={handleCreateSubmit}
-            className="bg-white p-4"
-          >
-            {/* Project Information */}
-            <div className="mb-8">
-              <h3 className="text-lg font-medium text-gray-700 mb-4 pb-2 border-b">Project Information</h3>
-              <div className="grid grid-cols-3 gap-x-6 mb-4">
-                <Form.Item
-                  name="project_code"
-                  label="Project Code"
-                  rules={[{ required: true, message: 'Please input project code!' }]}
-                >
-                  <Input placeholder="Enter project code" />
-                </Form.Item>
+          onSubmit={handleCreateSubmit}
+          isEditMode={false}
+          users={users}
+          disabledStartDate={disabledStartDate}
+          disabledEndDate={disabledEndDate}
+          teamMembers={teamMembers}
+          setTeamMembers={setTeamMembers}
+          handleStartDateChange={handleCreateStartDateChange}
+        />
 
-                <Form.Item
-                  name="project_name"
-                  label="Project Name"
-                  rules={[{ required: true, message: 'Please input project name!' }]}
-                >
-                  <Input placeholder="Enter project name" />
-                </Form.Item>
-
-                <Form.Item
-                  name="project_department"
-                  label="Department"
-                  rules={[{ required: true, message: 'Please select department!' }]}
-                >
-                  <Select placeholder="Select department">
-                    <Select.Option value="IT">IT Department</Select.Option>
-                    <Select.Option value="HR">HR Department</Select.Option>
-                    <Select.Option value="Marketing">Marketing Department</Select.Option>
-                    <Select.Option value="Sales">Sales Department</Select.Option>
-                    <Select.Option value="Finance">Finance Department</Select.Option>
-                  </Select>
-                </Form.Item>
-              </div>
-
-              <div className="mb-4">
-                <Form.Item
-                  name="project_description"
-                  label="Description"
-                  rules={[{ required: true, message: 'Please input project description!' }]}
-                >
-                  <Input.TextArea
-                    rows={4}
-                    placeholder="Enter project description"
-                  />
-                </Form.Item>
-              </div>
-              <div className="grid grid-cols-2 gap-x-6 mb-4">
-              <Form.Item
-                label="Start Date"
-                name="startDate"
-                rules={[{ required: true, message: 'Please select start date!' }]}
-              >
-                <DatePicker
-                  style={{ width: '100%' }}
-                  className="rounded-md"
-                  disabledDate={disabledStartDate}
-                  onChange={handleCreateStartDateChange}
-                />
-              </Form.Item>
-
-              <Form.Item
-                label="End Date"
-                name="endDate"
-                rules={[{ required: true, message: 'Please select end date!' }]}
-              >
-                <DatePicker
-                  style={{ width: '100%' }}
-                  disabledDate={disabledEndDate}
-                />
-              </Form.Item>
-              </div>
-            </div>
-
-            {/* Team Members Section */}
-            <div className="mb-8">
-              <h3 className="text-lg font-medium text-gray-700 mb-4 pb-2 border-b">Team Members</h3>
-              <div className="max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                {teamMembers.map((member, index) => (
-                  <div key={index} className="grid grid-cols-2 gap-4 mb-4 items-start">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Member <span className="text-red-500">*</span>
-                      </label>
-                      <Select
-                        showSearch
-                        style={{ width: '100%' }}
-                        placeholder="Select member"
-                        value={member.userId}
-                        status={!member.userId && teamMembers.length > 0 ? 'error' : ''}
-                        onChange={(value) => {
-                          const newMembers = [...teamMembers];
-                          newMembers[index].userId = value;
-                          setTeamMembers(newMembers);
-                        }}
-                        options={users.filter(user => !isMemberExist(user.value, teamMembers, index))}
-                      />
-                      {!member.userId && teamMembers.length > 0 && (
-                        <div className="text-red-500 text-sm mt-1">Please select a member</div>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Role <span className="text-red-500">*</span>
-                      </label>
-                      <div className="flex gap-2">
-                        <Select
-                          style={{ width: '100%' }}
-                          placeholder="Select role"
-                          value={member.role}
-                          status={!member.role && teamMembers.length > 0 ? 'error' : ''}
-                          onChange={(value) => {
-                            const newMembers = [...teamMembers];
-                            newMembers[index].role = value;
-                            setTeamMembers(newMembers);
-                          }}
-                          options={getAvailableRoles(teamMembers, member.role)}
-                        />
-                        <Button 
-                          danger
-                          onClick={() => {
-                            setTeamMembers(teamMembers.filter((_, i) => i !== index));
-                          }}
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                      {!member.role && teamMembers.length > 0 && (
-                        <div className="text-red-500 text-sm mt-1">Please select a role</div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-
-                <Button
-                  type="dashed"
-                  block
-                  onClick={() => {
-                    setTeamMembers([...teamMembers, { userId: '', role: '' }]);
-                  }}
-                  className="mt-4"
-                >
-                  + Add Member
-                </Button>
-              </div>
-            </div>
-
-            {/* Buttons */}
-            <div className="flex justify-end space-x-4 pt-6 border-t">
-              <Button onClick={handleCreateModalClose}>Cancel</Button>
-              <Button type="primary" htmlType="submit">Create Project</Button>
-            </div>
-          </Form>
-        </Modal>
+        <ProjectModal
+          visible={isEditModalVisible}
+          onCancel={handleEditModalClose}
+          onSubmit={handleEditSubmit}
+          initialValues={selectedProject || undefined}
+          isEditMode={true}
+          users={users}
+          disabledStartDate={disabledStartDate}
+          disabledEndDate={disabledEndDate}
+          teamMembers={editTeamMembers}
+          setTeamMembers={setEditTeamMembers}
+          handleStartDateChange={handleEditStartDateChange}
+        />
 
         <Modal
           title="Confirm Delete Project"

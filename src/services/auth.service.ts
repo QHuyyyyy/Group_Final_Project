@@ -2,7 +2,7 @@
 import  { apiUtils } from "../api/axios";
 import { AUTH_URL } from "../constants/authURL";
 import { ApiResponse } from "../models/ApiResponse";
-import { Credentials, Email, Info, Token } from "../models/AuthModel";
+import { Credentials, Info, Token } from "../models/AuthModel";
 
 export const authService = {
   login: async (credentials: Credentials): Promise<ApiResponse<Token>> => {
@@ -30,19 +30,19 @@ export const authService = {
     return response.data;
   },
 
-  resendToken: async (email: Email): Promise<ApiResponse<null>> => {
+  resendToken: async (email: string): Promise<ApiResponse<null>> => {
     const response = await apiUtils.post<ApiResponse<null>>(`${AUTH_URL}/resend-token`, { email });
     console.log("fetch data:", response.data);
     return response.data;
   },
 
-  forgotPassword: async (email: Email): Promise<ApiResponse<null>> => {
+  forgotPassword: async (email: string): Promise<ApiResponse<null>> => {
     const response = await apiUtils.put<ApiResponse<null>>(`${AUTH_URL}/forgot-password`, { email });
     console.log("fetch data:", response.data);
     return response.data;
   },
 
-  triggerVerify: async (email: Email): Promise<ApiResponse<null>> => {
+  triggerVerify: async (email: string): Promise<ApiResponse<null>> => {
     const response = await apiUtils.post<ApiResponse<null>>(`${AUTH_URL}/trigger-verify-token`, { email });
     console.log("fetch data:", response.data);
     return response.data;
