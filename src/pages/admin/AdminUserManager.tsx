@@ -36,7 +36,7 @@ const AdminUserManager: React.FC = () => {
   const [staffData, setStaffData] = useState<UserData[]>([]);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
-  const [selectedStaff, setSelectedStaff] = useState<any>(null);
+  const [selectedStaff, setSelectedStaff] = useState<UserData | null>(null);
   const [searchText, setSearchText] = useState('');
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
