@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { Modal, Form, Input, Select, DatePicker, Button } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Modal, Form, Input, Select, DatePicker, Button, Empty } from 'antd';
 import dayjs from 'dayjs';
 import { ProjectData } from '../../models/ProjectModel';
 
@@ -15,6 +15,10 @@ interface ProjectModalProps {
   teamMembers: Array<{ userId: string; role: string }>;
   setTeamMembers: React.Dispatch<React.SetStateAction<Array<{ userId: string; role: string }>>>;
   handleStartDateChange: (date: dayjs.Dayjs | null) => void;
+  departments: Array<{
+    value: string;
+    label: string;
+  }>;
 }
 
 const ProjectModal: React.FC<ProjectModalProps> = ({
@@ -29,8 +33,10 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
   teamMembers,
   setTeamMembers,
   handleStartDateChange,
+  departments,
 }) => {
   const [form] = Form.useForm();
+  const [memberSearchText, setMemberSearchText] = useState('');
 
   useEffect(() => {
     if (isEditMode && initialValues) {
@@ -69,6 +75,17 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
         return false;
       }
       return true;
+    });
+  };
+
+  const getFilteredUsers = (searchText: string, currentMembers: Array<{ userId: string; role: string }>, currentIndex: number) => {
+    return users.filter(user => {
+      const isNotSelected = !isMemberExist(user.value, currentMembers, currentIndex);
+      
+      const matchesSearch = searchText.trim() === '' || 
+        user.label.toLowerCase().includes(searchText.toLowerCase());
+
+      return isNotSelected && matchesSearch;
     });
   };
 
@@ -119,9 +136,11 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
               rules={[{ required: true, message: 'Please select department!' }]}
             >
               <Select placeholder="Select department">
-                <Select.Option value="IT">IT Department</Select.Option>
-                <Select.Option value="HR">HR Department</Select.Option>
-                <Select.Option value="Marketing">Marketing Department</Select.Option>
+                {departments.map(dept => (
+                  <Select.Option key={dept.value} value={dept.value}>
+                    {dept.label}
+                  </Select.Option>
+                ))}
               </Select>
             </Form.Item>
           </div>
@@ -184,7 +203,10 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
                       newMembers[index].userId = value;
                       setTeamMembers(newMembers);
                     }}
-                    options={users.filter(user => !isMemberExist(user.value, teamMembers, index))}
+                    onSearch={setMemberSearchText}
+                    filterOption={false}
+                    options={getFilteredUsers(memberSearchText, teamMembers, index)}
+                    notFoundContent={memberSearchText ? <Empty description="No matching members" /> : <Empty description="Type to search" />}
                   />
                   {!member.userId && teamMembers.length > 0 && (
                     <div className="text-red-500 text-sm mt-1">Please select a member</div>
