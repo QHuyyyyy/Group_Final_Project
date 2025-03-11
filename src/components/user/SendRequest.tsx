@@ -72,7 +72,7 @@ const SendRequest: React.FC<SendRequestProps> = ({ id, visible, onSend, onCancel
                         <p>Once sent, the status will change to "Pending Approval".</p>
                     </div>
                 </div>
-                
+
                 <div>
                     <Input.TextArea
                         placeholder="Add a comment (optional)"
@@ -87,4 +87,3 @@ const SendRequest: React.FC<SendRequestProps> = ({ id, visible, onSend, onCancel
 };
 
 export default SendRequest;
-    

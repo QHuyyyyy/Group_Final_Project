@@ -8,12 +8,10 @@ import {
   CloudUploadOutlined,
   EditOutlined,
   EyeOutlined,
-  RollbackOutlined,
 } from "@ant-design/icons";
 import type { Claim, ClaimById, SearchParams } from "../../models/ClaimModel";
 import CreateRequest from "./CreateRequest";
 import SendRequest from "../../components/user/SendRequest";
-import ReturnRequest from "../../components/user/ReturnRequest";
 import { useDebounce } from "../../hooks/useDebounce";
 
 const { Search } = Input;
@@ -30,11 +28,9 @@ const Claim = () => {
     undefined
   );
   const [isModalVisible, setIsModalVisible] = useState(false);
-
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [isSendModalVisible, setIsSendModalVisible] = useState(false);
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
-  const [isReturnModalVisible, setIsReturnModalVisible] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [allClaims, setAllClaims] = useState<Claim[]>([]);
   const [filteredClaims, setFilteredClaims] = useState<Claim[]>([]);
@@ -46,6 +42,8 @@ const Claim = () => {
     { label: 'Pending', value: 'Pending Approval', color: '#1890ff', bgColor: '#e6f7ff' },
     { label: 'Approved', value: 'Approved', color: '#52c41a', bgColor: '#f6ffed' },
     { label: 'Rejected', value: 'Rejected', color: '#ff4d4f', bgColor: '#fff1f0' },
+    { label: 'Canceled', value: 'Canceled', color: '#ff4d4f', bgColor: '#fff1f0' },
+    { label: 'Paid', value: 'Paid', color: '#52c41a', bgColor: '#f6ffed' },
   ];
 
   useEffect(() => {
@@ -58,7 +56,7 @@ const Claim = () => {
       const params: SearchParams = {
         searchCondition: {
           keyword: debouncedSearchText || "",
-          claim_status: "",
+          claim_status: selectedStatus === "Rejected" || selectedStatus === "Canceled" ? selectedStatus : "",
           claim_start_date: "",
           claim_end_date: "",
           is_delete: false,
@@ -76,7 +74,11 @@ const Claim = () => {
         setAllClaims(claimsData);
         
         const filtered = selectedStatus 
-          ? claimsData.filter(claim => claim.claim_status === selectedStatus)
+          ? claimsData.filter(claim => {
+              if (selectedStatus === "Rejected") return claim.claim_status === "Rejected";
+              if (selectedStatus === "Cancelled") return claim.claim_status === "Cancelled";
+              return claim.claim_status === selectedStatus;
+            })
           : claimsData;
         setFilteredClaims(filtered);
 
@@ -162,38 +164,6 @@ const Claim = () => {
 
   const handleCloseSendModal = () => {
     setIsSendModalVisible(false);
-    setSelectedClaimId(null);
-  };
-
-  const handleReturnRequest = async (id: string, comment: string) => {
-    try {
-      await claimService.changeClaimStatus({
-        _id: id,
-        claim_status: "Draft",
-        comment: comment
-      });
-      notification.success({
-        message: 'Success',
-        description: 'Request has been returned to Draft successfully.',
-        placement: 'topRight'
-      });
-      fetchClaims();
-    } catch (error: any) {
-      notification.error({
-        message: 'Error',
-        description: error.message || 'Failed to return request to Draft.',
-        placement: 'topRight'
-      });
-    }
-  };
-
-  const handleOpenReturnModal = (record: Claim) => {
-    setSelectedClaimId(record._id);
-    setIsReturnModalVisible(true);
-  };
-
-  const handleCloseReturnModal = () => {
-    setIsReturnModalVisible(false);
     setSelectedClaimId(null);
   };
 
@@ -342,7 +312,11 @@ const Claim = () => {
                         ? "blue"
                         : status === "Approved"
                         ? "green"
-                        : "red"
+                        : status === "Rejected" || status === "Canceled"
+                        ? "red"
+                        : status === "Paid"
+                        ? "green"
+                        : ""
                     }
                   >
                     {status || "Draft"}
@@ -362,15 +336,6 @@ const Claim = () => {
                       onClick={() => handleView(record)}
                       title="View"
                     />
-                    
-                    {record.claim_status === "Pending Approval" && (
-                      <Button
-                        type="text"
-                        icon={<RollbackOutlined />}
-                        onClick={() => handleOpenReturnModal(record)}
-                        title="Return to Draft"
-                      />
-                    )}
                     
                     {record.claim_status === "Draft" && (
                       <>
@@ -436,12 +401,6 @@ const Claim = () => {
           visible={isSendModalVisible}
           onSend={handleSendRequest}
           onCancel={handleCloseSendModal}
-        />
-        <ReturnRequest
-          id={selectedClaimId}
-          visible={isReturnModalVisible}
-          onReturn={handleReturnRequest}
-          onCancel={handleCloseReturnModal}
         />
       </div>
     </div>

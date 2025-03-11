@@ -8,7 +8,7 @@ import {
   EditOutlined,  
   EyeOutlined, 
   ArrowLeftOutlined,
-  
+  UserOutlined,
   SearchOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
@@ -36,7 +36,7 @@ const AdminUserManager: React.FC = () => {
   const [staffData, setStaffData] = useState<UserData[]>([]);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
-  const [selectedStaff, setSelectedStaff] = useState<any>(null);
+  const [selectedStaff, setSelectedStaff] = useState<UserData | null>(null);
   const [searchText, setSearchText] = useState('');
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
@@ -144,13 +144,13 @@ const AdminUserManager: React.FC = () => {
       title: 'Username',
       dataIndex: 'user_name',
       key: 'user_name',
-      width: 120,
+      width: 100,
     },
     {
       title: 'Role',
       dataIndex: 'role_code',
       key: 'role_code',
-      width: 100,
+      width: 80,
       render: (role: string) => (
         <Tag color={
           role === 'A001' ? 'red' :
@@ -183,7 +183,7 @@ const AdminUserManager: React.FC = () => {
       title: 'Verified',
       dataIndex: 'is_verified',
       key: 'is_verified',
-      width: 100,
+      width: 60,
       render: (verified: boolean) => (
         <Tag color={verified ? 'success' : 'error'}>
           {verified ? 'Verified' : 'Unverified'}
@@ -209,6 +209,12 @@ const AdminUserManager: React.FC = () => {
             onClick={() => handleEdit(record)}
             disabled={record.is_blocked}
             className="text-gray-600 hover:text-gray-800"
+          />
+          <Button
+            type="text"
+            icon={<UserOutlined />}
+            onClick={() => navigate(`/admin/employees/${record._id}`)}
+            className="text-green-600 hover:text-green-800"
           />
           <DeleteUserButton
             userId={record._id}

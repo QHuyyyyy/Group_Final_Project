@@ -13,7 +13,7 @@ export default function ResendToken() {
 
 
   const handleSubmit = async (values: { email: string }) => {
-      await authService.resendToken({ email: values.email.trim() });
+      await authService.resendToken(values.email);
       localStorage.setItem('verifyEmail', values.email);
       toast.success('New token has been sent to your email!');
       navigate('/login');
