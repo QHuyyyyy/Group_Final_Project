@@ -5,6 +5,7 @@ import AdminSidebar from '../../components/admin/AdminSidebar';
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import avatar from "../../assets/avatar.png";
+import AdminClaimStats from "../../components/admin/AdminClaimStats";
 
 
 // const AdminClaimStats = lazy(() => import('../../components/admin/AdminClaimStats'));
@@ -60,7 +61,7 @@ const AdminDashboard: React.FC = () => {
           <div className="p-8 mt-1">
             <p className="text-2xl font-bold mb-4 font-mono" >Dashboard Overview</p>
             {/* Claim stats section */}
-{/*             <AdminClaimStats/> */}
+            <AdminClaimStats/>
             {/* Project stats section */}
             <AdminProjectStats/>
           </div>

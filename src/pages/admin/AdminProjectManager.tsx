@@ -432,7 +432,7 @@ const AdminProjectManager: React.FC = () => {
       await projectService.changeProjectStatus({
         _id: selectedStatusProject._id,
         project_status: newStatus,
-      });
+      }, {showSpinner:false});
       
       message.success('Project status updated successfully');
       setIsStatusModalVisible(false);

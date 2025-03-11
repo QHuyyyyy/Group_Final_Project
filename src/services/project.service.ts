@@ -70,8 +70,8 @@ const projectService = {
   },
 
   // Thay đổi trạng thái dự án
-  changeProjectStatus: async (statusData: ChangeProjectStatusRequest): Promise<ApiResponse<null>> => {
-    const response = await apiUtils.put<ApiResponse<null>>(`${PROJECTS_ENDPOINT}/change-status`, statusData);
+  changeProjectStatus: async (statusData: ChangeProjectStatusRequest, config = {}): Promise<ApiResponse<null>> => {
+    const response = await apiUtils.put<ApiResponse<null>>(`${PROJECTS_ENDPOINT}/change-status`, statusData || {}, config);
     console.log("fetch data:", response.data);
     return response.data;
   }
