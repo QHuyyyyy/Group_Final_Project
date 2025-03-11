@@ -268,7 +268,6 @@ const SettingUser = () => {
         visible={isPasswordModalVisible}
         onCancel={() => setIsPasswordModalVisible(false)}
         onSuccess={() => setIsPasswordModalVisible(false)}
-        form={form}
       />
     </div>
   );
