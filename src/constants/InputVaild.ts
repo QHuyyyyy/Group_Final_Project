@@ -42,6 +42,18 @@ export const InputVaild = {
     { required: true, message: "Please confirm your password!" },
     {
       validator(_: any, value: string) {
+        if (!value || getFieldValue("password") === value) {
+          return Promise.resolve();
+        }
+        return Promise.reject(new Error("The passwords do not match!"));
+      },
+    },
+  ],
+
+  confirmNewPassword: (getFieldValue: any) => [
+    { required: true, message: "Please confirm your password!" },
+    {
+      validator(_: any, value: string) {
         if (!value || getFieldValue("new_password") === value) {
           return Promise.resolve();
         }
