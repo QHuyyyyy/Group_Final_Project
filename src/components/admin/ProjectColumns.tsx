@@ -1,6 +1,5 @@
-
-import { Button, Space, Tag } from 'antd';
-import { EditOutlined, DeleteOutlined, EyeOutlined, StarOutlined, StarFilled } from '@ant-design/icons';
+import { Button, Space, Tag, Tooltip } from 'antd';
+import { EditOutlined, DeleteOutlined, EyeOutlined, StarOutlined, StarFilled, SyncOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { Project, ProjectData } from '../../models/ProjectModel';
 
@@ -9,6 +8,7 @@ interface ProjectColumnsProps {
   handleEdit: (record: ProjectData) => void;
   handleDelete: (id: string) => void;
   handleToggleFavorite: (id: string) => void;
+  handleChangeStatus: (record: ProjectData) => void;
   favoriteProjects: string[];
 }
 
@@ -17,6 +17,7 @@ export const getProjectColumns = ({
   handleEdit,
   handleDelete,
   handleToggleFavorite,
+  handleChangeStatus,
   favoriteProjects,
 }: ProjectColumnsProps) => [
   {
@@ -35,15 +36,29 @@ export const getProjectColumns = ({
     title: 'Status',
     dataIndex: 'project_status',
     key: 'project_status',
-    width: 120,
-    render: (status: string) => (
-      <Tag color={
-        status === 'New' ? 'blue' :
+    width: 150,
+    render: (status: string, record: ProjectData) => (
+      <Space>
+        <Tag color={
+          status === 'New' ? 'blue' :
+          status === 'Active' ? 'green' :
           status === 'Pending' ? 'orange' :
-            'green'
-      }>
-        {status}
-      </Tag>
+          status === 'Closed' ? 'red' :
+          'default'
+        }>
+          {status}
+        </Tag>
+        <Tooltip title="Change Status">
+          <Button
+            type="text"
+            icon={<SyncOutlined />}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleChangeStatus(record);
+            }}
+          />
+        </Tooltip>
+      </Space>
     ),
   },
   {

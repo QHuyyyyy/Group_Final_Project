@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, Button, DatePicker, notification, Select, Card } from "antd";
+import { Form, Input, Button, DatePicker, notification, Select, Card} from "antd";
 import { Modal } from "antd";
 import dayjs from 'dayjs';
 import { claimService } from "../../services/claim.service";
-import type { CreateClaimRequest } from "../../models/ClaimModel";
+import type { CreateClaim } from "../../models/ClaimModel";
 import type { ProjectData } from "../../models/ProjectModel";
 import type { User } from "../../models/UserModel";
 import { useUserStore } from "../../stores/userStore";
@@ -12,19 +12,11 @@ import { userService } from "../../services/user.service";
 import { employeeService } from "../../services/employee.service";
 import { Employee } from "../../models/EmployeeModel";
 
+
 interface CreateRequestProps {
     visible: boolean;
     onClose: () => void;
     onSuccess: () => void;
-}
-
-interface ProjectInfo {
-    project_name: string;
-    project_members: ProjectData['project_members'];
-    project_start_date: string;
-    project_end_date: string;
-    role_in_project?: string;
-    project_duration?: string;
 }
 
 const CreateRequest: React.FC<CreateRequestProps> = ({ 
@@ -32,7 +24,7 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
     onClose, 
     onSuccess,
 }) => {
-    const [form] = Form.useForm<CreateClaimRequest>();
+    const [form] = Form.useForm<CreateClaim>();
     const [loading, setLoading] = useState<boolean>(false);
     const [startDate, setStartDate] = useState<dayjs.Dayjs | null>(null);
     const [projects, setProjects] = useState<ProjectData[]>([]);
@@ -58,18 +50,24 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
         is_deleted: false,
         __v: 0
     });
-    const [projectInfo, setProjectInfo] = useState<ProjectInfo>({
-        project_name: 'N/A',
+    const [projectInfo, setProjectInfo] = useState<ProjectData>({
+        _id: '',
+        project_name: '',
+        project_code: '',
+        project_department: '',
+        project_description: '',
         project_members: [],
-        project_start_date: 'N/A',
-        project_end_date: 'N/A',
-        role_in_project: 'N/A',
-        project_duration: 'N/A'
+        project_status: '',
+        project_start_date: '',
+        project_end_date: '',
+        project_comment: '',
+        updated_by: '',
+        is_deleted: false,
+        created_at: '',
+        updated_at: '',
+        __v: 0
     });
-   
-
-    
-
+    const [totalWorkHours, setTotalWorkHours] = useState<number>(0);
     const userId = useUserStore((state) => state.id);
 
     useEffect(() => {
@@ -98,22 +96,9 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                 }
             });
             if (response.success && response.data.pageData.length > 0) {
-                setProjects(response.data.pageData);
-                
+                setProjects(response.data.pageData);                
                 const firstProject = response.data.pageData[0];
-                const userRole = firstProject.project_members.find(member => member.user_id === userId)?.project_role || 'N/A';
-                const startDate = dayjs(firstProject.project_start_date).format('DD/MM/YYYY');
-                const endDate = dayjs(firstProject.project_end_date).format('DD/MM/YYYY');
-                const duration = `${startDate} - ${endDate}`;
-                
-                setProjectInfo({
-                    project_name: firstProject.project_name || 'N/A',
-                    project_members: firstProject.project_members || [],
-                    project_start_date: firstProject.project_start_date || 'N/A',
-                    project_end_date: firstProject.project_end_date || 'N/A',
-                    role_in_project: userRole,
-                    project_duration: duration
-                });
+                setProjectInfo(firstProject);
             }
         } catch (error: any) {
             notification.error({
@@ -165,46 +150,69 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
         }
     };
 
+    const calculateWorkHours = (start: dayjs.Dayjs, end: dayjs.Dayjs) => {
+        const days = end.diff(start, 'day') + 1;
+        const hours = days * 8;
+        return hours;
+    };
+
     const handleStartDateChange = (date: dayjs.Dayjs | null) => {
+        if (!date) return;
+        
         setStartDate(date);
-        const endDate = form.getFieldValue('claim_end_date'); 
-        if (date && endDate && endDate < date) {
+        const endDate = form.getFieldValue('claim_end_date');
+        
+        if (endDate && dayjs(endDate).isBefore(date)) {
             form.setFieldValue('claim_end_date', null);
+            form.setFieldValue('total_work_time', 0);
+            setTotalWorkHours(0);
+            return;
+        }
+
+        if (endDate) {
+            const hours = calculateWorkHours(date, dayjs(endDate));
+            setTotalWorkHours(hours);
+            form.setFieldValue('total_work_time', hours);
         }
     };
-    
 
-    const handleSubmit = async (values: CreateClaimRequest) => {
+    const handleEndDateChange = (date: dayjs.Dayjs | null) => {
+        if (!date || !startDate) return;
+        
+        const hours = calculateWorkHours(startDate, date);
+        setTotalWorkHours(hours);
+        form.setFieldValue('total_work_time', hours);
+    };
+
+    const handleSubmit = async (values: CreateClaim) => {
         try {
             setLoading(true);
             
-            const newRequest: CreateClaimRequest = {
+            // Chỉ gửi những thông tin cần thiết
+            const newRequest = {
                 project_id: values.project_id,
                 approval_id: values.approval_id,
                 claim_name: values.claim_name,
                 claim_start_date: dayjs(values.claim_start_date).format("YYYY-MM-DD"),
                 claim_end_date: dayjs(values.claim_end_date).format("YYYY-MM-DD"),
-                total_work_time: Number(values.total_work_time),
-                remark: values.remark || undefined
+                total_work_time: Number(values.total_work_time)
             };
 
             const response = await claimService.createClaim(newRequest);
             
             if (response.success) {
                 notification.success({
-                    message: "Claim Created",
-                    description: "Your claim has been created successfully.",
+                    message: "Success",
+                    description: "Claim created successfully",
                 });
                 form.resetFields();
                 onSuccess();
                 onClose();
-            } else {
-                throw new Error(response.message || 'Failed to create claim');
             }
         } catch (error: any) {
             notification.error({
                 message: "Error",
-                description: error.message || "Failed to create claim. Please try again.",
+                description: error.message || "Failed to create claim",
             });
         } finally {
             setLoading(false);
@@ -249,12 +257,19 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                                 <span style={{ fontWeight: 500 }}>Department:</span>
                                 <span>{employeeInfo.department_code}</span>
                             </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ fontWeight: 500 }}>Job Rank:</span>
+                                <span>{employeeInfo.job_rank}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ fontWeight: 500 }}>Contract Type:</span>
+                                <span>{employeeInfo.contract_type}</span>
+                            </div>
                         </div>
                     </Card>
                     <Card 
                         size="small" 
                         title="Project Information"
-
                         styles={{
                             header: {
                                 backgroundColor: '#f5f5f5',
@@ -266,15 +281,27 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <span style={{ fontWeight: 500 }}>Project Name:</span>
-                                <span>{projectInfo.project_name}</span>
+                                <span>{projectInfo.project_name || 'N/A'}</span>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <span style={{ fontWeight: 500 }}>Role in Project:</span>
-                                <span>{projectInfo.role_in_project}</span>
+                                <span style={{ fontWeight: 500 }}>Project Code:</span>
+                                <span>{projectInfo.project_code || 'N/A'}</span>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <span style={{ fontWeight: 500 }}>Project Duration:</span>
-                                <span>{projectInfo.project_duration}</span>
+                                <span style={{ fontWeight: 500 }}>Department:</span>
+                                <span>{projectInfo.project_department || 'N/A'}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ fontWeight: 500 }}>Role:</span>
+                                <span>{projectInfo.project_members.find(member => member.user_id === userId)?.project_role || 'N/A'}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ fontWeight: 500 }}>Duration:</span>
+                                <span>{`${dayjs(projectInfo.project_start_date).format('DD/MM/YYYY')} - ${dayjs(projectInfo.project_end_date).format('DD/MM/YYYY')}`}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ fontWeight: 500 }}>Status:</span>
+                                <span>{projectInfo.project_status || 'N/A'}</span>
                             </div>
                         </div>
                     </Card>
@@ -357,6 +384,7 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                             >
                                 <DatePicker
                                     style={{ width: "100%" }}
+                                    onChange={handleEndDateChange}
                                     disabledDate={(current) => {
                                         if (!startDate) return false;
                                         return current && current < startDate;
@@ -369,7 +397,11 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                                 name="total_work_time"
                                 rules={[{ required: true, message: "Please enter total hours worked!" }]}
                             >
-                                <Input type="number" placeholder="Enter total hours worked" />
+                                <Input 
+                                    type="number" 
+                                    placeholder="Enter total hours worked"
+                                    value={totalWorkHours}
+                                />
                             </Form.Item>
                             
                             <Form.Item>
@@ -391,4 +423,4 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
     );
 };
 
-export default CreateRequest;
+export default CreateRequest; 
