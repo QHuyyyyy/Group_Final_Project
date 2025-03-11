@@ -8,12 +8,10 @@ import {
   CloudUploadOutlined,
   EditOutlined,
   EyeOutlined,
-  RollbackOutlined,
 } from "@ant-design/icons";
 import type { Claim, ClaimById, SearchParams } from "../../models/ClaimModel";
 import CreateRequest from "./CreateRequest";
 import SendRequest from "../../components/user/SendRequest";
-import ReturnRequest from "../../components/user/ReturnRequest";
 import { useDebounce } from "../../hooks/useDebounce";
 
 const { Search } = Input;
@@ -33,7 +31,6 @@ const Claim = () => {
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [isSendModalVisible, setIsSendModalVisible] = useState(false);
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
-  const [isReturnModalVisible, setIsReturnModalVisible] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [allClaims, setAllClaims] = useState<Claim[]>([]);
   const [filteredClaims, setFilteredClaims] = useState<Claim[]>([]);
@@ -167,38 +164,6 @@ const Claim = () => {
 
   const handleCloseSendModal = () => {
     setIsSendModalVisible(false);
-    setSelectedClaimId(null);
-  };
-
-  const handleReturnRequest = async (id: string, comment: string) => {
-    try {
-      await claimService.changeClaimStatus({
-        _id: id,
-        claim_status: "Draft",
-        comment: comment
-      });
-      notification.success({
-        message: 'Success',
-        description: 'Request has been returned to Draft successfully.',
-        placement: 'topRight'
-      });
-      fetchClaims();
-    } catch (error: any) {
-      notification.error({
-        message: 'Error',
-        description: error.message || 'Failed to return request to Draft.',
-        placement: 'topRight'
-      });
-    }
-  };
-
-  const handleOpenReturnModal = (record: Claim) => {
-    setSelectedClaimId(record._id);
-    setIsReturnModalVisible(true);
-  };
-
-  const handleCloseReturnModal = () => {
-    setIsReturnModalVisible(false);
     setSelectedClaimId(null);
   };
 
@@ -372,15 +337,6 @@ const Claim = () => {
                       title="View"
                     />
                     
-                    {record.claim_status === "Pending Approval" && (
-                      <Button
-                        type="text"
-                        icon={<RollbackOutlined />}
-                        onClick={() => handleOpenReturnModal(record)}
-                        title="Return to Draft"
-                      />
-                    )}
-                    
                     {record.claim_status === "Draft" && (
                       <>
                         <Button
@@ -445,12 +401,6 @@ const Claim = () => {
           visible={isSendModalVisible}
           onSend={handleSendRequest}
           onCancel={handleCloseSendModal}
-        />
-        <ReturnRequest
-          id={selectedClaimId}
-          visible={isReturnModalVisible}
-          onReturn={handleReturnRequest}
-          onCancel={handleCloseReturnModal}
         />
       </div>
     </div>
