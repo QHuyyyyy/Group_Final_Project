@@ -296,6 +296,11 @@ const Claim = () => {
                 key: "duration",
                 width: 200,
                 align: "center",
+                sorter: (a, b) => {
+                  const dateA = new Date(a.claim_start_date).getTime();
+                  const dateB = new Date(b.claim_start_date).getTime();
+                  return dateA - dateB;
+                },
                 render: (_, record) => (
                   <span>
                     {dayjs(record.claim_start_date).format("YYYY-MM-DD")}
