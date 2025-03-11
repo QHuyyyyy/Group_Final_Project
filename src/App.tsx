@@ -10,7 +10,7 @@ import ResendToken from './pages/common/ResendToken';
 import ProtectedRoute from './routes/ProtectedRoute';
 import { RoutePermissions } from './routes/RoutePermissions';
 import SettingUser from './pages/user/SettingUser';
-import EmployeeDetails from './components/admin/EmployeeDetails';
+import EmployeeDetails from './components/admin/EmployeeAdminDetails';
 import ForgotPassword from './pages/common/ForgotPassword';
 
 

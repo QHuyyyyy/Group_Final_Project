@@ -6,7 +6,7 @@ import { employeeService } from '../../services/employee.service';
 import moment from 'moment';
 import type { UploadProps } from 'antd';
 
-import { Employee } from '../../models/EmployeeModel';
+import { Employee, EmployeeUpdateData } from '../../models/EmployeeModel';
 
 
 
@@ -22,23 +22,15 @@ const SettingUser = () => {
     const fetchEmployeeData = async () => {
       try {
         if (user.id) {
-          const data = await employeeService.getEmployeeById(user.id);
-          console.log(data)
-          setEmployeeData(data.data);
-          setAvatarUrl(data.data.avatar_url);
+          const { data } = await employeeService.getEmployeeById(user.id);
+          setEmployeeData(data);
+          setAvatarUrl(data.avatar_url);
           
-          // Set form values
+          // Set form values with all available fields
           form.setFieldsValue({
-            full_name: data.data.full_name,
-            phone: data.data.phone,
-            address: data.data.address,
-            account: data.data.account,
-            job_rank: data.data.job_rank,
-            contract_type: data.data.contract_type,
-            department_code: data.data.department_code,
-            salary: data.data.salary,
-            start_date: data.data.start_date ? moment(data.data.start_date) : null,
-            end_date: data.data.end_date ? moment(data.data.end_date) : null,
+            ...data,
+            start_date: data.start_date ? moment(data.start_date) : null,
+            end_date: data.end_date ? moment(data.end_date) : null,
           });
         }
       } catch (error) {
@@ -52,22 +44,23 @@ const SettingUser = () => {
 
   // Handle form submission
   const onFinish = async (values: any) => {
+    const confirmed = window.confirm('Are you sure you want to save these changes?');
+    if (!confirmed) return;
+
     setLoading(true);
     try {
-      if (!employeeData) {
+      if (!employeeData?._id) {
         message.error('No employee data available');
         return;
       }
 
-      // Only include fields that the user can actually edit
-      const updateData = {
+      const updateData: EmployeeUpdateData = {
         user_id: user.id,
         account: values.account,
         address: values.address,
         phone: values.phone,
         full_name: values.full_name,
         avatar_url: avatarUrl,
-        // Keep these fields from the original data since they're displayed as disabled
         job_rank: employeeData.job_rank,
         contract_type: employeeData.contract_type,
         department_code: employeeData.department_code,
@@ -77,10 +70,8 @@ const SettingUser = () => {
         updated_by: user.id,
       };
 
-      const updatedEmployee = await employeeService.updateEmployee(employeeData._id, updateData);
-      
-      // Update local state with the response data
-      setEmployeeData(updatedEmployee.data);
+      const { data: updatedEmployee } = await employeeService.updateEmployee(employeeData._id, updateData);
+      setEmployeeData(updatedEmployee);
       message.success('Profile updated successfully');
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -95,8 +86,16 @@ const SettingUser = () => {
     name: 'avatar',
     showUploadList: false,
     beforeUpload: (file) => {
-      // In a real app, you would upload the file to a server
-      // For now, we'll just create a local URL
+      const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+      if (!isJpgOrPng) {
+        message.error('You can only upload JPG/PNG files!');
+        return false;
+      }
+      const isLt2M = file.size / 1024 / 1024 < 2;
+      if (!isLt2M) {
+        message.error('Image must be smaller than 2MB!');
+        return false;
+      }
       const reader = new FileReader();
       reader.onload = (e) => {
         if (e.target?.result) {
@@ -104,8 +103,6 @@ const SettingUser = () => {
         }
       };
       reader.readAsDataURL(file);
-      
-      // Prevent default upload behavior
       return false;
     },
   };
@@ -159,11 +156,20 @@ const SettingUser = () => {
                   >
                     <Input placeholder="Enter your full name" />
                   </Form.Item>
-
+                  <Form.Item
+                    name="account"
+                    label="Account"
+                    rules={[{ required: true, message: 'Please enter your account' }]}
+                  >
+                    <Input placeholder="Enter your account" />
+                  </Form.Item>
                   <Form.Item
                     name="phone"
                     label="Phone Number"
-                    rules={[{ required: true, message: 'Please enter your phone number' }]}
+                    rules={[
+                      { required: true, message: 'Please enter your phone number' },
+                      { pattern: /^[0-9]{10}$/, message: 'Please enter a valid 10-digit phone number' }
+                    ]}
                   >
                     <Input placeholder="Enter your phone number" />
                   </Form.Item>
