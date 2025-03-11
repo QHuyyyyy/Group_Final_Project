@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SideBarAdminProject from '../../components/admin/SideBarAdminProject';
-import { Card, Table, Tag, Button, Modal, Form, Input,   message, Spin, Empty } from 'antd';
+import { Card, Table, Tag, Button, Modal, Form, Input,   message, Spin, Empty, Select } from 'antd';
 import {  ArrowLeftOutlined, SearchOutlined,  } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import projectService from '../../services/project.service';
@@ -12,6 +12,7 @@ import { toast } from 'react-toastify';
 import {  ProjectData } from '../../models/ProjectModel';
 import { getProjectColumns } from '../../components/admin/ProjectColumns';
 import ProjectModal from '../../components/admin/ProjectModal';
+import { departmentService } from '../../services/Department.service';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -43,6 +44,13 @@ const AdminProjectManager: React.FC = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [teamMembers, setTeamMembers] = useState<Array<{userId: string, role: string}>>([]);
   const [editTeamMembers, setEditTeamMembers] = useState<Array<{userId: string, role: string}>>([]);
+  const [departments, setDepartments] = useState<Array<{
+    value: string;
+    label: string;
+  }>>([]);
+  const [isStatusModalVisible, setIsStatusModalVisible] = useState(false);
+  const [selectedStatusProject, setSelectedStatusProject] = useState<ProjectData | null>(null);
+  const [newStatus, setNewStatus] = useState<string>('');
 
   // Hàm disabledStartDate
   const disabledStartDate = (current: dayjs.Dayjs) => {
@@ -386,12 +394,64 @@ const AdminProjectManager: React.FC = () => {
     fetchUsers();
   }, []);
 
+  // Thêm useEffect để fetch departments khi component mount
+  useEffect(() => {
+    fetchDepartments();
+  }, []);
+
+  // Thêm hàm để fetch departments
+  const fetchDepartments = async () => {
+    try {
+      const response = await departmentService.getAllDepartments();
+      if (response && response.data) {
+        const formattedDepartments = response.data.map(dept => ({
+          value: dept.department_code,
+          label: dept.department_name
+        }));
+        setDepartments(formattedDepartments);
+      }
+    } catch (error) {
+      console.error('Error fetching departments:', error);
+      message.error('Không thể tải danh sách phòng ban');
+    }
+  };
+
+  // Thêm hàm xử lý mở modal change status
+  const handleChangeStatus = (record: ProjectData) => {
+    setSelectedStatusProject(record);
+    setNewStatus(record.project_status);
+    setIsStatusModalVisible(true);
+  };
+
+  // Thêm hàm xử lý submit change status
+  const handleStatusSubmit = async () => {
+    if (!selectedStatusProject || !newStatus) return;
+
+    try {
+      setLoading(true);
+      await projectService.changeProjectStatus({
+        _id: selectedStatusProject._id,
+        project_status: newStatus,
+      });
+      
+      message.success('Project status updated successfully');
+      setIsStatusModalVisible(false);
+      fetchProjects();
+    } catch (error) {
+      console.error('Error updating project status:', error);
+      message.error('An error occurred while updating the project status');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Di chuyển khai báo columns xuống sau khi đã định nghĩa đầy đủ các hàm xử lý
   const columns = getProjectColumns({
     handleViewDetails,
     handleEdit,
     handleDelete,
     handleToggleFavorite,
+    handleChangeStatus,
     favoriteProjects,
   });
 
@@ -563,6 +623,7 @@ const AdminProjectManager: React.FC = () => {
           onSubmit={handleCreateSubmit}
           isEditMode={false}
           users={users}
+          departments={departments}
           disabledStartDate={disabledStartDate}
           disabledEndDate={disabledEndDate}
           teamMembers={teamMembers}
@@ -577,6 +638,7 @@ const AdminProjectManager: React.FC = () => {
           initialValues={selectedProject || undefined}
           isEditMode={true}
           users={users}
+          departments={departments}
           disabledStartDate={disabledStartDate}
           disabledEndDate={disabledEndDate}
           teamMembers={editTeamMembers}
@@ -598,6 +660,38 @@ const AdminProjectManager: React.FC = () => {
         >
           <p>Are you sure you want to delete this project?</p>
           <p>This action cannot be undone.</p>
+        </Modal>
+
+        <Modal
+          title="Change Project Status"
+          open={isStatusModalVisible}
+          onOk={handleStatusSubmit}
+          onCancel={() => setIsStatusModalVisible(false)}
+          okText="Update"
+          cancelText="Cancel"
+        >
+          <div className="mb-4">
+            <p>Current Status: <Tag color={
+              selectedStatusProject?.project_status === 'New' ? 'blue' :
+              selectedStatusProject?.project_status === 'Active' ? 'green' :
+              selectedStatusProject?.project_status === 'Pending' ? 'orange' :
+              selectedStatusProject?.project_status === 'Closed' ? 'red' :
+              'default'
+            }>{selectedStatusProject?.project_status}</Tag></p>
+          </div>
+          <div>
+            <p className="mb-2">Select New Status:</p>
+            <Select
+              value={newStatus}
+              onChange={setNewStatus}
+              style={{ width: '100%' }}
+            >
+              <Select.Option value="New">New</Select.Option>
+              <Select.Option value="Active">Active</Select.Option>
+              <Select.Option value="Pending">Pending</Select.Option>
+              <Select.Option value="Closed">Closed</Select.Option>
+            </Select>
+          </div>
         </Modal>
       </div>
     </div>
