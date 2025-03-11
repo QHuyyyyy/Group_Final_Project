@@ -153,11 +153,101 @@ export const claimService = {
         pageSize: 10
       }
     })
+    return response.data;
+  },
+  getPendingApprovalClaims: async (): Promise<ApiResponse<SearchResponse>> => {
+    const response = await api.post('/api/claims/approval-search', {
+      searchCondition: {
+        keyword: "",
+        claim_status: "Pending Approval",
+        claim_start_date: "",
+        claim_end_date: "",
+      },
+      pageInfo: {
+        pageNum: 1,
+        pageSize: 10
+      }
+    })
+    return response.data;
+  },
+  
+  getApprovedApprovalClaims: async (): Promise<ApiResponse<SearchResponse>> => {
+    const response = await api.post('/api/claims/approval-search', {
+      searchCondition: {
+        keyword: "",
+        claim_status: "Approved",
+        claim_start_date: "",
+        claim_end_date: "",
+      },
+      pageInfo: {
+        pageNum: 1,
+        pageSize: 10
+      }
+    })
+    return response.data;
+  },
 
-    console.log("fetch data:", response.data);
+  getRejectedApprovalClaims: async (): Promise<ApiResponse<SearchResponse>> => {
+    const response = await api.post('/api/claims/approval-search', {
+      searchCondition: {
+        keyword: "",
+        claim_status: "Rejected",
+        claim_start_date: "",
+        claim_end_date: "",
+      },
+      pageInfo: {
+        pageNum: 1,
+        pageSize: 10
+      }
+    })
+    return response.data;
+  },
 
+  getPaidApprovalClaims: async (): Promise<ApiResponse<SearchResponse>> => {
+    const response = await api.post('/api/claims/approval-search', {
+      searchCondition: {
+        keyword: "",
+        claim_status: "Paid",
+        claim_start_date: "",
+        claim_end_date: "",
+      },
+      pageInfo: {
+        pageNum: 1,
+        pageSize: 10
+      }
+    })
+    return response.data;
+  },
+
+  getDraftApprovalClaims: async (): Promise<ApiResponse<SearchResponse>> => {
+    const response = await api.post('/api/claims/approval-search', {
+      searchCondition: {
+        keyword: "",
+        claim_status: "Draft",
+        claim_start_date: "",
+        claim_end_date: "",
+      },
+      pageInfo: {
+        pageNum: 1,
+        pageSize: 10
+      }
+    })
+    return response.data;
+  },
+  
+  getCanceledApprovalClaims: async (): Promise<ApiResponse<SearchResponse>> => {
+    const response = await api.post('/api/claims/approval-search', {
+      searchCondition: {
+        keyword: "",
+        claim_status: "Canceled",
+        claim_start_date: "",
+        claim_end_date: "",
+      },
+      pageInfo: {
+        pageNum: 1,
+        pageSize: 10
+      }
+    })
     return response.data;
   }
-
-  
 };
