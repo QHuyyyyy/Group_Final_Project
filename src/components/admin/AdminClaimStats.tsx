@@ -1,4 +1,4 @@
-import { Col, Row, Card, Statistic, Table, Pagination, Select, Tag } from "antd"
+import { Col, Row, Card, Statistic, Table, Pagination, Select, Tag, DatePicker, Radio } from "antd"
 import { UserOutlined, FileTextOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { useEffect, useState } from "react";
 import { User } from "../../models/UserModel";
@@ -19,6 +19,7 @@ interface ClaimData {
     date?: string;
 }
 const { Option } = Select
+const { RangePicker } = DatePicker
 export default function AdminClaimStats() {
     const [users, setUsers] = useState<User[]>([]);
     const [claims, setClaims] = useState<Claim[]>([]);
@@ -31,12 +32,6 @@ export default function AdminClaimStats() {
     const [selectedRange, setSelectedRange] = useState<string | null>(null);
     const [dataLoaded, setDataLoaded] = useState({
         claims: false,
-        pendingClaims: false,
-        approvedClaims: false,
-        rejectedClaims: false,
-        paidClaims: false,
-        draftClaims: false,
-        canceledClaims: false,
         users: false
       });
     useEffect(() => {
@@ -99,24 +94,18 @@ export default function AdminClaimStats() {
       
             const [
               allClaims,
-              pendingClaims,
-              approvedClaims,
-              rejectedClaims,
-              paidClaims,
-              draftClaims,
-              canceledClaims,
-              allUsers
+              allUsers,
             ] = await Promise.all([
               fetchClaims(),
-              fetchClaims('Pending Approval'),
-              fetchClaims('Approved'),
-              fetchClaims('Rejected'),
-              fetchClaims('Paid'),
-              fetchClaims('Draft'),
-              fetchClaims('Canceled'),
               fetchUsers()
             ]);
-      
+            
+            const pendingClaims = allClaims.filter(item => item.claim_status === "Pending Approval");
+            const approvedClaims = allClaims.filter(item => item.claim_status === "Approved");
+            const rejectedClaims = allClaims.filter(item => item.claim_status === "Rejected");
+            const paidClaims = allClaims.filter(item => item.claim_status === "Paid");
+            const draftClaims = allClaims.filter(item => item.claim_status === "Draft");
+            const canceledClaims = allClaims.filter(item => item.claim_status === "Canceled");
             // Update states
             setClaims(allClaims);
             setPendingClaims(pendingClaims);
@@ -132,12 +121,12 @@ export default function AdminClaimStats() {
             // Update data loaded status
             setDataLoaded({
               claims: true,
-              pendingClaims: true,
-              approvedClaims: true,
-              rejectedClaims: true,
-              paidClaims: true,
-              draftClaims: true,
-              canceledClaims: true,
+            //   pendingClaims: true,
+            //   approvedClaims: true,
+            //   rejectedClaims: true,
+            //   paidClaims: true,
+            //   draftClaims: true,
+            //   canceledClaims: true,
               users: true
             });
       
@@ -185,11 +174,13 @@ export default function AdminClaimStats() {
         ];
 
     const [filteredClaimData, setFilteredClaimData] = useState<ClaimData[]>(claimsData);
+    const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
+    const [filterType, setFilterType] = useState<'relative' | 'static'>('relative');
     console.log(filteredClaimData)
     console.log(dataLoaded)
     const handleFilterChange = (value: string) => {
         setSelectedRange(value);
-
+        setFilterType('relative');
         let startDate, endDate;
         const today = dayjs();
 
@@ -210,13 +201,28 @@ export default function AdminClaimStats() {
                 setFilteredClaimData(claimsData);
                 return;
         }
+        filterClaimsByDateRange(startDate, endDate);
+    };
 
+    const handleDateRangeChange = (dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null) => {
+        setDateRange(dates);
+        setFilterType('static');
+        setSelectedRange(null);
+        
+        if (dates && dates[0] && dates[1]) {
+            filterClaimsByDateRange(dates[0], dates[1]);
+        } else {
+            setFilteredClaimData(claimsData);
+        }
+    };
+    
+    const filterClaimsByDateRange = (startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) => {
         const filtered = claimsData.filter((item) => {
             if (!item.date) return false;
             const itemDate = dayjs(item.date);
             return itemDate.isAfter(startDate) && itemDate.isBefore(endDate);
         });
-
+    
         setFilteredClaimData(filtered);
     };
 
@@ -315,22 +321,53 @@ export default function AdminClaimStats() {
 
             <div className="mt-4">
                 <Card
-                    title={
+                     title={
                         <div className="flex justify-between items-center">
                             <span>Claim Request Charts</span>
                         </div>
                     }
                     extra={
-                        <Select
-                            defaultValue="this_month"
-                            style={{ width: 150 }}
-                            onChange={handleFilterChange}
-                            value={selectedRange}
-                        >
-                            <Option value="this_week">This Week</Option>
-                            <Option value="this_month">This Month</Option>
-                            <Option value="this_year">This Year</Option>
-                        </Select>
+                        <div className="flex flex-col gap-2 p-5">
+        <Radio.Group 
+            value={filterType} 
+            onChange={(e) => {
+                setFilterType(e.target.value);
+                // Clear filters when switching
+                if (e.target.value === 'relative') {
+                    setDateRange(null);
+                    setFilteredClaimData(claimsData);
+                } else {
+                    setSelectedRange(null);
+                    setFilteredClaimData(claimsData);
+                }
+            }}
+            style={{ marginBottom: 8 }}
+        >
+            <Radio.Button value="relative">Relative Date</Radio.Button>
+            <Radio.Button value="static">Custom Date Range</Radio.Button>
+        </Radio.Group>
+        
+        {filterType === 'relative' ? (
+            <Select
+                placeholder="Select date range"
+                style={{ width: '100%' }}
+                onChange={handleFilterChange}
+                value={selectedRange}
+            >
+                <Option value="this_week">This Week</Option>
+                <Option value="this_month">This Month</Option>
+                <Option value="3_months">3 Months</Option>
+                <Option value="6_months">6 Months</Option>
+                <Option value="this_year">This Year</Option>
+            </Select>
+        ) : (
+            <RangePicker 
+                onChange={handleDateRangeChange}
+                value={dateRange}
+                style={{ width: '100%' }}
+            />
+        )}
+    </div>
                     }
                     style={{
                         boxShadow: "10px 10px 25px -19px rgba(0,0,0,0.75)"
