@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Form, Input, Button, InputNumber, message,Avatar, Upload, DatePicker } from 'antd';
-import { UserOutlined, UploadOutlined } from '@ant-design/icons';
+import { UserOutlined, UploadOutlined, LockOutlined } from '@ant-design/icons';
 import { useUserStore } from '../../stores/userStore';
 import { employeeService } from '../../services/employee.service';
 import moment from 'moment';
 import type { UploadProps } from 'antd';
-
+import ChangePasswordModal from '../../components/user/ChangePasswordModal';
 import { Employee, EmployeeUpdateData } from '../../models/EmployeeModel';
 
 
@@ -16,6 +16,9 @@ const SettingUser = () => {
   const [employeeData, setEmployeeData] = useState<Employee | null>(null);
   const [loading, setLoading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string>('');
+  const [isPasswordModalVisible, setIsPasswordModalVisible] = useState(false);
+
+
 
   // Fetch employee data when component mounts
   useEffect(() => {
@@ -107,6 +110,7 @@ const SettingUser = () => {
     },
   };
 
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
       <div className="flex">
@@ -123,10 +127,24 @@ const SettingUser = () => {
                     icon={!avatarUrl && <UserOutlined />} 
                     className="mb-4"
                   />
-                  <div>
+                  <div className="flex space-x-4 justify-center mt-2">
                     <Upload {...uploadProps}>
-                      <Button icon={<UploadOutlined />}>Change Avatar</Button>
+                      <Button 
+                        icon={<UploadOutlined />}
+                        style={{ width: 150 }}
+                        className="flex items-center justify-center"
+                      >
+                        Change Avatar
+                      </Button>
                     </Upload>
+                    <Button 
+                      icon={<LockOutlined />}
+                      onClick={() => setIsPasswordModalVisible(true)}
+                      style={{ width: 150 }}
+                      className="flex items-center justify-center"
+                    >
+                      Change Password
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -246,6 +264,12 @@ const SettingUser = () => {
           </div>
         </div>
       </div>
+      <ChangePasswordModal
+        visible={isPasswordModalVisible}
+        onCancel={() => setIsPasswordModalVisible(false)}
+        onSuccess={() => setIsPasswordModalVisible(false)}
+        form={form}
+      />
     </div>
   );
 };
