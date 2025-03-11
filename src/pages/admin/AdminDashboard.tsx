@@ -7,7 +7,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import avatar from "../../assets/avatar.png";
 
 
-const AdminClaimStats = lazy(() => import('../../components/admin/AdminClaimStats'));
+// const AdminClaimStats = lazy(() => import('../../components/admin/AdminClaimStats'));
 const AdminProjectStats = lazy(() => import('../../components/admin/AdminProjectStats'))
 const AdminDashboard: React.FC = () => {
 
@@ -60,7 +60,7 @@ const AdminDashboard: React.FC = () => {
           <div className="p-8 mt-1">
             <p className="text-2xl font-bold mb-4 font-mono" >Dashboard Overview</p>
             {/* Claim stats section */}
-            <AdminClaimStats/>
+{/*             <AdminClaimStats/> */}
             {/* Project stats section */}
             <AdminProjectStats/>
           </div>
