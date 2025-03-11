@@ -99,7 +99,7 @@ const Claim = () => {
   };
   const handleView = async (record: Claim) => {
     try {
-      const response = await claimService.getClaimById(record._id);
+      const response = await claimService.getClaimById(record._id, {showSpinner:false})
       if (response?.data) {
         setSelectedRequest(response.data);
         setIsModalVisible(true);
@@ -139,7 +139,7 @@ const Claim = () => {
         _id: id,
         claim_status: "Pending Approval",
         comment: comment
-      });
+      }, {showSpinner:false});
       notification.success({
         message: 'Success',
         description: 'Request has been sent for approval successfully.',
@@ -171,7 +171,7 @@ const Claim = () => {
         _id: id,
         claim_status: "Draft",
         comment: comment
-      });
+      }, {showSpinner:false});
       notification.success({
         message: 'Success',
         description: 'Request has been returned to Draft successfully.',

@@ -15,7 +15,8 @@ export default function AdminProjectStats() {
     const [completedProjects, setCompletedProjects] = useState<Project[]>([]);
     const [selectedRange, setSelectedRange] = useState<string | null>(null);
     const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
-    const [filterType, setFilterType] = useState<'relative' | 'static'>('relative');
+    const [filterType, setFilterType] = useState<'relative' | 'static' | 'year'>('relative');
+    const [selectedYear, setSelectedYear] = useState<number | null>(null);
     const [, setDataLoaded] = useState({
         projects: false,
         ongoingProjects: false,
@@ -28,6 +29,31 @@ export default function AdminProjectStats() {
         { activity: "User Sarah submitted a claim", time: "Yesterday" },
         { activity: "Admin assigned a user to Project Beta", time: "2 days ago" },
     ];
+const handleYearChange = (year: number) => {
+    setSelectedYear(year);
+    setFilterType('year');
+    setSelectedRange(null);
+    setDateRange(null);
+    
+    const startDate = dayjs().year(year).startOf('year');
+    const endDate = dayjs().year(year).endOf('year');
+    
+    filterProjectsByDateRange(startDate, endDate);
+};
+
+const getAvailableYears = () => {
+  const years = new Set<number>();
+  
+  projects.forEach(project => {
+      if (project.project_start_date) {
+          const year = new Date(project.project_start_date).getFullYear();
+          years.add(year);
+      }
+  });
+  
+  return Array.from(years).sort((a, b) => b - a);
+};
+
 
     const processProjectData = (projects: Project[]) => {
         const counts: Record<string, number> = {};
@@ -247,44 +273,57 @@ export default function AdminProjectStats() {
                             extra={
                                 <div className="flex flex-col gap-2 p-5">
                                     <Radio.Group 
-                                        value={filterType} 
-                                        onChange={(e) => {
-                                            setFilterType(e.target.value);
-                                            // Clear filters when switching
-                                            if (e.target.value === 'relative') {
-                                                setDateRange(null);
-                                                resetFilters();
-                                            } else {
-                                                setSelectedRange(null);
-                                                resetFilters();
-                                            }
-                                        }}
-                                        style={{ marginBottom: 8 }}
-                                    >
-                                        <Radio.Button value="relative">Relative Date</Radio.Button>
-                                        <Radio.Button value="static">Custom Date Range</Radio.Button>
-                                    </Radio.Group>
-                                    
-                                    {filterType === 'relative' ? (
-                                        <Select
-                                            placeholder="Select date range"
-                                            style={{ width: '100%' }}
-                                            onChange={handleFilterChange}
-                                            value={selectedRange}
-                                        >
-                                            <Option value="this_week">This Week</Option>
-                                            <Option value="this_month">This Month</Option>
-                                            <Option value="3_months">3 Months</Option>
-                                            <Option value="6_months">6 Months</Option>
-                                            <Option value="this_year">This Year</Option>
-                                        </Select>
-                                    ) : (
-                                        <RangePicker 
-                                            onChange={handleDateRangeChange}
-                                            value={dateRange}
-                                            style={{ width: '100%' }}
-                                        />
-                                    )}
+    value={filterType} 
+    onChange={(e) => {
+        setFilterType(e.target.value);
+        // Clear filters when switching
+        if (e.target.value === 'relative') {
+            setDateRange(null);
+            setSelectedYear(null);
+            resetFilters();
+        } else if (e.target.value === 'static') {
+            setSelectedRange(null);
+            setSelectedYear(null);
+            resetFilters();
+        } else if (e.target.value === 'year') {
+            setSelectedRange(null);
+            setDateRange(null);
+            resetFilters();
+        }
+    }}
+    style={{ marginBottom: 8 }}
+>
+    <Radio.Button value="year">Filter by Year</Radio.Button>
+</Radio.Group>
+
+{filterType === 'relative' ? (
+    <Select
+        placeholder="Select date range"
+        style={{ width: '100%' }}
+        onChange={handleFilterChange}
+        value={selectedRange}
+    >
+        <Option value="this_year">This Year</Option>
+        <Option value="last_year">Last Year</Option>
+    </Select>
+) : filterType === 'static' ? (
+    <RangePicker 
+        onChange={handleDateRangeChange}
+        value={dateRange}
+        style={{ width: '100%' }}
+    />
+) : (
+    <Select
+        placeholder="Select year"
+        style={{ width: '100%' }}
+        onChange={handleYearChange}
+        value={selectedYear}
+    >
+        {getAvailableYears().map(year => (
+            <Option key={year} value={year}>{year}</Option>
+        ))}
+    </Select>
+)}
                                 </div>
                             }
                         >

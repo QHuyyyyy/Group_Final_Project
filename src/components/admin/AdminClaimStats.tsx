@@ -32,6 +32,12 @@ export default function AdminClaimStats() {
     const [selectedRange, setSelectedRange] = useState<string | null>(null);
     const [dataLoaded, setDataLoaded] = useState({
         claims: false,
+        // pendingClaims: false,
+        // approvedClaims: false,
+        // rejectedClaims: false,
+        // paidClaims: false,
+        // draftClaims: false,
+        // canceledClaims: false,
         users: false
       });
     useEffect(() => {
@@ -94,9 +100,21 @@ export default function AdminClaimStats() {
       
             const [
               allClaims,
+            //   pendingClaims,
+            //   approvedClaims,
+            //   rejectedClaims,
+            //   paidClaims,
+            //   draftClaims,
+            //   canceledClaims,
               allUsers,
             ] = await Promise.all([
               fetchClaims(),
+            //   fetchClaims('Pending Approval'),
+            //   fetchClaims('Approved'),
+            //   fetchClaims('Rejected'),
+            //   fetchClaims('Paid'),
+            //   fetchClaims('Draft'),
+            //   fetchClaims('Canceled'),
               fetchUsers()
             ]);
             
