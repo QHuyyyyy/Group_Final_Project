@@ -1,22 +1,22 @@
 import React from 'react';
-import { Form, Input, Button, Modal, FormInstance } from 'antd';
+import { Form, Input, Button, Modal } from 'antd';
 import { userService } from '../../services/user.service';
 import { InputVaild } from '../../constants/InputVaild';
 import { KeyOutlined, SecurityScanOutlined } from '@ant-design/icons';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 interface ChangePasswordModalProps {
   visible: boolean;
   onCancel: () => void;
   onSuccess: () => void;
-  form: FormInstance;
 }
 
-const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ visible, onCancel, onSuccess, form }) => {
+const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ visible, onCancel, onSuccess }) => {
   const [loading, setLoading] = React.useState(false);
+  const [form] = Form.useForm();
 
-  const handleChangePassword = async (values: { old_password: string; new_password: string }) => {
+  const handleChangePassword = async (values: { old_password: string; new_password: string; confirm_password: string }) => {
     setLoading(true);
     try {
       await userService.changePassword({
@@ -37,19 +37,18 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ visible, onCa
   return (
     <Modal
       title="Change Password"
-      visible={visible}
-      onCancel={() => {
-        form.resetFields();
-        onCancel();
-      }}
+      open={visible}
+      onCancel={onCancel}
       footer={null}
     >
-      <ToastContainer />
       <Form form={form} onFinish={handleChangePassword}>
         <Form.Item
           name="old_password"
           label={<span><SecurityScanOutlined /> Current Password</span>}
           rules={InputVaild.oldPassword}
+          style={{ marginBottom: '16px', marginTop: '0', display: 'block' }}
+          labelCol={{ span: 24 }}
+          wrapperCol={{ span: 24 }}
         >
           <Input.Password placeholder="Enter your old password" style={{ width: '100%' }} />
         </Form.Item>
@@ -57,6 +56,9 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ visible, onCa
           name="new_password"
           label={<span><KeyOutlined /> New Password</span>}
           rules={InputVaild.newPassword(form.getFieldValue)}
+          style={{ marginBottom: '16px', marginTop: '0' }}
+          labelCol={{ span: 24 }}
+          wrapperCol={{ span: 24 }}
         >
           <Input.Password placeholder="Enter your new password" style={{ width: '100%' }} />
         </Form.Item>
@@ -64,6 +66,9 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ visible, onCa
           name="confirm_password"
           label={<span><KeyOutlined /> Confirm Password</span>}
           rules={InputVaild.confirmNewPassword(form.getFieldValue)}
+          style={{ marginBottom: '16px', marginTop: '0' }}
+          labelCol={{ span: 24 }}
+          wrapperCol={{ span: 24 }}
         >
           <Input.Password placeholder="Confirm your new password" style={{ width: '100%' }} />
         </Form.Item>
