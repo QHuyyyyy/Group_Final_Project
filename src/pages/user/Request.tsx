@@ -30,7 +30,6 @@ const Claim = () => {
     undefined
   );
   const [isModalVisible, setIsModalVisible] = useState(false);
-
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [isSendModalVisible, setIsSendModalVisible] = useState(false);
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
@@ -46,6 +45,8 @@ const Claim = () => {
     { label: 'Pending', value: 'Pending Approval', color: '#1890ff', bgColor: '#e6f7ff' },
     { label: 'Approved', value: 'Approved', color: '#52c41a', bgColor: '#f6ffed' },
     { label: 'Rejected', value: 'Rejected', color: '#ff4d4f', bgColor: '#fff1f0' },
+    { label: 'Canceled', value: 'Canceled', color: '#ff4d4f', bgColor: '#fff1f0' },
+    { label: 'Paid', value: 'Paid', color: '#52c41a', bgColor: '#f6ffed' },
   ];
 
   useEffect(() => {
@@ -58,7 +59,7 @@ const Claim = () => {
       const params: SearchParams = {
         searchCondition: {
           keyword: debouncedSearchText || "",
-          claim_status: "",
+          claim_status: selectedStatus === "Rejected" || selectedStatus === "Canceled" ? selectedStatus : "",
           claim_start_date: "",
           claim_end_date: "",
           is_delete: false,
@@ -76,7 +77,11 @@ const Claim = () => {
         setAllClaims(claimsData);
         
         const filtered = selectedStatus 
-          ? claimsData.filter(claim => claim.claim_status === selectedStatus)
+          ? claimsData.filter(claim => {
+              if (selectedStatus === "Rejected") return claim.claim_status === "Rejected";
+              if (selectedStatus === "Cancelled") return claim.claim_status === "Cancelled";
+              return claim.claim_status === selectedStatus;
+            })
           : claimsData;
         setFilteredClaims(filtered);
 
@@ -342,7 +347,11 @@ const Claim = () => {
                         ? "blue"
                         : status === "Approved"
                         ? "green"
-                        : "red"
+                        : status === "Rejected" || status === "Canceled"
+                        ? "red"
+                        : status === "Paid"
+                        ? "green"
+                        : ""
                     }
                   >
                     {status || "Draft"}
