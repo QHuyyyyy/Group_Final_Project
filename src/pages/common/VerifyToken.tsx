@@ -1,6 +1,6 @@
-import { Spin, Layout } from 'antd';
+import { Button, Layout, Result } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { LoadingOutlined } from "@ant-design/icons";
+
 import { authService } from '../../services/auth.service';
 import { toast } from 'react-toastify';
 import loginBackground from '../../assets/login-background.png';
@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 
 export default function VerifyToken() {
   const navigate = useNavigate();
-  const [isVerifying, setIsVerifying] = useState(true);
+  const [verificationStatus, setVerificationStatus] = useState<'loading' | 'success' | 'error'>('loading');
   
   useEffect(() => {
     const verifyToken = async () => {
@@ -18,24 +18,76 @@ export default function VerifyToken() {
         
         if (tokenMatch && tokenMatch[1]) {
           const token = tokenMatch[1];
-          
           await authService.verifyToken(token);
-          
-          // Show success toast only once
-          toast.success('Tài khoản đã được xác thực thành công!');
+          setVerificationStatus('success');
+          toast.success('Verification successful!');
         }
-      
-      } finally {
-        // Always navigate to login, regardless of success or failure
-        navigate('/login');
-        setIsVerifying(false);
+      } catch (error) {
+        setVerificationStatus('error');
+        toast.error('Verification failed!');
       }
     };
 
     verifyToken();
-  }, [navigate]);
+  }, []);
 
-  const loadingIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+  const renderContent = () => {
+    switch (verificationStatus) {
+      case 'loading':
+        return (
+          <Result
+            title="Verifying..."
+            subTitle="Please wait a moment"
+            className="text-white"
+          />
+        );
+      case 'success':
+        return (
+          <Result
+            status="success"
+            title="Account verification successful!"
+            subTitle="You can now log in to the system"
+            className="text-white"
+            extra={[
+              <Button 
+                type="primary" 
+                key="login"
+                onClick={() => navigate('/login')}
+                className="bg-blue-500 hover:bg-blue-600"
+              >
+                Back to Login
+              </Button>
+            ]}
+          />
+        );
+      case 'error':
+        return (
+          <Result
+            status="error"
+            title="Account verification failed!"
+            subTitle="Token is invalid or has expired"
+            className="text-white"
+            extra={[
+              <Button
+                type="primary" 
+                key="resend"
+                onClick={() => navigate('/resend-token')}
+                className="bg-blue-500 hover:bg-blue-600"
+              >
+                Resend Token 
+              </Button>,
+              <Button
+                key="home"
+                onClick={() => navigate('/')}
+                className="text-white border-white hover:text-blue-200 hover:border-blue-200"
+              >
+               Back to Login
+              </Button>
+            ]}
+          />
+        );
+    }
+  };
 
   return (
     <Layout style={{ 
@@ -48,13 +100,9 @@ export default function VerifyToken() {
       backgroundSize: 'cover',
       backgroundPosition: 'center'
     }}>
-      {isVerifying ? (
-        <div style={{ textAlign: "center" }}>
-          <Spin indicator={loadingIcon} />
-          <h2 style={{ marginTop: 20, color: "#fff" }}>Đang xác thực tài khoản...</h2>
-          <p style={{ color: "#fff" }}>Vui lòng đợi trong giây lát</p>
-        </div>
-      ) : null}
+      <div className="bg-white/30 backdrop-blur-md rounded-2xl shadow-2xl p-8 space-y-8 border border-white/20">
+        {renderContent()}
+      </div>
     </Layout>
   );
 }

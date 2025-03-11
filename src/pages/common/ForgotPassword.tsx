@@ -1,7 +1,6 @@
 import { Button, Typography, Form, Input } from 'antd';
 import { MailOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-
 import { authService } from '../../services/auth.service';
 import { toast } from 'react-toastify';
 import loginBackground from '../../assets/login-background.png';
@@ -12,13 +11,10 @@ export default function ForgotPassword() {
   const [form] = Form.useForm();
   const navigate = useNavigate();
 
-
-
   const handleSubmit = async (values: { email: string }) => {
-
-      await authService.forgotPassword({ email: values.email });
-      toast.success('Please check your email to reset your password!');
-      navigate('/login');
+      console.log(values.email)
+      await authService.forgotPassword(values.email);
+      toast.success('Please check your email to reset password!');
 
   };
 
@@ -51,8 +47,8 @@ export default function ForgotPassword() {
             <Form.Item
               name="email"
               rules={[
-                { required: true, message: 'Please input email!' },
-                { type: 'email', message: 'Email not valid!' }
+                { required: true, message: 'Please enter your email!' },
+                { type: 'email', message: 'Invalid email format!' }
               ]}
             >
               <Input 
@@ -74,7 +70,7 @@ export default function ForgotPassword() {
                   shadow-lg hover:shadow-xl transition-all duration-200 
                   text-base font-semibold tracking-wide"
               >
-                Send request
+                Send Request
               </Button>
             </Form.Item>
 
