@@ -2,7 +2,6 @@ import React from "react";
 import { Avatar, Dropdown, Menu, Row, Col } from "antd";
 import {
   LogoutOutlined,
-  SettingOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 
@@ -26,12 +25,7 @@ const NavbarAdminDashboard: React.FC = () => {
       }}>
         <UserOutlined /> Profile
       </Menu.Item>
-      <Menu.Item key="2" onClick={() =>{
-        navigate("/dashboard/settingadmin")
-      }}>
-        <SettingOutlined /> Settings
-      </Menu.Item>
-      <Menu.Item key="3" onClick={handleLogout} style={{
+      <Menu.Item key="2" onClick={handleLogout} style={{
         color:"red"
       }}>
       <LogoutOutlined /> Logout</Menu.Item>
