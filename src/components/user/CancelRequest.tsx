@@ -1,34 +1,67 @@
 import { useState } from "react";
-import { Modal, notification } from "antd";
+import { Modal, notification, Input } from "antd";
+
+import { SendOutlined, QuestionCircleOutlined, CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons';
 
 interface CancelRequestProps {
     id: string | null;
-    status: string;
     visible: boolean;
-    onCancelRequest: (id: string) => Promise<void>;
+    onCancelRequest: (id: string, comment: string) => Promise<void>;
     onClose: () => void;
 }
-// const CancelRequest: React.FC<CancelRequestProps> = ({ id, status, visible, onCancelRequest, onClose }) => {
+
+const { TextArea } = Input;
+
 const CancelRequest: React.FC<CancelRequestProps> = ({ id, visible, onCancelRequest, onClose }) => {
     const [loading, setLoading] = useState(false);
+    const [comment, setComment] = useState('');  // Thêm state cho comment
 
     const handleCancel = async () => {
         if (id === null) return;
         setLoading(true);
 
-        setTimeout(() => {
-            onCancelRequest(id);
-            setLoading(false);
-            notification.success({
-                message: "Request Cancelled",
-                description: `Request ID ${id} has been cancelled.`,
+        try {
+            await onCancelRequest(id, comment);  // Gọi hàm onCancelRequest truyền id và comment
+
+            notification.open({
+                message: 'Success',
+                description: `Request ID ${id} has been cancelled successfully.`,
+                icon: <CheckCircleFilled style={{ color: '#52c41a' }} />,
+                placement: 'topRight',
+                duration: 4.5,
+                style: {
+                    backgroundColor: '#f6ffed',
+                    border: '1px solid #b7eb8f'
+                }
             });
-        }, 1000);
+
+            setComment('');  // Reset comment sau khi hủy thành công
+            onClose();  // Đóng modal sau khi thành công
+        } catch (error) {
+            notification.open({
+                message: 'Error',
+                description: 'Failed to cancel the request.',
+                icon: <CloseCircleFilled style={{ color: '#ff4d4f' }} />,
+                placement: 'topRight',
+                duration: 4.5,
+                style: {
+                    backgroundColor: '#fff2f0',
+                    border: '1px solid #ffccc7'
+                }
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <Modal
-            title="Cancel Request"
+            title={
+                <span>
+                    <SendOutlined style={{ marginRight: 8 }} />
+                    Cancel Request
+                </span>
+            }
             open={visible}
             onOk={handleCancel}
             onCancel={onClose}
@@ -37,10 +70,24 @@ const CancelRequest: React.FC<CancelRequestProps> = ({ id, visible, onCancelRequ
             cancelText="Cancel"
             confirmLoading={loading}
         >
-            <p>
-                Are you sure you want to cancel request {id ? `ID ${id}` : "this request"}?
-            </p>
-            <p>Once cancelled, the status will change to "Cancelled".</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'start', gap: '8px' }}>
+                    <QuestionCircleOutlined style={{ marginTop: '4px', color: '#1890ff' }} />
+                    <div>
+                        <p>Are you sure you want to cancel request {id ? `ID ${id}` : "this request"}?</p>
+                        <p>Once cancelled, the status will change to "Canceled".</p>
+                    </div>
+                </div>
+
+                <div>
+                    <TextArea
+                        placeholder="Add a comment (optional)"
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        rows={4}
+                    />
+                </div>
+            </div>
         </Modal>
     );
 };

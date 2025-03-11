@@ -1,22 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Input, Card, Table, Tag, message, Button, Space, notification } from "antd";
 import { claimService } from "../../services/claim.service";
 import dayjs from 'dayjs';
 import RequestDetails from "../../components/user/RequestDetails";
-import {
-  CloseCircleOutlined,
-  CloudUploadOutlined,
-  EditOutlined,
-  EyeOutlined,
-  RollbackOutlined,
-} from "@ant-design/icons";
-import type { Claim, ClaimById, SearchParams } from "../../models/ClaimModel";
 import CreateRequest from "./CreateRequest";
 import SendRequest from "../../components/user/SendRequest";
-import ReturnRequest from "../../components/user/ReturnRequest";
+import CancelRequest from "../../components/user/CancelRequest";
 import { useDebounce } from "../../hooks/useDebounce";
-
-const { Search } = Input;
+import { CloseCircleOutlined, CloudUploadOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
+import type { Claim, ClaimById, SearchParams } from "../../models/ClaimModel";
 
 const Claim = () => {
   const [loading, setLoading] = useState(false);
@@ -26,15 +18,13 @@ const Claim = () => {
     pageSize: 10,
     total: 0,
   });
-  const [selectedRequest, setSelectedRequest] = useState<ClaimById | undefined>(
-    undefined
-  );
+  const [selectedRequest, setSelectedRequest] = useState<ClaimById | undefined>(undefined);
   const [isModalVisible, setIsModalVisible] = useState(false);
-
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [isSendModalVisible, setIsSendModalVisible] = useState(false);
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
-  const [isReturnModalVisible, setIsReturnModalVisible] = useState(false);
+  const [isCancelModalVisible, setIsCancelModalVisible] = useState(false);
+  const [selectedCancelClaimId, setSelectedCancelClaimId] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [allClaims, setAllClaims] = useState<Claim[]>([]);
   const [filteredClaims, setFilteredClaims] = useState<Claim[]>([]);
@@ -48,11 +38,8 @@ const Claim = () => {
     { label: 'Rejected', value: 'Rejected', color: '#ff4d4f', bgColor: '#fff1f0' },
   ];
 
-  useEffect(() => {
-    fetchClaims();
-  }, [pagination.current, pagination.pageSize, debouncedSearchText]);
-
-  const fetchClaims = async () => {
+  // Fetch claims data
+  const fetchClaims = useCallback(async () => {
     try {
       setLoading(true);
       const params: SearchParams = {
@@ -74,8 +61,8 @@ const Claim = () => {
       if (response?.data?.pageData) {
         const claimsData = response.data.pageData;
         setAllClaims(claimsData);
-        
-        const filtered = selectedStatus 
+
+        const filtered = selectedStatus
           ? claimsData.filter(claim => claim.claim_status === selectedStatus)
           : claimsData;
         setFilteredClaims(filtered);
@@ -91,12 +78,19 @@ const Claim = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [debouncedSearchText, pagination.current, pagination.pageSize, selectedStatus]);
 
+  useEffect(() => {
+    fetchClaims();
+  }, [fetchClaims]);
+
+  // Handle Search
   const handleSearch = (value: string) => {
     setSearchText(value);
     setPagination(prev => ({ ...prev, current: 1 }));
   };
+
+  // Handle View
   const handleView = async (record: Claim) => {
     try {
       const response = await claimService.getClaimById(record._id, {showSpinner:false})
@@ -109,117 +103,79 @@ const Claim = () => {
     }
   };
 
-  const handleCloseModal = () => {
-    setIsModalVisible(false);
-    setSelectedRequest(undefined);
-  };
-
-  const handleOpenCreateModal = () => {
-    setIsCreateModalVisible(true);
-  };
-
-  const handleCloseCreateModal = () => {
-    setIsCreateModalVisible(false);
-  };
-
-  const handleCreateSuccess = () => {
-    setIsCreateModalVisible(false);
-    fetchClaims();
-    message.success("Claim created successfully");
-  };
-
-  const formatWorkTime = (hours: number) => {
-    if (!hours && hours !== 0) return "-";
-    return `${hours}h`;
-  };
-
-  const handleSendRequest = async (id: string, comment: string) => {
-    try {
-      await claimService.changeClaimStatus({
-        _id: id,
-        claim_status: "Pending Approval",
-        comment: comment
-      }, {showSpinner:false});
-      notification.success({
-        message: 'Success',
-        description: 'Request has been sent for approval successfully.',
-        placement: 'topRight'
-      });
-      fetchClaims();
-    } catch (error: any) {
-      notification.error({
-        message: 'Error',
-        description: error.message || 'Failed to send request for approval.',
-        placement: 'topRight'
-      });
-    }
-  };
-
-  const handleOpenSendModal = (record: Claim) => {
-    setSelectedClaimId(record._id);
-    setIsSendModalVisible(true);
-  };
-
-  const handleCloseSendModal = () => {
-    setIsSendModalVisible(false);
-    setSelectedClaimId(null);
-  };
-
-  const handleReturnRequest = async (id: string, comment: string) => {
-    try {
-      await claimService.changeClaimStatus({
-        _id: id,
-        claim_status: "Draft",
-        comment: comment
-      }, {showSpinner:false});
-      notification.success({
-        message: 'Success',
-        description: 'Request has been returned to Draft successfully.',
-        placement: 'topRight'
-      });
-      fetchClaims();
-    } catch (error: any) {
-      notification.error({
-        message: 'Error',
-        description: error.message || 'Failed to return request to Draft.',
-        placement: 'topRight'
-      });
-    }
-  };
-
-  const handleOpenReturnModal = (record: Claim) => {
-    setSelectedClaimId(record._id);
-    setIsReturnModalVisible(true);
-  };
-
-  const handleCloseReturnModal = () => {
-    setIsReturnModalVisible(false);
-    setSelectedClaimId(null);
-  };
-
+  // Handle Status Filter
   const handleStatusFilter = (status: string) => {
     setSelectedStatus(status);
-    const filtered = status 
+    const filtered = status
       ? allClaims.filter(claim => claim.claim_status === status)
       : allClaims;
     setFilteredClaims(filtered);
     setPagination(prev => ({ ...prev, current: 1 }));
   };
 
+  // Handle Modal Open and Close
+  const handleCloseModal = () => setIsModalVisible(false);
+  const handleOpenCreateModal = () => setIsCreateModalVisible(true);
+  const handleCloseCreateModal = () => setIsCreateModalVisible(false);
+  const handleOpenSendModal = (record: Claim) => {
+    setSelectedClaimId(record._id);
+    setIsSendModalVisible(true);
+  };
+  const handleCloseSendModal = () => setIsSendModalVisible(false);
+  const handleOpenCancelModal = (record: Claim) => {
+    setSelectedCancelClaimId(record._id);
+    setIsCancelModalVisible(true);
+  };
+  const handleCloseCancelModal = () => setIsCancelModalVisible(false);
+
+  // Handle Request Actions
+  const handleSendRequest = async (id: string, comment: string) => {
+    try {
+      await claimService.changeClaimStatus({ _id: id, claim_status: "Pending Approval", comment }, {showSpinner:false});
+      notification.success({
+        message: 'Success',
+        description: 'Request has been sent for approval successfully.',
+        placement: 'topRight',
+      });
+      fetchClaims();
+    } catch (error: any) {
+      notification.error({
+        message: 'Error',
+        description: error.message || 'Failed to send request for approval.',
+        placement: 'topRight',
+      });
+    }
+  };
+
+  const handleCancelRequest = async (id: string, comment: string) => {
+    try {
+      await claimService.changeClaimStatus({ _id: id, claim_status: "Canceled", comment }, {showSpinner:false});
+      notification.success({
+        message: 'Request Cancelled',
+        description: 'Request ID ${id} has been cancelled successfully.',
+        placement: 'topRight',
+      });
+      fetchClaims();
+    } catch (error: any) {
+      notification.error({
+        message: 'Error',
+        description: error.message || 'Failed to cancel the request.',
+        placement: 'topRight',
+      });
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-100">
       <div className="flex-1 p-8">
         <div className="flex items-center justify-between mb-6">
-          <Search
+          <Input.Search
             placeholder="Search by Employee Name"
             allowClear
             onSearch={handleSearch}
             style={{ width: 300 }}
-            className="ml-0"
           />
-          <Button type="primary" onClick={handleOpenCreateModal}>
-            Add New Claim
-          </Button>
+          <Button type="primary" onClick={handleOpenCreateModal}>Add New Claim</Button>
         </div>
 
         <Card className="shadow-md">
@@ -236,39 +192,33 @@ const Claim = () => {
                       backgroundColor: selectedStatus === status.value ? status.color : status.bgColor,
                       color: selectedStatus === status.value ? '#fff' : status.color,
                       fontWeight: 500,
-                      display: 'flex',
-                      alignItems: 'center',
-                      height: '32px',
-                      padding: '4px 12px',
-                      borderRadius: '6px',
-                      transition: 'all 0.3s'
                     }}
                     className="hover:opacity-80"
                   >
                     {status.label}
-                    {allClaims.filter(claim => 
+                    {allClaims.filter(claim =>
                       status.value === '' ? true : claim.claim_status === status.value
                     ).length > 0 && (
-                      <span 
-                        style={{
-                          marginLeft: '8px',
-                          padding: '2px 8px',
-                          fontSize: '12px',
-                          borderRadius: '10px',
-                          backgroundColor: selectedStatus === status.value 
-                          ? '#ffffff' 
-                          : '#ffffff',
-                        color: status.color,
-                        fontWeight: 'bold',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                        border: `1px solid ${status.color}`
-                        }}
-                      >
-                        {allClaims.filter(claim => 
-                          status.value === '' ? true : claim.claim_status === status.value
-                        ).length}
-                      </span>
-                    )}
+                        <span
+                          style={{
+                            marginLeft: '8px',
+                            padding: '2px 8px',
+                            fontSize: '12px',
+                            borderRadius: '10px',
+                            backgroundColor: selectedStatus === status.value
+                              ? '#ffffff'
+                              : '#ffffff',
+                            color: status.color,
+                            fontWeight: 'bold',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                            border: `1px solid ${status.color}`
+                          }}
+                        >
+                          {allClaims.filter(claim =>
+                            status.value === '' ? true : claim.claim_status === status.value
+                          ).length}
+                        </span>
+                      )}
                   </Button>
                 ))}
               </div>
@@ -312,12 +262,6 @@ const Claim = () => {
                     {dayjs(record.claim_end_date).format("YYYY-MM-DD")}
                   </span>
                 ),
-                sorter: (a, b) => {
-                  const dateA = new Date(a.claim_start_date).getTime();
-                  const dateB = new Date(b.claim_start_date).getTime();
-                  return dateA - dateB;
-                },
-                defaultSortOrder: "descend",
               },
               {
                 title: "Total Hours",
@@ -325,7 +269,7 @@ const Claim = () => {
                 key: "total_work_time",
                 width: 100,
                 align: "center",
-                render: (total_work_time: number) => formatWorkTime(total_work_time),
+                render: (total_work_time: number) => `${total_work_time}h`,
               },
               {
                 title: "Status",
@@ -339,10 +283,14 @@ const Claim = () => {
                       !status || status === "Draft"
                         ? "gold"
                         : status === "Pending Approval"
-                        ? "blue"
-                        : status === "Approved"
-                        ? "green"
-                        : "red"
+                          ? "blue"
+                          : status === "Approved"
+                            ? "green"
+                            : status === "Rejected" || status === "Canceled"
+                              ? "red"
+                              : status === "Paid"
+                                ? "green"
+                                : ""
                     }
                   >
                     {status || "Draft"}
@@ -356,22 +304,12 @@ const Claim = () => {
                 align: 'center',
                 render: (_, record) => (
                   <Space size="middle">
-                    <Button 
-                      type="text" 
-                      icon={<EyeOutlined />} 
+                    <Button
+                      type="text"
+                      icon={<EyeOutlined />}
                       onClick={() => handleView(record)}
                       title="View"
                     />
-                    
-                    {record.claim_status === "Pending Approval" && (
-                      <Button
-                        type="text"
-                        icon={<RollbackOutlined />}
-                        onClick={() => handleOpenReturnModal(record)}
-                        title="Return to Draft"
-                      />
-                    )}
-                    
                     {record.claim_status === "Draft" && (
                       <>
                         <Button
@@ -388,7 +326,8 @@ const Claim = () => {
                         <Button
                           type="text"
                           icon={<CloseCircleOutlined />}
-                          onClick={() => (record)}
+                          onClick={() => handleOpenCancelModal(record)}
+                          title="Cancel"
                         />
                       </>
                     )}
@@ -411,38 +350,13 @@ const Claim = () => {
                 }));
               },
             }}
-            className="overflow-hidden w-full"
-            scroll={{ x: true }}
           />
         </Card>
 
-        <RequestDetails
-          visible={isModalVisible}
-          claim={selectedRequest}
-          projectInfo={{
-            _id: selectedRequest?.project_id || "",
-            project_name: "",
-            project_comment: undefined,
-          }}
-          onClose={handleCloseModal}
-        />
-        <CreateRequest
-          visible={isCreateModalVisible}
-          onClose={handleCloseCreateModal}
-          onSuccess={handleCreateSuccess}
-        />
-        <SendRequest
-          id={selectedClaimId}
-          visible={isSendModalVisible}
-          onSend={handleSendRequest}
-          onCancel={handleCloseSendModal}
-        />
-        <ReturnRequest
-          id={selectedClaimId}
-          visible={isReturnModalVisible}
-          onReturn={handleReturnRequest}
-          onCancel={handleCloseReturnModal}
-        />
+        <RequestDetails visible={isModalVisible} claim={selectedRequest} onClose={handleCloseModal} />
+        <CreateRequest visible={isCreateModalVisible} onClose={handleCloseCreateModal} onSuccess={fetchClaims} />
+        <SendRequest visible={isSendModalVisible} id={selectedClaimId} onSend={handleSendRequest} onCancel={handleCloseSendModal} />
+        <CancelRequest visible={isCancelModalVisible} id={selectedCancelClaimId} onCancelRequest={handleCancelRequest} onClose={handleCloseCancelModal} />
       </div>
     </div>
   );

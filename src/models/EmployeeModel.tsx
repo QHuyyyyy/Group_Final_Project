@@ -23,6 +23,7 @@ export interface Employee {
 export interface EmployeeUpdateData {
     user_id?:string
     job_rank?: string;
+    account?: string;
     contract_type?: string;
     address?: string;
     phone?: string;
