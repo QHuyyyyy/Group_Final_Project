@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Form, Input, Button, InputNumber, message,Avatar, Upload, DatePicker } from 'antd';
-import { UserOutlined, UploadOutlined } from '@ant-design/icons';
+import { UserOutlined, UploadOutlined, LockOutlined } from '@ant-design/icons';
 import { useUserStore } from '../../stores/userStore';
 import { employeeService } from '../../services/employee.service';
 import moment from 'moment';
 import type { UploadProps } from 'antd';
-
+import ChangePasswordModal from '../../components/user/ChangePasswordModal';
 import { Employee, EmployeeUpdateData } from '../../models/EmployeeModel';
 
 
@@ -16,6 +16,9 @@ const SettingUser = () => {
   const [employeeData, setEmployeeData] = useState<Employee | null>(null);
   const [loading, setLoading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string>('');
+  const [isPasswordModalVisible, setIsPasswordModalVisible] = useState(false);
+
+
 
   // Fetch employee data when component mounts
   useEffect(() => {
@@ -106,6 +109,7 @@ const SettingUser = () => {
       return false;
     },
   };
+
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -263,6 +267,11 @@ const SettingUser = () => {
           </div>
         </div>
       </div>
+      <ChangePasswordModal
+        visible={isPasswordModalVisible}
+        onCancel={() => setIsPasswordModalVisible(false)}
+        onSuccess={() => setIsPasswordModalVisible(false)}
+      />
     </div>
   );
 };
