@@ -14,7 +14,7 @@ import {
 const projectService = {
   // Tạo dự án mới
   createProject: async (projectData: CreateProjectRequest): Promise<ApiResponse<Project>> => {
-    const response = await apiUtils.post<ApiResponse<Project>> (`${PROJECTS_ENDPOINT}`, projectData);
+    const response = await apiUtils.post<ApiResponse<Project>> (`${PROJECTS_ENDPOINT}`, projectData, {showSpinner:false});
     console.log("fetch data:", response.data);
     return response.data;
   },
@@ -39,7 +39,7 @@ const projectService = {
           pageNum: params.pageInfo.pageNum,
           pageSize: params.pageInfo.pageSize
         }
-      });
+      }, {showSpinner:false});
       console.log('API response in service:', response);
       return response.data;
     } catch (error) {
@@ -49,22 +49,22 @@ const projectService = {
   },
 
   // Lấy thông tin dự án theo ID
-  getProjectById: async (id: string): Promise<ApiResponse<ProjectData>> => {
-    const response = await apiUtils.get<ApiResponse<ProjectData>>(`${PROJECTS_ENDPOINT}/${id}`);
+  getProjectById: async (id: string, config = {}): Promise<ApiResponse<ProjectData>> => {
+    const response = await apiUtils.get<ApiResponse<ProjectData>>(`${PROJECTS_ENDPOINT}/${id}`, {}, config);
     console.log("fetch project data:", response.data);
     return response.data;
   },
 
   // Cập nhật thông tin dự án
   updateProject: async (id: string, projectData: UpdateProjectRequest): Promise<ApiResponse<ProjectData>> => {
-    const response = await apiUtils.put<ApiResponse<ProjectData>>(`${PROJECTS_ENDPOINT}/${id}`, projectData);
+    const response = await apiUtils.put<ApiResponse<ProjectData>>(`${PROJECTS_ENDPOINT}/${id}`, projectData, {showSpinner:false});
     console.log("fetch data:", response.data);
     return response.data;
   },
 
   // Xóa dự án
   deleteProject: async (id: string): Promise<ApiResponse<null>> => {
-    const response = await apiUtils.delete<ApiResponse<null>>(`${PROJECTS_ENDPOINT}/${id}`);
+    const response = await apiUtils.delete<ApiResponse<null>>(`${PROJECTS_ENDPOINT}/${id}`, {showSpinner:false});
     console.log("fetch data:", response.data);
     return response.data;
   },

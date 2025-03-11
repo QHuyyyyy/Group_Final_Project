@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { User } from "../../models/UserModel";
 import { Claim } from "../../models/ClaimModel";
 import dayjs from "dayjs"
-import { Bar, BarChart, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell  } from "recharts";
+import { Bar, BarChart, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from "recharts";
 import { userService } from "../../services/user.service";
 import { claimService } from "../../services/claim.service";
 interface ClaimStatus {
@@ -30,6 +30,14 @@ export default function AdminClaimStats() {
     const [draftClaims, setDraftClaims] = useState<Claim[]>([]);
     const [canceledClaims, setCanceledClaims] = useState<Claim[]>([]);
     const [selectedRange, setSelectedRange] = useState<string | null>(null);
+
+    const [filteredClaims, setFilteredClaims] = useState<Claim[]>([]);
+    const [filteredPendingClaims, setFilteredPendingClaims] = useState<Claim[]>([]);
+    const [filteredApprovedClaims, setFilteredApprovedClaims] = useState<Claim[]>([]);
+    const [filteredRejectedClaims, setFilteredRejectedClaims] = useState<Claim[]>([]);
+    const [filteredPaidClaims, setFilteredPaidClaims] = useState<Claim[]>([]);
+    const [filteredDraftClaims, setFilteredDraftClaims] = useState<Claim[]>([]);
+    const [filteredCanceledClaims, setFilteredCanceledClaims] = useState<Claim[]>([]);
     const [dataLoaded, setDataLoaded] = useState({
         claims: false,
         // pendingClaims: false,
@@ -39,129 +47,136 @@ export default function AdminClaimStats() {
         // draftClaims: false,
         // canceledClaims: false,
         users: false
-      });
+    });
     useEffect(() => {
         const fetchData = async () => {
-          try {
-    
-            const fetchClaims = async (status = '', pageSize = 200) => {
-              let allItems: Claim[] = [];
-              let pageNum = 1;
-      
-              while (true) {
-                const params = {
-                  searchCondition: {
-                    keyword: "",
-                    claim_status: status,
-                    is_delete: false,
-                  },
-                  pageInfo: {
-                    pageNum,
-                    pageSize,
-                  },
+            try {
+
+                const fetchClaims = async (status = '', pageSize = 200) => {
+                    let allItems: Claim[] = [];
+                    let pageNum = 1;
+
+                    while (true) {
+                        const params = {
+                            searchCondition: {
+                                keyword: "",
+                                claim_status: status,
+                                is_delete: false,
+                            },
+                            pageInfo: {
+                                pageNum,
+                                pageSize,
+                            },
+                        };
+
+                        const response = await claimService.searchClaims(params);
+
+                        if (!response || !response.data.pageData || response.data.pageData.length === 0) break;
+
+                        allItems = [...allItems, ...response.data.pageData];
+                        pageNum++;
+                    }
+
+                    return allItems;
                 };
-      
-                const response = await claimService.searchClaims(params);
-                
-                if (!response || !response.data.pageData || response.data.pageData.length === 0) break;
-      
-                allItems = [...allItems, ...response.data.pageData];
-                pageNum++;
-              }
-      
-              return allItems;
-            };
-            const fetchUsers = async (pageSize = 200) => {
-              let allUsers: User[] = [];
-              let pageNum = 1;
-      
-              while (true) {
-                const params = {
-                  searchCondition: {
-                    keyword: "",
-                    is_delete: false,
-                  },
-                  pageInfo: {
-                    pageNum,
-                    pageSize,
-                  },
+                const fetchUsers = async (pageSize = 200) => {
+                    let allUsers: User[] = [];
+                    let pageNum = 1;
+
+                    while (true) {
+                        const params = {
+                            searchCondition: {
+                                keyword: "",
+                                is_delete: false,
+                            },
+                            pageInfo: {
+                                pageNum,
+                                pageSize,
+                            },
+                        };
+
+                        const response = await userService.searchUsers(params);
+
+                        if (!response || !response.data.pageData || response.data.pageData.length === 0) break;
+
+                        allUsers = [...allUsers, ...response.data.pageData];
+                        pageNum++;
+                    }
+
+                    return allUsers;
                 };
-      
-                const response = await userService.searchUsers(params);
-                
-                if (!response || !response.data.pageData || response.data.pageData.length === 0) break;
-      
-                allUsers = [...allUsers, ...response.data.pageData];
-                pageNum++;
-              }
-      
-              return allUsers;
-            };
-      
-            const [
-              allClaims,
-            //   pendingClaims,
-            //   approvedClaims,
-            //   rejectedClaims,
-            //   paidClaims,
-            //   draftClaims,
-            //   canceledClaims,
-              allUsers,
-            ] = await Promise.all([
-              fetchClaims(),
-            //   fetchClaims('Pending Approval'),
-            //   fetchClaims('Approved'),
-            //   fetchClaims('Rejected'),
-            //   fetchClaims('Paid'),
-            //   fetchClaims('Draft'),
-            //   fetchClaims('Canceled'),
-              fetchUsers()
-            ]);
-            
-            const pendingClaims = allClaims.filter(item => item.claim_status === "Pending Approval");
-            const approvedClaims = allClaims.filter(item => item.claim_status === "Approved");
-            const rejectedClaims = allClaims.filter(item => item.claim_status === "Rejected");
-            const paidClaims = allClaims.filter(item => item.claim_status === "Paid");
-            const draftClaims = allClaims.filter(item => item.claim_status === "Draft");
-            const canceledClaims = allClaims.filter(item => item.claim_status === "Canceled");
-            // Update states
-            setClaims(allClaims);
-            setPendingClaims(pendingClaims);
-            setApprovedClaims(approvedClaims);
-            setRejectedClaims(rejectedClaims);
-            setPaidClaims(paidClaims);
-            setDraftClaims(draftClaims);
-            setCanceledClaims(canceledClaims);
-            
-            
-            setUsers(allUsers);
-      
-            // Update data loaded status
-            setDataLoaded({
-              claims: true,
-            //   pendingClaims: true,
-            //   approvedClaims: true,
-            //   rejectedClaims: true,
-            //   paidClaims: true,
-            //   draftClaims: true,
-            //   canceledClaims: true,
-              users: true
-            });
-      
-          } catch (error) {
-            console.error("Error fetching data:", error);
-          }
+
+                const [
+                    allClaims,
+                    //   pendingClaims,
+                    //   approvedClaims,
+                    //   rejectedClaims,
+                    //   paidClaims,
+                    //   draftClaims,
+                    //   canceledClaims,
+                    allUsers,
+                ] = await Promise.all([
+                    fetchClaims(),
+                    //   fetchClaims('Pending Approval'),
+                    //   fetchClaims('Approved'),
+                    //   fetchClaims('Rejected'),
+                    //   fetchClaims('Paid'),
+                    //   fetchClaims('Draft'),
+                    //   fetchClaims('Canceled'),
+                    fetchUsers()
+                ]);
+
+                const pendingClaims = allClaims.filter(item => item.claim_status === "Pending Approval");
+                const approvedClaims = allClaims.filter(item => item.claim_status === "Approved");
+                const rejectedClaims = allClaims.filter(item => item.claim_status === "Rejected");
+                const paidClaims = allClaims.filter(item => item.claim_status === "Paid");
+                const draftClaims = allClaims.filter(item => item.claim_status === "Draft");
+                const canceledClaims = allClaims.filter(item => item.claim_status === "Canceled");
+                // Update states
+                setClaims(allClaims);
+                setPendingClaims(pendingClaims);
+                setApprovedClaims(approvedClaims);
+                setRejectedClaims(rejectedClaims);
+                setPaidClaims(paidClaims);
+                setDraftClaims(draftClaims);
+                setCanceledClaims(canceledClaims);
+
+
+                setUsers(allUsers);
+
+                // Update data loaded status
+                setDataLoaded({
+                    claims: true,
+                    //   pendingClaims: true,
+                    //   approvedClaims: true,
+                    //   rejectedClaims: true,
+                    //   paidClaims: true,
+                    //   draftClaims: true,
+                    //   canceledClaims: true,
+                    users: true
+                });
+
+                setFilteredClaims(allClaims);
+                setFilteredPendingClaims(pendingClaims);
+                setFilteredApprovedClaims(approvedClaims);
+                setFilteredRejectedClaims(rejectedClaims);
+                setFilteredPaidClaims(paidClaims);
+                setFilteredDraftClaims(draftClaims);
+                setFilteredCanceledClaims(canceledClaims);
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
         };
-      
+
         fetchData();
-      }, []);
+    }, []);
     const claimsData: ClaimData[] = [
-        { status: "Pending", count: pendingClaims.length, date: "2024-03-25" },
-        { status: "Approved", count: approvedClaims.length, date: "2024-03-24" },
-        { status: "Rejected", count: rejectedClaims.length, date: "2024-03-23" },
-        { status: "Paid", count: paidClaims.length, date: "2024-03-22" },
-        { status: "Draft", count: draftClaims.length, date: "2024-03-22" },
-        { status: "Canceled", count: canceledClaims.length, date: "2024-03-22" }
+        { status: "Pending", count: filteredPendingClaims.length, date: "2024-03-25" },
+        { status: "Approved", count: filteredApprovedClaims.length, date: "2024-03-24" },
+        { status: "Rejected", count: filteredRejectedClaims.length, date: "2024-03-23" },
+        { status: "Paid", count: filteredPaidClaims.length, date: "2024-03-22" },
+        { status: "Draft", count: filteredDraftClaims.length, date: "2024-03-22" },
+        { status: "Canceled", count: filteredCanceledClaims.length, date: "2024-03-22" }
     ];
 
     const recentClaims = [
@@ -169,27 +184,27 @@ export default function AdminClaimStats() {
         { id: 2, name: "Travel Reimbursement", status: "Approved", claimer: "Jane Smith" },
         { id: 3, name: "Project Bonus", status: "Rejected", claimer: "Alice Johnson" },
         { id: 4, name: "Meal Allowance", status: "Paid", claimer: "Bob Brown" },
-      ];
-     
-      
-      const claimCategories = [
-          { 
-            name: "Department 01", 
-            value: claims.filter((claim) => claim.employee_info?.department_name === "Department 01").length 
-          },
-          { 
-            name: "Department 02", 
-            value: claims.filter((claim) => claim.employee_info?.department_name === "Department 02").length 
-          },
-          { 
-            name: "Department 03", 
-            value: claims.filter((claim) => claim.employee_info?.department_name === "Department 03").length 
-          },
-          { 
-            name: "Department 04", 
-            value: claims.filter((claim) => claim.employee_info?.department_name === "Department 04").length 
-          },
-        ];
+    ];
+
+
+    const claimCategories = [
+        {
+            name: "Department 01",
+            value: claims.filter((claim) => claim.employee_info?.department_name === "Department 01").length
+        },
+        {
+            name: "Department 02",
+            value: claims.filter((claim) => claim.employee_info?.department_name === "Department 02").length
+        },
+        {
+            name: "Department 03",
+            value: claims.filter((claim) => claim.employee_info?.department_name === "Department 03").length
+        },
+        {
+            name: "Department 04",
+            value: claims.filter((claim) => claim.employee_info?.department_name === "Department 04").length
+        },
+    ];
 
     const [filteredClaimData, setFilteredClaimData] = useState<ClaimData[]>(claimsData);
     const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
@@ -207,6 +222,14 @@ export default function AdminClaimStats() {
                 startDate = today.startOf("week");
                 endDate = today.endOf("week");
                 break;
+            case "3_months":
+                startDate = today.subtract(3, "month")
+                endDate = today;
+                break;
+            case "6_months":
+                startDate = today.subtract(6, "month");
+                endDate = today;
+                break;
             case "this_month":
                 startDate = today.startOf("month");
                 endDate = today.endOf("month");
@@ -216,7 +239,7 @@ export default function AdminClaimStats() {
                 endDate = today.endOf("year");
                 break;
             default:
-                setFilteredClaimData(claimsData);
+                resetFilters();
                 return;
         }
         filterClaimsByDateRange(startDate, endDate);
@@ -226,22 +249,41 @@ export default function AdminClaimStats() {
         setDateRange(dates);
         setFilterType('static');
         setSelectedRange(null);
-        
+
         if (dates && dates[0] && dates[1]) {
             filterClaimsByDateRange(dates[0], dates[1]);
         } else {
             setFilteredClaimData(claimsData);
         }
     };
-    
+
     const filterClaimsByDateRange = (startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) => {
-        const filtered = claimsData.filter((item) => {
-            if (!item.date) return false;
-            const itemDate = dayjs(item.date);
-            return itemDate.isAfter(startDate) && itemDate.isBefore(endDate);
+        // Filter claims based on creation date
+        const filtered = claims.filter((claim) => {
+            if (!claim.claim_start_date) return false;
+            const claimDate = dayjs(claim.claim_start_date);
+            return claimDate.isAfter(startDate) && claimDate.isBefore(endDate);
         });
-    
-        setFilteredClaimData(filtered);
+        
+
+        setFilteredClaims(filtered);
+        setFilteredPendingClaims(filtered.filter(item => item.claim_status === "Pending Approval"));
+        setFilteredApprovedClaims(filtered.filter(item => item.claim_status === "Approved"));
+        setFilteredRejectedClaims(filtered.filter(item => item.claim_status === "Rejected"));
+        setFilteredPaidClaims(filtered.filter(item => item.claim_status === "Paid"));
+        setFilteredDraftClaims(filtered.filter(item => item.claim_status === "Draft"));
+        setFilteredCanceledClaims(filtered.filter(item => item.claim_status === "Canceled"));
+    };
+
+
+    const resetFilters = () => {
+        setFilteredClaims(claims);
+        setFilteredPendingClaims(pendingClaims);
+        setFilteredApprovedClaims(approvedClaims);
+        setFilteredRejectedClaims(rejectedClaims);
+        setFilteredPaidClaims(paidClaims);
+        setFilteredDraftClaims(draftClaims);
+        setFilteredCanceledClaims(canceledClaims);
     };
 
     const statusColors: Record<ClaimStatus["status"], string> = {
@@ -302,7 +344,7 @@ export default function AdminClaimStats() {
                         <Statistic
                             title={<span style={{ color: "white" }}>Total Claims</span>}
                             className="font-bold"
-                            value={claims.length}
+                            value={filteredClaims.length}
                             prefix={<FileTextOutlined style={{
                                 color: "white",
                                 backgroundColor: "#c7920e",
@@ -324,7 +366,7 @@ export default function AdminClaimStats() {
                         <Statistic
                             title={<span style={{ color: "white" }}>Pending Claims</span>}
                             className="font-bold"
-                            value={pendingClaims.length}
+                            value={filteredPendingClaims.length}
                             prefix={<ClockCircleOutlined style={{
                                 color: "white",
                                 backgroundColor: "#ba3a3a",
@@ -339,53 +381,54 @@ export default function AdminClaimStats() {
 
             <div className="mt-4">
                 <Card
-                     title={
+                    title={
                         <div className="flex justify-between items-center">
                             <span>Claim Request Charts</span>
                         </div>
                     }
                     extra={
                         <div className="flex flex-col gap-2 p-5">
-        <Radio.Group 
-            value={filterType} 
-            onChange={(e) => {
-                setFilterType(e.target.value);
-                // Clear filters when switching
-                if (e.target.value === 'relative') {
-                    setDateRange(null);
-                    setFilteredClaimData(claimsData);
-                } else {
-                    setSelectedRange(null);
-                    setFilteredClaimData(claimsData);
-                }
-            }}
-            style={{ marginBottom: 8 }}
-        >
-            <Radio.Button value="relative">Relative Date</Radio.Button>
-            <Radio.Button value="static">Custom Date Range</Radio.Button>
-        </Radio.Group>
-        
-        {filterType === 'relative' ? (
-            <Select
-                placeholder="Select date range"
-                style={{ width: '100%' }}
-                onChange={handleFilterChange}
-                value={selectedRange}
-            >
-                <Option value="this_week">This Week</Option>
-                <Option value="this_month">This Month</Option>
-                <Option value="3_months">3 Months</Option>
-                <Option value="6_months">6 Months</Option>
-                <Option value="this_year">This Year</Option>
-            </Select>
-        ) : (
-            <RangePicker 
-                onChange={handleDateRangeChange}
-                value={dateRange}
-                style={{ width: '100%' }}
-            />
-        )}
-    </div>
+                            <Radio.Group
+                                value={filterType}
+                                onChange={(e) => {
+                                    setFilterType(e.target.value);
+                                    // Clear filters when switching
+                                    if (e.target.value === 'relative') {
+                                        setDateRange(null);
+                                        setFilteredClaimData(claimsData);
+                                        resetFilters()
+                                    } else {
+                                        setSelectedRange(null);
+                                        setFilteredClaimData(claimsData);
+                                    }
+                                }}
+                                style={{ marginBottom: 8 }}
+                            >
+                                <Radio.Button value="relative">Relative Date</Radio.Button>
+                                <Radio.Button value="static">Custom Date Range</Radio.Button>
+                            </Radio.Group>
+
+                            {filterType === 'relative' ? (
+                                <Select
+                                    placeholder="Select date range"
+                                    style={{ width: '100%' }}
+                                    onChange={handleFilterChange}
+                                    value={selectedRange}
+                                >
+                                    <Option value="this_week">This Week</Option>
+                                    <Option value="this_month">This Month</Option>
+                                    <Option value="3_months">3 Months</Option>
+                                    <Option value="6_months">6 Months</Option>
+                                    <Option value="this_year">This Year</Option>
+                                </Select>
+                            ) : (
+                                <RangePicker
+                                    onChange={handleDateRangeChange}
+                                    value={dateRange}
+                                    style={{ width: '100%' }}
+                                />
+                            )}
+                        </div>
                     }
                     style={{
                         boxShadow: "10px 10px 25px -19px rgba(0,0,0,0.75)"
