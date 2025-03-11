@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Modal, Form, Input, Select, DatePicker, Button, Empty } from 'antd';
 import dayjs from 'dayjs';
 import { ProjectData } from '../../models/ProjectModel';
-import { CalendarOutlined, ArrowRightOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { CalendarOutlined,  ClockCircleOutlined } from '@ant-design/icons';
 import { PlusOutlined } from '@ant-design/icons';
 
 interface ProjectModalProps {
@@ -105,7 +105,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
     <Modal
       title={
         <div className="flex items-center mb-4">
-          <h2 className="text-2xl font-semibold bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent">
+          <h2 className="text-2xl font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
             {isEditMode ? 'Update Project' : 'Create New Project'}
           </h2>
         </div>
