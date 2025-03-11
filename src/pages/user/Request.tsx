@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Input, Card, Table, Tag, message, Button, Space, notification } from "antd";
+import { Input, Card, Table, Tag, message, Button, notification } from "antd";
 import { claimService } from "../../services/claim.service";
 import dayjs from 'dayjs';
 import RequestDetails from "../../components/user/RequestDetails";
+import UpdateRequest from "../../components/user/UpdateRequest";
 import {
   CloseCircleOutlined,
   CloudUploadOutlined,
@@ -31,6 +32,7 @@ const Claim = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [isSendModalVisible, setIsSendModalVisible] = useState(false);
+  const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
   const [selectedCancelClaimId, setSelectedCancelClaimId] = useState<string | null>(null); // Add cancel claim ID
   const [selectedStatus, setSelectedStatus] = useState<string>('');
@@ -197,6 +199,30 @@ const Claim = () => {
       });
     }
   };
+
+  const handleOpenUpdateModal = async (record: Claim) => {
+    try {
+      const response = await claimService.getClaimById(record._id);
+      if (response?.data) {
+        setSelectedRequest(response.data);
+        setIsUpdateModalVisible(true);
+      }
+    } catch (error) {
+      message.error("Failed to fetch claim details for update");
+    }
+  };
+
+  const handleCloseUpdateModal = () => {
+    setIsUpdateModalVisible(false);
+    setSelectedRequest(undefined);
+  };
+
+  const handleUpdateSuccess = () => {
+    setIsUpdateModalVisible(false);
+    fetchClaims();
+    message.success("Claim updated successfully");
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-100">
       <div className="flex-1 p-8">
@@ -277,11 +303,10 @@ const Claim = () => {
                 align: "center",
               },
               {
-                title: "Staff Name",
-                dataIndex: ["staff_name", "staff_email"],
-                key: "staff_name",
+                title: "Claim Name",
+                dataIndex: "claim_name",
+                key: "claim_name",
                 width: 120,
-                render: (_, record) => record.staff_name,
               },
               {
                 title: "Project Name",
@@ -347,22 +372,23 @@ const Claim = () => {
                 title: "Actions",
                 key: "actions",
                 width: 100,
-                align: 'center',
                 render: (_, record) => (
-                  <Space size="middle">
-                    <Button
-                      type="text"
-                      icon={<EyeOutlined />}
-                      onClick={() => handleView(record)}
-                      title="View"
-                    />
-
+                  <div className="flex items-center gap-2">
+                    <div className="w-8">
+                      <Button
+                        type="text"
+                        icon={<EyeOutlined />}
+                        onClick={() => handleView(record)}
+                        title="View"
+                      />
+                    </div>
                     {record.claim_status === "Draft" && (
-                      <>
+                      <div className="flex items-center gap-2">
                         <Button
                           type="text"
                           icon={<EditOutlined />}
-                          onClick={() => (record)}
+                          onClick={() => handleOpenUpdateModal(record)}
+                          title="Edit"
                         />
                         <Button
                           type="text"
@@ -373,12 +399,12 @@ const Claim = () => {
                         <Button
                           type="text"
                           icon={<CloseCircleOutlined />}
-                          onClick={() => handleOpenCancelModal(record)} // Open cancel modal
+                          onClick={() => handleOpenCancelModal(record)}
                           title="Cancel"
                         />
-                      </>
+                      </div>
                     )}
-                  </Space>
+                  </div>
                 )
               },
             ]}
@@ -405,7 +431,7 @@ const Claim = () => {
           claim={selectedRequest}
           projectInfo={{
             _id: "",
-            project_name:"",
+            project_name: "",
             project_comment: "",
           }}
           onClose={handleCloseModal}
@@ -425,8 +451,16 @@ const Claim = () => {
           visible={isCancelModalVisible}
           id={selectedCancelClaimId}
           onCancelRequest={handleCancelRequest}
-          onClose={handleCloseCancelModal} // Close the cancel modal
+          onClose={handleCloseCancelModal}
         />
+        {selectedRequest && (
+          <UpdateRequest
+            visible={isUpdateModalVisible}
+            claim={selectedRequest}
+            onClose={handleCloseUpdateModal}
+            onSuccess={handleUpdateSuccess}
+          />
+        )}
       </div>
     </div>
   );
