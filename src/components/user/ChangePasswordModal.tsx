@@ -63,7 +63,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ visible, onCa
         <Form.Item
           name="confirm_password"
           label={<span><KeyOutlined /> Confirm Password</span>}
-          rules={InputVaild.confirmPassword(form.getFieldValue)}
+          rules={InputVaild.confirmNewPassword(form.getFieldValue)}
         >
           <Input.Password placeholder="Confirm your new password" style={{ width: '100%' }} />
         </Form.Item>
