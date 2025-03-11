@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Form, Input, Button, InputNumber, message,Avatar, Upload, DatePicker } from 'antd';
-import { UserOutlined, UploadOutlined, LockOutlined } from '@ant-design/icons';
+import { UserOutlined, UploadOutlined } from '@ant-design/icons';
 import { useUserStore } from '../../stores/userStore';
 import { employeeService } from '../../services/employee.service';
 import moment from 'moment';
@@ -112,43 +112,56 @@ const SettingUser = () => {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-      <div className="flex">
-        <div className="flex-1 p-8">
-          <div className="max-w-3xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6">Account Settings</h1>
-            
-            <div className="bg-white p-8 rounded-lg shadow-sm">
-              <div className="flex justify-center mb-8">
-                <div className="text-center">
-                  <Avatar 
-                    size={130} 
-                    src={avatarUrl}
-                    icon={!avatarUrl && <UserOutlined />} 
+    <div className="min-h-screen bg-gray-100">
+      <div className="container mx-auto py-10 px-4">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Left Column - Profile Card */}
+          <div className="lg:w-1/3">
+            <div className="bg-white rounded-2xl shadow-sm p-6">
+              <div className="flex flex-col items-center">
+                <Avatar 
+                  size={160} 
+                  src={avatarUrl}
+                  icon={!avatarUrl && <UserOutlined />} 
+                  className="mb-4 border-4 border-gray-100"
+                />
+                <Upload {...uploadProps}>
+                  <Button 
+                    icon={<UploadOutlined />}
                     className="mb-4"
-                  />
-                  <div className="flex space-x-4 justify-center mt-2">
-                    <Upload {...uploadProps}>
-                      <Button 
-                        icon={<UploadOutlined />}
-                        style={{ width: 150 }}
-                        className="flex items-center justify-center"
-                      >
-                        Change Avatar
-                      </Button>
-                    </Upload>
-                    <Button 
-                      icon={<LockOutlined />}
-                      onClick={() => setIsPasswordModalVisible(true)}
-                      style={{ width: 150 }}
-                      className="flex items-center justify-center"
-                    >
-                      Change Password
-                    </Button>
+                  >
+                    Change Avatar
+                  </Button>
+                </Upload>
+                <h2 className="text-xl font-semibold mb-2">{employeeData?.full_name || 'Employee Name'}</h2>
+                <p className="text-gray-500 mb-4">{employeeData?.job_rank || 'Position'}</p>
+                
+                {/* Quick Info */}
+                <div className="w-full space-y-3 border-t pt-4">
+                  <div>
+                    <p className="text-gray-500 text-sm">Department</p>
+                    <p className="font-medium">{employeeData?.department_code || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 text-sm">Contract Type</p>
+                    <p className="font-medium">{employeeData?.contract_type || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 text-sm">Start Date</p>
+                    <p className="font-medium">
+                      {employeeData?.start_date ? moment(employeeData.start_date).format('DD/MM/YYYY') : 'N/A'}
+                    </p>
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
 
+          {/* Right Column - Form */}
+          <div className="lg:w-2/3">
+            <div className="bg-white rounded-2xl shadow-sm p-6">
+              <h1 className="text-2xl font-bold mb-6">Edit Profile Information</h1>
+              
               <Form
                 form={form}
                 layout="vertical"
@@ -166,99 +179,89 @@ const SettingUser = () => {
                   end_date: null,
                 }}
               >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Form.Item
-                    name="full_name"
-                    label="Full Name"
-                    rules={[{ required: true, message: 'Please enter your full name' }]}
-                  >
-                    <Input placeholder="Enter your full name" />
-                  </Form.Item>
-                  <Form.Item
-                    name="account"
-                    label="Account"
-                    rules={[{ required: true, message: 'Please enter your account' }]}
-                  >
-                    <Input placeholder="Enter your account" />
-                  </Form.Item>
-                  <Form.Item
-                    name="phone"
-                    label="Phone Number"
-                    rules={[
-                      { required: true, message: 'Please enter your phone number' },
-                      { pattern: /^[0-9]{10}$/, message: 'Please enter a valid 10-digit phone number' }
-                    ]}
-                  >
-                    <Input placeholder="Enter your phone number" />
-                  </Form.Item>
+                <div className="space-y-6">
+                  {/* Personal Details Section */}
+                  <div>
+                    <h3 className="text-lg font-medium mb-4">Personal Details</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Form.Item
+                        name="full_name"
+                        label="Full Name"
+                        rules={[{ required: true, message: 'Please enter your full name' }]}
+                      >
+                        <Input size="large" />
+                      </Form.Item>
+                      <Form.Item
+                        name="account"
+                        label="Account"
+                        rules={[{ required: true, message: 'Please enter your account' }]}
+                      >
+                        <Input size="large" />
+                      </Form.Item>
+                    </div>
+                  </div>
 
-                  <Form.Item
-                    name="address"
-                    label="Address"
-                    rules={[{ required: true, message: 'Please enter your address' }]}
-                  >
-                    <Input placeholder="Enter your address" />
-                  </Form.Item>
+                  {/* Contact Information */}
+                  <div>
+                    <h3 className="text-lg font-medium mb-4">Contact Information</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Form.Item
+                        name="phone"
+                        label="Phone Number"
+                        rules={[
+                          { required: true, message: 'Please enter your phone number' },
+                          { pattern: /^[0-9]{10}$/, message: 'Please enter a valid 10-digit phone number' }
+                        ]}
+                      >
+                        <Input size="large" />
+                      </Form.Item>
+                      <Form.Item
+                        name="address"
+                        label="Address"
+                        rules={[{ required: true, message: 'Please enter your address' }]}
+                      >
+                        <Input size="large" />
+                      </Form.Item>
+                    </div>
+                  </div>
 
-                  <Form.Item
-                    name="job_rank"
-                    label="Job Rank"
-                  >
-                    <Input disabled placeholder="Job Rank" />
-                  </Form.Item>
-
-                  <Form.Item
-                    name="contract_type"
-                    label="Contract Type"
-                  >
-                    <Input disabled placeholder="Contract Type" />
-                  </Form.Item>
-
-                  <Form.Item
-                    name="department_name"
-                    label="Department"
-                  >
-                    <Input disabled placeholder="Department" /> 
-                  </Form.Item>
-
-                  <Form.Item
-                    name="salary"
-                    label="Salary"
-                  >
-                    <InputNumber 
-                      // className="w-full" 
-                      // formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                      // parser={value => value!.replace(/\$\s?|(,*)/g, '')}
-                      placeholder="Salary"
-                      disabled
-                    />
-                  </Form.Item>
-
-                  <Form.Item
-                    name="start_date"
-                    label="Start Date"
-                  >
-                    <DatePicker disabled format="DD/MM/YYYY" placeholder="Start Date" />
-                  </Form.Item>
-
-                  <Form.Item
-                    name="end_date"
-                    label="End Date"
-                  >
-                    <DatePicker disabled format="DD/MM/YYYY" placeholder="End Date" />
-                  </Form.Item>
+                  {/* Employment Details */}
+                  <div>
+                    <h3 className="text-lg font-medium mb-4">Employment Details</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Form.Item name="salary" label="Salary">
+                        <InputNumber 
+                          disabled
+                          size="large"
+                          className="w-full"
+                          formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                        />
+                      </Form.Item>
+                      <Form.Item name="department_name" label="Department">
+                        <Input disabled size="large" />
+                      </Form.Item>
+                      <Form.Item name="start_date" label="Start Date">
+                        <DatePicker disabled size="large" className="w-full" format="DD/MM/YYYY" />
+                      </Form.Item>
+                      <Form.Item name="end_date" label="End Date">
+                        <DatePicker disabled size="large" className="w-full" format="DD/MM/YYYY" />
+                      </Form.Item>
+                    </div>
+                  </div>
                 </div>
 
-                <Form.Item className="mt-6">
+                {/* Submit Button */}
+                <div className="mt-8">
                   <Button 
                     type="primary" 
                     htmlType="submit" 
                     loading={loading}
-                    className="bg-blue-500 hover:bg-blue-600"
+                    size="large"
+                    className="w-full md:w-auto px-8 bg-blue-600 hover:bg-blue-700"
                   >
-                    Save 
+                    Save Changes
                   </Button>
-                </Form.Item>
+                </div>
               </Form>
             </div>
           </div>
