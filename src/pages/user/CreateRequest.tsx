@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, Button, DatePicker, notification, Select, Card} from "antd";
+import { Form, Input, Button, DatePicker, Select, Card} from "antd";
 import { Modal } from "antd";
 import dayjs from 'dayjs';
 import { claimService } from "../../services/claim.service";
@@ -11,6 +11,8 @@ import projectService from "../../services/project.service";
 import { userService } from "../../services/user.service";
 import { employeeService } from "../../services/employee.service";
 import { Employee } from "../../models/EmployeeModel";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 interface CreateRequestProps {
@@ -101,10 +103,7 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                 setProjectInfo(firstProject);
             }
         } catch (error: any) {
-            notification.error({
-                message: "Error",
-                description: "Failed to fetch projects. Please try again.",
-            });
+            toast.error("Failed to fetch projects. Please try again.");
         } finally {
             setFetchingProjects(false);
         }
@@ -127,10 +126,7 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                 setApprovers(response.data.pageData);
             }
         } catch (error: any) {
-            notification.error({
-                message: "Error",
-                description: "Failed to fetch approvers. Please try again.",
-            });
+            toast.error("Failed to fetch approvers. Please try again.");
         } finally {
             setFetchingApprovers(false);
         }
@@ -143,10 +139,7 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                 setEmployeeInfo(response.data);
             }
         } catch (error) {
-            notification.error({
-                message: "Error",
-                description: "Failed to fetch employee information",
-            });
+            toast.error("Failed to fetch employee information");
         }
     };
 
@@ -177,11 +170,17 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
     };
 
     const handleEndDateChange = (date: dayjs.Dayjs | null) => {
-        if (!date || !startDate) return;
+        if (!date || !startDate) {
+            form.setFieldValue('total_work_time', 0);
+            setTotalWorkHours(0);
+            return;
+        }
         
         const hours = calculateWorkHours(startDate, date);
         setTotalWorkHours(hours);
-        form.setFieldValue('total_work_time', hours);
+        form.setFieldsValue({
+            total_work_time: hours
+        });
     };
 
     const handleSubmit = async (values: CreateClaim) => {
@@ -201,225 +200,222 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
             const response = await claimService.createClaim(newRequest);
             
             if (response.success) {
-                notification.success({
-                    message: "Success",
-                    description: "Claim created successfully",
-                });
+                toast.success("Claim created successfully");
                 form.resetFields();
                 onSuccess();
                 onClose();
             }
         } catch (error: any) {
-            notification.error({
-                message: "Error",
-                description: error.message || "Failed to create claim",
-            });
+            toast.error(error.message || "Failed to create claim");
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <Modal
-            className="justify text-center"
-            title="Create New Claim"
-            open={visible}
-            onCancel={onClose}
-            footer={null}
-            destroyOnClose
-            width={900}
-        >
-            <div style={{ display: 'grid', gridTemplateColumns: '350px 1fr', gap: '24px' }}>
-                {/* Left side - Information */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignSelf: 'start' }}>
-                    <Card 
-                        className="mb-3" 
-                        size="small" 
-                        title="Staff Information" 
-                        style={{ height: 'fit-content' }}
-                        styles={{
-                            header: {
-                                backgroundColor: '#f5f5f5',
-                                padding: '8px 12px'
-                            }
-                        }}
-                    >
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <span style={{ fontWeight: 500 }}>Staff Name:</span>
-                                <span>{employeeInfo.full_name}</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <span style={{ fontWeight: 500 }}>Staff ID:</span>
-                                <span>{employeeInfo.user_id}</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <span style={{ fontWeight: 500 }}>Department:</span>
-                                <span>{employeeInfo.department_code}</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <span style={{ fontWeight: 500 }}>Job Rank:</span>
-                                <span>{employeeInfo.job_rank}</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <span style={{ fontWeight: 500 }}>Contract Type:</span>
-                                <span>{employeeInfo.contract_type}</span>
-                            </div>
-                        </div>
-                    </Card>
-                    <Card 
-                        size="small" 
-                        title="Project Information"
-                        styles={{
-                            header: {
-                                backgroundColor: '#f5f5f5',
-                                padding: '8px 12px'
-                            }
-                        }}
-                        style={{ height: 'fit-content', marginBottom: 0 }}
-                    >
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <span style={{ fontWeight: 500 }}>Project Name:</span>
-                                <span>{projectInfo.project_name || 'N/A'}</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <span style={{ fontWeight: 500 }}>Project Code:</span>
-                                <span>{projectInfo.project_code || 'N/A'}</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <span style={{ fontWeight: 500 }}>Department:</span>
-                                <span>{projectInfo.project_department || 'N/A'}</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <span style={{ fontWeight: 500 }}>Role:</span>
-                                <span>{projectInfo.project_members.find(member => member.user_id === userId)?.project_role || 'N/A'}</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <span style={{ fontWeight: 500 }}>Duration:</span>
-                                <span>{`${dayjs(projectInfo.project_start_date).format('DD/MM/YYYY')} - ${dayjs(projectInfo.project_end_date).format('DD/MM/YYYY')}`}</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <span style={{ fontWeight: 500 }}>Status:</span>
-                                <span>{projectInfo.project_status || 'N/A'}</span>
-                            </div>
-                        </div>
-                    </Card>
-                </div>
-
-                {/* Right side - Create Form */}
-                <div>
-                    <Card 
-                        size="small" 
-                        title="Create Claim"
-                        styles={{
-                            header: {
-                                backgroundColor: '#f5f5f5',
-                                padding: '8px 12px'
-                            }
-                        }}
-                    >
-                        <Form 
-                            form={form} 
-                            layout="vertical" 
-                            onFinish={handleSubmit}
-                            preserve={false}
-                            style={{ maxWidth: '100%' }}
+        <>
+            <ToastContainer />
+            <Modal
+                className="justify text-center"
+                title="Create New Claim"
+                open={visible}
+                onCancel={onClose}
+                footer={null}
+                destroyOnClose
+                width={900}
+            >
+                <div style={{ display: 'grid', gridTemplateColumns: '350px 1fr', gap: '24px' }}>
+                    {/* Left side - Information */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignSelf: 'start' }}>
+                        <Card 
+                            className="mb-3" 
+                            size="small" 
+                            title="Staff Information" 
+                            style={{ height: 'fit-content' }}
+                            styles={{
+                                header: {
+                                    backgroundColor: '#f5f5f5',
+                                    padding: '8px 12px'
+                                }
+                            }}
                         >
-                            <Form.Item
-                                label="Claim Name"
-                                name="claim_name"
-                                style={{ marginBottom: '16px' }}
-                                rules={[{ required: true, message: "Please enter claim name!" }]}
-                            >
-                                <Input placeholder="Enter claim name" />
-                            </Form.Item>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ fontWeight: 500 }}>Staff Name:</span>
+                                    <span>{employeeInfo.full_name}</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ fontWeight: 500 }}>Staff ID:</span>
+                                    <span>{employeeInfo.user_id}</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ fontWeight: 500 }}>Department:</span>
+                                    <span>{employeeInfo.department_code}</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ fontWeight: 500 }}>Job Rank:</span>
+                                    <span>{employeeInfo.job_rank}</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ fontWeight: 500 }}>Contract Type:</span>
+                                    <span>{employeeInfo.contract_type}</span>
+                                </div>
+                            </div>
+                        </Card>
+                        <Card 
+                            size="small" 
+                            title="Project Information"
+                            styles={{
+                                header: {
+                                    backgroundColor: '#f5f5f5',
+                                    padding: '8px 12px'
+                                }
+                            }}
+                            style={{ height: 'fit-content', marginBottom: 0 }}
+                        >
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ fontWeight: 500 }}>Project Name:</span>
+                                    <span>{projectInfo.project_name || 'N/A'}</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ fontWeight: 500 }}>Project Code:</span>
+                                    <span>{projectInfo.project_code || 'N/A'}</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ fontWeight: 500 }}>Department:</span>
+                                    <span>{projectInfo.project_department || 'N/A'}</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ fontWeight: 500 }}>Role:</span>
+                                    <span>{projectInfo.project_members.find(member => member.user_id === userId)?.project_role || 'N/A'}</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ fontWeight: 500 }}>Duration:</span>
+                                    <span>{`${dayjs(projectInfo.project_start_date).format('DD/MM/YYYY')} - ${dayjs(projectInfo.project_end_date).format('DD/MM/YYYY')}`}</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ fontWeight: 500 }}>Status:</span>
+                                    <span>{projectInfo.project_status || 'N/A'}</span>
+                                </div>
+                            </div>
+                        </Card>
+                    </div>
 
-                            <Form.Item
-                                label="Project Name"
-                                name="project_id"
-                                style={{ marginBottom: '12px' }}
-                                rules={[{ required: true, message: "Please select the project!" }]}
+                    {/* Right side - Create Form */}
+                    <div>
+                        <Card 
+                            size="small" 
+                            title="Create Claim"
+                            styles={{
+                                header: {
+                                    backgroundColor: '#f5f5f5',
+                                    padding: '8px 12px'
+                                }
+                            }}
+                        >
+                            <Form 
+                                form={form} 
+                                layout="vertical" 
+                                onFinish={handleSubmit}
+                                preserve={false}
+                                style={{ maxWidth: '100%' }}
                             >
-                                <Select
-                                    placeholder="Select project"
-                                    loading={fetchingProjects}
-                                    options={projects.map(project => ({
-                                        value: project._id,
-                                        label: project.project_name
-                                    }))}
-                                />
-                            </Form.Item>
-
-                            <Form.Item
-                                label="Approval Name"
-                                name="approval_id"
-                                rules={[{ required: true, message: "Please select the approval!" }]}
-                            >
-                                <Select
-                                    placeholder="Select approver"
-                                    loading={fetchingApprovers}
-                                    options={approvers.map(approver => ({
-                                        value: approver._id,
-                                        label: approver.user_name
-                                    }))}
-                                />
-                            </Form.Item>
-
-                            <Form.Item
-                                label="Start Date"
-                                name="claim_start_date"
-                                rules={[{ required: true, message: "Please select the start date!" }]}
-                            >
-                                <DatePicker
-                                    style={{ width: "100%" }}
-                                    onChange={handleStartDateChange}
-                                />
-                            </Form.Item>
-
-                            <Form.Item 
-                                label="End Date"
-                                name="claim_end_date"
-                                rules={[{ required: true, message: "Please select the end date!" }]}
-                            >
-                                <DatePicker
-                                    style={{ width: "100%" }}
-                                    onChange={handleEndDateChange}
-                                    disabledDate={(current) => {
-                                        if (!startDate) return false;
-                                        return current && current < startDate;
-                                    }}
-                                />
-                            </Form.Item>
-
-                            <Form.Item
-                                label="Total Hours Worked"
-                                name="total_work_time"
-                                rules={[{ required: true, message: "Please enter total hours worked!" }]}
-                            >
-                                <Input 
-                                    type="number" 
-                                    placeholder="Enter total hours worked"
-                                    value={totalWorkHours}
-                                />
-                            </Form.Item>
-                            
-                            <Form.Item>
-                                <Button 
-                                    type="primary" 
-                                    htmlType="submit" 
-                                    loading={loading} 
-                                    block
-                                    style={{ height: '36px' }}
+                                <Form.Item
+                                    label="Claim Name"
+                                    name="claim_name"
+                                    style={{ marginBottom: '16px' }}
+                                    rules={[{ required: true, message: "Please enter claim name!" }]}
                                 >
-                                    Submit 
-                                </Button>
-                            </Form.Item>
-                        </Form>
-                    </Card>
+                                    <Input placeholder="Enter claim name" />
+                                </Form.Item>
+
+                                <Form.Item
+                                    label="Project Name"
+                                    name="project_id"
+                                    style={{ marginBottom: '12px' }}
+                                    rules={[{ required: true, message: "Please select the project!" }]}
+                                >
+                                    <Select
+                                        placeholder="Select project"
+                                        loading={fetchingProjects}
+                                        options={projects.map(project => ({
+                                            value: project._id,
+                                            label: project.project_name
+                                        }))}
+                                    />
+                                </Form.Item>
+
+                                <Form.Item
+                                    label="Approval Name"
+                                    name="approval_id"
+                                    rules={[{ required: true, message: "Please select the approval!" }]}
+                                >
+                                    <Select
+                                        placeholder="Select approver"
+                                        loading={fetchingApprovers}
+                                        options={approvers.map(approver => ({
+                                            value: approver._id,
+                                            label: approver.user_name
+                                        }))}
+                                    />
+                                </Form.Item>
+
+                                <Form.Item
+                                    label="Start Date"
+                                    name="claim_start_date"
+                                    rules={[{ required: true, message: "Please select the start date!" }]}
+                                >
+                                    <DatePicker
+                                        style={{ width: "100%" }}
+                                        onChange={handleStartDateChange}
+                                    />
+                                </Form.Item>
+
+                                <Form.Item 
+                                    label="End Date"
+                                    name="claim_end_date"
+                                    rules={[{ required: true, message: "Please select the end date!" }]}
+                                >
+                                    <DatePicker
+                                        style={{ width: "100%" }}
+                                        onChange={handleEndDateChange}
+                                        disabledDate={(current) => {
+                                            if (!startDate) return false;
+                                            return current && current < startDate;
+                                        }}
+                                    />
+                                </Form.Item>
+
+                                <Form.Item
+                                    label="Total Hours Worked"
+                                    name="total_work_time"
+                                    rules={[{ required: true, message: "Please enter total hours worked!" }]}
+                                >
+                                    <Input 
+                                        type="number" 
+                                        placeholder="Enter total hours worked"
+                                        value={totalWorkHours}
+                                    />
+                                </Form.Item>
+                                
+                                <Form.Item>
+                                    <Button 
+                                        type="primary" 
+                                        htmlType="submit" 
+                                        loading={loading} 
+                                        block
+                                        style={{ height: '36px' }}
+                                    >
+                                        Submit 
+                                    </Button>
+                                </Form.Item>
+                            </Form>
+                        </Card>
+                    </div>
                 </div>
-            </div>
-        </Modal>
+            </Modal>
+        </>
     );
 };
 
