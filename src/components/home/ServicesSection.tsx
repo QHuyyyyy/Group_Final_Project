@@ -96,11 +96,11 @@ const ServicesSection: React.FC = () => {
   };
 
   return (
-    <div className="w-full bg-white py-16 relative z-0">
+    <div className="w-full bg-white pt-32 pb-16 relative z-0">
       <div className="container mx-auto px-4">
         {/* Tiêu đề chính */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+          <h2 className="text-4xl md:text-5xl font-bold mb-8">
             Harness Continuous{' '}
             <span className="text-green-500">Innovation</span>
             {' & '}
@@ -131,10 +131,10 @@ const ServicesSection: React.FC = () => {
                 key={index}
                 className="flex-none w-[400px]"
                 style={{
-                  transform: 'translateZ(0)', // Hardware acceleration
+                  transform: 'translateZ(0)',
                 }}
               >
-                <div className="relative h-[500px] rounded-lg overflow-hidden group">
+                <div className="relative h-[450px] rounded-lg overflow-hidden group">
                   <img 
                     src={service.image}
                     alt={service.title}
