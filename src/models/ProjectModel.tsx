@@ -96,6 +96,7 @@ export interface CreateClaim_ProjectData {
     project_members: ProjectMemberInfo[];
     project_start_date: string;
     project_end_date: string;
+    project_description: string;
 }
 
 

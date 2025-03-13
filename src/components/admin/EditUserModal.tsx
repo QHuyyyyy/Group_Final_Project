@@ -42,13 +42,13 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
       if (isRoleEdit) {
         // Only update role
         //await userService.changeRole(editingRecord._id, values.role_code);
-        await userService.changeRole({ user_id: editingRecord._id, role_code: values.role_code });
+        await userService.changeRole({ user_id: editingRecord._id, role_code: values.role_code }, {showSpinner:false});
       } else {
         // Only update user info
         await userService.updateUser(editingRecord._id, {
           email: values.email,
           user_name: values.user_name,
-        });
+        }, {showSpinner:false});
       }
 
   

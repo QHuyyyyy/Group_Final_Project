@@ -204,7 +204,7 @@ const AdminProjectManager: React.FC = () => {
       setLoading(true);
       
       // Lấy thông tin chi tiết của project bao gồm cả thông tin member
-      const projectDetail = await projectService.getProjectById(record._id);
+      const projectDetail = await projectService.getProjectById(record._id, {showSpinner:false});
       
       if (projectDetail && projectDetail.data) {
         setSelectedProject(projectDetail.data);
@@ -409,7 +409,7 @@ const AdminProjectManager: React.FC = () => {
           pageNum: 1,
           pageSize: 100 // Lấy nhiều user để có đủ lựa chọn
         }
-      });
+      }, {showSpinner:false});
 
       if (response && response.data.pageData) {
         // Format data cho Select options
@@ -469,7 +469,7 @@ const AdminProjectManager: React.FC = () => {
       await projectService.changeProjectStatus({
         _id: selectedStatusProject._id,
         project_status: newStatus,
-      });
+      }, {showSpinner:false});
       
       message.success('Project status updated successfully');
       setIsStatusModalVisible(false);
