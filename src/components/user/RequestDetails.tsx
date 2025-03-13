@@ -33,7 +33,7 @@ const RequestDetails: React.FC<RequestDetailsProps> = ({
     const fetchProjectDetails = async () => {
       if (claim?.project_id) {
         try {
-          const response = await projectService.getProjectById(claim.project_id);
+          const response = await projectService.getProjectById(claim.project_id, {showSpinner:false});
           if (response.success && response.data) {
             setProjectDetails(response.data);
           }

@@ -70,7 +70,7 @@ const Claim = () => {
         },
       };
 
-      const response = await claimService.searchClaimsByClaimer(params);
+      const response = await claimService.searchClaimsByClaimer(params, {showSpinner:false});
 
       if (response?.data?.pageData) {
         const claimsData = response.data.pageData;
@@ -142,7 +142,7 @@ const Claim = () => {
         _id: id,
         claim_status: "Canceled",
         comment: comment
-      });
+      },{showSpinner:false});
       notification.success({
         message: 'Success',
         description: 'Request has been canceled successfully.',

@@ -10,7 +10,7 @@ import { claimService } from "../../services/claim.service";
 interface ClaimStatus {
     id: number;
     name: string;
-    status: "Pending" | "Approved" | "Rejected" | "Paid";
+    status: "Pending" | "Approved" | "Rejected" | "Paid" | "Canceled";
     claimer: string;
 }
 interface ClaimData {
@@ -38,16 +38,15 @@ export default function AdminClaimStats() {
     const [filteredPaidClaims, setFilteredPaidClaims] = useState<Claim[]>([]);
     const [filteredDraftClaims, setFilteredDraftClaims] = useState<Claim[]>([]);
     const [filteredCanceledClaims, setFilteredCanceledClaims] = useState<Claim[]>([]);
-    const [dataLoaded, setDataLoaded] = useState({
+    const [, setDataLoaded] = useState({
         claims: false,
-        // pendingClaims: false,
-        // approvedClaims: false,
-        // rejectedClaims: false,
-        // paidClaims: false,
-        // draftClaims: false,
-        // canceledClaims: false,
         users: false
     });
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const [totalItems, setTotalItems] = useState(0);
+    
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -108,21 +107,9 @@ export default function AdminClaimStats() {
 
                 const [
                     allClaims,
-                    //   pendingClaims,
-                    //   approvedClaims,
-                    //   rejectedClaims,
-                    //   paidClaims,
-                    //   draftClaims,
-                    //   canceledClaims,
                     allUsers,
                 ] = await Promise.all([
                     fetchClaims(),
-                    //   fetchClaims('Pending Approval'),
-                    //   fetchClaims('Approved'),
-                    //   fetchClaims('Rejected'),
-                    //   fetchClaims('Paid'),
-                    //   fetchClaims('Draft'),
-                    //   fetchClaims('Canceled'),
                     fetchUsers()
                 ]);
 
@@ -132,7 +119,7 @@ export default function AdminClaimStats() {
                 const paidClaims = allClaims.filter(item => item.claim_status === "Paid");
                 const draftClaims = allClaims.filter(item => item.claim_status === "Draft");
                 const canceledClaims = allClaims.filter(item => item.claim_status === "Canceled");
-                // Update states
+
                 setClaims(allClaims);
                 setPendingClaims(pendingClaims);
                 setApprovedClaims(approvedClaims);
@@ -144,15 +131,9 @@ export default function AdminClaimStats() {
 
                 setUsers(allUsers);
 
-                // Update data loaded status
+
                 setDataLoaded({
                     claims: true,
-                    //   pendingClaims: true,
-                    //   approvedClaims: true,
-                    //   rejectedClaims: true,
-                    //   paidClaims: true,
-                    //   draftClaims: true,
-                    //   canceledClaims: true,
                     users: true
                 });
 
@@ -170,6 +151,12 @@ export default function AdminClaimStats() {
 
         fetchData();
     }, []);
+    
+    useEffect(() => {
+        const recentClaims = getRecentClaims();
+        setTotalItems(recentClaims.length);
+    }, [filteredClaims]);
+    
     const claimsData: ClaimData[] = [
         { status: "Pending", count: filteredPendingClaims.length, date: "2024-03-25" },
         { status: "Approved", count: filteredApprovedClaims.length, date: "2024-03-24" },
@@ -177,13 +164,6 @@ export default function AdminClaimStats() {
         { status: "Paid", count: filteredPaidClaims.length, date: "2024-03-22" },
         { status: "Draft", count: filteredDraftClaims.length, date: "2024-03-22" },
         { status: "Canceled", count: filteredCanceledClaims.length, date: "2024-03-22" }
-    ];
-
-    const recentClaims = [
-        { id: 1, name: "Overtime Payment", status: "Pending", claimer: "John Doe" },
-        { id: 2, name: "Travel Reimbursement", status: "Approved", claimer: "Jane Smith" },
-        { id: 3, name: "Project Bonus", status: "Rejected", claimer: "Alice Johnson" },
-        { id: 4, name: "Meal Allowance", status: "Paid", claimer: "Bob Brown" },
     ];
 
 
@@ -206,11 +186,10 @@ export default function AdminClaimStats() {
         },
     ];
 
-    const [filteredClaimData, setFilteredClaimData] = useState<ClaimData[]>(claimsData);
+    const [, setFilteredClaimData] = useState<ClaimData[]>(claimsData);
     const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
     const [filterType, setFilterType] = useState<'relative' | 'static'>('relative');
-    console.log(filteredClaimData)
-    console.log(dataLoaded)
+    
     const handleFilterChange = (value: string) => {
         setSelectedRange(value);
         setFilterType('relative');
@@ -273,8 +252,49 @@ export default function AdminClaimStats() {
         setFilteredPaidClaims(filtered.filter(item => item.claim_status === "Paid"));
         setFilteredDraftClaims(filtered.filter(item => item.claim_status === "Draft"));
         setFilteredCanceledClaims(filtered.filter(item => item.claim_status === "Canceled"));
+        setCurrentPage(1);
     };
 
+    const getRecentClaims = () => {
+        const today = dayjs();
+        const startOfMonth = today.startOf("month");
+        const endOfMonth = today.endOf("month");
+        const filtered = claims.filter((claim) => {
+            if (!claim.claim_start_date) return false;
+            const claimDate = dayjs(claim.claim_start_date);
+            return claimDate.isAfter(startOfMonth) && claimDate.isBefore(endOfMonth);
+        });
+        
+        const sortedClaims = filtered.sort((a, b) => {
+            const dateA = dayjs(a.claim_start_date);
+            const dateB = dayjs(b.claim_start_date);
+            return dateB.valueOf() - dateA.valueOf();
+        });
+        
+        const filteredClaims = sortedClaims.slice(0,25)
+        return filteredClaims.map(claim => ({
+            id: claim._id,
+            name: claim.claim_name || "Unnamed Claim",
+            status: claim.claim_status === "Pending Approval" ? "Pending" : claim.claim_status,
+            claimer: claim.employee_info?.account|| "Unknown",
+            startDate: claim.claim_start_date ? dayjs(claim.claim_start_date).format('YYYY-MM-DD') : 'N/A'
+        }));
+    };
+    
+    // Function to get paginated data
+    const getPaginatedClaims = () => {
+        const recentClaims = getRecentClaims();
+        const startIndex = (currentPage - 1) * pageSize;
+        return recentClaims.slice(startIndex, startIndex + pageSize);
+    };
+    
+    // Handle page change
+    const handlePageChange = (page: number, size?: number) => {
+        setCurrentPage(page);
+        if (size && size !== pageSize) {
+            setPageSize(size);
+        }
+    };
 
     const resetFilters = () => {
         setFilteredClaims(claims);
@@ -284,14 +304,17 @@ export default function AdminClaimStats() {
         setFilteredPaidClaims(paidClaims);
         setFilteredDraftClaims(draftClaims);
         setFilteredCanceledClaims(canceledClaims);
+        setCurrentPage(1);
     };
 
     const statusColors: Record<ClaimStatus["status"], string> = {
         Pending: "gold",
         Approved: "green",
         Rejected: "red",
+        Canceled: "#808080",
         Paid: "blue",
     };
+    
     const columns = [
         { title: "ID", dataIndex: "id", key: "id" },
         { title: "Claim Name", dataIndex: "name", key: "name" },
@@ -304,6 +327,12 @@ export default function AdminClaimStats() {
             ),
         },
         { title: "Claimer", dataIndex: "claimer", key: "claimer" },
+        {
+            title: "Start Date",
+            dataIndex: "startDate",
+            key: "startDate",
+            sorter: (a:any,b:any) => dayjs(a.startDate).valueOf() - dayjs(b.startDate).valueOf()
+        }
     ];
 
     const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"]; // colors for pie chart
@@ -477,10 +506,26 @@ export default function AdminClaimStats() {
                             style={{
                                 boxShadow: "10px 10px 25px -19px rgba(0,0,0,0.75)"
                             }}>
-                            <Table dataSource={recentClaims} columns={columns} rowKey="id" pagination={false} />
-                            <Pagination align="center" defaultCurrent={1} total={50} style={{
-                                marginTop: "2%"
-                            }} />
+                            <Table 
+                                dataSource={getPaginatedClaims()} 
+                                columns={columns} 
+                                rowKey="id" 
+                                pagination={false} 
+                            />
+                            <Pagination 
+                            style={{
+                                marginTop:"15px"
+                            }}
+                                className="mt-4"
+                                align="center" 
+                                current={currentPage}
+                                total={totalItems}
+                                pageSize={pageSize}
+                                onChange={handlePageChange}
+                                showSizeChanger
+                                pageSizeOptions={['5', '10', '20', '50']}
+                                showTotal={(total, range) => `${range[0]}-${range[1]} of ${total} items`}
+                            />
                         </Card>
                     </Col>
                 </Row>

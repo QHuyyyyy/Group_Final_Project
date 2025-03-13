@@ -138,7 +138,7 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
 
     const fetchEmployeeInfo = async () => {
         try {
-            const response = await employeeService.getEmployeeById(userId);
+            const response = await employeeService.getEmployeeById(userId, {showSpinner:false});
             if (response.success) {
                 setEmployeeInfo(response.data);
             }
