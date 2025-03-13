@@ -2,7 +2,8 @@ import React from 'react';
 import { 
   TeamOutlined,
   EyeOutlined,
-  UserAddOutlined
+  UserAddOutlined,
+  HistoryOutlined
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -48,7 +49,17 @@ const NavbarAdminUser: React.FC<NavbarAdminUserProps> = ({ onAddUser }) => {
             <EyeOutlined />
             <span>View Claim Request</span>
           </div>
-
+          <div 
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors cursor-pointer ${
+              isActiveRoute('/dashboard/transaction')
+                ? 'bg-blue-600 text-white'
+                : 'hover:bg-[#2E3754] text-gray-300'
+            }`}
+            onClick={() => navigate('/dashboard/transaction')}
+          >
+            <HistoryOutlined />
+            <span>Claim History</span>
+          </div>
           <div 
             className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors cursor-pointer"
             onClick={onAddUser}

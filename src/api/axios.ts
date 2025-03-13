@@ -98,7 +98,7 @@ api.interceptors.response.use(
         toast.error('Resource not found');
         break;
       case 500:
-        toast.error(error.response?.data?.errors[0]?.message || error.response?.data?.message || 'Server error. Please try again later');
+        toast.error( error.response?.data?.errors?.[0]?.message || error.response?.data?.message || 'Server error. Please try again later');
         break;
       default:
         toast.error( error.response?.data?.message || 'An unexpected error occurred');
