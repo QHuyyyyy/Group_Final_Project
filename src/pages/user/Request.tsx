@@ -39,6 +39,7 @@ const Claim = () => {
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [allClaims, setAllClaims] = useState<Claim[]>([]);
   const [filteredClaims, setFilteredClaims] = useState<Claim[]>([]);
+  const [statusCounts, setStatusCounts] = useState<Record<string, number>>({});
   const [debouncedSearchText] = useDebounce(searchText, 500);
   const [isCancelModalVisible, setIsCancelModalVisible] = useState(false);  // Add cancel modal visibility state
 
@@ -59,10 +60,39 @@ const Claim = () => {
   const fetchClaims = async (pageNum: number) => {
     try {
       setLoading(true);
+      const countPromises = claimStatuses.map(async (status) => {
+        if (status.value !== '') {
+          const countParams: SearchParams = {
+            searchCondition: {
+              keyword: debouncedSearchText || "",
+              claim_status: status.value,
+              claim_start_date: "",
+              claim_end_date: "",
+              is_delete: false,
+            },
+            pageInfo: {
+              pageNum: 1,
+              pageSize: 1,
+            },
+          };
+          const countResponse = await claimService.searchClaimsByClaimer(countParams);
+          return { status: status.value, count: countResponse.data.pageInfo.totalItems };
+        }
+        return null;
+      });
+
+      const counts = await Promise.all(countPromises);
+      const newStatusCounts = counts.reduce((acc, curr) => {
+        if (curr) {
+          acc[curr.status] = curr.count;
+        }
+        return acc;
+      }, {} as Record<string, number>);
+      setStatusCounts(newStatusCounts);
       const params: SearchParams = {
         searchCondition: {
           keyword: debouncedSearchText || "",
-          claim_status: selectedStatus === "Rejected" || selectedStatus === "Canceled" ? selectedStatus : "",
+          claim_status: selectedStatus || "",
           claim_start_date: "",
           claim_end_date: "",
           is_delete: false,
@@ -76,14 +106,8 @@ const Claim = () => {
       const response = await claimService.searchClaimsByClaimer(params);
 
       if (response?.data?.pageData) {
-        const claimsData = response.data.pageData;
-        setAllClaims(claimsData);
-
-        const filtered = selectedStatus
-          ? claimsData.filter(claim => claim.claim_status === selectedStatus)
-          : claimsData;
-        setFilteredClaims(filtered);
-
+        setAllClaims(response.data.pageData);
+        setFilteredClaims(response.data.pageData);
         setPagination((prev) => ({
           ...prev,
           totalItems: response.data.pageInfo.totalItems,
@@ -174,12 +198,44 @@ const Claim = () => {
   };
 
   const handleStatusFilter = (status: string) => {
-    setSelectedStatus(status);
-    const filtered = status
-      ? allClaims.filter(claim => claim.claim_status === status)
-      : allClaims;
-    setFilteredClaims(filtered);
+    setSelectedStatus(status || '');
     setPagination(prev => ({ ...prev, current: 1 }));
+    
+    const params: SearchParams = {
+      searchCondition: {
+        keyword: debouncedSearchText || "",
+        claim_status: status || "",
+        claim_start_date: "",
+        claim_end_date: "",
+        is_delete: false,
+      },
+      pageInfo: {
+        pageNum: 1,
+        pageSize: pagination.pageSize,
+      },
+    };
+
+    setLoading(true);
+    claimService.searchClaimsByClaimer(params)
+      .then(response => {
+        if (response?.data?.pageData) {
+          setAllClaims(response.data.pageData);
+          setFilteredClaims(response.data.pageData);
+          setPagination(prev => ({
+            ...prev,
+            totalItems: response.data.pageInfo.totalItems,
+            totalPages: response.data.pageInfo.totalPages,
+            current: 1
+          }));
+        }
+      })
+      .catch(error => {
+        console.error("Error fetching claims:", error);
+        message.error("An error occurred while fetching claims.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
   const handleSendRequest = async (id: string, comment: string) => {
     try {
@@ -226,6 +282,47 @@ const Claim = () => {
     message.success("Claim updated successfully");
   };
 
+  const renderStatusButtons = () => (
+    <div className="flex gap-2">
+      {claimStatuses.map(status => (
+        <Button
+          key={status.value}
+          onClick={() => handleStatusFilter(status.value)}
+          style={{
+            borderColor: status.color,
+            backgroundColor: selectedStatus === status.value ? status.color : status.bgColor,
+            color: selectedStatus === status.value ? '#fff' : status.color,
+            fontWeight: 500,
+            display: 'flex',
+            alignItems: 'center',
+            height: '32px',
+            padding: '4px 12px',
+            borderRadius: '6px',
+            transition: 'all 0.3s'
+          }}
+          className="hover:opacity-80"
+        >
+          {status.label}
+          <span
+            style={{
+              marginLeft: '8px',
+              padding: '2px 8px',
+              fontSize: '12px',
+              borderRadius: '10px',
+              backgroundColor: selectedStatus === status.value ? '#ffffff' : '#ffffff',
+              color: status.color,
+              fontWeight: 'bold',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+              border: `1px solid ${status.color}`
+            }}
+          >
+            {status.value === '' ? pagination.totalItems : statusCounts[status.value] || 0}
+          </span>
+        </Button>
+      ))}
+    </div>
+  );
+
   return (
     <div className="flex min-h-screen bg-gray-100">
       <div className="flex-1 p-8">
@@ -246,52 +343,7 @@ const Claim = () => {
           <div className="mb-6">
             <div className="flex justify-between items-center">
               <h1 className="text-2xl font-bold text-gray-800">My Claims</h1>
-              <div className="flex gap-2">
-                {claimStatuses.map(status => (
-                  <Button
-                    key={status.value}
-                    onClick={() => handleStatusFilter(status.value)}
-                    style={{
-                      borderColor: status.color,
-                      backgroundColor: selectedStatus === status.value ? status.color : status.bgColor,
-                      color: selectedStatus === status.value ? '#fff' : status.color,
-                      fontWeight: 500,
-                      display: 'flex',
-                      alignItems: 'center',
-                      height: '32px',
-                      padding: '4px 12px',
-                      borderRadius: '6px',
-                      transition: 'all 0.3s'
-                    }}
-                    className="hover:opacity-80"
-                  >
-                    {status.label}
-                    {allClaims.filter(claim =>
-                      status.value === '' ? true : claim.claim_status === status.value
-                    ).length > 0 && (
-                        <span
-                          style={{
-                            marginLeft: '8px',
-                            padding: '2px 8px',
-                            fontSize: '12px',
-                            borderRadius: '10px',
-                            backgroundColor: selectedStatus === status.value
-                              ? '#ffffff'
-                              : '#ffffff',
-                            color: status.color,
-                            fontWeight: 'bold',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                            border: `1px solid ${status.color}`
-                          }}
-                        >
-                          {allClaims.filter(claim =>
-                            status.value === '' ? true : claim.claim_status === status.value
-                          ).length}
-                        </span>
-                      )}
-                  </Button>
-                ))}
-              </div>
+              {renderStatusButtons()}
             </div>
           </div>
           <Table
