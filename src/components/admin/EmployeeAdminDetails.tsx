@@ -76,8 +76,9 @@ const EmployeeDetails: React.FC = () => {
         account: values.account?.trim(),
         full_name: values.full_name?.trim(),
       };
-      
-      await employeeService.updateEmployee(id, updateData);
+  
+       const ss =  await employeeService.updateEmployee(id, updateData);
+      console.log('result',ss)
       toast.success('Update employee information successfully!');
     } catch (error) {
       toast.error('An error occurred while updating employee information!');
