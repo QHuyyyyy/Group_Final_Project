@@ -49,7 +49,7 @@ const Menu = () => {
         },
         { 
           icon: transaction, 
-          label: "Transaction", 
+          label: "Request History", 
           href: "/userdashboard/transaction",
           allowedRoles: ["A004"]
         },

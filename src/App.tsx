@@ -121,7 +121,11 @@ const App = () => {
               <Profile />
             </ProtectedRoute>
           } />
-
+            <Route path="/dashboard/transaction" element={
+              <ProtectedRoute allowedRoles={RoutePermissions.transaction}>
+                <TransactionPage />
+              </ProtectedRoute>
+            } />
           <Route path='/admin/employees/:id' element={<EmployeeDetails />} />
 
           <Route path='*' element={<NotFound />} />
