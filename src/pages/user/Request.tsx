@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Input, Card, Table, Tag, message, Button, notification } from "antd";
+import { Input, Card, Table, Tag, Button, message } from "antd";
 import { claimService } from "../../services/claim.service";
 import dayjs from 'dayjs';
 import RequestDetails from "../../components/user/RequestDetails";
@@ -13,7 +13,7 @@ import {
 import type { Claim, ClaimById, SearchParams } from "../../models/ClaimModel";
 import CreateRequest from "./CreateRequest";
 import SendRequest from "../../components/user/SendRequest";
-import CancelRequest from "../../components/user/CancelRequest";  // Import lại CancelRequest
+import CancelRequest from "../../components/user/CancelRequest";
 import { useDebounce } from "../../hooks/useDebounce";
 
 const { Search } = Input;
@@ -35,12 +35,12 @@ const Claim = () => {
   const [isSendModalVisible, setIsSendModalVisible] = useState(false);
   const [isUpdateModalVisible, setIsUpdateModalVisible] = useState(false);
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
-  const [selectedCancelClaimId, setSelectedCancelClaimId] = useState<string | null>(null); // Add cancel claim ID
+  const [selectedCancelClaimId, setSelectedCancelClaimId] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [filteredClaims, setFilteredClaims] = useState<Claim[]>([]);
   const [statusCounts, setStatusCounts] = useState<Record<string, number>>({});
   const [debouncedSearchText] = useDebounce(searchText, 500);
-  const [isCancelModalVisible, setIsCancelModalVisible] = useState(false);  // Add cancel modal visibility state
+  const [isCancelModalVisible, setIsCancelModalVisible] = useState(false);
 
   const claimStatuses = [
     { label: 'All', value: '', color: '#1890ff', bgColor: '#e6f7ff' },
@@ -115,7 +115,6 @@ const Claim = () => {
       }
     } catch (error) {
       console.error("Error fetching claims:", error);
-      message.error("An error occurred while fetching claims.");
     } finally {
       setLoading(false);
     }
@@ -133,7 +132,7 @@ const Claim = () => {
         setSelectedRequest(response.data);
         setIsModalVisible(true);
       }
-    } catch (error) {
+    } catch {
       message.error("Failed to fetch claim details");
     }
   };
@@ -170,29 +169,22 @@ const Claim = () => {
         claim_status: "Canceled",
         comment: comment
       });
-      notification.success({
-        message: 'Success',
-        description: 'Request has been canceled successfully.',
-        placement: 'topRight'
-      });
+      message.success('Request has been canceled successfully');
       fetchClaims(pagination.current);
-    } catch (error: any) {
-      notification.error({
-        message: 'Error',
-        description: error.message || 'Failed to cancel the request.',
-        placement: 'topRight'
-      });
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to cancel the request.';
+      message.error(errorMessage);
     }
   };
 
   const handleOpenCancelModal = (record: Claim) => {
     setSelectedCancelClaimId(record._id);
-    setIsCancelModalVisible(true);  // Open cancel modal
+    setIsCancelModalVisible(true);
   };
 
   const handleCloseCancelModal = () => {
     setIsCancelModalVisible(false);
-    setSelectedCancelClaimId(null);  // Reset cancel claim ID
+    setSelectedCancelClaimId(null);
   };
 
   const handleStatusFilter = (status: string) => {
@@ -241,18 +233,11 @@ const Claim = () => {
         claim_status: "Pending Approval",
         comment: comment
       });
-      notification.success({
-        message: 'Success',
-        description: 'Request has been sent for approval successfully.',
-        placement: 'topRight'
-      });
+      message.success('Request has been sent for approval successfully');
       fetchClaims(pagination.current);
-    } catch (error: any) {
-      notification.error({
-        message: 'Error',
-        description: error.message || 'Failed to send request for approval.',
-        placement: 'topRight'
-      });
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to send request for approval.';
+      message.error(errorMessage);
     }
   };
 
@@ -263,7 +248,7 @@ const Claim = () => {
         setSelectedRequest(response.data);
         setIsUpdateModalVisible(true);
       }
-    } catch (error) {
+    } catch {
       message.error("Failed to fetch claim details for update");
     }
   };
@@ -273,10 +258,16 @@ const Claim = () => {
     setSelectedRequest(undefined);
   };
 
-  const handleUpdateSuccess = () => {
-    setIsUpdateModalVisible(false);
-    fetchClaims(pagination.current);
-    message.success("Claim updated successfully");
+  const handleUpdateSuccess = async () => {
+    try {
+        setIsUpdateModalVisible(false);
+        setSelectedRequest(undefined);
+        await fetchClaims(pagination.current);
+        message.success("Claim updated successfully");
+    } catch (error) {
+        console.error("Error updating claims:", error);
+        message.error("Failed to refresh claims list");
+    }
   };
 
   const renderStatusButtons = () => (

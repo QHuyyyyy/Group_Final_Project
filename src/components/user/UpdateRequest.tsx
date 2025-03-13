@@ -1,17 +1,16 @@
 import { useState, useEffect } from "react";
-import { Modal, Input, DatePicker, Form, Button, Tag, message } from "antd";
+import { Modal, Input, DatePicker, Form, Button, Tag, message, Card } from "antd";
 import dayjs from 'dayjs';
 import React, { useMemo } from "react";
 import { UpdateClaimRequest, ClaimById } from "../../models/ClaimModel";
 import { claimService } from "../../services/claim.service";
 import projectService from "../../services/project.service";
 import type { ProjectData } from "../../models/ProjectModel";
-import {
-    ClockCircleOutlined,
-    ProjectOutlined,
-    InfoCircleOutlined,
-    CalendarOutlined,
-} from "@ant-design/icons";
+import { ClockCircleOutlined } from "@ant-design/icons";
+import { employeeService } from "../../services/employee.service";
+import type { CreateClaim_EmployeeInfo } from "../../models/EmployeeModel";
+import { userService } from "../../services/user.service";
+import type { User } from "../../models/UserModel";
 
 interface UpdateRequestProps {
     visible: boolean;
@@ -32,6 +31,8 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, claim, onClose, 
     const [form] = Form.useForm<FormValues>();
     const [loading, setLoading] = useState(false);
     const [projectDetails, setProjectDetails] = useState<ProjectData | null>(null);
+    const [employeeInfo, setEmployeeInfo] = useState<CreateClaim_EmployeeInfo | null>(null);
+    const [approver, setApprover] = useState<User | null>(null);
 
     // Fetch project details
     useEffect(() => {
@@ -52,19 +53,65 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, claim, onClose, 
         fetchProjectDetails();
     }, [claim?.project_id]);
 
+    // Fetch employee details
+    useEffect(() => {
+        const fetchEmployeeInfo = async () => {
+            if (claim?.user_id) {
+                try {
+                    const response = await employeeService.getEmployeeById(claim.user_id);
+                    if (response.success && response.data) {
+                        setEmployeeInfo(response.data);
+                    }
+                } catch (error) {
+                    console.error("Error fetching employee details:", error);
+                    message.error("Failed to fetch employee details");
+                }
+            }
+        };
+
+        fetchEmployeeInfo();
+    }, [claim?.user_id]);
+
+    // Fetch approver details
+    useEffect(() => {
+        const fetchApproverInfo = async () => {
+            if (claim?.approval_id) {
+                try {
+                    const response = await userService.getUserById(claim.approval_id);
+                    if (response.success && response.data) {
+                        setApprover(response.data);
+                    }
+                } catch (error) {
+                    console.error("Error fetching approver details:", error);
+                    message.error("Failed to fetch approver details");
+                }
+            }
+        };
+
+        fetchApproverInfo();
+    }, [claim?.approval_id]);
+
     // Initialize form with claim data
-    React.useEffect(() => {
-        if (claim) {
-            const start = dayjs(claim.claim_start_date);
+    useEffect(() => {
+        if (claim && projectDetails) {
             form.setFieldsValue({
                 claim_name: claim.claim_name,
                 project_id: claim.project_id,
-                claim_start_date: start,
+                claim_start_date: dayjs(claim.claim_start_date),
                 claim_end_date: dayjs(claim.claim_end_date),
                 total_work_time: claim.total_work_time,
             });
         }
-    }, [claim, form]);
+    }, [claim, projectDetails, form]);
+
+    const handleDateChange = (field: 'claim_start_date' | 'claim_end_date', value: dayjs.Dayjs | null) => {
+        if (field === 'claim_start_date') {
+            const endDate = form.getFieldValue('claim_end_date');
+            if (endDate && value && endDate.isBefore(value)) {
+                form.setFieldValue('claim_end_date', value);
+            }
+        }
+    };
 
     const getStatusColor = (status: string) => {
         if (status === "Draft") return "#faad14";
@@ -92,7 +139,7 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, claim, onClose, 
         setLoading(true);
         try {
             const updatedRequest: UpdateClaimRequest = {
-                project_id: values.project_id,
+                project_id: claim.project_id,
                 claim_name: values.claim_name,
                 claim_start_date: values.claim_start_date.format("YYYY-MM-DD"),
                 claim_end_date: values.claim_end_date.format("YYYY-MM-DD"),
@@ -101,14 +148,11 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, claim, onClose, 
             };
 
             await claimService.updateClaim(claim._id, updatedRequest);
-            message.success("Claim updated successfully");
             onSuccess();
+            onClose();
         } catch (error) {
-            if (error instanceof Error) {
-                message.error(error.message || "Failed to update claim");
-            } else {
-                message.error("Failed to update claim");
-            }
+            console.error("Error updating claim:", error);
+            message.error("Failed to update claim");
         } finally {
             setLoading(false);
         }
@@ -120,115 +164,214 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, claim, onClose, 
             open={visible}
             onCancel={onClose}
             footer={null}
-            width={600}
+            width={900}
             className="claims-modal"
         >
-            <div className="px-2 -mt-2 mb-4">
-                <p className="text-gray-400 text-sm">ID: {claim._id}</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '350px 1fr', gap: '24px' }}>
+                {/* Left side - Read-only Information */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignSelf: 'start' }}>
+                    <Card 
+                        className="mb-3" 
+                        size="small" 
+                        title="Staff Information" 
+                        style={{ height: 'fit-content' }}
+                        styles={{
+                            header: {
+                                backgroundColor: '#f5f5f5',
+                                padding: '8px 12px'
+                            }
+                        }}
+                    >
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ fontWeight: 500 }}>Staff Name:</span>
+                                <span>{employeeInfo?.full_name || 'N/A'}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ fontWeight: 500 }}>Staff ID:</span>
+                                <span>{employeeInfo?._id || 'N/A'}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ fontWeight: 500 }}>User ID:</span>
+                                <span>{employeeInfo?.user_id || 'N/A'}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ fontWeight: 500 }}>Department:</span>
+                                <span>{employeeInfo?.department_code || 'N/A'}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ fontWeight: 500 }}>Job Rank:</span>
+                                <span>{employeeInfo?.job_rank || 'N/A'}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ fontWeight: 500 }}>Contract Type:</span>
+                                <span>{employeeInfo?.contract_type || 'N/A'}</span>
+                            </div>
+                        </div>
+                    </Card>
+                    <Card 
+                        size="small" 
+                        title="Project Information"
+                        styles={{
+                            header: {
+                                backgroundColor: '#f5f5f5',
+                                padding: '8px 12px'
+                            }
+                        }}
+                        style={{ height: 'fit-content', marginBottom: 0 }}
+                    >
+                        {projectDetails ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ fontWeight: 500 }}>Department:</span>
+                                    <span>{projectDetails.project_department || 'N/A'}</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ fontWeight: 500 }}>Role:</span>
+                                    <span>{projectDetails.project_members.find(member => member.user_id === claim.user_id)?.project_role || 'N/A'}</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ fontWeight: 500 }}>Duration:</span>
+                                    <span>{`${dayjs(projectDetails.project_start_date).format('DD/MM/YYYY')} - ${dayjs(projectDetails.project_end_date).format('DD/MM/YYYY')}`}</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ fontWeight: 500 }}>Project Description:</span>
+                                    <span>{projectDetails.project_description || 'N/A'}</span>
+                                </div>
+                            </div>
+                        ) : (
+                            <div style={{ textAlign: 'center', color: '#999' }}>
+                                Loading project information...
+                            </div>
+                        )}
+                    </Card>
+                </div>
+
+                {/* Right side - Editable Form */}
+                <div>
+                    <Card 
+                        size="small" 
+                        title="Update Claim"
+                        styles={{
+                            header: {
+                                backgroundColor: '#f5f5f5',
+                                padding: '8px 12px'
+                            }
+                        }}
+                    >
+                        <Form 
+                            form={form} 
+                            layout="vertical" 
+                            onFinish={handleSubmit}
+                            style={{ maxWidth: '100%' }}
+                            initialValues={{
+                                project_id: claim.project_id
+                            }}
+                        >
+                            <Form.Item
+                                name="project_id"
+                                hidden
+                            >
+                                <Input type="hidden" />
+                            </Form.Item>
+
+                            <Form.Item
+                                label="Claim Name"
+                                name="claim_name"
+                                style={{ marginBottom: '16px' }}
+                                rules={[{ required: true, message: "Please enter claim name!" }]}
+                            >
+                                <Input placeholder="Enter claim name" />
+                            </Form.Item>
+
+                            <Form.Item
+                                label="Project Name"
+                                style={{ marginBottom: '12px' }}
+                            >
+                                <Input 
+                                    value={projectDetails?.project_name || 'N/A'}
+                                    disabled
+                                />
+                            </Form.Item>
+
+                            <Form.Item
+                                label="Approval Name"
+                                style={{ marginBottom: '12px' }}
+                            >
+                                <Input 
+                                    value={approver?.user_name || 'N/A'}
+                                    disabled
+                                />
+                            </Form.Item>
+
+                            <Form.Item
+                                label="Start Date"
+                                name="claim_start_date"
+                                rules={[{ required: true, message: "Please select start date!" }]}
+                            >
+                                <DatePicker
+                                    style={{ width: "100%" }}
+                                    format="YYYY-MM-DD"
+                                    onChange={(date) => handleDateChange('claim_start_date', date)}
+                                    disabledDate={(current) => {
+                                        if (!projectDetails) return false;
+                                        return current && (
+                                            current.isBefore(dayjs(projectDetails.project_start_date), 'day') ||
+                                            current.isAfter(dayjs(projectDetails.project_end_date), 'day')
+                                        );
+                                    }}
+                                />
+                            </Form.Item>
+
+                            <Form.Item
+                                label="End Date"
+                                name="claim_end_date"
+                                rules={[{ required: true, message: "Please select end date!" }]}
+                            >
+                                <DatePicker
+                                    style={{ width: "100%" }}
+                                    format="YYYY-MM-DD"
+                                    disabledDate={(current) => {
+                                        if (!projectDetails) return false;
+                                        const startDate = form.getFieldValue('claim_start_date');
+                                        return current && (
+                                            (startDate && current.isBefore(startDate, 'day')) ||
+                                            current.isBefore(dayjs(projectDetails.project_start_date), 'day') ||
+                                            current.isAfter(dayjs(projectDetails.project_end_date), 'day')
+                                        );
+                                    }}
+                                />
+                            </Form.Item>
+
+                            <Form.Item
+                                label="Total Hours Worked"
+                                name="total_work_time"
+                                rules={[
+                                    { required: true, message: "Please enter total hours worked!" },
+                                ]}
+                            >
+                                <Input 
+                                    type="number" 
+                                    placeholder="Enter total hours worked"
+                                    prefix={<ClockCircleOutlined className="text-blue-500" />}
+                                />
+                            </Form.Item>
+
+                            <Form.Item>
+                                <Button 
+                                    type="primary" 
+                                    htmlType="submit" 
+                                    loading={loading} 
+                                    block
+                                    style={{ height: '36px' }}
+                                >
+                                    Update Claim
+                                </Button>
+                            </Form.Item>
+                        </Form>
+                    </Card>
+                </div>
             </div>
-
-            <Form
-                form={form}
-                layout="vertical"
-                onFinish={handleSubmit}
-            >
-                {/* Basic Information */}
-                <div className="mb-6">
-                    <div className="flex items-center gap-2 text-blue-600 mb-4">
-                        <InfoCircleOutlined />
-                        <span className="font-semibold">Basic Information</span>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-4">
-                        <Form.Item
-                            label="Claim Name"
-                            name="claim_name"
-                            rules={[{ required: true, message: "Please enter claim name!" }]}
-                        >
-                            <Input />
-                        </Form.Item>
-
-                        <Form.Item
-                            label="Total Hours"
-                            name="total_work_time"
-                            rules={[{ required: true, message: "Please enter total hours!" }]}
-                        >
-                            <Input type="number" prefix={<ClockCircleOutlined className="text-blue-500" />} />
-                        </Form.Item>
-                    </div>
-                </div>
-
-                {/* Project Details */}
-                <div className="mb-6">
-                    <div className="flex items-center gap-2 text-green-600 mb-4">
-                        <ProjectOutlined />
-                        <span className="font-semibold">Project Details</span>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-4">
-                        <Form.Item
-                            label="Project ID"
-                            name="project_id"
-                        >
-                            <Input disabled />
-                        </Form.Item>
-
-                        <Form.Item
-                            label="Project Name"
-                        >
-                            <Input
-                                value={projectDetails?.project_name || 'N/A'}
-                                disabled
-                            />
-                        </Form.Item>
-
-                        <Form.Item
-                            label="Project Comment"
-                        >
-                            <Input.TextArea
-                                value={projectDetails?.project_comment || 'No comment'}
-                                disabled
-                                autoSize={{ minRows: 2, maxRows: 6 }}
-                            />
-                        </Form.Item>
-                    </div>
-                </div>
-
-                {/* Time Period */}
-                <div className="mb-6">
-                    <div className="flex items-center gap-2 text-purple-600 mb-4">
-                        <CalendarOutlined />
-                        <span className="font-semibold">Time Period</span>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-4">
-                        <Form.Item
-                            label="Start Date"
-                            name="claim_start_date"
-                            rules={[{ required: true, message: "Please select start date!" }]}
-                        >
-                            <DatePicker
-                                style={{ width: "100%" }}
-                                format="YYYY-MM-DD"
-                            />
-                        </Form.Item>
-
-                        <Form.Item
-                            label="End Date"
-                            name="claim_end_date"
-                            rules={[{ required: true, message: "Please select end date!" }]}
-                        >
-                            <DatePicker
-                                style={{ width: "100%" }}
-                                format="YYYY-MM-DD"
-                            />
-                        </Form.Item>
-                    </div>
-                </div>
-
-                <Form.Item>
-                    <Button type="primary" htmlType="submit" loading={loading} block>
-                        Update Claim
-                    </Button>
-                </Form.Item>
-            </Form>
         </Modal>
     );
 };
