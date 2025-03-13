@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Project } from '../../models/ProjectModel';
 import projectService from '../../services/project.service';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, LineChart, Line } from "recharts";
-import { Col, Row, Card, Statistic, List, Pagination, Select, Radio } from "antd";
+import { Col, Row, Card, Statistic, Select, Radio } from "antd";
 import { ProjectOutlined, CheckCircleOutlined, CheckOutlined } from '@ant-design/icons';
 import dayjs from "dayjs";
 
@@ -22,12 +22,12 @@ export default function AdminProjectStats() {
     completedProjects: false,
   });
 
-  const recentActivities = [
-    { activity: "User John approved a claim", time: "2 hours ago" },
-    { activity: "Project Alpha was completed", time: "5 hours ago" },
-    { activity: "User Sarah submitted a claim", time: "Yesterday" },
-    { activity: "Admin assigned a user to Project Beta", time: "2 days ago" },
-  ];
+  // const recentActivities = [
+  //   { activity: "User John approved a claim", time: "2 hours ago" },
+  //   { activity: "Project Alpha was completed", time: "5 hours ago" },
+  //   { activity: "User Sarah submitted a claim", time: "Yesterday" },
+  //   { activity: "Admin assigned a user to Project Beta", time: "2 days ago" },
+  // ];
   const handleYearChange = (year: number) => {
     setSelectedYear(year);
     setFilterType('year');
@@ -55,16 +55,22 @@ export default function AdminProjectStats() {
 
 
   const processProjectData = (projects: Project[]) => {
+    const monthOrder = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const counts: Record<string, number> = {};
 
+    monthOrder.forEach(month => {
+      counts[month] = 0;
+    });
+    
     projects.forEach(({ project_start_date }) => {
+      if (!project_start_date) return;
       const date = new Date(project_start_date);
       const month = date.toLocaleString("en-US", { month: "short" });
-
+      
       counts[month] = (counts[month] || 0) + 1;
     });
-
-    return Object.entries(counts).map(([month, projects]) => ({ month, projects }));
+    
+    return monthOrder.map(month => ({ month, projects: counts[month] }));
   };
 
   const [filteredCompletedProjects, setFilteredCompletedProjects] = useState<Project[]>([]);
@@ -134,9 +140,45 @@ export default function AdminProjectStats() {
     fetchData();
   }, []);
 
-  // Process chart data with filtered projects
-  const completedProjectData = processProjectData(filteredCompletedProjects);
-  const activeProjectData = processProjectData(filteredActiveProjects);
+  const createCombinedChartData = () => {
+    const monthOrder = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    
+    // Create counts for both project types
+    const activeCounts: Record<string, number> = {};
+    const completedCounts: Record<string, number> = {};
+    
+    // Initialize all months with zero
+    monthOrder.forEach(month => {
+      activeCounts[month] = 0;
+      completedCounts[month] = 0;
+    });
+    
+    // Count active projects by month
+    filteredActiveProjects.forEach(({ project_start_date }) => {
+      if (!project_start_date) return;
+      const date = new Date(project_start_date);
+      const month = date.toLocaleString("en-US", { month: "short" });
+      activeCounts[month] = (activeCounts[month] || 0) + 1;
+    });
+    
+    // Count completed projects by month
+    filteredCompletedProjects.forEach(({ project_start_date }) => {
+      if (!project_start_date) return;
+      const date = new Date(project_start_date);
+      const month = date.toLocaleString("en-US", { month: "short" });
+      completedCounts[month] = (completedCounts[month] || 0) + 1;
+    });
+    
+    // Combine into a single dataset
+    return monthOrder.map(month => ({ 
+      month, 
+      activeProjects: activeCounts[month],
+      completedProjects: completedCounts[month]
+    }));
+  };
+  
+  // Calculate combined data
+  const combinedChartData = createCombinedChartData();
   const projectTrendData = processProjectData(filteredProjects);
 
 
@@ -286,23 +328,20 @@ export default function AdminProjectStats() {
           }}
         >
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              {/* Active Projects Line */}
-              <Line type="monotone" data={activeProjectData} dataKey="projects" stroke="#FF7300" name="Active Projects" />
-
-              {/* Completed Projects Line */}
-              <Line type="monotone" data={completedProjectData} dataKey="projects" stroke="#00C49F" name="Completed Projects" />
-            </LineChart>
-          </ResponsiveContainer>
+  <LineChart data={combinedChartData}>
+    <CartesianGrid strokeDasharray="3 3" />
+    <XAxis dataKey="month" />
+    <YAxis />
+    <Tooltip />
+    <Legend />
+    <Line type="monotone" dataKey="activeProjects" stroke="#FF7300" name="Active Projects" />
+    <Line type="monotone" dataKey="completedProjects" stroke="#00C49F" name="Completed Projects" />
+  </LineChart>
+</ResponsiveContainer>
         </Card>
       </div>
 
-      <div className="mt-5">
+      {/* <div className="mt-5">
         <Card title="Recent Activities" style={{
           boxShadow: "10px 10px 25px -19px rgba(0,0,0,0.75)"
         }}>
@@ -318,7 +357,7 @@ export default function AdminProjectStats() {
             marginTop: "2%"
           }} />
         </Card>
-      </div>
+      </div> */}
     </>
   );
 }
