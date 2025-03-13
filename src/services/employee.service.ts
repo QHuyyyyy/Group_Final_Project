@@ -5,8 +5,8 @@ import { Employee, EmployeeUpdateData } from '../models/EmployeeModel';
 
 export const employeeService = {
   // Lấy thông tin nhân viên theo ID
-  getEmployeeById: async (id: string): Promise<ApiResponse<Employee>> => {
-    const response = await apiUtils.get<ApiResponse<Employee>>(`${EMPLOYEES_ENDPOINT}/${id}`);
+  getEmployeeById: async (id: string, config={}): Promise<ApiResponse<Employee>> => {
+    const response = await apiUtils.get<ApiResponse<Employee>>(`${EMPLOYEES_ENDPOINT}/${id}`, {}, config);
     console.log("fetch data:", response.data);
     return response.data;
   },

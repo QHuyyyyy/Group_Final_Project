@@ -31,7 +31,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ visible, onCancel, onSucces
         role_code: values.role_code.trim(),
       };
 
-      const response = await userService.createUser(userData);
+      const response = await userService.createUser(userData, {showSpinner:false});
       loadingMessage();
 
       if (response) {

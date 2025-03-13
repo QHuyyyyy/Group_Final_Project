@@ -102,7 +102,7 @@ const Claim = () => {
         },
       };
 
-      const response = await claimService.searchClaimsByClaimer(params);
+      const response = await claimService.searchClaimsByClaimer(params, {showSpinner:false});
 
       if (response?.data?.pageData) {
         setFilteredClaims(response.data.pageData);
@@ -128,7 +128,7 @@ const Claim = () => {
 
   const handleView = async (record: Claim) => {
     try {
-      const response = await claimService.getClaimById(record._id);
+      const response = await claimService.getClaimById(record._id, {showSpinner:false})
       if (response?.data) {
         setSelectedRequest(response.data);
         setIsModalVisible(true);
@@ -169,7 +169,7 @@ const Claim = () => {
         _id: id,
         claim_status: "Canceled",
         comment: comment
-      });
+      },{showSpinner:false});
       notification.success({
         message: 'Success',
         description: 'Request has been canceled successfully.',
@@ -240,7 +240,7 @@ const Claim = () => {
         _id: id,
         claim_status: "Pending Approval",
         comment: comment
-      });
+      }, {showSpinner:false});
       notification.success({
         message: 'Success',
         description: 'Request has been sent for approval successfully.',
