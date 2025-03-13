@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Table, Button, Input, Tag} from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { SearchOutlined, ArrowLeftOutlined } from '@ant-design/icons';
@@ -8,6 +8,7 @@ import dayjs from 'dayjs';
 import { claimService } from '../../services/claim.service';
 import { Claim, ClaimById } from '../../models/ClaimModel';
 import RequestDetails from '../../components/user/RequestDetails';
+import debounce from 'lodash/debounce';
 
 const ViewClaimRequest: React.FC = () => {
   const navigate = useNavigate();
@@ -217,6 +218,15 @@ const ViewClaimRequest: React.FC = () => {
     }
   };
 
+  // Add debounced search function
+  const debouncedSearch = useCallback(
+    debounce((value: string) => {
+      setSearchText(value);
+      setPagination(prev => ({ ...prev, current: 1 }));
+    }, 500),
+    []
+  );
+
   return (
     <div className="flex min-h-screen bg-gray-100">
       <SideBarAdminUser onAddUser={handleAddUser} />
@@ -232,10 +242,10 @@ const ViewClaimRequest: React.FC = () => {
           </Button>
           
           <Input
-            placeholder="Search by ID or claimer..."
+            placeholder="Search by claim name..."
             prefix={<SearchOutlined className="text-gray-400" />}
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
+            defaultValue={searchText}
+            onChange={(e) => debouncedSearch(e.target.value)}
             style={{ width: 300 }}
           />
         </div>

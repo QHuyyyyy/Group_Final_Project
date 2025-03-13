@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { Modal, notification, Input } from "antd";
-import { SendOutlined, QuestionCircleOutlined, CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons';
+import { Modal, Input } from "antd";
+import { SendOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface SendRequestProps {
     id: string | null;
@@ -18,31 +20,11 @@ const SendRequest: React.FC<SendRequestProps> = ({ id, visible, onSend, onCancel
         setLoading(true);
         try {
             await onSend(id, comment);
-            notification.open({
-                message: 'Success',
-                description: 'Request has been sent for approval successfully.',
-                icon: <CheckCircleFilled style={{ color: '#52c41a' }} />,
-                placement: 'topRight',
-                duration: 4.5,
-                style: {
-                    backgroundColor: '#f6ffed',
-                    border: '1px solid #b7eb8f'
-                }
-            });
+            toast.success('Request has been sent for approval successfully');
             setComment('');
             onCancel();
-        } catch (error) {
-            notification.open({
-                message: 'Error',
-                description: 'Failed to send request for approval.',
-                icon: <CloseCircleFilled style={{ color: '#ff4d4f' }} />,
-                placement: 'topRight',
-                duration: 4.5,
-                style: {
-                    backgroundColor: '#fff2f0',
-                    border: '1px solid #ffccc7'
-                }
-            });
+        } catch (_) {
+            toast.error('Failed to send request for approval');
         } finally {
             setLoading(false);
         }
