@@ -156,8 +156,7 @@ const TransactionPage: React.FC = () => {
         </div>
       ),
     },
-    // ... existing code ...
-{
+  {
   title: "Updated at",
   key: "time",
   width: "15%",
@@ -177,7 +176,6 @@ const TransactionPage: React.FC = () => {
     </div>
   ),
 },
-// ... existing code ...
     {
       title: "Updated by",
       dataIndex: "updated_by",
