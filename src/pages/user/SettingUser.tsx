@@ -71,8 +71,8 @@ const SettingUser = () => {
 
   // Handle form submission
   const onFinish = async (values: any) => {
-    const confirmed = window.confirm('Are you sure you want to save these changes?');
-    if (!confirmed) return;
+    // const confirmed = window.confirm('Are you sure you want to save these changes?');
+    // if (!confirmed) return;
 
     setLoading(true);
     try {

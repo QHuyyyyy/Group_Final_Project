@@ -74,7 +74,7 @@ const Claim = () => {
               pageSize: 1,
             },
           };
-          const countResponse = await claimService.searchClaimsByClaimer(countParams);
+          const countResponse = await claimService.searchClaimsByClaimer(countParams, {showSpinner:false});
           return { status: status.value, count: countResponse.data.pageInfo.totalItems };
         }
         return null;
@@ -127,9 +127,11 @@ const Claim = () => {
   };
 
   const handleView = async (record: Claim) => {
+    setLoading(true);
     try {
       const response = await claimService.getClaimById(record._id, {showSpinner:false})
       if (response?.data) {
+        setLoading(false);
         setSelectedRequest(response.data);
         setIsModalVisible(true);
       }
@@ -214,7 +216,7 @@ const Claim = () => {
     };
 
     setLoading(true);
-    claimService.searchClaimsByClaimer(params)
+    claimService.searchClaimsByClaimer(params, {showSpinner:false})
       .then(response => {
         if (response?.data?.pageData) {
           setFilteredClaims(response.data.pageData);
@@ -258,8 +260,10 @@ const Claim = () => {
 
   const handleOpenUpdateModal = async (record: Claim) => {
     try {
-      const response = await claimService.getClaimById(record._id);
+      setLoading(true)
+      const response = await claimService.getClaimById(record._id, {showSpinner:false});
       if (response?.data) {
+        setLoading(false)
         setSelectedRequest(response.data);
         setIsUpdateModalVisible(true);
       }

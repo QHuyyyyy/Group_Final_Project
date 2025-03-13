@@ -22,13 +22,18 @@ const loadingManager = {
         left: '0',
         width: '100%',
         height: '100%',
-        zIndex: '9999'
+        zIndex: '9999',
+        opacity: '0',
+        transition: 'opacity 0.3s ease-in-out'
       });
       
       document.body.appendChild(this.spinnerElement);
       
       this.spinnerRoot = createRoot(this.spinnerElement);
       this.spinnerRoot.render(React.createElement(UserSpinner));
+      
+      this.spinnerElement.offsetHeight;
+      this.spinnerElement.style.opacity = '1';
     }
   },
 
@@ -37,14 +42,28 @@ const loadingManager = {
     if (this.count <= 0) {
       this.count = 0;
       if (this.spinnerElement && this.spinnerRoot) {
-        this.spinnerRoot.unmount();
-        document.body.removeChild(this.spinnerElement);
+
+        this.spinnerElement.style.opacity = '0';
+
+        const element = this.spinnerElement;
+        const root = this.spinnerRoot;
+        
+        setTimeout(() => {
+          if (element && root) {
+            root.unmount();
+            if (element.parentNode) {
+              element.parentNode.removeChild(element);
+            }
+          }
+        }, 300);
+        
         this.spinnerElement = null;
         this.spinnerRoot = null;
       }
     }
   }
 };
+
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
