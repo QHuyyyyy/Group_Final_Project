@@ -27,7 +27,7 @@ const Claim = lazy(() => import('./pages/user/Request'));
 const Finance = lazy(() => import('./pages/user/Finance'));
 const IndustriesPage = lazy(() => import('./pages/InductriesPage'));
 const ViewClaimRequest = lazy(() => import('./pages/admin/ViewClaimRequest'));
-
+const Project= lazy(() => import('./pages/user/Project'));
 const Loading = () => (
   <div className="h-screen w-screen flex items-center justify-center">
     <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
@@ -86,7 +86,11 @@ const App = () => {
               <SettingUser />
             </ProtectedRoute>
           } />
-            
+              <Route path='/userdashboard/projects' element={
+            <ProtectedRoute allowedRoles={RoutePermissions.user} redirectPath="/">
+              <Project />
+            </ProtectedRoute>
+          } />
             {/* <Route path="create-request" element={
               <UserRoute>
                 <CreateRequest />
