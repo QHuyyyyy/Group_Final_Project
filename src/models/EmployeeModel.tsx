@@ -36,4 +36,13 @@ export interface EmployeeUpdateData {
     updated_by?: string;
 }
 
+export interface CreateClaim_EmployeeInfo {
+    _id: string;
+    user_id: string;
+    full_name: string;
+    department_code: string;
+    job_rank: string;
+    contract_type: string;
+}
+
 
