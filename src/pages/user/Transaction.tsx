@@ -31,7 +31,7 @@ const TransactionPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isAdminDashboard = location.pathname === "/dashboard/transaction";
-  const [error, setError] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [claimId, setClaimId] = useState<string>("");
@@ -69,7 +69,6 @@ const TransactionPage: React.FC = () => {
       }));
       setHasSearched(true);
     } catch (err) {
-      setError(true);
       setTransactions([]); }
       finally {
       setLoading(false);
