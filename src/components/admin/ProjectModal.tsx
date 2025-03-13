@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, Select, DatePicker, Button, Empty } from 'antd';
+import { Modal, Form, Input, Select, DatePicker, Button, Empty, message } from 'antd';
 import dayjs from 'dayjs';
 import { ProjectData } from '../../models/ProjectModel';
 import { CalendarOutlined,  ClockCircleOutlined } from '@ant-design/icons';
@@ -17,6 +17,7 @@ interface ProjectModalProps {
   teamMembers: Array<{ userId: string; role: string }>;
   setTeamMembers: React.Dispatch<React.SetStateAction<Array<{ userId: string; role: string }>>>;
   handleStartDateChange: (date: dayjs.Dayjs | null) => void;
+  handleEndDateChange: (date: dayjs.Dayjs | null) => void;
   departments: Array<{
     value: string;
     label: string;
@@ -35,6 +36,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
   teamMembers,
   setTeamMembers,
   handleStartDateChange,
+  handleEndDateChange,
   departments,
 }) => {
   const [form] = Form.useForm();
@@ -186,7 +188,12 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
                       handleStartDateChange(date);
                       const endDate = form.getFieldValue('endDate');
                       if (date && endDate) {
-                        setDaysBetween(endDate.diff(date, 'days'));
+                        if (date.isAfter(endDate)) {
+                          message.warning('Start date cannot be after end date');
+                          form.setFieldValue('startDate', null);
+                        } else {
+                          setDaysBetween(endDate.diff(date, 'days'));
+                        }
                       }
                     }}
                   />
@@ -224,9 +231,15 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
                     className="hover:border-purple-400 focus:border-purple-500 rounded-lg"
                     disabledDate={disabledEndDate}
                     onChange={(date) => {
+                      handleEndDateChange(date);
                       const startDate = form.getFieldValue('startDate');
                       if (startDate && date) {
-                        setDaysBetween(date.diff(startDate, 'days'));
+                        if (date.isBefore(startDate)) {
+                          message.warning('End date cannot be before start date');
+                          form.setFieldValue('endDate', null);
+                        } else {
+                          setDaysBetween(date.diff(startDate, 'days'));
+                        }
                       }
                     }}
                   />
