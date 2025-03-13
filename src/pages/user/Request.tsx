@@ -37,7 +37,6 @@ const Claim = () => {
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
   const [selectedCancelClaimId, setSelectedCancelClaimId] = useState<string | null>(null); // Add cancel claim ID
   const [selectedStatus, setSelectedStatus] = useState<string>('');
-  const [allClaims, setAllClaims] = useState<Claim[]>([]);
   const [filteredClaims, setFilteredClaims] = useState<Claim[]>([]);
   const [statusCounts, setStatusCounts] = useState<Record<string, number>>({});
   const [debouncedSearchText] = useDebounce(searchText, 500);
@@ -106,7 +105,6 @@ const Claim = () => {
       const response = await claimService.searchClaimsByClaimer(params);
 
       if (response?.data?.pageData) {
-        setAllClaims(response.data.pageData);
         setFilteredClaims(response.data.pageData);
         setPagination((prev) => ({
           ...prev,
@@ -219,7 +217,6 @@ const Claim = () => {
     claimService.searchClaimsByClaimer(params)
       .then(response => {
         if (response?.data?.pageData) {
-          setAllClaims(response.data.pageData);
           setFilteredClaims(response.data.pageData);
           setPagination(prev => ({
             ...prev,
