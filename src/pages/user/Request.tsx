@@ -24,7 +24,8 @@ const Claim = () => {
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
-    total: 0,
+    totalItems: 0,
+    totalPages: 0
   });
   const [selectedRequest, setSelectedRequest] = useState<ClaimById | undefined>(
     undefined
@@ -52,10 +53,10 @@ const Claim = () => {
   ];
 
   useEffect(() => {
-    fetchClaims();
+    fetchClaims(pagination.current);
   }, [pagination.current, pagination.pageSize, debouncedSearchText]);
 
-  const fetchClaims = async () => {
+  const fetchClaims = async (pageNum: number) => {
     try {
       setLoading(true);
       const params: SearchParams = {
@@ -67,7 +68,7 @@ const Claim = () => {
           is_delete: false,
         },
         pageInfo: {
-          pageNum: pagination.current,
+          pageNum: pageNum,
           pageSize: pagination.pageSize,
         },
       };
@@ -85,7 +86,9 @@ const Claim = () => {
 
         setPagination((prev) => ({
           ...prev,
-          total: response.data.pageInfo.totalItems || 0,
+          totalItems: response.data.pageInfo.totalItems,
+          totalPages: response.data.pageInfo.totalPages,
+          current: pageNum
         }));
       }
     } catch (error) {
@@ -134,7 +137,7 @@ const Claim = () => {
   };
   const handleCreateSuccess = () => {
     setIsCreateModalVisible(false);
-    fetchClaims();
+    fetchClaims(pagination.current);
     message.success("Claim created successfully");
   };
 
@@ -150,7 +153,7 @@ const Claim = () => {
         description: 'Request has been canceled successfully.',
         placement: 'topRight'
       });
-      fetchClaims();
+      fetchClaims(pagination.current);
     } catch (error: any) {
       notification.error({
         message: 'Error',
@@ -190,7 +193,7 @@ const Claim = () => {
         description: 'Request has been sent for approval successfully.',
         placement: 'topRight'
       });
-      fetchClaims();
+      fetchClaims(pagination.current);
     } catch (error: any) {
       notification.error({
         message: 'Error',
@@ -219,7 +222,7 @@ const Claim = () => {
 
   const handleUpdateSuccess = () => {
     setIsUpdateModalVisible(false);
-    fetchClaims();
+    fetchClaims(pagination.current);
     message.success("Claim updated successfully");
   };
 
@@ -412,7 +415,7 @@ const Claim = () => {
             pagination={{
               current: pagination.current,
               pageSize: pagination.pageSize,
-              total: pagination.total,
+              total: pagination.totalItems,
               showSizeChanger: true,
               showQuickJumper: true,
               onChange: (page, pageSize) => {
@@ -421,6 +424,7 @@ const Claim = () => {
                   current: page,
                   pageSize: pageSize || 10,
                 }));
+                fetchClaims(page);
               },
             }}
           />
