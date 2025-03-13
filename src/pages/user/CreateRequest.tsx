@@ -38,6 +38,7 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
         project_members: [],
         project_start_date: '',
         project_end_date: '',
+        project_description:'',
     });
     const [employeeInfo, setEmployeeInfo] = useState<CreateClaim_EmployeeInfo>({
         _id: '',
@@ -98,6 +99,7 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                 project_members: [],
                 project_start_date: '',
                 project_end_date: '',
+                project_description:'',
             });
             form.setFieldsValue({
                 claim_start_date: undefined,
@@ -161,18 +163,25 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                 destroyOnClose
                 width={900}
             >
-                <div style={{ display: 'grid', gridTemplateColumns: '350px 1fr', gap: '24px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                     {/* Left side - Information */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignSelf: 'start' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                         <Card 
                             className="mb-3" 
                             size="small" 
-                            title="Staff Information" 
-                            style={{ height: 'fit-content' }}
+                            title="Staff Information"
+                            style={{ height: 'fit-content', width: '100%' }}
                             styles={{
                                 header: {
-                                    backgroundColor: '#f5f5f5',
-                                    padding: '8px 12px'
+                                    backgroundColor: '#808080',
+                                    padding: '8px 16px',
+                                    fontSize: '16px',
+                                    color: 'white',
+                                    borderTopLeftRadius: '8px',
+                                    borderTopRightRadius: '8px'
+                                },
+                                body: {
+                                    padding: '20px'
                                 }
                             }}
                         >
@@ -206,13 +215,20 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                         <Card 
                             size="small" 
                             title="Project Information"
+                            style={{ height: 'fit-content', width: '100%' }}
                             styles={{
                                 header: {
-                                    backgroundColor: '#f5f5f5',
-                                    padding: '8px 12px'
+                                    backgroundColor: '#808080',
+                                    padding: '8px 16px',
+                                    fontSize: '16px',
+                                    color: 'white',
+                                    borderTopLeftRadius: '8px',
+                                    borderTopRightRadius: '8px'
+                                },
+                                body: {
+                                    padding: '20px'
                                 }
                             }}
-                            style={{ height: 'fit-content', marginBottom: 0 }}
                         >
                             {projectInfo._id ? (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -228,6 +244,10 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                                         <span style={{ fontWeight: 500 }}>Duration:</span>
                                         <span>{`${dayjs(projectInfo.project_start_date).format('DD/MM/YYYY')} - ${dayjs(projectInfo.project_end_date).format('DD/MM/YYYY')}`}</span>
                                     </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <span style={{ fontWeight: 500 }}>Project Description:</span>
+                                        <span>{projectInfo.project_description || 'N/A'}</span>
+                                    </div>
                                 </div>
                             ) : (
                                 <div style={{ textAlign: 'center', color: '#999' }}>
@@ -242,10 +262,18 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                         <Card 
                             size="small" 
                             title="Create Claim"
+                            style={{ height: 'fit-content', width: '100%' }}
                             styles={{
                                 header: {
-                                    backgroundColor: '#f5f5f5',
-                                    padding: '8px 12px'
+                                    backgroundColor: '#808080',
+                                    padding: '8px 16px',
+                                    fontSize: '16px',
+                                    color: 'white',
+                                    borderTopLeftRadius: '8px',
+                                    borderTopRightRadius: '8px'
+                                },
+                                body: {
+                                    padding: '20px'
                                 }
                             }}
                         >
@@ -356,7 +384,12 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                                         htmlType="submit" 
                                         loading={loading} 
                                         block
-                                        style={{ height: '36px' }}
+                                        style={{ 
+                                            height: '40px',
+                                            fontSize: '14px',
+                                            fontWeight: 500,
+                                            backgroundColor: '#808080',
+                                        }}
                                     >
                                         Submit 
                                     </Button>
