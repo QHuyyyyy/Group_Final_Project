@@ -20,35 +20,11 @@ const SendRequest: React.FC<SendRequestProps> = ({ id, visible, onSend, onCancel
         setLoading(true);
         try {
             await onSend(id, comment);
-            toast.success('Request has been sent for approval successfully', {
-                position: "top-right",
-                autoClose: 4500,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                style: {
-                    backgroundColor: '#f6ffed',
-                    border: '1px solid #b7eb8f',
-                    color: '#52c41a'
-                }
-            });
+            toast.success('Request has been sent for approval successfully');
             setComment('');
             onCancel();
         } catch (_) {
-            toast.error('Failed to send request for approval', {
-                position: "top-right",
-                autoClose: 4500,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                style: {
-                    backgroundColor: '#fff2f0',
-                    border: '1px solid #ffccc7',
-                    color: '#ff4d4f'
-                }
-            });
+            toast.error('Failed to send request for approval');
         } finally {
             setLoading(false);
         }
