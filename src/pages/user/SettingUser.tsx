@@ -270,6 +270,7 @@ const SettingUser = () => {
                         <InputNumber 
                           disabled
                           size="large"
+                          style={{ width: '30%' }}
                           className="w-full"
                           formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                         />
@@ -296,7 +297,7 @@ const SettingUser = () => {
                     size="large"
                     className="px-8 bg-blue-600 hover:bg-blue-700"
                   >
-                    Save Changes
+                    Save
                   </Button>
                 </div>
               </Form>
