@@ -31,7 +31,6 @@ const AdminProjectManager: React.FC = () => {
   const [searchText, setSearchText] = useState('');
   const [editForm] = Form.useForm();
   const [createForm] = Form.useForm();
-  const [startDate, setStartDate] = useState<dayjs.Dayjs | null>(null);
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
