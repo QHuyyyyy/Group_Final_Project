@@ -13,6 +13,7 @@ import {  ProjectData } from '../../models/ProjectModel';
 import { getProjectColumns } from '../../components/admin/ProjectColumns';
 import ProjectModal from '../../components/admin/ProjectModal';
 import { departmentService } from '../../services/Department.service';
+import { debounce } from 'lodash';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -51,7 +52,14 @@ const AdminProjectManager: React.FC = () => {
   const [selectedStatusProject, setSelectedStatusProject] = useState<ProjectData | null>(null);
   const [newStatus, setNewStatus] = useState<string>('');
 
-  // Hàm kiểm tra startDate
+  const handleSearch = debounce((value: string) => {
+    setSearchText(value);
+    setPagination(prev => ({
+      ...prev,
+      current: 1 
+    }));
+  }, 2000);
+
   const disabledStartDate = (current: dayjs.Dayjs) => {
     if (!current) return false;
     const endDate = editForm.getFieldValue('endDate') || createForm.getFieldValue('endDate');
@@ -513,8 +521,7 @@ const AdminProjectManager: React.FC = () => {
           <Input
             placeholder="Tìm kiếm dự án..."
             prefix={<SearchOutlined className="text-gray-400" />}
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
             style={{ width: 300 }}
             className="ml-4"
           />

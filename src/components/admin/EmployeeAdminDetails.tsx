@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Form, Input, Button, DatePicker, InputNumber, Select} from 'antd';
+import { Card, Form,Button, DatePicker, InputNumber} from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { employeeService } from '../../services/employee.service';
@@ -12,6 +12,8 @@ import { DepartmentModel } from '../../models/DepartmentModel';
 import { Job } from '../../models/JobModel';
 import { Contract } from '../../models/ContractModel';
 import { toast } from 'react-toastify';
+import { InputVaild } from '../../constants/InputVaild';
+import CommonField from './CommonFieldAddUser';
 
 const EmployeeDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -76,8 +78,9 @@ const EmployeeDetails: React.FC = () => {
         account: values.account?.trim(),
         full_name: values.full_name?.trim(),
       };
-      
-      await employeeService.updateEmployee(id, updateData);
+  
+       const ss =  await employeeService.updateEmployee(id, updateData);
+      console.log('result',ss)
       toast.success('Update employee information successfully!');
     } catch (error) {
       toast.error('An error occurred while updating employee information!');
@@ -124,69 +127,102 @@ const EmployeeDetails: React.FC = () => {
               {/* Profile Section */}
               <div className="border rounded-lg p-4">
                 <h3 className="text-lg font-semibold mb-4 text-center border-b pb-2">Profile</h3>
-                <Form.Item name="full_name" label="Full Name">
-                  <Input className="rounded-lg" />
-                </Form.Item>
-                <Form.Item name="account" label="Account">
-                  <Input className="rounded-lg" />
-                </Form.Item>
-                <Form.Item name="phone" label="Phone">
-                  <Input className="rounded-lg" />
-                </Form.Item>
-                <Form.Item name="address" label="Address">
-                  <Input className="rounded-lg" />
-                </Form.Item>
-                <Form.Item name="avatar_url" label="Avatar URL">
-                  <Input className="rounded-lg" />
-                </Form.Item>
+                <CommonField 
+                  name="full_name"
+                  label="Full Name"
+                  rules={InputVaild.required("Please input full name!")}
+                />
+                <CommonField 
+                  name="account"
+                  label="Account"
+                  rules={InputVaild.required("Please input account!")}
+                />
+                <CommonField 
+                  name="phone"
+                  label="Phone"
+                  rules={[
+                    { required: true, message: "Please input phone number!" },
+                    { pattern: /^\d{10}$/, message: "Please enter a valid phone number!" }
+                  ]}
+                />
+                <CommonField 
+                  name="address"
+                  label="Address"
+                  rules={InputVaild.required("Please input address!")}
+                />
+                <CommonField 
+                  name="avatar_url"
+                  label="Avatar URL"
+                  rules={[
+                    { required: true, message: "Please input avatar URL!" },
+                    { type: 'url', message: "Please enter a valid URL!" }
+                  ]}
+                />
               </div>
 
               {/* Work Information Section */}
               <div className="border rounded-lg p-4">
                 <h3 className="text-lg font-semibold mb-4 text-center border-b pb-2">Work Information</h3>
-                <Form.Item name="job_rank" label="Job Rank">
-                  <Select className="rounded-lg">
-                    {jobs.map(job => (
-                      <Select.Option key={job._id} value={job.job_rank}>
-                        {job.job_title}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-                <Form.Item name="department_code" label="Department">
-                  <Select className="rounded-lg">
-                    {departments.map(dept => (
-                      <Select.Option key={dept._id} value={dept.department_code}>
-                        {dept.department_name}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-                <Form.Item name="contract_type" label="Contract Type">
-                  <Select className="rounded-lg">
-                    {contracts.map(contract => (
-                      <Select.Option key={contract._id} value={contract.contract_type}>
-                        {contract.contract_type}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
+                <CommonField 
+                  name="job_rank"
+                  label="Job Rank"
+                  type="select"
+                  rules={InputVaild.required("Please select job rank!")}
+                  options={jobs.map(job => ({
+                    label: job.job_rank,
+                    value: job.job_rank
+                  }))}
+                />
+                <CommonField 
+                  name="department_code"
+                  label="Department"
+                  type="select"
+                  rules={InputVaild.required("Please select department!")}
+                  options={departments.map(dept => ({
+                    label: dept.department_name,
+                    value: dept.department_code
+                  }))}
+                />
+                <CommonField 
+                  name="contract_type"
+                  label="Contract Type"
+                  type="select"
+                  rules={InputVaild.required("Please select contract type!")}
+                  options={contracts.map(contract => ({
+                    label: contract.contract_type,
+                    value: contract.contract_type
+                  }))}
+                />
               </div>
 
               {/* Other Information Section */}
               <div className="border rounded-lg p-4">
                 <h3 className="text-lg font-semibold mb-4 text-center border-b pb-2">Other Information</h3>
-                <Form.Item name="salary" label="Salary">
+                <Form.Item 
+                  name="salary" 
+                  label="Salary"
+                  rules={[
+                    { required: true, message: "Please input salary!" },
+                    { type: 'number', message: "Please enter a valid number!" }
+                  ]}
+                >
                   <InputNumber 
                     className="w-full rounded-lg"
                     formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
                     parser={value => value!.replace(/\./g, '')}
                   />
                 </Form.Item>
-                <Form.Item name="start_date" label="Start Date">
+                <Form.Item 
+                  name="start_date" 
+                  label="Start Date"
+                  rules={InputVaild.required("Please select start date!")}
+                >
                   <DatePicker className="w-full rounded-lg" />
                 </Form.Item>
-                <Form.Item name="end_date" label="End Date">
+                <Form.Item 
+                  name="end_date" 
+                  label="End Date"
+                >
                   <DatePicker className="w-full rounded-lg" />
                 </Form.Item>
               </div>

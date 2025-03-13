@@ -87,7 +87,7 @@ const Finance = () => {
         ...prev,
         current: 1,
       }));
-    }, 500),
+    }, 2000),
     []
   );
 
@@ -110,8 +110,34 @@ const Finance = () => {
   };
 
   const handleDownloadClaim = (claim: Claim) => {
+    if (!claim) {
+        message.error('No claim data available for download.');
+        return;
+    }
+    
     const claimData = [
-      {
+        {
+            "Claim ID": claim._id,
+            "Staff Name": claim.staff_name,
+            "Project": claim.project_info?.project_name || 'N/A',
+            "From": dayjs(claim.claim_start_date).format('DD/MM/YYYY'),
+            "To": dayjs(claim.claim_end_date).format('DD/MM/YYYY'),
+            "Total Hours": claim.total_work_time,
+            "Amount": claim.total_work_time * 50,
+            "Status": claim.claim_status
+        }
+    ];
+
+    exportToExcel(claimData, `Claim_${claim._id}`, `${claim._id}`);
+  };
+
+  const handleDownloadAllClaims = () => {
+    if (claims.length === 0) {
+        message.error('No claims available for download.');
+        return;
+    }
+
+    const allClaimsData = claims.map(claim => ({
         "Claim ID": claim._id,
         "Staff Name": claim.staff_name,
         "Project": claim.project_info?.project_name || 'N/A',
@@ -120,22 +146,6 @@ const Finance = () => {
         "Total Hours": claim.total_work_time,
         "Amount": claim.total_work_time * 50,
         "Status": claim.claim_status
-      }
-    ];
-
-    exportToExcel(claimData, `Claim_${claim._id}`, `${claim._id}`);
-  };
-
-  const handleDownloadAllClaims = () => {
-    const allClaimsData = claims.map(claim => ({
-      "Claim ID": claim._id,
-      "Staff Name": claim.staff_name,
-      "Project": claim.project_info?.project_name || 'N/A',
-      "From": dayjs(claim.claim_start_date).format('DD/MM/YYYY'),
-      "To": dayjs(claim.claim_end_date).format('DD/MM/YYYY'),
-      "Total Hours": claim.total_work_time,
-      "Amount": claim.total_work_time * 50,
-      "Status": claim.claim_status
     }));
 
     exportToExcel(allClaimsData, 'ListClaims', 'List Claims');
