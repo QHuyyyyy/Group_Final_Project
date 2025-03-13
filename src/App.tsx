@@ -4,13 +4,11 @@ import TransactionPage from './pages/user/Transaction';
 import AboutUs from './pages/AboutUs';
 import Services from './pages/user/Services';
 import ContactUs from './pages/Contactus';
-import NotFound from './pages/NotFound';
 import VerifyToken from './pages/common/VerifyToken';
 import ResendToken from './pages/common/ResendToken';
 import ProtectedRoute from './routes/ProtectedRoute';
 import { RoutePermissions } from './routes/RoutePermissions';
 import SettingUser from './pages/user/SettingUser';
-import EmployeeDetails from './components/admin/EmployeeAdminDetails';
 import ForgotPassword from './pages/common/ForgotPassword';
 
 
@@ -126,9 +124,6 @@ const App = () => {
                 <TransactionPage />
               </ProtectedRoute>
             } />
-          <Route path='/admin/employees/:id' element={<EmployeeDetails />} />
-
-          <Route path='*' element={<NotFound />} />
         </Routes>
       </Suspense>
     </Router>
