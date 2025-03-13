@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { Modal, notification, Input } from "antd";
-import { SendOutlined, QuestionCircleOutlined, CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons';
+import { Modal, Input } from "antd";
+import { SendOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface SendRequestProps {
     id: string | null;
@@ -18,30 +20,16 @@ const SendRequest: React.FC<SendRequestProps> = ({ id, visible, onSend, onCancel
         setLoading(true);
         try {
             await onSend(id, comment);
-            notification.open({
-                message: 'Success',
-                description: 'Request has been sent for approval successfully.',
-                icon: <CheckCircleFilled style={{ color: '#52c41a' }} />,
-                placement: 'topRight',
-                duration: 4.5,
-                style: {
-                    backgroundColor: '#f6ffed',
-                    border: '1px solid #b7eb8f'
-                }
+            toast.success('Request has been sent for approval successfully.', {
+                position: "top-right",
+                autoClose: 4500,
             });
             setComment('');
             onCancel();
         } catch (error) {
-            notification.open({
-                message: 'Error',
-                description: 'Failed to send request for approval.',
-                icon: <CloseCircleFilled style={{ color: '#ff4d4f' }} />,
-                placement: 'topRight',
-                duration: 4.5,
-                style: {
-                    backgroundColor: '#fff2f0',
-                    border: '1px solid #ffccc7'
-                }
+            toast.error('Failed to send request for approval.', {
+                position: "top-right",
+                autoClose: 4500,
             });
         } finally {
             setLoading(false);
@@ -49,40 +37,43 @@ const SendRequest: React.FC<SendRequestProps> = ({ id, visible, onSend, onCancel
     };
 
     return (
-        <Modal
-            title={
-                <span>
-                    <SendOutlined style={{ marginRight: 8 }} />
-                    Send Request for Approval
-                </span>
-            }
-            open={visible}
-            onOk={handleSend}
-            onCancel={onCancel}
-            okText="Yes, Send"
-            okType="primary"
-            cancelText="Cancel"
-            confirmLoading={loading}
-        >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'start', gap: '8px' }}>
-                    <QuestionCircleOutlined style={{ marginTop: '4px', color: '#1890ff' }} />
+        <>
+            <ToastContainer />
+            <Modal
+                title={
+                    <span>
+                        <SendOutlined style={{ marginRight: 8 }} />
+                        Send Request for Approval
+                    </span>
+                }
+                open={visible}
+                onOk={handleSend}
+                onCancel={onCancel}
+                okText="Yes, Send"
+                okType="primary"
+                cancelText="Cancel"
+                confirmLoading={loading}
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'start', gap: '8px' }}>
+                        <QuestionCircleOutlined style={{ marginTop: '4px', color: '#1890ff' }} />
+                        <div>
+                            <p>Are you sure you want to send request {id ? `ID ${id}` : "this request"} for approval?</p>
+                            <p>Once sent, the status will change to "Pending Approval".</p>
+                        </div>
+                    </div>
+
                     <div>
-                        <p>Are you sure you want to send request {id ? `ID ${id}` : "this request"} for approval?</p>
-                        <p>Once sent, the status will change to "Pending Approval".</p>
+                        <Input.TextArea
+                            placeholder="Add a comment (optional)"
+                            value={comment}
+                            onChange={(e) => setComment(e.target.value)}
+                            rows={4}
+                        />
                     </div>
                 </div>
-
-                <div>
-                    <Input.TextArea
-                        placeholder="Add a comment (optional)"
-                        value={comment}
-                        onChange={(e) => setComment(e.target.value)}
-                        rows={4}
-                    />
-                </div>
-            </div>
-        </Modal>
+            </Modal>
+        </>
     );
 };
 
