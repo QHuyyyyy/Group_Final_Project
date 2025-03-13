@@ -1,85 +1,60 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Table, Button, Input, Tag, Select } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { SearchOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import SideBarAdminUser from '../../components/admin/SideBarAdminUser';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
-
-// Define the status types
-type ClaimStatus = 'Draft' | 'Pending Approval' | 'Cancelled' | 'Rejected' | 'Approved' | 'Paid';
-
-// Define the claim request interface
-interface ViewClaimRequest {
-  id: string;
-  status: ClaimStatus;
-  claimer: string;
-  amount: number;
-  description: string;
-  createdAt: Date;
-}
+import { claimService } from '../../services/claim.service';
+import { Claim } from '../../models/ClaimModel';
 
 const ViewClaimRequest: React.FC = () => {
   const navigate = useNavigate();
   const [searchText, setSearchText] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<ClaimStatus | 'All'>('All');
+  const [selectedStatus, setSelectedStatus] = useState<string>('All');
+  const [claims, setClaims] = useState<Claim[]>([]);
+  const [filteredClaims, setFilteredClaims] = useState<Claim[]>([]);
 
-  const initialClaims: ViewClaimRequest[] = [
-    {
-      id: "CLM001",
-      status: "Pending Approval",
-      claimer: "Nguyen Van A",
-      amount: 1500000,
-      description: "Chi phí đi lại tháng 3",
-      createdAt: new Date("2024-03-15")
-    },
-    {
-      id: "CLM002",
-      status: "Approved",
-      claimer: "Tran Thi B",
-      amount: 2300000,
-      description: "Chi phí thiết bị văn phòng",
-      createdAt: new Date("2024-03-10")
-    },
-    {
-      id: "CLM003",
-      status: "Paid",
-      claimer: "Le Van C",
-      amount: 5000000,
-      description: "Chi phí đào tạo nhân viên",
-      createdAt: new Date("2024-03-05")
-    },
-    {
-      id: "CLM004",
-      status: "Rejected",
-      claimer: "Pham Thi D",
-      amount: 800000,
-      description: "Chi phí ăn uống",
-      createdAt: new Date("2024-03-01")
-    }
-  ];
-
-  const [claims] = useState<ViewClaimRequest[]>(initialClaims);
-  const [filteredClaims, setFilteredClaims] = useState<ViewClaimRequest[]>(initialClaims);
+  // Add useEffect to fetch claims
+  useEffect(() => {
+    const fetchClaims = async () => {
+      try {
+        const response = await claimService.searchClaims({
+          searchCondition: {
+            keyword: "",
+          },
+          pageInfo: {
+            pageNum: 1,
+            pageSize: 10
+          }
+        });
+        setClaims(response.data.pageData);
+        setFilteredClaims(response.data.pageData);
+      } catch (error) {
+        console.error('Error fetching claims:', error);
+      }
+    };
+    fetchClaims();
+  }, []);
 
   const handleSearch = (value: string) => {
     setSearchText(value);
     filterClaims(value, selectedStatus);
   };
 
-  const handleStatusChange = (value: ClaimStatus | 'All') => {
+  const handleStatusChange = (value: string) => {
     setSelectedStatus(value);
     filterClaims(searchText, value);
   };
 
-  const filterClaims = (text: string, status: ClaimStatus | 'All') => {
+  const filterClaims = (text: string, status: string) => {
     let filtered = claims.filter(claim =>
-      (claim.claimer.toLowerCase().includes(text.toLowerCase()) ||
-      claim.id.toLowerCase().includes(text.toLowerCase()))
+      (claim.staff_name.toLowerCase().includes(text.toLowerCase()) ||
+      claim._id.toLowerCase().includes(text.toLowerCase()))
     );
 
     if (status !== 'All') {
-      filtered = filtered.filter(claim => claim.status === status);
+      filtered = filtered.filter(claim => claim.claim_status === status);
     }
 
     setFilteredClaims(filtered);
@@ -89,19 +64,19 @@ const ViewClaimRequest: React.FC = () => {
     console.log('Add user clicked');
   };
 
-  const columns: ColumnsType<ViewClaimRequest> = [
+  const columns: ColumnsType<Claim> = [
     {
       title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
+      dataIndex: '_id',
+      key: '_id',
       width: 100,
     },
     {
       title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
+      dataIndex: 'claim_status',
+      key: 'claim_status',
       width: 150,
-      render: (status: ClaimStatus) => (
+      render: (status: string) => (
         <Tag color={
           status === 'Pending Approval' ? 'gold' :
           status === 'Approved' ? 'green' :
@@ -116,31 +91,28 @@ const ViewClaimRequest: React.FC = () => {
     },
     {
       title: 'Claimer',
-      dataIndex: 'claimer',
-      key: 'claimer',
+      dataIndex: 'staff_name',
+      key: 'staff_name',
       width: 150,
     },
     {
-      title: 'Amount',
-      dataIndex: 'amount',
-      key: 'amount',
-      width: 120,
-      render: (amount: number) => (
-        <span>{amount.toLocaleString('vi-VN')} VND</span>
-      )
-    },
-    {
-      title: 'Description',
-      dataIndex: 'description',
-      key: 'description',
+      title: 'Claim Name',
+      dataIndex: 'claim_name',
+      key: 'claim_name',
       width: 200,
     },
     {
-      title: 'Created At',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
+      title: 'Work Time (hours)',
+      dataIndex: 'total_work_time',
+      key: 'total_work_time',
       width: 120,
-      render: (date: Date) => dayjs(date).format('YYYY-MM-DD')
+    },
+    {
+      title: 'Created At',
+      dataIndex: 'created_at',
+      key: 'created_at',
+      width: 120,
+      render: (date: string) => dayjs(date).format('YYYY-MM-DD')
     },
   ];
 
@@ -191,7 +163,7 @@ const ViewClaimRequest: React.FC = () => {
             <Table 
               columns={columns} 
               dataSource={filteredClaims}
-              rowKey="id"
+              rowKey="_id"
               pagination={{
                 pageSize: 10,
                 total: filteredClaims.length,
