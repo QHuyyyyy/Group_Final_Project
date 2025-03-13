@@ -313,7 +313,13 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, claim, onClose, 
                                     htmlType="submit" 
                                     loading={loading} 
                                     block
-                                    style={{ height: '36px' }}
+                                    style={{ 
+                                        height: '40px',
+                                        fontSize: '14px',
+                                        fontWeight: 500,
+                                        backgroundColor: '#808080',
+
+                                    }}             
                                 >
                                     Update Claim
                                 </Button>
