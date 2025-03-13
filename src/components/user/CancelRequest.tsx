@@ -23,26 +23,12 @@ const CancelRequest: React.FC<CancelRequestProps> = ({ id, visible, onCancelRequ
         try {
             await onCancelRequest(id, comment);  // Gọi hàm onCancelRequest truyền id và comment
 
-            toast.success(`Request has been cancelled successfully.`, {
-                position: "top-right",
-                autoClose: 4500,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-            });
+            toast.success('Request has been cancelled successfully.');
 
             setComment('');  // Reset comment sau khi hủy thành công
             onClose();  // Đóng modal sau khi thành công
-        } catch (error) {
-            toast.error('Failed to cancel the request.', {
-                position: "top-right",
-                autoClose: 4500,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-            });
+        } catch {
+            toast.error('Failed to cancel the request.');
         } finally {
             setLoading(false);
         }
