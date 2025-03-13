@@ -71,9 +71,7 @@ const SettingUser = () => {
 
   // Handle form submission
   const onFinish = async (values: any) => {
-    const confirmed = window.confirm('Are you sure you want to save these changes?');
-    if (!confirmed) return;
-
+    console.log(employeeData)
     setLoading(true);
     try {
       if (!employeeData?._id) {
@@ -89,6 +87,7 @@ const SettingUser = () => {
         phone: values.phone,
         full_name: values.full_name,
         avatar_url: avatarUrl,
+
         // Preserve existing data for non-editable fields
         job_rank: employeeData.job_rank,
         contract_type: employeeData.contract_type,
@@ -99,7 +98,7 @@ const SettingUser = () => {
         updated_by: user.id,
       };
 
-      const response = await employeeService.updateEmployee(employeeData._id, updateData);
+      const response = await employeeService.updateEmployee(employeeData.user_id, updateData);
       setEmployeeData(response.data);
       toast.success('Profile updated successfully');
     } catch (error) {

@@ -156,21 +156,28 @@ const TransactionPage: React.FC = () => {
         </div>
       ),
     },
-    {
-      title: "Updated at",
-      key: "time",
-      width: "15%",
-      render: (_, record) => (
-        <div>
-          <div className="text-sm">
-            {dayjs(record.updated_at).format("HH:mm:ss")}
-          </div>
-          <div className="text-xs text-gray-500">
-            {dayjs(record.updated_at).format("DD/MM/YYYY")}
-          </div>
-        </div>
-      ),
-    },
+    // ... existing code ...
+{
+  title: "Updated at",
+  key: "time",
+  width: "15%",
+  defaultSortOrder: 'ascend',
+  sortDirections: ['descend', 'ascend'],
+  sorter: (a, b) => {
+    return dayjs(b.updated_at).valueOf() - dayjs(a.updated_at).valueOf();
+  },
+  render: (_, record) => (
+    <div>
+      <div className="text-sm">
+        {dayjs(record.updated_at).format("HH:mm:ss")}
+      </div>
+      <div className="text-xs text-gray-500">
+        {dayjs(record.updated_at).format("DD/MM/YYYY")}
+      </div>
+    </div>
+  ),
+},
+// ... existing code ...
     {
       title: "Updated by",
       dataIndex: "updated_by",
