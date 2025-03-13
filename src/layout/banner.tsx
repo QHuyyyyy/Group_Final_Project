@@ -52,7 +52,9 @@ const Banner: React.FC<BannerProps> = ({ title }) => {
             className="mt-8 text-white px-8 py-3 bg-transparent border-2 border-white rounded-[30px] transition-all duration-300 text-lg font-medium relative overflow-hidden group"
           >
             <span className="relative z-10">Explore</span>
-            <div className="absolute inset-0 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left opacity-10"/>
+            <div 
+              className="absolute inset-[2px] bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left opacity-10 rounded-[28px]"
+            />
           </motion.button>
         </div>
 
