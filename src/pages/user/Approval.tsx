@@ -35,10 +35,9 @@ function ApprovalPage() {
   });
   const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
   const [confirmationType, setConfirmationType] = useState<
-    "Approved" | "Rejected" | "Draft" | null
+    "Approved" | "Canceled" | "Return" | null
   >(null);
   const [detailsModalVisible, setDetailsModalVisible] = useState(false);
-  const [comment, setComment] = useState("");
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -68,9 +67,9 @@ function ApprovalPage() {
             claim_end_date: "",
             is_delete: false,
           },
-          pageInfo: { 
-            pageNum: 1, 
-            pageSize: 1 
+          pageInfo: {
+            pageNum: 1,
+            pageSize: 1
           }
         }),
         claimService.getPendingApprovalClaims(),
@@ -80,7 +79,7 @@ function ApprovalPage() {
         claimService.getPaidApprovalClaims(),
         claimService.getCanceledApprovalClaims()
       ]);
-  
+
       setStatusCounts({
         all: allResponse.data.pageInfo.totalItems || 0,
         pendingApproval: pendingResponse.data.pageInfo.totalItems || 0,
@@ -99,8 +98,8 @@ function ApprovalPage() {
     setLoading(true);
     const Params: SearchParams = {
       searchCondition: {
-        keyword: "",
-        claim_status: "",
+        keyword: searchText || "",
+        claim_status: statusFilter || "",
         claim_start_date: "",
         claim_end_date: "",
         is_delete: false,
@@ -110,16 +109,22 @@ function ApprovalPage() {
         pageSize: pagination.pageSize,
       },
     };
-    const response = await claimService.searchClaimsForApproval(Params);
-    if (response && response.data && response.data.pageData) {
-      const claimsData = response.data.pageData;
-      setClaims(claimsData);
-      setPagination((prev) => ({
-        ...prev,
-        total: response.data.pageInfo.totalItems || 0,
-      }));
+    try {
+      const response = await claimService.searchClaimsForApproval(Params);
+      if (response && response.data && response.data.pageData) {
+        const claimsData = response.data.pageData;
+        setClaims(claimsData);
+        setPagination((prev) => ({
+          ...prev,
+          total: response.data.pageInfo.totalItems || 0,
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching claims:", error);
+      message.error("Failed to fetch claims");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const refreshData = async () => {
@@ -133,21 +138,6 @@ function ApprovalPage() {
       current: newPagination.current,
       pageSize: newPagination.pageSize,
     }));
-  };
-
-  const filterClaims = (query: string, status: string) => {
-    let filtered = claims;
-    if (query) {
-      filtered = filtered.filter((claim) =>
-        claim.claim_name.toLowerCase().includes(query.toLowerCase())
-      );
-    }
-
-    if (status) {
-      filtered = filtered.filter((claim) => claim.claim_status === status);
-    }
-
-    return filtered;
   };
 
   const handleSearch = useCallback(
@@ -169,11 +159,9 @@ function ApprovalPage() {
     }));
   };
 
-  const filteredClaims = filterClaims(searchText, statusFilter);
-
   const showConfirmation = (
     claim: Claim,
-    type: "Approved" | "Rejected" | "Draft"
+    type: "Approved" | "Canceled" | "Return"
   ) => {
     if (claim.claim_status !== "Pending Approval") {
       message.warning(
@@ -184,7 +172,6 @@ function ApprovalPage() {
 
     setSelectedClaim(claim);
     setConfirmationType(type);
-    setComment("");
     form.resetFields();
   };
 
@@ -196,35 +183,43 @@ function ApprovalPage() {
   const handleConfirmationOk = async () => {
     if (!selectedClaim || !confirmationType) return;
 
-    setLoading(true);
-    await form.validateFields();
-    const requestBody = {
-      _id: selectedClaim._id,
-      claim_status: confirmationType,
-      comment: comment,
-    };
-    const response = await claimService.changeClaimStatus(requestBody);
-    if (response && response.success === false) {
-      message.error(response.message || "Failed to change claim status");
-      return;
-    }
-    const actionText =
-      confirmationType === "Draft"
-        ? "returned to draft"
-        : confirmationType.toLowerCase();
-    message.success(`Claim has been ${actionText} successfully`);
-    refreshData();
+    try {
+      const values = await form.validateFields();
+      setLoading(true);
+      const requestBody = {
+        _id: selectedClaim._id,
+        claim_status: confirmationType,
+        comment: values.comment,
+      };
+      const response = await claimService.changeClaimStatus(requestBody);
+      if (response && response.success === false) {
+        message.error(response.message || "Failed to change claim status");
+        return;
+      }
 
-    setLoading(false);
-    setSelectedClaim(null);
-    setConfirmationType(null);
-    setComment("");
+      const actionText =
+        confirmationType === "Return"
+          ? "returned to draft"
+          : confirmationType.toLowerCase();
+      message.success(`Claim has been ${actionText} successfully`);
+      refreshData();
+
+      form.resetFields();
+      setSelectedClaim(null);
+      setConfirmationType(null);
+    } catch (error) {
+      if (error instanceof Error) {
+        message.error(error.message);
+      }
+      return;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleConfirmationCancel = () => {
     setSelectedClaim(null);
     setConfirmationType(null);
-    setComment("");
   };
 
   const handleDetailsModalClose = () => {
@@ -253,7 +248,7 @@ function ApprovalPage() {
     <div className="overflow-x-auto">
       <Card className="shadow-md">
         <div className="mb-4 flex">
-          <h1 className="text-2xl font-bold text-gray-800">Claim Approvals</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Claim Approval</h1>
           <Search
             placeholder="Search by claim name"
             onSearch={handleSearch}
@@ -355,7 +350,7 @@ function ApprovalPage() {
           </div>
 
           <Table
-            dataSource={filteredClaims}
+            dataSource={claims}
             loading={loading}
             rowKey="_id"
             columns={[
@@ -404,13 +399,19 @@ function ApprovalPage() {
                     <span>{dayjs(record.claim_start_date).format('DD/MM')} - {dayjs(record.claim_end_date).format('DD/MM/YYYY')}</span>
                   </div>
                 ),
+                sorter: (a, b) => {
+                  const dateA = new Date(a.claim_start_date).getTime();
+                  const dateB = new Date(b.claim_start_date).getTime();
+                  return dateA - dateB;
+                },
+                defaultSortOrder: "descend",
                 width: 180,
               },
               {
                 title: "Work time",
                 dataIndex: "total_work_time",
                 key: "total_work_time",
-                width: "20%",
+                width: "18%",
                 render: (_, record) => (
                   <div className="flex items-center gap-1 mb-1">
                     <span>{record.total_work_time} hours</span>
@@ -428,9 +429,22 @@ function ApprovalPage() {
                 ),
               },
               {
+                title: "Created Date",
+                dataIndex: "created_at",
+                key: "created_at",
+                width: "10%",
+                render: (date: string) => dayjs(date).format("DD/MM/YYYY HH:mm"),
+                sorter: (a, b) => {
+                  const dateA = new Date(a.created_at).getTime();
+                  const dateB = new Date(b.created_at).getTime();
+                  return dateA - dateB;
+                },
+                defaultSortOrder: "descend",
+              },
+              {
                 title: "Actions",
                 key: "actions",
-                width: "15%",
+                width: "20%",
                 render: (_, record) => {
                   return (
                     <Space>
@@ -438,6 +452,7 @@ function ApprovalPage() {
                         type="text"
                         icon={<EyeOutlined />}
                         onClick={() => showDetails(record)}
+                        title="View Details"
                       />
                       {record.claim_status === "Pending Approval" && (
                         <>
@@ -450,13 +465,13 @@ function ApprovalPage() {
                           <Button
                             type="text"
                             icon={<CloseOutlined />}
-                            onClick={() => showConfirmation(record, "Rejected")}
+                            onClick={() => showConfirmation(record, "Canceled")}
                             title="Reject"
                           />
                           <Button
                             type="text"
                             icon={<UndoOutlined />}
-                            onClick={() => showConfirmation(record, "Draft")}
+                            onClick={() => showConfirmation(record, "Return")}
                             title="Return to Draft"
                           />
                         </>
@@ -489,14 +504,14 @@ function ApprovalPage() {
             {confirmationType === "Approved" && (
               <CheckOutlined className="text-green-500" />
             )}
-            {confirmationType === "Rejected" && (
+            {confirmationType === "Canceled" && (
               <CloseOutlined className="text-red-500" />
             )}
-            {confirmationType === "Draft" && (
+            {confirmationType === "Return" && (
               <UndoOutlined className="text-yellow-500" />
             )}
             <span className="text-lg font-medium">
-              {confirmationType === "Draft"
+              {confirmationType === "Return"
                 ? "Return to Draft"
                 : confirmationType}{" "}
               Confirmation
@@ -513,15 +528,19 @@ function ApprovalPage() {
             backgroundColor:
               confirmationType === "Approved"
                 ? "#52c41a"
-                : confirmationType === "Rejected"
-                ? "#f5222d"
-                : "#faad14",
+                : confirmationType === "Canceled"
+                  ? "#f5222d"
+                  : "#faad14",
           },
         }}
         className="confirmation-modal"
       >
         <div className="p-2">
-          <Form form={form} layout="vertical">
+          <Form 
+            form={form} 
+            layout="vertical"
+            initialValues={{ comment: "" }} // Add initial values
+          >
             <div className="mb-4 p-3 bg-gray-50 rounded-md border border-gray-200">
               {selectedClaim && (
                 <div>
@@ -556,7 +575,7 @@ function ApprovalPage() {
                   </span>
                 </div>
               )}
-              {confirmationType === "Rejected" && (
+              {confirmationType === "Canceled" && (
                 <div className="flex items-center gap-2 text-red-600 font-medium">
                   <CloseOutlined />
                   <span>
@@ -564,7 +583,7 @@ function ApprovalPage() {
                   </span>
                 </div>
               )}
-              {confirmationType === "Draft" && (
+              {confirmationType === "Return" && (
                 <div className="flex items-center gap-2 text-yellow-600 font-medium">
                   <UndoOutlined />
                   <span>
@@ -573,27 +592,6 @@ function ApprovalPage() {
                 </div>
               )}
             </Typography.Paragraph>
-
-            <Form.Item
-              label={<span className="font-medium">Comment</span>}
-              name="comment"
-              rules={[
-                {
-                  required:
-                    confirmationType === "Rejected" ||
-                    confirmationType === "Draft",
-                  message: "Please provide a reason",
-                },
-              ]}
-            >
-              <Input.TextArea
-                rows={4}
-                placeholder="Add a comment or reason for this action"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                className="border-gray-300 focus:border-blue-500 hover:border-blue-400"
-              />
-            </Form.Item>
           </Form>
         </div>
       </Modal>
