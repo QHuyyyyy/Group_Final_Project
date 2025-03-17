@@ -12,16 +12,14 @@ interface ProjectModalProps {
   initialValues?: ProjectData;
   isEditMode: boolean;
   users: any[];
-  disabledStartDate: (current: dayjs.Dayjs) => boolean;
-  disabledEndDate: (current: dayjs.Dayjs) => boolean;
-  teamMembers: Array<{ userId: string; role: string }>;
-  setTeamMembers: React.Dispatch<React.SetStateAction<Array<{ userId: string; role: string }>>>;
+  departments: any[];
+  teamMembers: Array<{userId: string, role: string}>;
+  setTeamMembers: React.Dispatch<React.SetStateAction<Array<{userId: string, role: string}>>>;
+  loading?: boolean;
+  disabledStartDate: (current: any) => boolean;
+  disabledEndDate: (current: any) => boolean;
   handleStartDateChange: (date: dayjs.Dayjs | null) => void;
   handleEndDateChange: (date: dayjs.Dayjs | null) => void;
-  departments: Array<{
-    value: string;
-    label: string;
-  }>;
 }
 
 const ProjectModal: React.FC<ProjectModalProps> = ({
@@ -31,13 +29,13 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
   initialValues,
   isEditMode,
   users,
-  disabledStartDate,
-  disabledEndDate,
+  departments,
   teamMembers,
   setTeamMembers,
+  disabledStartDate,
+  disabledEndDate,
   handleStartDateChange,
   handleEndDateChange,
-  departments,
 }) => {
   const [form] = Form.useForm();
   const [memberSearchText, setMemberSearchText] = useState('');

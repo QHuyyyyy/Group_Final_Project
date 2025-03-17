@@ -8,8 +8,8 @@ import CommonField from "./CommonFieldAddUser";
 interface AddUserModalProps {
   visible: boolean;
   onCancel: () => void;
-  onSuccess: () => void;
-  roleOptions: { label: string; value: string }[];
+  onSuccess: (values: any) => void;
+  roleOptions: Array<{label: string, value: string}>;
 }
 
 const AddUserModal: React.FC<AddUserModalProps> = ({ visible, onCancel, onSuccess, roleOptions }) => {
@@ -37,7 +37,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ visible, onCancel, onSucces
       if (response) {
         toast.success("User created successfully");
         form.resetFields();
-        onSuccess();
+        onSuccess(values);
       }
     } catch (apiError: any) {
       loadingMessage();

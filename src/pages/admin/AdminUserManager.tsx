@@ -117,10 +117,6 @@ const AdminUserManager: React.FC = () => {
     }));
   }, 2000);
 
-  const handleAdd = () => {
-    setIsAddModalVisible(true);
-  };
-
   const handleEdit = (record: UserData) => {
     setEditingRecord(record);
     setIsEditModalVisible(true);

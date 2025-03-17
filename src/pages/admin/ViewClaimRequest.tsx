@@ -147,10 +147,6 @@ const ViewClaimRequest: React.FC = () => {
     </div>
   );
 
-  const handleAddUser = () => {
-    console.log('Add user clicked');
-  };
-
   const columns: ColumnsType<Claim> = [
     {
       title: 'ID',

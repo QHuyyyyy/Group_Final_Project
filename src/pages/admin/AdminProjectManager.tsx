@@ -346,17 +346,6 @@ const AdminProjectManager: React.FC = () => {
     });
   };
 
-  const handleCreate = () => {
-    createForm.setFieldsValue({
-      technical_leader: [],
-      business_analyst: [],
-      developers: [],
-      testers: [],
-      technical_consultant: []
-    });
-    setIsCreateModalVisible(true);
-  };
-
   const handleCreateModalClose = () => {
     createForm.resetFields();
     setTeamMembers([]); // Reset team members khi đóng modal
@@ -668,8 +657,8 @@ const AdminProjectManager: React.FC = () => {
           disabledEndDate={disabledEndDate}
           teamMembers={teamMembers}
           setTeamMembers={setTeamMembers}
-          handleStartDateChange={handleCreateStartDateChange}
-          handleEndDateChange={handleCreateEndDateChange}
+          handleStartDateChange={(date: dayjs.Dayjs | null) => handleCreateStartDateChange(date)}
+          handleEndDateChange={(date: dayjs.Dayjs | null) => handleCreateEndDateChange(date)}
         />
 
         <ProjectModal
@@ -684,8 +673,8 @@ const AdminProjectManager: React.FC = () => {
           disabledEndDate={disabledEndDate}
           teamMembers={editTeamMembers}
           setTeamMembers={setEditTeamMembers}
-          handleStartDateChange={handleEditStartDateChange}
-          handleEndDateChange={handleEditEndDateChange}
+          handleStartDateChange={(date: dayjs.Dayjs | null) => handleEditStartDateChange(date)}
+          handleEndDateChange={(date: dayjs.Dayjs | null) => handleEditEndDateChange(date)}
         />
 
         <Modal

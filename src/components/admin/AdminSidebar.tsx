@@ -91,8 +91,8 @@ const AdminSidebar = () => {
         project_department: values.project_department,
         project_description: values.project_description,
         project_status: values.project_status || 'New',
-        project_start_date: values.startDate ? dayjs(values.startDate).format('YYYY-MM-DD') : null,
-        project_end_date: values.endDate ? dayjs(values.endDate).format('YYYY-MM-DD') : null,
+        project_start_date: values.startDate ? dayjs(values.startDate).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
+        project_end_date: values.endDate ? dayjs(values.endDate).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
         project_members: teamMembers.map(member => ({
           user_id: member.userId,
           project_role: member.role
