@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Modal, Input } from "antd";
 import { SendOutlined, QuestionCircleOutlined } from '@ant-design/icons';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 interface SendRequestProps {
@@ -20,17 +20,11 @@ const SendRequest: React.FC<SendRequestProps> = ({ id, visible, onSend, onCancel
         setLoading(true);
         try {
             await onSend(id, comment);
-            toast.success('Request has been sent for approval successfully.', {
-                position: "top-right",
-                autoClose: 4500,
-            });
+            toast.success('Request has been sent for approval successfully');
             setComment('');
             onCancel();
-        } catch (error) {
-            toast.error('Failed to send request for approval.', {
-                position: "top-right",
-                autoClose: 4500,
-            });
+        } catch (_) {
+            toast.error('Failed to send request for approval');
         } finally {
             setLoading(false);
         }

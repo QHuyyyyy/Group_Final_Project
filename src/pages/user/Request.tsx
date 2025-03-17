@@ -133,7 +133,7 @@ const Claim = () => {
         setSelectedRequest(response.data);
         setIsModalVisible(true);
       }
-    } catch (error) {
+    } catch {
       message.error("Failed to fetch claim details");
     }
   };
@@ -176,12 +176,14 @@ const Claim = () => {
         placement: 'topRight'
       });
       fetchClaims(pagination.current);
-    } catch (error: any) {
-      notification.error({
-        message: 'Error',
-        description: error.message || 'Failed to cancel the request.',
-        placement: 'topRight'
-      });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        notification.error({
+          message: 'Error',
+          description: error.message || 'Failed to cancel the request.',
+          placement: 'topRight'
+        });
+      }
     }
   };
 
@@ -247,12 +249,14 @@ const Claim = () => {
         placement: 'topRight'
       });
       fetchClaims(pagination.current);
-    } catch (error: any) {
-      notification.error({
-        message: 'Error',
-        description: error.message || 'Failed to send request for approval.',
-        placement: 'topRight'
-      });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        notification.error({
+          message: 'Error',
+          description: error.message || 'Failed to send request for approval.',
+          placement: 'topRight'
+        });
+      }
     }
   };
 
@@ -263,7 +267,7 @@ const Claim = () => {
         setSelectedRequest(response.data);
         setIsUpdateModalVisible(true);
       }
-    } catch (error) {
+    } catch {
       message.error("Failed to fetch claim details for update");
     }
   };
@@ -444,13 +448,13 @@ const Claim = () => {
                         />
                         <Button
                           type="text"
-                          icon={<CloudUploadOutlined />}
+                          icon={<CloudUploadOutlined style={{ color: '#1890ff' }} />}
                           onClick={() => handleOpenSendModal(record)}
                           title="Send for Approval"
                         />
                         <Button
                           type="text"
-                          icon={<CloseCircleOutlined />}
+                          icon={<CloseCircleOutlined style={{ color: '#ff4d4f' }} />}
                           onClick={() => handleOpenCancelModal(record)}
                           title="Cancel"
                         />
