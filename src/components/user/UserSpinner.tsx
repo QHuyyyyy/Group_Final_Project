@@ -107,22 +107,12 @@ const UserSpinner: React.FC = () => {
           ))}
         </motion.div>
 
-        {/* Progress Bar */}
-        <div className="w-64 h-1 bg-gray-200 rounded-full overflow-hidden">
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={barVariants}
-            className="h-full bg-gradient-to-r from-blue-500 to-cyan-500"
-          />
-        </div>
-
         {/* Loading Message */}
         <motion.div
           initial="hidden"
           animate="visible"
           variants={textVariants}
-          className="text-gray-500 text-sm mt-2"
+          className="text-gray-500 text-sm"
         >
           <p>Please wait while we prepare your experience</p>
         </motion.div>

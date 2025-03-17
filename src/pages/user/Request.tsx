@@ -326,7 +326,7 @@ const Claim = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <div className="flex-1 p-8">
+      <div className="flex-1">
         <div className="flex items-center justify-between mb-6">
           <Search
             placeholder="Search by Employee Name"

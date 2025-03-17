@@ -1,10 +1,11 @@
 import { useEffect, useState, useCallback } from "react";
-import { Table, Tag, Space, Button, Modal, Card, Input, message, Form, Typography, Tabs, Avatar } from "antd";
-import { CheckOutlined, CloseOutlined, UndoOutlined, EyeOutlined, FilterOutlined, CalendarOutlined, UserOutlined } from "@ant-design/icons";
+import { Table, Tag, Space, Button, Modal, Card, Input, message, Form, Typography, Tabs, Avatar, notification } from "antd";
+import { CheckOutlined, CloseOutlined, UndoOutlined, EyeOutlined, FilterOutlined, UserOutlined } from "@ant-design/icons";
 import { claimService } from "../../services/claim.service";
 import type { Claim, SearchParams } from "../../models/ClaimModel";
 import { debounce } from "lodash";
 import dayjs from "dayjs";
+import { toast } from 'react-toastify';
 
 const { Search } = Input;
 
@@ -35,7 +36,7 @@ function ApprovalPage() {
   });
   const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
   const [confirmationType, setConfirmationType] = useState<
-    "Approved" | "Canceled" | "Return" | null
+    "Approved" | "Canceled" | "Draft" | null
   >(null);
   const [detailsModalVisible, setDetailsModalVisible] = useState(false);
   const [form] = Form.useForm();
@@ -161,7 +162,7 @@ function ApprovalPage() {
 
   const showConfirmation = (
     claim: Claim,
-    type: "Approved" | "Canceled" | "Return"
+    type: "Approved" | "Canceled" | "Draft"
   ) => {
     if (claim.claim_status !== "Pending Approval") {
       message.warning(
@@ -198,10 +199,20 @@ function ApprovalPage() {
       }
 
       const actionText =
-        confirmationType === "Return"
+        confirmationType === "Draft"
           ? "returned to draft"
           : confirmationType.toLowerCase();
-      message.success(`Claim has been ${actionText} successfully`);
+      
+      toast.success(`The claim "${selectedClaim.claim_name}" has been successfully ${actionText}.`, {
+        position: "top-right",
+        autoClose: 4500,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      
       refreshData();
 
       form.resetFields();
@@ -371,7 +382,7 @@ function ApprovalPage() {
                     <Avatar
                       size="large"
                       icon={<UserOutlined />}
-                      src={record.employee_info?.avatar_url} // Use avatar_url from employee_info
+                      src={record.employee_info?.avatar_url}
                       className="bg-blue-500"
                     />
                     <div className="mb-1">
@@ -395,7 +406,6 @@ function ApprovalPage() {
                 dataIndex: 'period',
                 render: (_, record) => (
                   <div style={{ whiteSpace: 'nowrap' }}>
-                    <CalendarOutlined className="text-blue-500 mr-2" />
                     <span>{dayjs(record.claim_start_date).format('DD/MM')} - {dayjs(record.claim_end_date).format('DD/MM/YYYY')}</span>
                   </div>
                 ),
@@ -408,20 +418,20 @@ function ApprovalPage() {
                 width: 180,
               },
               {
-                title: "Work time",
+                title: "Work Time",
                 dataIndex: "total_work_time",
                 key: "total_work_time",
-                width: "18%",
+                width: "10%",
                 render: (_, record) => (
                   <div className="flex items-center gap-1 mb-1">
-                    <span>{record.total_work_time} hours</span>
+                    <span>{record.total_work_time}h</span>
                   </div>
                 ),
               },
               {
                 title: "Status",
                 key: "status",
-                width: "5%",
+                width: "10%",
                 render: (_, record) => (
                   <Tag color={getStatusColor(record.claim_status)}>
                     {record.claim_status}
@@ -433,18 +443,18 @@ function ApprovalPage() {
                 dataIndex: "created_at",
                 key: "created_at",
                 width: "10%",
-                render: (date: string) => dayjs(date).format("DD/MM/YYYY HH:mm"),
+                render: (date: string) => dayjs(date).format("DD/MM/YYYY"),
                 sorter: (a, b) => {
                   const dateA = new Date(a.created_at).getTime();
                   const dateB = new Date(b.created_at).getTime();
-                  return dateA - dateB;
+                  return dateB - dateA;
                 },
                 defaultSortOrder: "descend",
               },
               {
                 title: "Actions",
                 key: "actions",
-                width: "20%",
+                width: "15%",
                 render: (_, record) => {
                   return (
                     <Space>
@@ -459,19 +469,15 @@ function ApprovalPage() {
                           <Button
                             type="text"
                             icon={<CheckOutlined />}
+                            className="!text-green-500"
                             onClick={() => showConfirmation(record, "Approved")}
                             title="Approve"
                           />
                           <Button
                             type="text"
-                            icon={<CloseOutlined />}
-                            onClick={() => showConfirmation(record, "Canceled")}
-                            title="Reject"
-                          />
-                          <Button
-                            type="text"
                             icon={<UndoOutlined />}
-                            onClick={() => showConfirmation(record, "Return")}
+                            className="!text-yellow-500"
+                            onClick={() => showConfirmation(record, "Draft")}
                             title="Return to Draft"
                           />
                         </>
@@ -507,11 +513,11 @@ function ApprovalPage() {
             {confirmationType === "Canceled" && (
               <CloseOutlined className="text-red-500" />
             )}
-            {confirmationType === "Return" && (
+            {confirmationType === "Draft" && (
               <UndoOutlined className="text-yellow-500" />
             )}
             <span className="text-lg font-medium">
-              {confirmationType === "Return"
+              {confirmationType === "Draft"
                 ? "Return to Draft"
                 : confirmationType}{" "}
               Confirmation
@@ -583,7 +589,7 @@ function ApprovalPage() {
                   </span>
                 </div>
               )}
-              {confirmationType === "Return" && (
+              {confirmationType === "Draft" && (
                 <div className="flex items-center gap-2 text-yellow-600 font-medium">
                   <UndoOutlined />
                   <span>
@@ -693,7 +699,7 @@ function ApprovalPage() {
                 <div className="flex-2 mx-4 relative mb-8">
                   <div className="h-0.5 bg-blue-300 w-full absolute top-1/2 transform -translate-y-1/2"></div>
                   <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-3 text-gray-500 font-medium border border-blue-200 rounded-full">
-                    {`${selectedClaim.total_work_time} hours`}
+                    {`${selectedClaim.total_work_time}h`}
                   </div>
                 </div>
 
