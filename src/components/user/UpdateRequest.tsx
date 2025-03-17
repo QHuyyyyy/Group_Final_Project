@@ -44,7 +44,7 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, claim, onClose, 
                     }
                 } catch (error) {
                     console.error("Error fetching project details:", error);
-                    message.error("Failed to fetch project details");
+                    toast.error("Failed to fetch project details");
                 }
             }
         };

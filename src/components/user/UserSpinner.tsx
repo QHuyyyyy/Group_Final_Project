@@ -32,22 +32,6 @@ const UserSpinner: React.FC = () => {
     }
   };
 
-  const barVariants = {
-    hidden: {
-      scaleX: 0,
-      opacity: 0
-    },
-    visible: {
-      scaleX: 1,
-      opacity: 1,
-      transition: {
-        delay: 0.5,
-        duration: 0.8,
-        ease: "easeInOut"
-      }
-    }
-  };
-
   const dotsVariants = {
     animate: {
       transition: {
