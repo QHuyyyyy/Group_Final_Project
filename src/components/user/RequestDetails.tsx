@@ -1,4 +1,4 @@
-import { Modal, Tag} from "antd";
+import { Modal, Tag, Spin } from "antd";
 import dayjs from "dayjs";
 import { useMemo, useEffect, useState } from "react";
 import { ClaimById } from "../../models/ClaimModel";
@@ -28,23 +28,39 @@ const RequestDetails: React.FC<RequestDetailsProps> = ({
   onClose,
 }) => {
   const [projectDetails, setProjectDetails] = useState<ProjectData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchProjectDetails = async () => {
-      if (claim?.project_id) {
-        try {
-          const response = await projectService.getProjectById(claim.project_id, {showSpinner:false});
-          if (response.success && response.data) {
-            setProjectDetails(response.data);
-          }
-        } catch (error) {
-          console.error("Error fetching project details:", error);
+  const fetchProjectDetails = useMemo(() => {
+    return async () => {
+      if (!claim?.project_id || !visible) return;
+      
+      if (projectDetails?._id === claim.project_id) return;
+
+      setIsLoading(true);
+      try {
+        const response = await projectService.getProjectById(claim.project_id, {showSpinner:false});
+        if (response.success && response.data) {
+          setProjectDetails(response.data);
         }
+      } catch (error) {
+        console.error("Error fetching project details:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
+  }, [claim?.project_id, visible, projectDetails?._id]);
 
-    fetchProjectDetails();
-  }, [claim?.project_id]);
+  useEffect(() => {
+    if (visible) {
+      fetchProjectDetails();
+    }
+  }, [visible, fetchProjectDetails]);
+
+  useEffect(() => {
+    if (!visible) {
+      setProjectDetails(null);
+    }
+  }, [visible]);
 
   const formatWorkTime = (hours: number | undefined) => {
     if (!hours && hours !== 0) return "-";
@@ -126,23 +142,31 @@ const RequestDetails: React.FC<RequestDetailsProps> = ({
             <span className="font-semibold">Project Details</span>
           </div>
           <div className="bg-gray-50 rounded-lg p-4">
-            <div className="grid grid-cols-2 gap-y-6">
-              <div>
-                <p className="text-gray-500 text-sm mb-1">Project Name</p>
-                <p className="font-medium">{projectDetails?.project_name || "N/A"}</p>
+            {isLoading ? (
+              <div className="flex justify-center py-4">
+                <Spin />
               </div>
-              <div>
-                <p className="text-gray-500 text-sm mb-1">Project ID</p>
-                <p className="font-medium">{claim.project_id}</p>
-              </div>
-            </div>
-            {projectDetails && (
-              <div className="mt-6">
-                <p className="text-gray-500 text-sm mb-1">Project Comment</p>
-                <p className="font-medium">
-                  {projectDetails.project_comment || 'No comment'}
-                </p>
-              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-y-6">
+                  <div>
+                    <p className="text-gray-500 text-sm mb-1">Project Name</p>
+                    <p className="font-medium">{projectDetails?.project_name || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 text-sm mb-1">Project ID</p>
+                    <p className="font-medium">{claim.project_id}</p>
+                  </div>
+                </div>
+                {projectDetails && (
+                  <div className="mt-6">
+                    <p className="text-gray-500 text-sm mb-1">Project Comment</p>
+                    <p className="font-medium">
+                      {projectDetails.project_comment || 'No comment'}
+                    </p>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

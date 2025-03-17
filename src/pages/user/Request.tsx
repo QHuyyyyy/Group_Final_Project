@@ -39,8 +39,9 @@ const Claim = () => {
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [filteredClaims, setFilteredClaims] = useState<Claim[]>([]);
   const [statusCounts, setStatusCounts] = useState<Record<string, number>>({});
-  const [debouncedSearchText] = useDebounce(searchText, 500);
+  const [debouncedSearchText] = useDebounce(searchText, 2000);
   const [isCancelModalVisible, setIsCancelModalVisible] = useState(false);  // Add cancel modal visibility state
+  const [allClaimsData, setAllClaimsData] = useState<Record<string, Claim[]>>({});
 
   const claimStatuses = [
     { label: 'All', value: '', color: '#1890ff', bgColor: '#e6f7ff' },
@@ -121,11 +122,6 @@ const Claim = () => {
     }
   };
 
-  const handleSearch = (value: string) => {
-    setSearchText(value);
-    setPagination(prev => ({ ...prev, current: 1 }));
-  };
-
   const handleView = async (record: Claim) => {
     try {
       const response = await claimService.getClaimById(record._id, {showSpinner:false})
@@ -201,6 +197,12 @@ const Claim = () => {
     setSelectedStatus(status || '');
     setPagination(prev => ({ ...prev, current: 1 }));
     
+    const cacheKey = `${status}_${debouncedSearchText}`;
+    if (allClaimsData[cacheKey]) {
+      setFilteredClaims(allClaimsData[cacheKey]);
+      return;
+    }
+
     const params: SearchParams = {
       searchCondition: {
         keyword: debouncedSearchText || "",
@@ -219,6 +221,10 @@ const Claim = () => {
     claimService.searchClaimsByClaimer(params)
       .then(response => {
         if (response?.data?.pageData) {
+          setAllClaimsData(prev => ({
+            ...prev,
+            [cacheKey]: response.data.pageData
+          }));
           setFilteredClaims(response.data.pageData);
           setPagination(prev => ({
             ...prev,
@@ -236,6 +242,11 @@ const Claim = () => {
         setLoading(false);
       });
   };
+
+  useEffect(() => {
+    setAllClaimsData({});
+  }, [debouncedSearchText]);
+
   const handleSendRequest = async (id: string, comment: string) => {
     try {
       await claimService.changeClaimStatus({
@@ -329,9 +340,9 @@ const Claim = () => {
       <div className="flex-1 p-8">
         <div className="flex items-center justify-between mb-6">
           <Search
-            placeholder="Search by Employee Name"
+            placeholder="Search by Claim name"
             allowClear
-            onSearch={handleSearch}
+            onChange={(e) => setSearchText(e.target.value)}
             style={{ width: 300 }}
             className="ml-0"
           />

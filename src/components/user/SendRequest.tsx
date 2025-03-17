@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Modal, Input } from "antd";
 import { SendOutlined, QuestionCircleOutlined } from '@ant-design/icons';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 interface SendRequestProps {
