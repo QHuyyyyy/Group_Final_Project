@@ -56,7 +56,7 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                 userService.searchUsers({
                     searchCondition: { role_code: 'A003', is_delete: false },
                     pageInfo: { pageNum: 1, pageSize: 100 }
-                })
+                }, {showSpinner:false})
             ]);
 
             if (projectsResponse.success) {
