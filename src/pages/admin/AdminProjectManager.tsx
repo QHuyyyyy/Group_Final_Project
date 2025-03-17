@@ -14,6 +14,7 @@ import { getProjectColumns } from '../../components/admin/ProjectColumns';
 import ProjectModal from '../../components/admin/ProjectModal';
 import { departmentService } from '../../services/Department.service';
 import { debounce } from 'lodash';
+import AdminSidebar from '../../components/admin/AdminSidebar';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -502,12 +503,8 @@ const AdminProjectManager: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <SideBarAdminProject
-        favoriteProjects={favoriteProjects}
-        projects={projects}
-        onCreateProject={handleCreate}
-      />
-      <div className="flex-1 ml-64 p-8">
+      <AdminSidebar />
+      <div className="flex-1 ml-[260px] p-8">
         <div className="flex items-center justify-between mb-6">
           <Button
             type="default"

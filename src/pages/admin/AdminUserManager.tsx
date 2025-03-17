@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Table, Button,Input,Space, Tag, Switch } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import 'antd/dist/reset.css';
-import SideBarAdminUser from '../../components/admin/SideBarAdminUser';  
+import AdminSidebar from '../../components/admin/AdminSidebar';
 import { useNavigate } from 'react-router-dom';
 import { 
   EditOutlined,  
@@ -235,8 +235,8 @@ const AdminUserManager: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <SideBarAdminUser onAddUser={handleAdd} />
-      <div className="flex-1 ml-64 p-8">
+      <AdminSidebar />
+      <div className="flex-1 ml-[260px] p-8">
         <div className="flex items-center justify-between mb-6">
           <Button 
             type="default" 
