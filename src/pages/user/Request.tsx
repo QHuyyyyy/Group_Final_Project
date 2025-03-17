@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Input, Card, Table, Tag, message, Button, notification } from "antd";
+import { Input, Card, Table, Tag, message, Button, notification, Tabs } from "antd";
 import { claimService } from "../../services/claim.service";
 import dayjs from 'dayjs';
 import RequestDetails from "../../components/user/RequestDetails";
@@ -9,6 +9,7 @@ import {
   CloudUploadOutlined,
   EditOutlined,
   EyeOutlined,
+  FilterOutlined,
 } from "@ant-design/icons";
 import type { Claim, ClaimById, SearchParams } from "../../models/ClaimModel";
 import CreateRequest from "./CreateRequest";
@@ -295,241 +296,294 @@ const Claim = () => {
   };
 
   const renderStatusButtons = () => (
-    <div className="flex gap-2">
-      {claimStatuses.map(status => (
-        <Button
-          key={status.value}
-          onClick={() => handleStatusFilter(status.value)}
-          style={{
-            borderColor: status.color,
-            backgroundColor: selectedStatus === status.value ? status.color : status.bgColor,
-            color: selectedStatus === status.value ? '#fff' : status.color,
-            fontWeight: 500,
-            display: 'flex',
-            alignItems: 'center',
-            height: '32px',
-            padding: '4px 12px',
-            borderRadius: '6px',
-            transition: 'all 0.3s'
-          }}
-          className="hover:opacity-80"
-        >
-          {status.label}
-          <span
-            style={{
-              marginLeft: '8px',
-              padding: '2px 8px',
-              fontSize: '12px',
-              borderRadius: '10px',
-              backgroundColor: selectedStatus === status.value ? '#ffffff' : '#ffffff',
-              color: status.color,
-              fontWeight: 'bold',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-              border: `1px solid ${status.color}`
-            }}
-          >
-            {status.value === '' ? pagination.totalItems : statusCounts[status.value] || 0}
-          </span>
-        </Button>
-      ))}
+    <div className="overflow-auto custom-scrollbar">
+      <div className="flex flex-wrap gap-18 items-center mb-5 mx-2">
+        <div className="flex items-center">
+          <FilterOutlined className="mr-4 mb-2 text-gray-600" />
+          <Tabs
+            activeKey={selectedStatus}
+            onChange={handleStatusFilter}
+            className="status-tabs"
+            items={[
+              {
+                key: "",
+                label: (
+                  <span className="flex items-center text-gray-600">
+                    All
+                    <span className="ml-1 text-gray-500">
+                      ({pagination.totalItems})
+                    </span>
+                  </span>
+                )
+              },
+              {
+                key: "Draft",
+                label: (
+                  <span className="flex items-center text-gray-600">
+                    Draft
+                    <span className="ml-1 text-gray-500">
+                      ({statusCounts["Draft"] || 0})
+                    </span>
+                  </span>
+                )
+              },
+              {
+                key: "Pending Approval",
+                label: (
+                  <span className="flex items-center text-gray-600">
+                    Pending Approval
+                    <span className="ml-1 text-gray-500">
+                      ({statusCounts["Pending Approval"] || 0})
+                    </span>
+                  </span>
+                )
+              },
+              {
+                key: "Approved",
+                label: (
+                  <span className="flex items-center text-gray-600">
+                    Approved
+                    <span className="ml-1 text-gray-500">
+                      ({statusCounts["Approved"] || 0})
+                    </span>
+                  </span>
+                )
+              },
+              {
+                key: "Rejected",
+                label: (
+                  <span className="flex items-center text-gray-600">
+                    Rejected
+                    <span className="ml-1 text-gray-500">
+                      ({statusCounts["Rejected"] || 0})
+                    </span>
+                  </span>
+                )
+              },
+              {
+                key: "Canceled",
+                label: (
+                  <span className="flex items-center text-gray-600">
+                    Canceled
+                    <span className="ml-1 text-gray-500">
+                      ({statusCounts["Canceled"] || 0})
+                    </span>
+                  </span>
+                )
+              },
+              {
+                key: "Paid",
+                label: (
+                  <span className="flex items-center text-gray-600">
+                    Paid
+                    <span className="ml-1 text-gray-500">
+                      ({statusCounts["Paid"] || 0})
+                    </span>
+                  </span>
+                )
+              }
+            ]}
+          />
+        </div>
+      </div>
     </div>
   );
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      <div className="flex-1 p-8">
-        <div className="flex items-center justify-between mb-6">
-          <Search
-            placeholder="Search by Claim name"
-            allowClear
-            onChange={(e) => setSearchText(e.target.value)}
-            style={{ width: 300 }}
-            className="ml-0"
-          />
-          <Button type="primary" onClick={handleOpenCreateModal}>
+    <div className="overflow-x-auto">
+      <Card className="shadow-md">
+        <div className="mb-4 flex justify-between items-center">
+          <div className="flex items-center">
+            <h1 className="text-2xl font-bold text-gray-800">My Claims</h1>
+            <Search
+              placeholder="Search by claim name"
+              onSearch={(value) => setSearchText(value)}
+              onChange={(e) => setSearchText(e.target.value)}
+              className="ml-10 !w-72"
+              allowClear
+            />
+          </div>
+          <Button 
+            type="primary" 
+            onClick={handleOpenCreateModal}
+          >
             Add New Claim
           </Button>
         </div>
 
-        <Card className="shadow-md">
-          <div className="mb-6">
-            <div className="flex justify-between items-center">
-              <h1 className="text-2xl font-bold text-gray-800">My Claims</h1>
-              {renderStatusButtons()}
-            </div>
-          </div>
-          <Table
-            loading={loading}
-            dataSource={filteredClaims}
-            columns={[
-              {
-                title: "No.",
-                key: "index",
-                render: (_, __, index) => index + 1,
-                width: 60,
-                align: "center",
+        {renderStatusButtons()}
+
+        <Table
+          loading={loading}
+          dataSource={filteredClaims}
+          columns={[
+            {
+              title: "No.",
+              key: "index",
+              render: (_, __, index) => index + 1,
+              width: 60,
+              align: "center",
+            },
+            {
+              title: "Claim Name",
+              dataIndex: "claim_name",
+              key: "claim_name",
+              width: 120,
+            },
+            {
+              title: "Project Name",
+              dataIndex: ["project_info", "project_name"],
+              key: "project_name",
+              width: 180,
+              render: (_, record) => record.project_info?.project_name || "-",
+            },
+            {
+              title: "Project Duration",
+              dataIndex: "duration",
+              key: "duration",
+              width: 200,
+              align: "center",
+              sorter: (a, b) => {
+                const dateA = new Date(a.claim_start_date).getTime();
+                const dateB = new Date(b.claim_start_date).getTime();
+                return dateA - dateB;
               },
-              {
-                title: "Claim Name",
-                dataIndex: "claim_name",
-                key: "claim_name",
-                width: 120,
-              },
-              {
-                title: "Project Name",
-                dataIndex: ["project_info", "project_name"],
-                key: "project_name",
-                width: 180,
-                render: (_, record) => record.project_info?.project_name || "-",
-              },
-              {
-                title: "Project Duration",
-                dataIndex: "duration",
-                key: "duration",
-                width: 200,
-                align: "center",
-                sorter: (a, b) => {
-                  const dateA = new Date(a.claim_start_date).getTime();
-                  const dateB = new Date(b.claim_start_date).getTime();
-                  return dateA - dateB;
-                },
-                render: (_, record) => (
-                  <span>
-                    {dayjs(record.claim_start_date).format("YYYY-MM-DD")}
-                    {" - "}
-                    {dayjs(record.claim_end_date).format("YYYY-MM-DD")}
-                  </span>
-                ),
-              },
-              {
-                title: "Total Hours",
-                dataIndex: "total_work_time",
-                key: "total_work_time",
-                width: 100,
-                align: "center",
-                render: (total_work_time: number) => `${total_work_time}h`,
-              },
-              {
-                title: "Status",
-                dataIndex: "claim_status",
-                key: "claim_status",
-                width: 120,
-                align: "center",
-                render: (status: string) => (
-                  <Tag
-                    color={
-                      !status || status === "Draft"
-                        ? "gold"
-                        : status === "Pending Approval"
-                          ? "blue"
-                          : status === "Approved"
-                            ? "green"
-                            : status === "Rejected" || status === "Canceled"
-                              ? "red"
-                              : status === "Paid"
-                                ? "green"
-                                : ""
-                    }
-                  >
-                    {status || "Draft"}
-                  </Tag>
-                ),
-              },
-              {
-                title: "Actions",
-                key: "actions",
-                width: 100,
-                render: (_, record) => (
-                  <div className="flex items-center gap-2">
-                    <div className="w-8">
+              render: (_, record) => (
+                <span>
+                  {dayjs(record.claim_start_date).format("YYYY-MM-DD")}
+                  {" - "}
+                  {dayjs(record.claim_end_date).format("YYYY-MM-DD")}
+                </span>
+              ),
+            },
+            {
+              title: "Total Hours",
+              dataIndex: "total_work_time",
+              key: "total_work_time",
+              width: 100,
+              align: "center",
+              render: (total_work_time: number) => `${total_work_time}h`,
+            },
+            {
+              title: "Status",
+              dataIndex: "claim_status",
+              key: "claim_status",
+              width: 120,
+              align: "center",
+              render: (status: string) => (
+                <Tag
+                  color={
+                    !status || status === "Draft"
+                      ? "gold"
+                      : status === "Pending Approval"
+                        ? "blue"
+                        : status === "Approved"
+                          ? "green"
+                          : status === "Rejected" || status === "Canceled"
+                            ? "red"
+                            : status === "Paid"
+                              ? "green"
+                              : ""
+                  }
+                >
+                  {status || "Draft"}
+                </Tag>
+              ),
+            },
+            {
+              title: "Actions",
+              key: "actions",
+              width: 100,
+              render: (_, record) => (
+                <div className="flex items-center gap-2">
+                  <div className="w-8">
+                    <Button
+                      type="text"
+                      icon={<EyeOutlined />}
+                      onClick={() => handleView(record)}
+                      title="View"
+                    />
+                  </div>
+                  {record.claim_status === "Draft" && (
+                    <div className="flex items-center gap-2">
                       <Button
                         type="text"
-                        icon={<EyeOutlined />}
-                        onClick={() => handleView(record)}
-                        title="View"
+                        icon={<EditOutlined />}
+                        onClick={() => handleOpenUpdateModal(record)}
+                        title="Edit"
+                      />
+                      <Button
+                        type="text"
+                        icon={<CloudUploadOutlined style={{ color: '#1890ff' }} />}
+                        onClick={() => handleOpenSendModal(record)}
+                        title="Send for Approval"
+                      />
+                      <Button
+                        type="text"
+                        icon={<CloseCircleOutlined style={{ color: '#ff4d4f' }} />}
+                        onClick={() => handleOpenCancelModal(record)}
+                        title="Cancel"
                       />
                     </div>
-                    {record.claim_status === "Draft" && (
-                      <div className="flex items-center gap-2">
-                        <Button
-                          type="text"
-                          icon={<EditOutlined />}
-                          onClick={() => handleOpenUpdateModal(record)}
-                          title="Edit"
-                        />
-                        <Button
-                          type="text"
-                          icon={<CloudUploadOutlined style={{ color: '#1890ff' }} />}
-                          onClick={() => handleOpenSendModal(record)}
-                          title="Send for Approval"
-                        />
-                        <Button
-                          type="text"
-                          icon={<CloseCircleOutlined style={{ color: '#ff4d4f' }} />}
-                          onClick={() => handleOpenCancelModal(record)}
-                          title="Cancel"
-                        />
-                      </div>
-                    )}
-                  </div>
-                )
-              },
-            ]}
-            rowKey="_id"
-            pagination={{
-              current: pagination.current,
-              pageSize: pagination.pageSize,
-              total: pagination.totalItems,
-              showSizeChanger: true,
-              showQuickJumper: true,
-              onChange: (page, pageSize) => {
-                setPagination((prev) => ({
-                  ...prev,
-                  current: page,
-                  pageSize: pageSize || 10,
-                }));
-                fetchClaims(page);
-              },
-            }}
-          />
-        </Card>
-
-        <RequestDetails
-          visible={isModalVisible}
-          claim={selectedRequest}
-          projectInfo={{
-            _id: "",
-            project_name: "",
-            project_comment: "",
+                  )}
+                </div>
+              )
+            },
+          ]}
+          rowKey="_id"
+          pagination={{
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total: pagination.totalItems,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            onChange: (page, pageSize) => {
+              setPagination((prev) => ({
+                ...prev,
+                current: page,
+                pageSize: pageSize || 10,
+              }));
+              fetchClaims(page);
+            },
           }}
-          onClose={handleCloseModal}
         />
-        <CreateRequest
-          visible={isCreateModalVisible}
-          onClose={handleCloseCreateModal}
-          onSuccess={handleCreateSuccess}
+      </Card>
+
+      <RequestDetails
+        visible={isModalVisible}
+        claim={selectedRequest}
+        projectInfo={{
+          _id: "",
+          project_name: "",
+          project_comment: "",
+        }}
+        onClose={handleCloseModal}
+      />
+      <CreateRequest
+        visible={isCreateModalVisible}
+        onClose={handleCloseCreateModal}
+        onSuccess={handleCreateSuccess}
+      />
+      <SendRequest
+        visible={isSendModalVisible}
+        id={selectedClaimId}
+        onSend={handleSendRequest}
+        onCancel={handleCloseSendModal}
+      />
+      <CancelRequest
+        visible={isCancelModalVisible}
+        id={selectedCancelClaimId}
+        onCancelRequest={handleCancelRequest}
+        onClose={handleCloseCancelModal}
+      />
+      {selectedRequest && (
+        <UpdateRequest
+          visible={isUpdateModalVisible}
+          claim={selectedRequest}
+          onClose={handleCloseUpdateModal}
+          onSuccess={handleUpdateSuccess}
         />
-        <SendRequest
-          visible={isSendModalVisible}
-          id={selectedClaimId}
-          onSend={handleSendRequest}
-          onCancel={handleCloseSendModal}
-        />
-        <CancelRequest
-          visible={isCancelModalVisible}
-          id={selectedCancelClaimId}
-          onCancelRequest={handleCancelRequest}
-          onClose={handleCloseCancelModal}
-        />
-        {selectedRequest && (
-          <UpdateRequest
-            visible={isUpdateModalVisible}
-            claim={selectedRequest}
-            onClose={handleCloseUpdateModal}
-            onSuccess={handleUpdateSuccess}
-          />
-        )}
-      </div>
+      )}
     </div>
   );
 };
