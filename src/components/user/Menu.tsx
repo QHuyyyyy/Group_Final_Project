@@ -47,6 +47,12 @@ const Menu = () => {
           href: "/userdashboard/finance",
           allowedRoles: ["A002"]
         },
+        {
+          icon: document, // Có thể thay đổi icon phù hợp
+          label: "Projects",
+          href: "/userdashboard/projects", 
+          allowedRoles: ["A001", "A002", "A003", "A004"] // Cho phép tất cả role truy cập
+        },
         { 
           icon: transaction, 
           label: "Request History", 
