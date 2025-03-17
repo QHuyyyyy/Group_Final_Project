@@ -25,7 +25,8 @@ const Finance = () => {
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
-    total: 0,
+    totalItems: 0,
+    totalPages: 0
   });
 
   const fetchClaims = async () => {
@@ -33,7 +34,7 @@ const Finance = () => {
     const params: SearchParams = {
       searchCondition: {
         keyword: searchTerm || "",
-        claim_status: statusFilter || "",
+        claim_status: statusFilter === "Paid" ? "Paid" : statusFilter || "",
         claim_start_date: "",
         claim_end_date: "",
         is_delete: false,
@@ -48,10 +49,16 @@ const Finance = () => {
       const response = await claimService.searchClaimsForFinance(params);
       if (response && response.data && response.data.pageData) {
         const claimsData = response.data.pageData;
-        setClaims(claimsData);
+        const filteredClaims = statusFilter === "Paid" 
+          ? claimsData.filter(claim => claim.claim_status === "Paid") 
+          : claimsData;
+
+        setClaims(filteredClaims);
         setPagination(prev => ({
           ...prev,
-          total: response.data.pageInfo.totalItems || 0,
+          totalItems: response.data.pageInfo.totalItems,
+          totalPages: response.data.pageInfo.totalPages,
+          current: pagination.current
         }));
 
         // Update status counts
@@ -80,7 +87,7 @@ const Finance = () => {
         ...prev,
         current: 1,
       }));
-    }, 500),
+    }, 2000),
     []
   );
 
@@ -103,8 +110,34 @@ const Finance = () => {
   };
 
   const handleDownloadClaim = (claim: Claim) => {
+    if (!claim) {
+        message.error('No claim data available for download.');
+        return;
+    }
+    
     const claimData = [
-      {
+        {
+            "Claim ID": claim._id,
+            "Staff Name": claim.staff_name,
+            "Project": claim.project_info?.project_name || 'N/A',
+            "From": dayjs(claim.claim_start_date).format('DD/MM/YYYY'),
+            "To": dayjs(claim.claim_end_date).format('DD/MM/YYYY'),
+            "Total Hours": claim.total_work_time,
+            "Amount": claim.total_work_time * 50,
+            "Status": claim.claim_status
+        }
+    ];
+
+    exportToExcel(claimData, `Claim_${claim._id}`, `${claim._id}`);
+  };
+
+  const handleDownloadAllClaims = () => {
+    if (claims.length === 0) {
+        message.error('No claims available for download.');
+        return;
+    }
+
+    const allClaimsData = claims.map(claim => ({
         "Claim ID": claim._id,
         "Staff Name": claim.staff_name,
         "Project": claim.project_info?.project_name || 'N/A',
@@ -113,28 +146,32 @@ const Finance = () => {
         "Total Hours": claim.total_work_time,
         "Amount": claim.total_work_time * 50,
         "Status": claim.claim_status
-      }
-    ];
-
-    exportToExcel(claimData, `Claim_${claim._id}`, `${claim._id}`);
-  };
-
-  const handleDownloadAllClaims = () => {
-    const allClaimsData = claims.map(claim => ({
-      "Claim ID": claim._id,
-      "Staff Name": claim.staff_name,
-      "Project": claim.project_info?.project_name || 'N/A',
-      "From": dayjs(claim.claim_start_date).format('DD/MM/YYYY'),
-      "To": dayjs(claim.claim_end_date).format('DD/MM/YYYY'),
-      "Total Hours": claim.total_work_time,
-      "Amount": claim.total_work_time * 50,
-      "Status": claim.claim_status
     }));
 
     exportToExcel(allClaimsData, 'ListClaims', 'List Claims');
   };
 
-  
+  const handlePayClaim = async (claim: Claim) => {
+    setSelectedClaimForInfo(claim);
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmPayment = async () => {
+    if (!selectedClaimForInfo) return;
+    
+    try {
+      await claimService.changeClaimStatus({
+        _id: selectedClaimForInfo._id,
+        claim_status: "Paid"
+      });
+      message.success('Claim has been marked as paid successfully');
+      setShowConfirmDialog(false);
+      fetchClaims(); // Refresh the claims list
+    } catch (error) {
+      message.error('Failed to update claim status');
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Approved":
@@ -148,6 +185,7 @@ const Finance = () => {
   
   return (
     <div className="overflow-x-auto bg-white">
+       <Card className="shadow-md">
       <div className="overflow-x-auto p-4">
       <div className="mb-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold">Paid Claims</h1>
@@ -319,6 +357,16 @@ const Finance = () => {
                     >
                       <DownloadOutlined style={{ color: 'blue' }} />
                     </button>
+                    {record.claim_status === "Approved" && (
+                      <button
+                        type="button"
+                        className="px-4 py-2 text-sm bg-transparent text-black hover:bg-green-200 transition-colors rounded-md"
+                        onClick={() => handlePayClaim(record)}
+                        title="Pay Claim"
+                      >
+                        <DollarOutlined style={{ color: 'green' }} />
+                      </button>
+                    )}
                   </div>
                 ),
               },
@@ -326,14 +374,25 @@ const Finance = () => {
             pagination={{
               current: pagination.current,
               pageSize: pagination.pageSize,
-              total: pagination.total,
-              onChange: (page, pageSize) =>
-                setPagination(prev => ({ ...prev, current: page, pageSize })),
+              total: pagination.totalItems,
+              showTotal: (total) => `Total ${total} claims`,
+              showSizeChanger: true,
+              showQuickJumper:true,
+              pageSizeOptions: ['10', '20', '50'],
+              size: "small",
+              onChange: (page, pageSize) => {
+                setPagination(prev => ({
+                  ...prev,
+                  current: page,
+                  pageSize: pageSize || 10
+                }));
+                fetchClaims();
+              },
             }}
           />
         </div>
       </div>
-
+     </Card>
       {showConfirmDialog && (
         <Modal
           title={<h2 className="text-2xl font-bold text-center">Confirm Payment</h2>}
@@ -343,7 +402,12 @@ const Finance = () => {
             <Button key="cancel" onClick={() => setShowConfirmDialog(false)}>
               Cancel
             </Button>,
-            <Button key="submit" type="primary" onClick={() => setShowConfirmDialog(false)}>
+            <Button 
+              key="submit" 
+              type="primary" 
+              onClick={handleConfirmPayment}
+              style={{ backgroundColor: '#1890ff' }}
+            >
               Confirm
             </Button>
           ]}

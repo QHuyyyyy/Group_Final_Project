@@ -1,123 +1,178 @@
-import { Modal, Tag } from "antd";
+import { Modal, Tag} from "antd";
 import dayjs from "dayjs";
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { ClaimById } from "../../models/ClaimModel";
+import {
+  ClockCircleOutlined,
+  ProjectOutlined,
+  InfoCircleOutlined,
+  CalendarOutlined,
+} from "@ant-design/icons";
+import projectService from "../../services/project.service";
+import type { ProjectData } from "../../models/ProjectModel";
 
 interface RequestDetailsProps {
-    visible: boolean;
-    claim?: ClaimById;
-    projectInfo?: {
-        _id: string;
-        project_name: string;
-        project_comment?: string;
-    };
-    onClose: () => void;
+  visible: boolean;
+  claim?: ClaimById;
+  projectInfo?: {
+    _id: string;
+    project_name: string;
+    project_comment?: string;
+  };
+  onClose: () => void;
 }
 
-const RequestDetails: React.FC<RequestDetailsProps> = ({ visible, claim, projectInfo, onClose }) => {
-    const formatWorkTime = (hours: number | undefined) => {
-        if (!hours && hours !== 0) return '-';
-        return `${hours}h`;
+const RequestDetails: React.FC<RequestDetailsProps> = ({
+  visible,
+  claim,
+  onClose,
+}) => {
+  const [projectDetails, setProjectDetails] = useState<ProjectData | null>(null);
+
+  useEffect(() => {
+    const fetchProjectDetails = async () => {
+      if (claim?.project_id) {
+        try {
+          const response = await projectService.getProjectById(claim.project_id, {showSpinner:false});
+          if (response.success && response.data) {
+            setProjectDetails(response.data);
+          }
+        } catch (error) {
+          console.error("Error fetching project details:", error);
+        }
+      }
     };
 
-    const modalTitle = useMemo(() => (
-        <div className="flex items-center gap-3">
-            <h2 className="text-xl font-semibold">Claim Details</h2>
-            {claim && (
-                <Tag color={
-                    !claim.claim_status || claim.claim_status === "Draft" ? "gold" :
-                    claim.claim_status === "Pending Approval" ? "blue" :
-                    claim.claim_status === "Approved" ? "green" : "red"
-                }>
-                    {claim.claim_status || "Draft"}
-                </Tag>
-            )}
-        </div>
-    ), [claim?.claim_status]);
+    fetchProjectDetails();
+  }, [claim?.project_id]);
 
-    if (!claim) return null;
+  const formatWorkTime = (hours: number | undefined) => {
+    if (!hours && hours !== 0) return "-";
+    return `${hours}h`;
+  };
 
-    return (
-        <Modal
-            title={modalTitle}
-            open={visible}
-            onCancel={onClose}
-            footer={null}
-            width={600}
-            className="custom-modal"
-        >
-            <div className="py-3">
-                {/* Basic Information */}
-                <div className="mb-6">
-                    <h3 className="text-base font-medium mb-3 flex items-center">
-                        <div className="w-1 h-4 bg-blue-500 rounded mr-2"></div>
-                        Basic Information
-                    </h3>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <p className="text-gray-500">Claim ID</p>
-                            <p className="font-medium">{claim._id}</p>
-                        </div>
-                        <div>
-                            <p className="text-gray-500">Claim Name</p>
-                            <p className="font-medium">{claim.claim_name}</p>
-                        </div>
-                        <div>
-                            <p className="text-gray-500">Created Date</p>
-                            <p className="font-medium">{dayjs(claim.created_at).format('YYYY-MM-DD')}</p>
-                        </div>
-                        <div>
-                            <p className="text-gray-500">Total Hours</p>
-                            <p className="font-medium">{formatWorkTime(claim.total_work_time)}</p>
-                        </div>
-                    </div>
-                </div>
+  const getStatusColor = (status: string | undefined) => {
+    if (!status || status === "Draft") return "#faad14";
+    if (status === "Pending Approval") return "#1890ff";
+    if (status === "Approved") return "#52c41a";
+    return "#f5222d";
+  };
 
-                {/* Project Details */}
-                <div className="mb-6">
-                    <h3 className="text-base font-medium mb-3 flex items-center">
-                        <div className="w-1 h-4 bg-green-500 rounded mr-2"></div>
-                        Project Details
-                    </h3>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <p className="text-gray-500">Project ID</p>
-                            <p className="font-medium">{projectInfo?._id}</p>
-                        </div>
-                        <div>
-                            <p className="text-gray-500">Project Name</p>
-                            <p className="font-medium">{projectInfo?.project_name || claim.project_id}</p>
-                        </div>
-                        {projectInfo?.project_comment && (
-                            <div className="col-span-2">
-                                <p className="text-gray-500">Project Comment</p>
-                                <p className="font-medium">{projectInfo.project_comment}</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
+  const modalTitle = useMemo(
+    () => (
+      <div className="flex items-center gap-3">
+        <h2 className="text-xl font-bold m-0">Claim Details</h2>
+        {claim && (
+          <Tag
+            color={getStatusColor(claim.claim_status)}
+            className="px-3 py-1 text-sm uppercase font-medium"
+          >
+            {claim.claim_status || "Draft"}
+          </Tag>
+        )}
+      </div>
+    ),
+    [claim?.claim_status]
+  );
 
-                {/* Time Period */}
-                <div>
-                    <h3 className="text-base font-medium mb-3 flex items-center">
-                        <div className="w-1 h-4 bg-purple-500 rounded mr-2"></div>
-                        Time Period
-                    </h3>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <p className="text-gray-500">Start Date</p>
-                            <p className="font-medium">{dayjs(claim.claim_start_date).format('YYYY-MM-DD')}</p>
-                        </div>
-                        <div>
-                            <p className="text-gray-500">End Date</p>
-                            <p className="font-medium">{dayjs(claim.claim_end_date).format('YYYY-MM-DD')}</p>
-                        </div>
-                    </div>
-                </div>
+  if (!claim) return null;
+
+  return (
+    <Modal
+      title={modalTitle}
+      open={visible}
+      onCancel={onClose}
+      footer={null}
+      width={600}
+      className="claims-modal"
+    >
+      <div className="px-2 -mt-2 mb-4">
+        <p className="text-gray-400 text-sm">ID: {claim._id}</p>
+      </div>
+      <div className="flex flex-col gap-6">
+        {/* Basic Information */}
+        <div>
+          <div className="flex items-center gap-2 text-blue-600 mb-4">
+            <InfoCircleOutlined />
+            <span className="font-semibold">Basic Information</span>
+          </div>
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="grid grid-cols-2 gap-y-6">
+              <div>
+                <p className="text-gray-500 text-sm mb-1">Claim Name</p>
+                <p className="font-medium">{claim.claim_name}</p>
+              </div>
+              <div>
+                <p className="text-gray-500 text-sm mb-1">Created Date</p>
+                <p className="font-medium">
+                  {dayjs(claim.created_at).format("MMMM D, YYYY")}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-500 text-sm mb-1">Total Hours</p>
+                <p className="font-medium flex items-center gap-2">
+                  <ClockCircleOutlined className="text-blue-500" />
+                  {formatWorkTime(claim.total_work_time)}
+                </p>
+              </div>
             </div>
-        </Modal>
-    );
+          </div>
+        </div>
+
+        {/* Project Details */}
+        <div>
+          <div className="flex items-center gap-2 text-green-600 mb-4">
+            <ProjectOutlined />
+            <span className="font-semibold">Project Details</span>
+          </div>
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="grid grid-cols-2 gap-y-6">
+              <div>
+                <p className="text-gray-500 text-sm mb-1">Project Name</p>
+                <p className="font-medium">{projectDetails?.project_name || "N/A"}</p>
+              </div>
+              <div>
+                <p className="text-gray-500 text-sm mb-1">Project ID</p>
+                <p className="font-medium">{claim.project_id}</p>
+              </div>
+            </div>
+            {projectDetails && (
+              <div className="mt-6">
+                <p className="text-gray-500 text-sm mb-1">Project Comment</p>
+                <p className="font-medium">
+                  {projectDetails.project_comment || 'No comment'}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Time Period */}
+        <div>
+          <div className="flex items-center gap-2 text-purple-600 mb-4">
+            <CalendarOutlined />
+            <span className="font-semibold">Time Period</span>
+          </div>
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="grid grid-cols-2 gap-y-6">
+              <div>
+                <p className="text-gray-500 text-sm mb-1">Start Date</p>
+                <p className="font-medium">
+                  {dayjs(claim.claim_start_date).format("MMMM D, YYYY")}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-500 text-sm mb-1">End Date</p>
+                <p className="font-medium">
+                  {dayjs(claim.claim_end_date).format("MMMM D, YYYY")}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Modal>
+  );
 };
 
 export default RequestDetails;
-

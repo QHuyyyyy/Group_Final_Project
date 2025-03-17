@@ -89,6 +89,15 @@ export interface ChangeProjectStatusRequest {
     project_comment?: string; 
 }
 
+export interface CreateClaim_ProjectData {
+    _id: string;
+    project_name: string;
+    project_department: string;
+    project_members: ProjectMemberInfo[];
+    project_start_date: string;
+    project_end_date: string;
+    project_description: string;
+}
 
 
 

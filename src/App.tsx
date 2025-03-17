@@ -4,13 +4,11 @@ import TransactionPage from './pages/user/Transaction';
 import AboutUs from './pages/AboutUs';
 import Services from './pages/user/Services';
 import ContactUs from './pages/Contactus';
-import NotFound from './pages/NotFound';
 import VerifyToken from './pages/common/VerifyToken';
 import ResendToken from './pages/common/ResendToken';
 import ProtectedRoute from './routes/ProtectedRoute';
 import { RoutePermissions } from './routes/RoutePermissions';
 import SettingUser from './pages/user/SettingUser';
-import EmployeeDetails from './components/admin/EmployeeAdminDetails';
 import ForgotPassword from './pages/common/ForgotPassword';
 
 
@@ -27,7 +25,7 @@ const Claim = lazy(() => import('./pages/user/Request'));
 const Finance = lazy(() => import('./pages/user/Finance'));
 const IndustriesPage = lazy(() => import('./pages/InductriesPage'));
 const ViewClaimRequest = lazy(() => import('./pages/admin/ViewClaimRequest'));
-
+const Project= lazy(() => import('./pages/user/Project'));
 const Loading = () => (
   <div className="h-screen w-screen flex items-center justify-center">
     <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
@@ -86,7 +84,11 @@ const App = () => {
               <SettingUser />
             </ProtectedRoute>
           } />
-            
+              <Route path='/userdashboard/projects' element={
+            <ProtectedRoute allowedRoles={RoutePermissions.user} redirectPath="/">
+              <Project />
+            </ProtectedRoute>
+          } />
             {/* <Route path="create-request" element={
               <UserRoute>
                 <CreateRequest />
@@ -121,10 +123,11 @@ const App = () => {
               <Profile />
             </ProtectedRoute>
           } />
-
-          <Route path='/admin/employees/:id' element={<EmployeeDetails />} />
-
-          <Route path='*' element={<NotFound />} />
+            <Route path="/dashboard/transaction" element={
+              <ProtectedRoute allowedRoles={RoutePermissions.transaction}>
+                <TransactionPage />
+              </ProtectedRoute>
+            } />
         </Routes>
       </Suspense>
     </Router>

@@ -13,6 +13,7 @@ import {  ProjectData } from '../../models/ProjectModel';
 import { getProjectColumns } from '../../components/admin/ProjectColumns';
 import ProjectModal from '../../components/admin/ProjectModal';
 import { departmentService } from '../../services/Department.service';
+import { debounce } from 'lodash';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -31,7 +32,6 @@ const AdminProjectManager: React.FC = () => {
   const [searchText, setSearchText] = useState('');
   const [editForm] = Form.useForm();
   const [createForm] = Form.useForm();
-  const [startDate, setStartDate] = useState<dayjs.Dayjs | null>(null);
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
@@ -52,35 +52,80 @@ const AdminProjectManager: React.FC = () => {
   const [selectedStatusProject, setSelectedStatusProject] = useState<ProjectData | null>(null);
   const [newStatus, setNewStatus] = useState<string>('');
 
-  // Hàm disabledStartDate
+  const handleSearch = debounce((value: string) => {
+    setSearchText(value);
+    setPagination(prev => ({
+      ...prev,
+      current: 1 
+    }));
+  }, 2000);
+
   const disabledStartDate = (current: dayjs.Dayjs) => {
-    return current && current < dayjs().startOf('day');
+    if (!current) return false;
+    const endDate = editForm.getFieldValue('endDate') || createForm.getFieldValue('endDate');
+    return (
+      current < dayjs().startOf('day') || // Không cho chọn ngày trong quá khứ
+      (endDate && current.isAfter(endDate)) // Không cho chọn startDate sau endDate
+    );
   };
 
-  // Hàm disabledEndDate
+  // Hàm kiểm tra endDate
   const disabledEndDate = (current: dayjs.Dayjs) => {
-    if (!startDate) {
-      return current && current < dayjs().startOf('day');
-    }
-    return current && (current < dayjs().startOf('day') || current < startDate);
+    if (!current) return false;
+    const startDate = editForm.getFieldValue('startDate') || createForm.getFieldValue('startDate');
+    return (
+      current < dayjs().startOf('day') || // Không cho chọn ngày trong quá khứ
+      (startDate && current.isBefore(startDate)) // Không cho chọn endDate trước startDate
+    );
   };
-
 
   // Hàm xử lý thay đổi ngày bắt đầu cho form tạo mới
   const handleCreateStartDateChange = (date: dayjs.Dayjs | null) => {
-    setStartDate(date);
-    const endDate = createForm.getFieldValue('endDate');
-    if (date && endDate && endDate < date) {
-      createForm.setFieldValue('endDate', null);
+    if (date) {
+      const endDate = createForm.getFieldValue('endDate');
+      if (endDate && date.isAfter(endDate)) {
+        createForm.setFieldValue('endDate', null);
+        message.warning('Start date cannot be after end date');
+      }
+    }
+    createForm.setFieldValue('startDate', date);
+  };
+
+  // Hàm xử lý thay đổi ngày bắt đầu cho form chỉnh sửa
+  const handleEditStartDateChange = (date: dayjs.Dayjs | null) => {
+    if (date) {
+      const endDate = editForm.getFieldValue('endDate');
+      if (endDate && date.isAfter(endDate)) {
+        editForm.setFieldValue('endDate', null);
+        message.warning('Start date cannot be after end date');
+      }
+    }
+    editForm.setFieldValue('startDate', date);
+  };
+
+  // Thêm hàm xử lý thay đổi endDate cho form tạo mới
+  const handleCreateEndDateChange = (date: dayjs.Dayjs | null) => {
+    if (date) {
+      const startDate = createForm.getFieldValue('startDate');
+      if (startDate && date.isBefore(startDate)) {
+        message.warning('End date cannot be before start date');
+        createForm.setFieldValue('endDate', null);
+      } else {
+        createForm.setFieldValue('endDate', date);
+      }
     }
   };
 
-  // Hàm xử lý thay đổi ngày bắt đầu cho form chỉnh sửa  
-  const handleEditStartDateChange = (date: dayjs.Dayjs | null) => {
-    setStartDate(date);
-    const endDate = editForm.getFieldValue('endDate');
-    if (date && endDate && endDate < date) {
-      editForm.setFieldValue('endDate', null);
+  // Thêm hàm xử lý thay đổi endDate cho form chỉnh sửa
+  const handleEditEndDateChange = (date: dayjs.Dayjs | null) => {
+    if (date) {
+      const startDate = editForm.getFieldValue('startDate');
+      if (startDate && date.isBefore(startDate)) {
+        message.warning('End date cannot be before start date');
+        editForm.setFieldValue('endDate', null);
+      } else {
+        editForm.setFieldValue('endDate', date);
+      }
     }
   };
 
@@ -167,7 +212,7 @@ const AdminProjectManager: React.FC = () => {
       setLoading(true);
       
       // Lấy thông tin chi tiết của project bao gồm cả thông tin member
-      const projectDetail = await projectService.getProjectById(record._id);
+      const projectDetail = await projectService.getProjectById(record._id, {showSpinner:false});
       
       if (projectDetail && projectDetail.data) {
         setSelectedProject(projectDetail.data);
@@ -372,7 +417,7 @@ const AdminProjectManager: React.FC = () => {
           pageNum: 1,
           pageSize: 100 // Lấy nhiều user để có đủ lựa chọn
         }
-      });
+      }, {showSpinner:false});
 
       if (response && response.data.pageData) {
         // Format data cho Select options
@@ -432,7 +477,7 @@ const AdminProjectManager: React.FC = () => {
       await projectService.changeProjectStatus({
         _id: selectedStatusProject._id,
         project_status: newStatus,
-      });
+      }, {showSpinner:false});
       
       message.success('Project status updated successfully');
       setIsStatusModalVisible(false);
@@ -476,8 +521,7 @@ const AdminProjectManager: React.FC = () => {
           <Input
             placeholder="Tìm kiếm dự án..."
             prefix={<SearchOutlined className="text-gray-400" />}
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
             style={{ width: 300 }}
             className="ml-4"
           />
@@ -629,6 +673,7 @@ const AdminProjectManager: React.FC = () => {
           teamMembers={teamMembers}
           setTeamMembers={setTeamMembers}
           handleStartDateChange={handleCreateStartDateChange}
+          handleEndDateChange={handleCreateEndDateChange}
         />
 
         <ProjectModal
@@ -644,6 +689,7 @@ const AdminProjectManager: React.FC = () => {
           teamMembers={editTeamMembers}
           setTeamMembers={setEditTeamMembers}
           handleStartDateChange={handleEditStartDateChange}
+          handleEndDateChange={handleEditEndDateChange}
         />
 
         <Modal

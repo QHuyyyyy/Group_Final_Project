@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Form, Input, Button, InputNumber, message,Avatar, Upload, DatePicker } from 'antd';
-import { UserOutlined, UploadOutlined } from '@ant-design/icons';
+import { Form, Input, Button, InputNumber, message,Avatar, Upload} from 'antd';
+import { UserOutlined, UploadOutlined, KeyOutlined } from '@ant-design/icons';
 import { useUserStore } from '../../stores/userStore';
 import { employeeService } from '../../services/employee.service';
+import { departmentService } from '../../services/Department.service';
 import moment from 'moment';
 import type { UploadProps } from 'antd';
-
+import ChangePasswordModal from '../../components/user/ChangePasswordModal';
 import { Employee, EmployeeUpdateData } from '../../models/EmployeeModel';
+import { InputVaild } from '../../constants/InputVaild';
+import { toast } from 'react-toastify';
+
 
 
 
@@ -14,8 +18,12 @@ const SettingUser = () => {
   const [form] = Form.useForm();
   const user = useUserStore((state) => state);
   const [employeeData, setEmployeeData] = useState<Employee | null>(null);
+  const [departmentName, setDepartmentName] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string>('');
+  const [isPasswordModalVisible, setIsPasswordModalVisible] = useState(false);
+
+
 
   // Fetch employee data when component mounts
   useEffect(() => {
@@ -25,6 +33,11 @@ const SettingUser = () => {
           const { data } = await employeeService.getEmployeeById(user.id);
           setEmployeeData(data);
           setAvatarUrl(data.avatar_url);
+          
+          // Fetch department name
+          if (data.department_code) {
+            fetchDepartmentName(data.department_code);
+          }
           
           // Set form values with all available fields
           form.setFieldsValue({
@@ -42,18 +55,31 @@ const SettingUser = () => {
     fetchEmployeeData();
   }, [user.id, form]);
 
+  // Fetch department name based on department code
+  const fetchDepartmentName = async (departmentCode: string) => {
+    try {
+      const { data: departments } = await departmentService.getAllDepartments();
+      const department = departments.find(dept => dept.department_code === departmentCode);
+      if (department) {
+        setDepartmentName(department.department_name);
+        form.setFieldsValue({ department_name: department.department_name });
+      }
+    } catch (error) {
+      console.error('Error fetching department data:', error);
+    }
+  };
+
   // Handle form submission
   const onFinish = async (values: any) => {
-    const confirmed = window.confirm('Are you sure you want to save these changes?');
-    if (!confirmed) return;
-
+    console.log(employeeData)
     setLoading(true);
     try {
       if (!employeeData?._id) {
-        message.error('No employee data available');
+        toast.error('No employee data available');
         return;
       }
 
+      // Only include editable fields in the update data
       const updateData: EmployeeUpdateData = {
         user_id: user.id,
         account: values.account,
@@ -61,6 +87,8 @@ const SettingUser = () => {
         phone: values.phone,
         full_name: values.full_name,
         avatar_url: avatarUrl,
+
+        // Preserve existing data for non-editable fields
         job_rank: employeeData.job_rank,
         contract_type: employeeData.contract_type,
         department_code: employeeData.department_code,
@@ -70,12 +98,12 @@ const SettingUser = () => {
         updated_by: user.id,
       };
 
-      const { data: updatedEmployee } = await employeeService.updateEmployee(employeeData._id, updateData);
-      setEmployeeData(updatedEmployee);
-      message.success('Profile updated successfully');
+      const response = await employeeService.updateEmployee(employeeData.user_id, updateData);
+      setEmployeeData(response.data);
+      toast.success('Profile updated successfully');
     } catch (error) {
       console.error('Error updating profile:', error);
-      message.error('Failed to update profile');
+      toast.error('Failed to update profile');
     } finally {
       setLoading(false);
     }
@@ -88,12 +116,12 @@ const SettingUser = () => {
     beforeUpload: (file) => {
       const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
       if (!isJpgOrPng) {
-        message.error('You can only upload JPG/PNG files!');
+        toast.error('You can only upload JPG/PNG files!');
         return false;
       }
       const isLt2M = file.size / 1024 / 1024 < 2;
       if (!isLt2M) {
-        message.error('Image must be smaller than 2MB!');
+        toast.error('Image must be smaller than 2MB!');
         return false;
       }
       const reader = new FileReader();
@@ -107,36 +135,76 @@ const SettingUser = () => {
     },
   };
 
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-      <div className="flex">
-        <div className="flex-1 p-8">
-          <div className="max-w-3xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6">Account Settings</h1>
-            
-            <div className="bg-white p-8 rounded-lg shadow-sm">
-              <div className="flex justify-center mb-8">
-                <div className="text-center">
-                  <Avatar 
-                    size={130} 
-                    src={avatarUrl}
-                    icon={!avatarUrl && <UserOutlined />} 
+    <div className="min-h-screen bg-gray-100">
+      <div className="container mx-auto py-10 px-4">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Left Column - Profile Card */}
+          <div className="lg:w-1/3">
+            <div className="bg-white rounded-2xl shadow-sm p-6">
+              <div className="flex flex-col items-center">
+                <Avatar 
+                  size={160} 
+                  src={avatarUrl || null}
+                  icon={!avatarUrl && <UserOutlined />} 
+                  className="mb-4 border-4 border-gray-100"
+                />
+                <Upload {...uploadProps}>
+                  <Button 
+                    icon={<UploadOutlined />}
                     className="mb-4"
-                  />
+                  >
+                    Change Avatar
+                  </Button>
+                </Upload>
+                <h2 className="text-xl font-semibold mb-2">{employeeData?.full_name || 'Employee Name'}</h2>
+                <p className="text-gray-500 mb-4">{employeeData?.job_rank || 'Job Rank'}</p>
+                
+                {/* Quick Info */}
+                <div className="w-full space-y-3 border-t pt-4">
                   <div>
-                    <Upload {...uploadProps}>
-                      <Button icon={<UploadOutlined />}>Change Avatar</Button>
-                    </Upload>
+                    <p className="text-gray-500 text-sm">Contract Type</p>
+                    <p className="font-medium">{employeeData?.contract_type || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 text-sm">Start Date</p>
+                    <p className="font-medium">
+                      {employeeData?.start_date ? moment(employeeData.start_date).format('DD/MM/YYYY') : 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 text-sm">End Date</p>
+                    <p className="font-medium">
+                      {employeeData?.end_date ? moment(employeeData.end_date).format('DD/MM/YYYY') : 'N/A'}
+                    </p>
+                  </div>
+                  <div className="pt-2">
+                    <Button
+                      onClick={() => setIsPasswordModalVisible(true)}
+                      icon={<KeyOutlined />}
+                      className="w-full"
+                    >
+                      Change Password
+                    </Button>
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
 
+          {/* Right Column - Form */}
+          <div className="lg:w-2/3">
+            <div className="bg-white rounded-2xl shadow-sm p-6">
+              <h1 className="text-2xl font-bold mb-6">Edit Profile Information</h1>
+              
               <Form
                 form={form}
                 layout="vertical"
                 onFinish={onFinish}
                 initialValues={{
                   full_name: '',
+                  avatar_url: '',
                   phone: '',
                   address: '',
                   account: '',
@@ -148,104 +216,100 @@ const SettingUser = () => {
                   end_date: null,
                 }}
               >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Form.Item
-                    name="full_name"
-                    label="Full Name"
-                    rules={[{ required: true, message: 'Please enter your full name' }]}
-                  >
-                    <Input placeholder="Enter your full name" />
-                  </Form.Item>
-                  <Form.Item
-                    name="account"
-                    label="Account"
-                    rules={[{ required: true, message: 'Please enter your account' }]}
-                  >
-                    <Input placeholder="Enter your account" />
-                  </Form.Item>
-                  <Form.Item
-                    name="phone"
-                    label="Phone Number"
-                    rules={[
-                      { required: true, message: 'Please enter your phone number' },
-                      { pattern: /^[0-9]{10}$/, message: 'Please enter a valid 10-digit phone number' }
-                    ]}
-                  >
-                    <Input placeholder="Enter your phone number" />
-                  </Form.Item>
+                <div className="space-y-6">
+                  {/* Personal Details Section */}
+                  <div>
+                    <h3 className="text-lg font-medium mb-4">Personal Details</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Form.Item
+                        name="full_name"
+                        label="Full Name"
+                        rules={InputVaild.required('Please enter your full name')}
+                      >
+                        <Input size="large" />
+                      </Form.Item>
+                      <Form.Item
+                        name="account"
+                        label="Account"
+                        rules={InputVaild.required('Please enter your account')}
+                      >
+                        <Input size="large" />
+                      </Form.Item>
+                    </div>
+                  </div>
 
-                  <Form.Item
-                    name="address"
-                    label="Address"
-                    rules={[{ required: true, message: 'Please enter your address' }]}
-                  >
-                    <Input placeholder="Enter your address" />
-                  </Form.Item>
+                  {/* Contact Information */}
+                  <div>
+                    <h3 className="text-lg font-medium mb-4">Contact Information</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Form.Item
+                        name="phone"
+                        label="Phone Number"
+                        rules={[
+                          ...InputVaild.required('Please enter your phone number'),
+                          { pattern: /^[0-9]{10}$/, message: 'Please enter a valid 10-digit phone number' }
+                        ]}
+                      >
+                        <Input size="large" />
+                      </Form.Item>
+                      <Form.Item
+                        name="address"
+                        label="Address"
+                        rules={InputVaild.required('Please enter your address')}
+                      >
+                        <Input size="large" />
+                      </Form.Item>
+                    </div>
+                  </div>
 
-                  <Form.Item
-                    name="job_rank"
-                    label="Job Rank"
-                  >
-                    <Input disabled placeholder="Job Rank" />
-                  </Form.Item>
-
-                  <Form.Item
-                    name="contract_type"
-                    label="Contract Type"
-                  >
-                    <Input disabled placeholder="Contract Type" />
-                  </Form.Item>
-
-                  <Form.Item
-                    name="department_name"
-                    label="Department"
-                  >
-                    <Input disabled placeholder="Department" /> 
-                  </Form.Item>
-
-                  <Form.Item
-                    name="salary"
-                    label="Salary"
-                  >
-                    <InputNumber 
-                      // className="w-full" 
-                      // formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                      // parser={value => value!.replace(/\$\s?|(,*)/g, '')}
-                      placeholder="Salary"
-                      disabled
-                    />
-                  </Form.Item>
-
-                  <Form.Item
-                    name="start_date"
-                    label="Start Date"
-                  >
-                    <DatePicker disabled format="DD/MM/YYYY" placeholder="Start Date" />
-                  </Form.Item>
-
-                  <Form.Item
-                    name="end_date"
-                    label="End Date"
-                  >
-                    <DatePicker disabled format="DD/MM/YYYY" placeholder="End Date" />
-                  </Form.Item>
+                  {/* Employment Details - Read-only section */}
+                  <div>
+                    <h3 className="text-lg font-medium mb-4">Employment Details</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Form.Item name="salary" label="Salary">
+                        <InputNumber 
+                          disabled
+                          size="large"
+                          style={{ width: '30%' }}
+                          className="w-full"
+                          formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                        />
+                      </Form.Item>
+                      <Form.Item name="department_name" label="Department">
+                        <Input disabled size="large" value={departmentName} />
+                      </Form.Item>
+                      <Form.Item name="job_rank" label="Job Rank">
+                        <Input disabled size="large" />
+                      </Form.Item>
+                      <Form.Item name="contract_type" label="Contract Type">
+                        <Input disabled size="large" />
+                      </Form.Item>
+                    </div>
+                  </div>
                 </div>
 
-                <Form.Item className="mt-6">
+                {/* Submit Button */}
+                <div className="mt-8 flex justify-end">
                   <Button 
                     type="primary" 
                     htmlType="submit" 
                     loading={loading}
-                    className="bg-blue-500 hover:bg-blue-600"
+                    size="large"
+                    className="px-8 bg-blue-600 hover:bg-blue-700"
                   >
-                    Save 
+                    Save
                   </Button>
-                </Form.Item>
+                </div>
               </Form>
             </div>
           </div>
         </div>
       </div>
+      <ChangePasswordModal
+        visible={isPasswordModalVisible}
+        onCancel={() => setIsPasswordModalVisible(false)}
+        onSuccess={() => setIsPasswordModalVisible(false)}
+      />
     </div>
   );
 };

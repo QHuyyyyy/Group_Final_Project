@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Modal, notification, Input } from "antd";
-
-import { SendOutlined, QuestionCircleOutlined, CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons';
+import { Modal, Input } from "antd";
+import { toast } from 'react-toastify';
+import { SendOutlined, QuestionCircleOutlined} from '@ant-design/icons';
 
 interface CancelRequestProps {
     id: string | null;
@@ -23,32 +23,12 @@ const CancelRequest: React.FC<CancelRequestProps> = ({ id, visible, onCancelRequ
         try {
             await onCancelRequest(id, comment);  // Gọi hàm onCancelRequest truyền id và comment
 
-            notification.open({
-                message: 'Success',
-                description: `Request ID ${id} has been cancelled successfully.`,
-                icon: <CheckCircleFilled style={{ color: '#52c41a' }} />,
-                placement: 'topRight',
-                duration: 4.5,
-                style: {
-                    backgroundColor: '#f6ffed',
-                    border: '1px solid #b7eb8f'
-                }
-            });
+            toast.success('Request has been cancelled successfully.');
 
             setComment('');  // Reset comment sau khi hủy thành công
             onClose();  // Đóng modal sau khi thành công
-        } catch (error) {
-            notification.open({
-                message: 'Error',
-                description: 'Failed to cancel the request.',
-                icon: <CloseCircleFilled style={{ color: '#ff4d4f' }} />,
-                placement: 'topRight',
-                duration: 4.5,
-                style: {
-                    backgroundColor: '#fff2f0',
-                    border: '1px solid #ffccc7'
-                }
-            });
+        } catch {
+            toast.error('Failed to cancel the request.');
         } finally {
             setLoading(false);
         }
