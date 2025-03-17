@@ -14,7 +14,7 @@ import {
 import type { Claim, ClaimById, SearchParams } from "../../models/ClaimModel";
 import CreateRequest from "./CreateRequest";
 import SendRequest from "../../components/user/SendRequest";
-import CancelRequest from "../../components/user/CancelRequest";  // Import lại CancelRequest
+import CancelRequest from "../../components/user/CancelRequest";
 import { useDebounce } from "../../hooks/useDebounce";
 
 const { Search } = Input;

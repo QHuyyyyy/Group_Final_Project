@@ -12,17 +12,19 @@ export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-
-
   const handleSubmit = async (values: { email: string; password: string }) => {
+    try {
       await login(values.email, values.password);
       toast.success('Login successful!');
       navigate('/');
+    } catch (error) {
+      toast.error('Invalid email or password');
+    }
   };
 
   return (
     <div 
-      className="min-h-screen flex items-center justify-center p-4"
+      className="min-h-screen flex items-center justify-center p-6"
       style={{
         backgroundImage: `url(${loginBackground})`,
         backgroundSize: 'cover',
@@ -30,13 +32,13 @@ export default function Login() {
       }}
     >
       <div className="max-w-md w-full">
-        <div className="bg-white/30 backdrop-blur-md rounded-2xl shadow-2xl p-8 space-y-8 border border-white/20">
-          <div className="text-center space-y-2">
+        <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-10 space-y-8 border border-white/30">
+          <div className="text-center space-y-3">
             <Title level={2} className="!text-white !m-0 !font-bold tracking-wide">
-              Welcome Back
+              Sign In
             </Title>
             <p className="text-white/80 text-lg font-medium">
-              Sign in to continue to your account 
+              Access your account to continue
             </p>
           </div>
 
@@ -48,39 +50,35 @@ export default function Login() {
           >
             <Form.Item
               name="email"
-              rules={[{ required: true, message: 'Vui lòng nhập email!' }]}
+              rules={[{ required: true, message: 'Please enter your email!' }]}
             >
               <Input 
                 prefix={<UserOutlined className="text-white/60" />}
                 placeholder="Email"
                 size="large"
-                className="h-12 bg-white/20 border-white/30 text-white placeholder:text-white/60
-                  focus:bg-white/30 hover:bg-white/30 transition-all"
+                className="h-12 bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 hover:bg-white/30 transition-all rounded-xl"
               />
             </Form.Item>
 
             <Form.Item
               name="password"
-              rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' },
+              rules={[{ required: true, message: 'Please enter your password!' },
                 { min: 6, message: 'Password must be at least 6 characters!' }
               ]}
-              validateDebounce={400}
             >
               <Input.Password
                 prefix={<LockOutlined className="text-white/60" />}
-                placeholder="Mật khẩu" 
+                placeholder="Password" 
                 size="large"
-                className="h-12 bg-white/20 border-white/30 text-white placeholder:text-white/60
-                  focus:bg-white/30 hover:bg-white/30 transition-all"
+                className="h-12 bg-white/20 border-white/30 text-white placeholder:text-white/60 focus:bg-white/30 hover:bg-white/30 transition-all rounded-xl"
               />
             </Form.Item>
 
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-between items-center mb-4">
               <Button 
                 type="link" 
                 onClick={() => navigate('/forgot-password')}
-                className="text-white/80 hover:text-white font-medium transition-all duration-200
-                  hover:scale-105 transform"
+                className="text-white/80 hover:text-white font-medium transition-all duration-200 hover:scale-105"
               >
                 Forgot Password?
               </Button>
@@ -99,11 +97,9 @@ export default function Login() {
                 htmlType="submit"
                 size="large"
                 block
-                className="h-12 bg-[#1a4f95] hover:bg-[#0d3d7a] border-0 
-                  shadow-lg hover:shadow-xl transition-all duration-200 
-                  text-base font-semibold tracking-wide"
+                className="h-12 bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 border-0 shadow-lg hover:shadow-xl transition-all duration-200 text-base font-semibold tracking-wide rounded-xl"
               >
-                Sign in
+                Login
               </Button>
             </Form.Item>
           </Form>
@@ -111,4 +107,4 @@ export default function Login() {
       </div>
     </div>
   );
-} 
+}
