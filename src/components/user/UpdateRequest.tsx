@@ -7,8 +7,6 @@ import { claimService } from "../../services/claim.service";
 import projectService from "../../services/project.service";
 import type { ProjectData } from "../../models/ProjectModel";
 import { ClockCircleOutlined } from "@ant-design/icons";
-import { employeeService } from "../../services/employee.service";
-import type { CreateClaim_EmployeeInfo } from "../../models/EmployeeModel";
 import { userService } from "../../services/user.service";
 import type { User } from "../../models/UserModel";
 import { toast } from 'react-toastify';
@@ -33,7 +31,6 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, claim, onClose, 
     const [form] = Form.useForm<FormValues>();
     const [loading, setLoading] = useState(false);
     const [projectDetails, setProjectDetails] = useState<ProjectData | null>(null);
-    const [employeeInfo, setEmployeeInfo] = useState<CreateClaim_EmployeeInfo | null>(null);
     const [approver, setApprover] = useState<User | null>(null);
 
     // Fetch project details
@@ -47,32 +44,13 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, claim, onClose, 
                     }
                 } catch (error) {
                     console.error("Error fetching project details:", error);
-                    message.error("Failed to fetch project details");
+                    toast.error("Failed to fetch project details");
                 }
             }
         };
 
         fetchProjectDetails();
     }, [claim?.project_id]);
-
-    // Fetch employee details
-    useEffect(() => {
-        const fetchEmployeeInfo = async () => {
-            if (claim?.user_id) {
-                try {
-                    const response = await employeeService.getEmployeeById(claim.user_id);
-                    if (response.success && response.data) {
-                        setEmployeeInfo(response.data);
-                    }
-                } catch (error) {
-                    console.error("Error fetching employee details:", error);
-                    message.error("Failed to fetch employee details");
-                }
-            }
-        };
-
-        fetchEmployeeInfo();
-    }, [claim?.user_id]);
 
     // Fetch approver details
     useEffect(() => {
@@ -174,51 +152,16 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, claim, onClose, 
                 {/* Left side - Read-only Information */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignSelf: 'start' }}>
                     <Card 
-                        className="mb-3" 
-                        size="small" 
-                        title="Staff Information" 
-                        style={{ height: 'fit-content' }}
-                        styles={{
-                            header: {
-                                backgroundColor: '#f5f5f5',
-                                padding: '8px 12px'
-                            }
-                        }}
-                    >
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <span style={{ fontWeight: 500 }}>Staff Name:</span>
-                                <span>{employeeInfo?.full_name || 'N/A'}</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <span style={{ fontWeight: 500 }}>Staff ID:</span>
-                                <span>{employeeInfo?._id || 'N/A'}</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <span style={{ fontWeight: 500 }}>User ID:</span>
-                                <span>{employeeInfo?.user_id || 'N/A'}</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <span style={{ fontWeight: 500 }}>Department:</span>
-                                <span>{employeeInfo?.department_code || 'N/A'}</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <span style={{ fontWeight: 500 }}>Job Rank:</span>
-                                <span>{employeeInfo?.job_rank || 'N/A'}</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <span style={{ fontWeight: 500 }}>Contract Type:</span>
-                                <span>{employeeInfo?.contract_type || 'N/A'}</span>
-                            </div>
-                        </div>
-                    </Card>
-                    <Card 
                         size="small" 
                         title="Project Information"
                         styles={{
                             header: {
-                                backgroundColor: '#f5f5f5',
-                                padding: '8px 12px'
+                                backgroundColor: '#808080',
+                                padding: '8px 16px',
+                                fontSize: '16px',
+                                color: 'white',
+                                borderTopLeftRadius: '8px',
+                                borderTopRightRadius: '8px'
                             }
                         }}
                         style={{ height: 'fit-content', marginBottom: 0 }}
@@ -257,8 +200,12 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, claim, onClose, 
                         title="Update Claim"
                         styles={{
                             header: {
-                                backgroundColor: '#f5f5f5',
-                                padding: '8px 12px'
+                                backgroundColor: '#808080',
+                                padding: '8px 16px',
+                                fontSize: '16px',
+                                color: 'white',
+                                borderTopLeftRadius: '8px',
+                                borderTopRightRadius: '8px'
                             }
                         }}
                     >
@@ -366,7 +313,13 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, claim, onClose, 
                                     htmlType="submit" 
                                     loading={loading} 
                                     block
-                                    style={{ height: '36px' }}
+                                    style={{ 
+                                        height: '40px',
+                                        fontSize: '14px',
+                                        fontWeight: 500,
+                                        backgroundColor: '#808080',
+
+                                    }}             
                                 >
                                     Update Claim
                                 </Button>

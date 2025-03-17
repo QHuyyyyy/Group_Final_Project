@@ -26,6 +26,7 @@ import EditUserModal from '../../components/admin/EditUserModal';
 import { debounce } from 'lodash';
 import BlockUserButton from '../../components/admin/BlockUserButton';
 import { SearchParams } from '../../models/UserModel';
+import EmployeeDetailModal from '../../components/admin/EmployeeDetailModal';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -48,6 +49,8 @@ const AdminUserManager: React.FC = () => {
   const [roleOptions, setRoleOptions] = useState<{ label: string; value: string }[]>([]);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isBlockedFilter, setIsBlockedFilter] = useState<boolean | undefined>(undefined);
+  const [isEmployeeModalVisible, setIsEmployeeModalVisible] = useState(false);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('');
 
   useEffect(() => {
     fetchUsers(pagination.current);
@@ -133,6 +136,11 @@ const AdminUserManager: React.FC = () => {
     setSelectedStaff(null);
   };
 
+  const handleEmployeeClick = (userId: string) => {
+    setSelectedEmployeeId(userId);
+    setIsEmployeeModalVisible(true);
+  };
+
   const columns: ColumnsType<UserData> = [
     {
       title: 'No.',
@@ -213,7 +221,7 @@ const AdminUserManager: React.FC = () => {
           <Button
             type="text"
             icon={<UserOutlined />}
-            onClick={() => navigate(`/admin/employees/${record._id}`)}
+            onClick={() => handleEmployeeClick(record._id)}
             className="text-green-600 hover:text-green-800"
           />
           <DeleteUserButton
@@ -330,6 +338,12 @@ const AdminUserManager: React.FC = () => {
           visible={isDetailsModalVisible}
           staff={selectedStaff}
           onClose={handleDetailsModalClose}
+        />
+
+        <EmployeeDetailModal
+          visible={isEmployeeModalVisible}
+          employeeId={selectedEmployeeId}
+          onClose={() => setIsEmployeeModalVisible(false)}
         />
       </div>
     </div>
