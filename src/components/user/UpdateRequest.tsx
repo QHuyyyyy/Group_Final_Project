@@ -60,7 +60,7 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, claim, onClose, 
         const fetchEmployeeInfo = async () => {
             if (claim?.user_id) {
                 try {
-                    const response = await employeeService.getEmployeeById(claim.user_id);
+                    const response = await employeeService.getEmployeeById(claim.user_id, {showSpinner:false});
                     if (response.success && response.data) {
                         setEmployeeInfo(response.data);
                     }
@@ -79,7 +79,7 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, claim, onClose, 
         const fetchApproverInfo = async () => {
             if (claim?.approval_id) {
                 try {
-                    const response = await userService.getUserById(claim.approval_id);
+                    const response = await userService.getUserById(claim.approval_id, {showSpinner:false});
                     if (response.success && response.data) {
                         setApprover(response.data);
                     }

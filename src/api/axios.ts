@@ -9,10 +9,13 @@ const loadingManager = {
   count: 0,
   spinnerElement: null as HTMLDivElement | null,
   spinnerRoot: null as any,
+  previousActiveElement: null as HTMLElement | null,
 
   show() {
     this.count++;
     if (this.count === 1) {
+      this.previousActiveElement = document.activeElement as HTMLElement;
+      
       this.spinnerElement = document.createElement('div');
       this.spinnerElement.id = 'global-loading-spinner';
       
@@ -24,16 +27,25 @@ const loadingManager = {
         height: '100%',
         zIndex: '9999',
         opacity: '0',
-        transition: 'opacity 0.3s ease-in-out'
+        transition: 'opacity 0.3s ease-in-out',
+        pointerEvents: 'all',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.3)'
       });
+      this.spinnerElement.setAttribute('tabindex', '0');
       
       document.body.appendChild(this.spinnerElement);
       
       this.spinnerRoot = createRoot(this.spinnerElement);
       this.spinnerRoot.render(React.createElement(UserSpinner));
-      
       this.spinnerElement.offsetHeight;
       this.spinnerElement.style.opacity = '1';
+      
+      this.spinnerElement.focus();
+
+      document.body.style.overflow = 'hidden';
     }
   },
 
@@ -43,10 +55,13 @@ const loadingManager = {
       this.count = 0;
       if (this.spinnerElement && this.spinnerRoot) {
 
+        document.body.style.overflow = '';
+        
         this.spinnerElement.style.opacity = '0';
 
         const element = this.spinnerElement;
         const root = this.spinnerRoot;
+        const previousElement = this.previousActiveElement;
         
         setTimeout(() => {
           if (element && root) {
@@ -54,11 +69,21 @@ const loadingManager = {
             if (element.parentNode) {
               element.parentNode.removeChild(element);
             }
+
+            if (previousElement && typeof previousElement.focus === 'function') {
+              try {
+                previousElement.focus();
+              } 
+              catch (error) {
+                console.log(error)
+              }
+            }
           }
         }, 300);
         
         this.spinnerElement = null;
         this.spinnerRoot = null;
+        this.previousActiveElement = null;
       }
     }
   }

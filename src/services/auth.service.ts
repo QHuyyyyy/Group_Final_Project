@@ -5,8 +5,8 @@ import { ApiResponse } from "../models/ApiResponse";
 import { Credentials, Info, Token } from "../models/AuthModel";
 
 export const authService = {
-  login: async (credentials: Credentials): Promise<ApiResponse<Token>> => {
-    const response = await apiUtils.post<ApiResponse<Token>> (`${AUTH_URL}`, credentials);
+  login: async (credentials: Credentials, config={}): Promise<ApiResponse<Token>> => {
+    const response = await apiUtils.post<ApiResponse<Token>> (`${AUTH_URL}`, credentials || {}, config);
     console.log("fetch data:", response.data);
     return response.data
   },
