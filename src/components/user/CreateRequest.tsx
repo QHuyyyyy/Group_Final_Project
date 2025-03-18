@@ -56,7 +56,7 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                 userService.searchUsers({
                     searchCondition: { role_code: 'A003', is_delete: false },
                     pageInfo: { pageNum: 1, pageSize: 100 }
-                })
+                }, {showSpinner:false})
             ]);
 
             if (projectsResponse.success) {
@@ -122,7 +122,7 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                 claim_start_date: dayjs(values.claim_start_date).format("YYYY-MM-DD"),
                 claim_end_date: dayjs(values.claim_end_date).format("YYYY-MM-DD"),
                 total_work_time: Number(values.total_work_time)
-            });
+            }, {showSpinner:false});
             
             if (response.success) {
                 toast.success("Claim created successfully");

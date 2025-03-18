@@ -9,7 +9,7 @@ export const departmentService = {
     getAllDepartments: async (keyword?: string): Promise<ApiResponse<DepartmentModel[]>> => {
         const response = await apiUtils.get<ApiResponse<DepartmentModel[]>>(`${DEPARTMENT_ENDPOINT}/get-all`, {
             params: keyword ? { keyword } : {},
-        });
+        }, {showSpinner:false});
         console.log("fetch data:", response.data);
         return response.data;
     },

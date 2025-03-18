@@ -192,7 +192,7 @@ const Finance = () => {
       await claimService.changeClaimStatus({
         _id: selectedClaimForInfo._id,
         claim_status: "Paid"
-      });
+      }, {showSpinner:false});
       message.success('Claim has been marked as paid successfully');
       setShowConfirmDialog(false);
       fetchClaims(); // Refresh the claims list
