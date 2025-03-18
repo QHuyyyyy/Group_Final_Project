@@ -270,7 +270,7 @@ function ApprovalPage() {
         </div>
 
         <div className="overflow-auto custom-scrollbar">
-          <div className="flex flex-wrap gap-18 items-center mb-2 mx-2">
+          <div className="flex flex-wrap gap-18 items-center mx-2">
             <div className="flex items-center gap-4">
               <FilterOutlined className="mb-2 text-gray-600" />
               <Tabs

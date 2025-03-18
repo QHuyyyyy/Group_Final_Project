@@ -192,7 +192,7 @@ const Finance = () => {
       await claimService.changeClaimStatus({
         _id: selectedClaimForInfo._id,
         claim_status: "Paid"
-      });
+      }, {showSpinner:false});
       message.success('Claim has been marked as paid successfully');
       setShowConfirmDialog(false);
       fetchClaims(); // Refresh the claims list
@@ -209,62 +209,62 @@ const Finance = () => {
           title="Paid Claims"
           onSearch={handleSearch}
           onChange={(e) => handleSearch(e.target.value)}
-          rightContent={
-            <button
-              type="button"
-              className="px-4 py-2 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-              onClick={handleDownloadAllClaims}
-              title="Download All Claims"
-              aria-label="Download All Claims"
-            >
-              <span className="text-white mr-1">Download</span>
-              <FileExcelOutlined style={{ color: 'white', marginRight: '8px' }} />
-            </button>
-          }
         />
 
-        <div className="flex items-center mb-6">
-          <FilterOutlined className="mr-4 text-gray-600" />
-          <Tabs
-            activeKey={statusFilter}
-            onChange={handleStatusFilterChange}
-            className="status-tabs"
-            items={[
-              {
-                key: "",
-                label: (
-                  <span className="flex items-center text-gray-600">
-                    All
-                    <span className="ml-1 text-gray-500">
-                      ({statusCounts[""] || 0})
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center">
+            <FilterOutlined className="mr-4 text-gray-600" />
+            <Tabs
+              activeKey={statusFilter}
+              onChange={handleStatusFilterChange}
+              className="status-tabs"
+              items={[
+                {
+                  key: "",
+                  label: (
+                    <span className="flex items-center text-gray-600">
+                      All
+                      <span className="ml-1 text-gray-500">
+                        ({statusCounts[""] || 0})
+                      </span>
                     </span>
-                  </span>
-                )
-              },
-              {
-                key: "Approved",
-                label: (
-                  <span className="flex items-center text-gray-600">
-                    Approved
-                    <span className="ml-1 text-gray-500">
-                      ({statusCounts["Approved"] || 0})
+                  )
+                },
+                {
+                  key: "Approved",
+                  label: (
+                    <span className="flex items-center text-gray-600">
+                      Approved
+                      <span className="ml-1 text-gray-500">
+                        ({statusCounts["Approved"] || 0})
+                      </span>
                     </span>
-                  </span>
-                )
-              },
-              {
-                key: "Paid",
-                label: (
-                  <span className="flex items-center text-gray-600">
-                    Paid
-                    <span className="ml-1 text-gray-500">
-                      ({statusCounts["Paid"] || 0})
+                  )
+                },
+                {
+                  key: "Paid",
+                  label: (
+                    <span className="flex items-center text-gray-600">
+                      Paid
+                      <span className="ml-1 text-gray-500">
+                        ({statusCounts["Paid"] || 0})
+                      </span>
                     </span>
-                  </span>
-                )
-              }
-            ]}
-          />
+                  )
+                }
+              ]}
+            />
+          </div>
+          <button
+            type="button"
+            className="px-4 py-2 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+            onClick={handleDownloadAllClaims}
+            title="Download All Claims"
+            aria-label="Download All Claims"
+          >
+            <span className="text-white mr-1">Download</span>
+            <FileExcelOutlined style={{ color: 'white', marginRight: '8px' }} />
+          </button>
         </div>
 
         <ClaimTable

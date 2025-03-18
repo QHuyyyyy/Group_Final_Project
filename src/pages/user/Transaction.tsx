@@ -60,7 +60,7 @@ const TransactionPage: React.FC = () => {
           pageNum: pagination.current,
           pageSize: pagination.pageSize,
         },
-      });
+      }, {showSpinner:false});
 
       setTransactions(response.data.pageData || ([] as Transaction[]));
       setPagination((prev) => ({

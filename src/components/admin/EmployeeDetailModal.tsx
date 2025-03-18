@@ -52,7 +52,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
   const fetchEmployeeData = async (employeeId: string) => {
     setLoading(true);
     try {
-      const response = await employeeService.getEmployeeById(employeeId);
+      const response = await employeeService.getEmployeeById(employeeId, {showSpinner:false});
       const employeeData = response.data;
       
       form.setFieldsValue({
@@ -85,7 +85,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
         full_name: values.full_name?.trim(),
       };
   
-      await employeeService.updateEmployee(employeeId, updateData);
+      await employeeService.updateEmployee(employeeId, updateData, {showSpinner:false});
       toast.success('Update employee information successfully!');
       onClose();
     } catch (error) {
