@@ -1,17 +1,18 @@
-import { Badge, Dropdown, Popover, Row, Col } from "antd";
+import { Badge, Dropdown, Popover, Row, Col, Avatar } from "antd";
 import {
   BellOutlined,
   LogoutOutlined,
   SettingOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import avatar from "../../assets/avatar.png";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useState, useEffect } from "react";
 import { claimService } from "../../services/claim.service";
 import { useUserStore } from "../../stores/userStore";
 import { Claim } from "../../models/ClaimModel";
+import { employeeService } from "../../services/employee.service";
+import { Employee } from "../../models/EmployeeModel";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -20,6 +21,22 @@ const Navbar = () => {
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Array<{key: string; message: string; timestamp: string}>>([]);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [employeeData, setEmployeeData] = useState<Employee | null>(null);
+
+  useEffect(() => {
+    const fetchEmployeeData = async () => {
+      try {
+        const response = await employeeService.getEmployeeById(user.id);
+        setEmployeeData(response.data);
+      } catch (error) {
+        console.error('Error fetching employee data:', error);
+      }
+    };
+
+    if (user.id) {
+      fetchEmployeeData();
+    }
+  }, [user.id]);
 
   useEffect(() => {
     const fetchClaims = async () => {
@@ -140,12 +157,12 @@ const Navbar = () => {
 
           <Col>
             <Dropdown menu={{ items: menu }} trigger={["click"]}>
-              <img
-                src={avatar}
+              <Avatar
+                src={employeeData?.avatar_url}
+                icon={!employeeData?.avatar_url && <UserOutlined />}
                 alt="User Avatar"
-                width={40}
-                height={40}
-                className="cursor-pointer rounded-full"
+                size={40}
+                className="cursor-pointer"
               />
             </Dropdown>
           </Col>
