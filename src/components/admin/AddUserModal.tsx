@@ -32,6 +32,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ visible, onCancel, onSucces
     }
   };
 
+  
   return (
     <Modal
       title={<h2 className="text-2xl font-bold text-center">Add Account Staff</h2>}

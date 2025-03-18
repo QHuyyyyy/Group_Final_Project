@@ -31,6 +31,7 @@ const DeleteUserButton: React.FC<DeleteUserButtonProps> = ({ userId, isBlocked, 
       cancelText="No"
       disabled={isBlocked}
     >
+      
       <Button 
         type="text" 
         danger 
