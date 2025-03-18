@@ -46,7 +46,7 @@ const Finance = () => {
     };
 
     try {
-      const response = await claimService.searchClaimsForFinance(params);
+      const response = await claimService.searchClaimsForFinance(params, {showSpinner:false});
       if (response && response.data && response.data.pageData) {
         const claimsData = response.data.pageData;
         const filteredClaims = statusFilter === "Paid" 
@@ -163,7 +163,7 @@ const Finance = () => {
       await claimService.changeClaimStatus({
         _id: selectedClaimForInfo._id,
         claim_status: "Paid"
-      });
+      }, {showSpinner:false});
       message.success('Claim has been marked as paid successfully');
       setShowConfirmDialog(false);
       fetchClaims(); // Refresh the claims list

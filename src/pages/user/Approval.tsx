@@ -75,7 +75,7 @@ function ApprovalPage() {
       },
     };
 
-    const response = await claimService.searchClaimsForApproval(params);
+    const response = await claimService.searchClaimsForApproval(params, {showSpinner:false});
     if (response && response.data && response.data.pageData) {
       setAllClaims(response.data.pageData);
     }
@@ -97,7 +97,7 @@ function ApprovalPage() {
       },
     };
 
-    const response = await claimService.searchClaimsForApproval(params);
+    const response = await claimService.searchClaimsForApproval(params, {showSpinner:false});
     if (response && response.data && response.data.pageData) {
       const claimsData = response.data.pageData;
       setClaims(claimsData);
@@ -189,7 +189,7 @@ function ApprovalPage() {
       claim_status: confirmationType,
       comment: comment
     };
-    const response = await claimService.changeClaimStatus(requestBody);
+    const response = await claimService.changeClaimStatus(requestBody, {showSpinner:false});
     if (response && response.success === false) {
       message.error(response.message || "Failed to change claim status");
       return;
