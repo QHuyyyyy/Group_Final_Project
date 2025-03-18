@@ -35,7 +35,7 @@ export const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   const login = async (email: string, password: string): Promise<void> => {
 
-      const response = await authService.login({ email, password });
+      const response = await authService.login({ email, password }, {showSpinner:false});
       setToken(response.data.token);
       localStorage.setItem("token", response.data.token); 
 

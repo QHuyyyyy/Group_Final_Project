@@ -38,7 +38,7 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, claim, onClose, 
         const fetchProjectDetails = async () => {
             if (claim?.project_id) {
                 try {
-                    const response = await projectService.getProjectById(claim.project_id);
+                    const response = await projectService.getProjectById(claim.project_id, {showSpinner:false});
                     if (response.success && response.data) {
                         setProjectDetails(response.data);
                     }
@@ -57,7 +57,7 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, claim, onClose, 
         const fetchApproverInfo = async () => {
             if (claim?.approval_id) {
                 try {
-                    const response = await userService.getUserById(claim.approval_id);
+                    const response = await userService.getUserById(claim.approval_id, {showSpinner:false});
                     if (response.success && response.data) {
                         setApprover(response.data);
                     }
@@ -127,8 +127,8 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, claim, onClose, 
                 approval_id: claim.approval_id,
             };
 
-            await claimService.updateClaim(claim._id, updatedRequest);
-            toast.success('Claim updated successfully!');
+            await claimService.updateClaim(claim._id, updatedRequest, {showSpinner:false});
+            message.success("Claim updated successfully");
             onSuccess();
             onClose();
         } catch (error) {

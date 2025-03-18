@@ -244,8 +244,10 @@ const Claim = () => {
 
   const handleOpenUpdateModal = async (record: Claim) => {
     try {
-      const response = await claimService.getClaimById(record._id);
+      setLoading(true)
+      const response = await claimService.getClaimById(record._id, {showSpinner:false});
       if (response?.data) {
+        setLoading(false)
         setSelectedRequest(response.data);
         setIsUpdateModalVisible(true);
       }

@@ -1,8 +1,10 @@
 import { Modal, Form, Button } from "antd";
+import { userService } from "../../services/user.service";
 import { message } from "antd";
 import { toast } from "react-toastify";
 import { InputVaild } from "../../constants/InputVaild";
 import CommonField from "./CommonFieldAddUser";
+import { useState } from "react";
 
 interface AddUserModalProps {
   visible: boolean;
@@ -13,7 +15,7 @@ interface AddUserModalProps {
 
 const AddUserModal: React.FC<AddUserModalProps> = ({ visible, onCancel, onSuccess, roleOptions }) => {
   const [form] = Form.useForm();
-
+  const [loading, setLoading] = useState(false);
   const handleCancel = () => {
     form.resetFields();
     onCancel();
@@ -23,12 +25,28 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ visible, onCancel, onSucces
     const loadingMessage = message.loading("Creating user...", 0);
 
     try {
+      setLoading(true)
+      const userData = {
+        email: values.email.trim(),
+        password: values.password,
+        user_name: values.user_name.trim(),
+        role_code: values.role_code.trim(),
+      };
+
+      const response = await userService.createUser(userData, {showSpinner:false});
       loadingMessage();
-      onSuccess(values);
-      form.resetFields();
-    } catch (error: any) {
+
+      if (response) {
+        toast.success("User created successfully");
+        form.resetFields();
+        onSuccess(values);
+      }
+    } catch (apiError: any) {
       loadingMessage();
-      toast.error("An error occurred while processing the form.");
+      toast.error(apiError.response?.data?.message || "An error occurred while creating the user.");
+    }
+    finally{
+      setLoading(false)
     }
   };
 
@@ -39,10 +57,10 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ visible, onCancel, onSucces
       onCancel={handleCancel}
       width={800}
       footer={[
-        <Button key="cancel" onClick={handleCancel} className="bg-gray-300 hover:bg-gray-400">
+        <Button key="cancel" onClick={handleCancel} className="bg-gray-300 hover:bg-gray-400" disabled={loading}>
           Cancel
         </Button>,
-        <Button key="submit" type="primary" onClick={form.submit} className="bg-blue-600 hover:bg-blue-700">
+        <Button key="submit" type="primary" onClick={form.submit} className="bg-blue-600 hover:bg-blue-700" loading={loading}>
           Save
         </Button>,
       ]}

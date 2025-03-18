@@ -57,7 +57,7 @@ const ViewClaimRequest: React.FC = () => {
               pageSize: 1,
             },
           };
-          const countResponse = await claimService.searchClaims(countParams);
+          const countResponse = await claimService.searchClaims(countParams, {showSpinner:false});
           return { status: status.value, count: countResponse.data.pageInfo.totalItems };
         }
         return null;
@@ -84,7 +84,7 @@ const ViewClaimRequest: React.FC = () => {
         },
       };
 
-      const response = await claimService.searchClaims(params);
+      const response = await claimService.searchClaims(params, {showSpinner:false});
       if (response?.data?.pageData) {
         setFilteredClaims(response.data.pageData);
         setPagination(prev => ({
@@ -202,10 +202,12 @@ const ViewClaimRequest: React.FC = () => {
 
   // Modify handleRowClick to show details modal
   const handleRowClick = async (record: Claim) => {
+    setLoading(true)
     try {
       // Fetch detailed claim data if needed
-      const detailedClaim = await claimService.getClaimById(record._id);
+      const detailedClaim = await claimService.getClaimById(record._id, {showSpinner:false});
       if (detailedClaim.success) {
+        setLoading(false)
         setSelectedClaim(detailedClaim.data);
         setIsDetailsModalVisible(true);
       }
