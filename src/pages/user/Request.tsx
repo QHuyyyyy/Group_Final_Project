@@ -8,9 +8,9 @@ import {
   EditOutlined,
 } from "@ant-design/icons";
 import type { Claim, ClaimById, SearchParams } from "../../models/ClaimModel";
-import CreateRequest from "./CreateRequest";
+import CreateRequest from "../../components/user/CreateRequest";
 import SendRequest from "../../components/user/SendRequest";
-import CancelRequest from "../../components/user/CancelRequest";  // Import lại CancelRequest
+import CancelRequest from "../../components/user/CancelRequest"; 
 import { debounce } from "lodash";
 import ClaimDetailsModal from '../../components/shared/ClaimDetailsModal';
 import StatusTabs from '../../components/shared/StatusTabs';
@@ -280,30 +280,26 @@ const Claim = () => {
           onChange={(e) => handleSearch(e.target.value)}
         />
 
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center">
-            <StatusTabs
-              activeKey={selectedStatus}
-              onChange={handleStatusFilter}
-              items={[
-                { key: "", label: "All", count: statusCounts[""] || 0 },
-                { key: "Draft", label: "Draft", count: statusCounts["Draft"] || 0 },
-                { key: "Pending Approval", label: "Pending Approval", count: statusCounts["Pending Approval"] || 0 },
-                { key: "Approved", label: "Approved", count: statusCounts["Approved"] || 0 },
-                { key: "Rejected", label: "Rejected", count: statusCounts["Rejected"] || 0 },
-                { key: "Canceled", label: "Canceled", count: statusCounts["Canceled"] || 0 },
-                { key: "Paid", label: "Paid", count: statusCounts["Paid"] || 0 },
-              ]}
-            />
-          </div>
+        <div className="flex items-center justify-between">
+          <StatusTabs
+            activeKey={selectedStatus}
+            onChange={handleStatusFilter}
+            items={[
+              { key: "", label: "All", count: statusCounts[""] || 0 },
+              { key: "Draft", label: "Draft", count: statusCounts["Draft"] || 0 },
+              { key: "Pending Approval", label: "Pending Approval", count: statusCounts["Pending Approval"] || 0 },
+              { key: "Approved", label: "Approved", count: statusCounts["Approved"] || 0 },
+              { key: "Rejected", label: "Rejected", count: statusCounts["Rejected"] || 0 },
+              { key: "Canceled", label: "Canceled", count: statusCounts["Canceled"] || 0 },
+              { key: "Paid", label: "Paid", count: statusCounts["Paid"] || 0 },
+            ]}
+          />
           <button 
             type="button" 
             onClick={handleOpenCreateModal}
             className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-           
           >
-             <span className="text-white mr-1">Add New Claim</span>
-            
+            <span className="text-white mr-1">Add New Claim</span>
           </button>
         </div>
 
