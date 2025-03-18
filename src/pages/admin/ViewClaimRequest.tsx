@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Table, Button, Input, Tag} from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { SearchOutlined, ArrowLeftOutlined } from '@ant-design/icons';
-import SideBarAdminUser from '../../components/admin/SideBarAdminUser';
+import AdminSidebar from '../../components/admin/AdminSidebar';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import { claimService } from '../../services/claim.service';
@@ -57,7 +57,7 @@ const ViewClaimRequest: React.FC = () => {
               pageSize: 1,
             },
           };
-          const countResponse = await claimService.searchClaims(countParams);
+          const countResponse = await claimService.searchClaims(countParams, {showSpinner:false});
           return { status: status.value, count: countResponse.data.pageInfo.totalItems };
         }
         return null;
@@ -84,7 +84,7 @@ const ViewClaimRequest: React.FC = () => {
         },
       };
 
-      const response = await claimService.searchClaims(params);
+      const response = await claimService.searchClaims(params, {showSpinner:false});
       if (response?.data?.pageData) {
         setFilteredClaims(response.data.pageData);
         setPagination(prev => ({
@@ -147,10 +147,6 @@ const ViewClaimRequest: React.FC = () => {
     </div>
   );
 
-  const handleAddUser = () => {
-    console.log('Add user clicked');
-  };
-
   const columns: ColumnsType<Claim> = [
     {
       title: 'ID',
@@ -206,10 +202,12 @@ const ViewClaimRequest: React.FC = () => {
 
   // Modify handleRowClick to show details modal
   const handleRowClick = async (record: Claim) => {
+    setLoading(true)
     try {
       // Fetch detailed claim data if needed
-      const detailedClaim = await claimService.getClaimById(record._id);
+      const detailedClaim = await claimService.getClaimById(record._id, {showSpinner:false});
       if (detailedClaim.success) {
+        setLoading(false)
         setSelectedClaim(detailedClaim.data);
         setIsDetailsModalVisible(true);
       }
@@ -229,7 +227,7 @@ const ViewClaimRequest: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <SideBarAdminUser onAddUser={handleAddUser} />
+      <AdminSidebar />
       <div className="flex-1 ml-64 p-8">
         <div className="flex items-center justify-between mb-6">
           <Button 

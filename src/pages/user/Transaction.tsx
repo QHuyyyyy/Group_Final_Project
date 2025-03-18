@@ -7,7 +7,7 @@ import { SearchOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import { useDebounce } from "../../hooks/useDebounce";
 import { toast } from "react-toastify";
 import { useLocation, useNavigate } from "react-router-dom";
-import SideBarAdminUser from "../../components/admin/SideBarAdminUser";
+import AdminSidebar from '../../components/admin/AdminSidebar';
 
 interface Transaction {
   _id: string;
@@ -60,7 +60,7 @@ const TransactionPage: React.FC = () => {
           pageNum: pagination.current,
           pageSize: pagination.pageSize,
         },
-      });
+      }, {showSpinner:false});
 
       setTransactions(response.data.pageData || ([] as Transaction[]));
       setPagination((prev) => ({
@@ -185,10 +185,8 @@ const TransactionPage: React.FC = () => {
   ];
 
   return (
-    <div
-      className={`${isAdminDashboard ? "flex min-h-screen bg-gray-100" : ""}`}
-    >
-      {isAdminDashboard && <SideBarAdminUser onAddUser={() => {}} />}
+    <div className={`${isAdminDashboard ? "flex min-h-screen bg-gray-100" : ""}`}>
+      {isAdminDashboard && <AdminSidebar />}
       <div
         className={`${
           isAdminDashboard ? "flex-1 ml-64 p-8" : "container mx-auto px-4 py-8"

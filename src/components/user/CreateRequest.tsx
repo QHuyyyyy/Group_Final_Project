@@ -9,11 +9,9 @@ import type { User } from "../../models/UserModel";
 import { useUserStore } from "../../stores/userStore";
 import projectService from "../../services/project.service";
 import { userService } from "../../services/user.service";
-import { employeeService } from "../../services/employee.service";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import type { CreateClaim_ProjectData } from "../../models/ProjectModel";
-import type { CreateClaim_EmployeeInfo } from "../../models/EmployeeModel";
 
 interface CreateRequestProps {
     visible: boolean;
@@ -40,14 +38,6 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
         project_end_date: '',
         project_description:'',
     });
-    const [employeeInfo, setEmployeeInfo] = useState<CreateClaim_EmployeeInfo>({
-        _id: '',
-        user_id:'',
-        full_name: '', 
-        department_code: '',
-        job_rank: '',
-        contract_type: '',
-    });
     const userId = useUserStore((state) => state.id);
 
     useEffect(() => {
@@ -58,7 +48,7 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
 
     const fetchInitialData = async () => {
         try {
-            const [projectsResponse, approversResponse, employeeResponse] = await Promise.all([
+            const [projectsResponse, approversResponse] = await Promise.all([
                 projectService.searchProjects({
                     searchCondition: { is_delete: false, user_id: userId },
                     pageInfo: { pageNum: 1, pageSize: 100, totalItems: 0, totalPages: 0 }
@@ -66,8 +56,7 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                 userService.searchUsers({
                     searchCondition: { role_code: 'A003', is_delete: false },
                     pageInfo: { pageNum: 1, pageSize: 100 }
-                }),
-                employeeService.getEmployeeById(userId)
+                }, {showSpinner:false})
             ]);
 
             if (projectsResponse.success) {
@@ -76,10 +65,7 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
             if (approversResponse.success) {
                 setApprovers(approversResponse.data.pageData);
             }
-            if (employeeResponse.success) {
-                setEmployeeInfo(employeeResponse.data);
-            }
-        } catch (error) {
+        } catch {
             toast.error("Failed to fetch initial data");
         }
     };
@@ -136,7 +122,7 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                 claim_start_date: dayjs(values.claim_start_date).format("YYYY-MM-DD"),
                 claim_end_date: dayjs(values.claim_end_date).format("YYYY-MM-DD"),
                 total_work_time: Number(values.total_work_time)
-            });
+            }, {showSpinner:false});
             
             if (response.success) {
                 toast.success("Claim created successfully");
@@ -144,8 +130,12 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                 onSuccess();
                 onClose();
             }
-        } catch (error: any) {
-            toast.error(error.message || "Failed to create claim");
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                toast.error(error.message || "Failed to create claim");
+            } else {
+                toast.error("Failed to create claim");
+            }
         } finally {
             setLoading(false);
         }
@@ -166,52 +156,6 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                     {/* Left side - Information */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                        <Card 
-                            className="mb-3" 
-                            size="small" 
-                            title="Staff Information"
-                            style={{ height: 'fit-content', width: '100%' }}
-                            styles={{
-                                header: {
-                                    backgroundColor: '#808080',
-                                    padding: '8px 16px',
-                                    fontSize: '16px',
-                                    color: 'white',
-                                    borderTopLeftRadius: '8px',
-                                    borderTopRightRadius: '8px'
-                                },
-                                body: {
-                                    padding: '20px'
-                                }
-                            }}
-                        >
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <span style={{ fontWeight: 500 }}>Staff Name:</span>
-                                    <span>{employeeInfo.full_name}</span>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <span style={{ fontWeight: 500 }}>Staff ID:</span>
-                                    <span>{employeeInfo._id}</span>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <span style={{ fontWeight: 500 }}>User ID:</span>
-                                    <span>{employeeInfo.user_id}</span>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <span style={{ fontWeight: 500 }}>Department:</span>
-                                    <span>{employeeInfo.department_code}</span>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <span style={{ fontWeight: 500 }}>Job Rank:</span>
-                                    <span>{employeeInfo.job_rank}</span>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <span style={{ fontWeight: 500 }}>Contract Type:</span>
-                                    <span>{employeeInfo.contract_type}</span>
-                                </div>
-                            </div>
-                        </Card>
                         <Card 
                             size="small" 
                             title="Project Information"

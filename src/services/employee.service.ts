@@ -12,8 +12,8 @@ export const employeeService = {
   },
 
   // Cập nhật thông tin nhân viên
-  updateEmployee: async (id: string, employeeData: EmployeeUpdateData): Promise<ApiResponse<Employee>> => {
-    const response = await  apiUtils.put<ApiResponse<Employee>>(`${EMPLOYEES_ENDPOINT}/${id}`, employeeData);
+  updateEmployee: async (id: string, employeeData: EmployeeUpdateData, config={}): Promise<ApiResponse<Employee>> => {
+    const response = await  apiUtils.put<ApiResponse<Employee>>(`${EMPLOYEES_ENDPOINT}/${id}`, employeeData || {}, config);
     console.log("fetch data:", response.data);
     return response.data;
   }

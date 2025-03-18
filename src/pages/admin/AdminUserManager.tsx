@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Table, Button,Input,Space, Tag, Switch } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import 'antd/dist/reset.css';
-import SideBarAdminUser from '../../components/admin/SideBarAdminUser';  
+import AdminSidebar from '../../components/admin/AdminSidebar';
 import { useNavigate } from 'react-router-dom';
 import { 
   EditOutlined,  
@@ -26,6 +26,7 @@ import EditUserModal from '../../components/admin/EditUserModal';
 import { debounce } from 'lodash';
 import BlockUserButton from '../../components/admin/BlockUserButton';
 import { SearchParams } from '../../models/UserModel';
+import EmployeeDetailModal from '../../components/admin/EmployeeDetailModal';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -48,6 +49,8 @@ const AdminUserManager: React.FC = () => {
   const [roleOptions, setRoleOptions] = useState<{ label: string; value: string }[]>([]);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isBlockedFilter, setIsBlockedFilter] = useState<boolean | undefined>(undefined);
+  const [isEmployeeModalVisible, setIsEmployeeModalVisible] = useState(false);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('');
 
   useEffect(() => {
     fetchUsers(pagination.current);
@@ -71,7 +74,7 @@ const AdminUserManager: React.FC = () => {
         }
       };
 
-      const response = await userService.searchUsers(params);
+      const response = await userService.searchUsers(params, {showSpinner:false});
     
       
       if (response && response.data) {
@@ -114,10 +117,6 @@ const AdminUserManager: React.FC = () => {
     }));
   }, 2000);
 
-  const handleAdd = () => {
-    setIsAddModalVisible(true);
-  };
-
   const handleEdit = (record: UserData) => {
     setEditingRecord(record);
     setIsEditModalVisible(true);
@@ -131,6 +130,11 @@ const AdminUserManager: React.FC = () => {
   const handleDetailsModalClose = () => {
     setIsDetailsModalVisible(false);
     setSelectedStaff(null);
+  };
+
+  const handleEmployeeClick = (userId: string) => {
+    setSelectedEmployeeId(userId);
+    setIsEmployeeModalVisible(true);
   };
 
   const columns: ColumnsType<UserData> = [
@@ -213,7 +217,7 @@ const AdminUserManager: React.FC = () => {
           <Button
             type="text"
             icon={<UserOutlined />}
-            onClick={() => navigate(`/admin/employees/${record._id}`)}
+            onClick={() => handleEmployeeClick(record._id)}
             className="text-green-600 hover:text-green-800"
           />
           <DeleteUserButton
@@ -235,8 +239,8 @@ const AdminUserManager: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <SideBarAdminUser onAddUser={handleAdd} />
-      <div className="flex-1 ml-64 p-8">
+      <AdminSidebar />
+      <div className="flex-1 ml-[260px] p-8">
         <div className="flex items-center justify-between mb-6">
           <Button 
             type="default" 
@@ -330,6 +334,12 @@ const AdminUserManager: React.FC = () => {
           visible={isDetailsModalVisible}
           staff={selectedStaff}
           onClose={handleDetailsModalClose}
+        />
+
+        <EmployeeDetailModal
+          visible={isEmployeeModalVisible}
+          employeeId={selectedEmployeeId}
+          onClose={() => setIsEmployeeModalVisible(false)}
         />
       </div>
     </div>

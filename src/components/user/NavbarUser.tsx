@@ -8,12 +8,62 @@ import {
 import avatar from "../../assets/avatar.png";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { claimService } from "../../services/claim.service";
+import { useUserStore } from "../../stores/userStore";
+import { Claim } from "../../models/ClaimModel";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const user = useUserStore();
   const [open, setOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Array<{key: string; message: string; timestamp: string}>>([]);
+  const [notificationCount, setNotificationCount] = useState(0);
+
+  useEffect(() => {
+    const fetchClaims = async () => {
+      if (user?.role_code === 'A003' || user?.role_code === 'A002') {
+        try {
+          const response = await claimService.searchClaims({
+            searchCondition: {
+              claim_status: user?.role_code === 'A003' ? 'Pending Approval' : 'Approved',
+              is_delete: false
+            },
+            pageInfo: {
+              pageSize: 10,
+              pageNum: 1
+            }
+          });
+          
+          const claims = response.data.pageData;
+          
+          // Group claims by staff_name
+          const groupedClaims = claims.reduce((acc: { [key: string]: number }, claim: Claim) => {
+            acc[claim.staff_name] = (acc[claim.staff_name] || 0) + 1;
+            return acc;
+          }, {});
+
+          // Create grouped notifications
+          const newNotifications = Object.entries(groupedClaims).map(([staffName, count]) => ({
+            key: staffName,
+            message: user?.role_code === 'A003' 
+              ? `⬇️ ${count} claim requests from ${staffName} need to be action`
+              : `✅ ${count} approved claims from ${staffName}`,
+            timestamp: new Date().toISOString(),
+          }));
+          
+          setNotifications(newNotifications);
+          setNotificationCount(claims.length);
+        } catch (error) {
+          console.error('Error fetching notifications:', error);
+        }
+      }
+    };
+
+    fetchClaims();
+  }, [user]);
+
   const handleLogout = () => {
     logout();
     navigate("/login");
@@ -49,10 +99,6 @@ const Navbar = () => {
     },
   ];
 
-  const notifications = [
-    { key: "1", message: "📩 There are 2 requests waiting for your approval!!!" },
-  ];
-
   const notificationContent = (
     <div className="w-80 p-3 bg-white rounded-lg">
       <p className="flex justify-center font-semibold text-gray-700">🔔 Notifications</p>
@@ -76,18 +122,20 @@ const Navbar = () => {
       <div className="flex items-center">
         <Row gutter={[16, 16]} align="middle">
           <Col>
-            <Popover
-              content={notificationContent}
-              trigger="click"
-              open={open}  
-              onOpenChange={setOpen}  
-              placement="bottomRight"
-              arrow={{ pointAtCenter: true }}
-            >
-              <Badge count={2} className="cursor-pointer">
-                <BellOutlined className="text-xl" />
-              </Badge>
-            </Popover>
+            {(user?.role_code === 'A003' || user?.role_code === 'A002') && (
+              <Popover
+                content={notificationContent}
+                trigger="click"
+                open={open}  
+                onOpenChange={setOpen}  
+                placement="bottomRight"
+                arrow={{ pointAtCenter: true }}
+              >
+                <Badge count={notificationCount} className="cursor-pointer">
+                  <BellOutlined className="text-xl" />
+                </Badge>
+              </Popover>
+            )}
           </Col>
 
           <Col>

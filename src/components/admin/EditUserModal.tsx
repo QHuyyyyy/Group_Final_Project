@@ -21,6 +21,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
 }) => {
   const [form] = Form.useForm();
   const [isRoleEdit, setIsRoleEdit] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   React.useEffect(() => {
     if (editingRecord) {
@@ -35,23 +36,26 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
 
   const handleSave = async (values: any) => {
     try {
+      setLoading(true);
+      
       if (!editingRecord?._id) {
         throw new Error('User ID is required for updating.');
       }
 
       if (isRoleEdit) {
-        // Only update role
-        //await userService.changeRole(editingRecord._id, values.role_code);
-        await userService.changeRole({ user_id: editingRecord._id, role_code: values.role_code }, {showSpinner:false});
+
+        await userService.changeRole({ 
+          user_id: editingRecord._id, 
+          role_code: values.role_code 
+        }, {showSpinner:false});
       } else {
-        // Only update user info
+        
         await userService.updateUser(editingRecord._id, {
           email: values.email,
           user_name: values.user_name,
         }, {showSpinner:false});
       }
 
-  
       onSuccess();
       form.resetFields();
       setIsRoleEdit(false);
@@ -61,6 +65,8 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
         title: 'Error',
         content: 'Failed to update staff member. Please try again.',
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -83,10 +89,15 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
       onCancel={onCancel}
       width={800}
       footer={[
-        <Button key="cancel" onClick={onCancel}>
+        <Button key="cancel" onClick={onCancel} disabled={loading}>
           Cancel
         </Button>,
-        <Button key="submit" type="primary" onClick={form.submit}>
+        <Button 
+          key="submit" 
+          type="primary" 
+          onClick={form.submit}
+          loading={loading} // Add loading spinner to the button
+        >
           Save
         </Button>
       ]}
@@ -136,4 +147,4 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   );
 };
 
-export default EditUserModal; 
+export default EditUserModal;
