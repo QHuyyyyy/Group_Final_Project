@@ -30,6 +30,7 @@ const DeleteUserButton: React.FC<DeleteUserButtonProps> = ({ userId, isBlocked, 
       okText="Yes"
       cancelText="No"
       disabled={isBlocked}
+      okButtonProps={{ loading: false }}
     >
       <Button 
         type="text" 
