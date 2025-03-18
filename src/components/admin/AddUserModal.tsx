@@ -1,4 +1,5 @@
 import { Modal, Form, Button } from "antd";
+import { userService } from "../../services/user.service";
 import { message } from "antd";
 import { toast } from "react-toastify";
 import { InputVaild } from "../../constants/InputVaild";
@@ -24,7 +25,6 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ visible, onCancel, onSucces
     const loadingMessage = message.loading("Creating user...", 0);
 
     try {
-
       setLoading(true)
       const userData = {
         email: values.email.trim(),
@@ -34,13 +34,16 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ visible, onCancel, onSucces
       };
 
       const response = await userService.createUser(userData, {showSpinner:false});
+      loadingMessage();
 
+      if (response) {
+        toast.success("User created successfully");
+        form.resetFields();
+        onSuccess(values);
+      }
+    } catch (apiError: any) {
       loadingMessage();
-      onSuccess(values);
-      form.resetFields();
-    } catch (error: any) {
-      loadingMessage();
-      toast.error("An error occurred while processing the form.");
+      toast.error(apiError.response?.data?.message || "An error occurred while creating the user.");
     }
     finally{
       setLoading(false)
