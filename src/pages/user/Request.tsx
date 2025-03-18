@@ -280,26 +280,34 @@ const Claim = () => {
           title="My Claims"
           onSearch={handleSearch}
           onChange={(e) => handleSearch(e.target.value)}
-          rightContent={
-            <Button type="primary" onClick={handleOpenCreateModal}>
-              Add New Claim
-            </Button>
-          }
         />
 
-        <StatusTabs
-          activeKey={selectedStatus}
-          onChange={handleStatusFilter}
-          items={[
-            { key: "", label: "All", count: statusCounts[""] || 0 },
-            { key: "Draft", label: "Draft", count: statusCounts["Draft"] || 0 },
-            { key: "Pending Approval", label: "Pending Approval", count: statusCounts["Pending Approval"] || 0 },
-            { key: "Approved", label: "Approved", count: statusCounts["Approved"] || 0 },
-            { key: "Rejected", label: "Rejected", count: statusCounts["Rejected"] || 0 },
-            { key: "Canceled", label: "Canceled", count: statusCounts["Canceled"] || 0 },
-            { key: "Paid", label: "Paid", count: statusCounts["Paid"] || 0 },
-          ]}
-        />
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center">
+            <StatusTabs
+              activeKey={selectedStatus}
+              onChange={handleStatusFilter}
+              items={[
+                { key: "", label: "All", count: statusCounts[""] || 0 },
+                { key: "Draft", label: "Draft", count: statusCounts["Draft"] || 0 },
+                { key: "Pending Approval", label: "Pending Approval", count: statusCounts["Pending Approval"] || 0 },
+                { key: "Approved", label: "Approved", count: statusCounts["Approved"] || 0 },
+                { key: "Rejected", label: "Rejected", count: statusCounts["Rejected"] || 0 },
+                { key: "Canceled", label: "Canceled", count: statusCounts["Canceled"] || 0 },
+                { key: "Paid", label: "Paid", count: statusCounts["Paid"] || 0 },
+              ]}
+            />
+          </div>
+          <button 
+            type="button" 
+            onClick={handleOpenCreateModal}
+            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+           
+          >
+             <span className="text-white mr-1">Add New Claim</span>
+            
+          </button>
+        </div>
 
         <ClaimTable
           loading={loading}
