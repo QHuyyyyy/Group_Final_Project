@@ -2,6 +2,7 @@ import { Table, Tag, Button, Avatar } from "antd";
 import { EyeOutlined, UserOutlined, CalendarOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import type { Claim } from "../../models/ClaimModel";
+import type { TableRowSelection } from "antd/es/table/interface";
 
 interface ClaimTableProps {
   loading: boolean;
@@ -15,6 +16,7 @@ interface ClaimTableProps {
   onView: (record: Claim) => void;
   actionButtons?: (record: Claim) => React.ReactNode;
   showAmount?: boolean;
+  rowSelection?: TableRowSelection<Claim>;
 }
 
 const ClaimTable = ({
@@ -24,6 +26,7 @@ const ClaimTable = ({
   onView,
   actionButtons,
   showAmount = false,
+  rowSelection,
 }: ClaimTableProps) => {
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -38,6 +41,17 @@ const ClaimTable = ({
   };
 
   const columns = [
+    {
+      title: "No.",
+      key: "index",
+      width: "70px",
+      className: "text-center",
+      render: (_: any, __: any, index: number) => (
+        <div className="text-gray-500">
+          {((pagination.current - 1) * pagination.pageSize) + index + 1}
+        </div>
+      ),
+    },
     {
       title: "Staff",
       key: "staff",
@@ -71,7 +85,12 @@ const ClaimTable = ({
           <div className="flex items-center gap-1 mb-1">
             <CalendarOutlined className="text-gray-400" />
             <span>
-              {dayjs(record.claim_start_date).format("DD MMM YYYY")} - {dayjs(record.claim_end_date).format("DD MMM YYYY")}
+            <div>
+                {dayjs(record.claim_start_date).format("DD MMM YYYY")}
+            </div>
+            <div>
+                {dayjs(record.claim_end_date).format("DD MMM YYYY")}
+            </div>
             </span>
           </div>
         </div>
@@ -123,6 +142,7 @@ const ClaimTable = ({
       dataSource={dataSource}
       columns={columns}
       rowKey="_id"
+      rowSelection={rowSelection}
       pagination={{
         ...pagination,
         showSizeChanger: true,
