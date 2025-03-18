@@ -202,10 +202,12 @@ const ViewClaimRequest: React.FC = () => {
 
   // Modify handleRowClick to show details modal
   const handleRowClick = async (record: Claim) => {
+    setLoading(true)
     try {
       // Fetch detailed claim data if needed
       const detailedClaim = await claimService.getClaimById(record._id, {showSpinner:false});
       if (detailedClaim.success) {
+        setLoading(false)
         setSelectedClaim(detailedClaim.data);
         setIsDetailsModalVisible(true);
       }
