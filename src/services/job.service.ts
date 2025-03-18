@@ -7,7 +7,7 @@ export const jobService = {
     getAllJobs: async (keyword?: string): Promise<ApiResponse<Job[]>> => {
         const response = await apiUtils.get<ApiResponse<Job[]>>(`${JOB_ENDPOINT}/get-all`, {
             params: { keyword }
-        });
+        }, {showSpinner:false});
         console.log("fetch data:", response.data);
         return response.data;
     },
