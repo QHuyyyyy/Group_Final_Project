@@ -12,7 +12,7 @@ interface DeleteUserButtonProps {
 const DeleteUserButton: React.FC<DeleteUserButtonProps> = ({ userId, isBlocked, onSuccess }) => {
   const handleDelete = async () => {
     try {
-      await userService.deleteUser(userId, {showSpinner:false});
+      await userService.deleteUser(userId);
       message.success('User deleted successfully');
       if (onSuccess) {
         onSuccess();
@@ -32,7 +32,6 @@ const DeleteUserButton: React.FC<DeleteUserButtonProps> = ({ userId, isBlocked, 
       disabled={isBlocked}
       okButtonProps={{ loading: false }}
     >
-      
       <Button 
         type="text" 
         danger 
