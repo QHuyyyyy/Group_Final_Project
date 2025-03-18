@@ -2,6 +2,7 @@ import { Table, Tag, Button, Avatar } from "antd";
 import { EyeOutlined, UserOutlined, CalendarOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import type { Claim } from "../../models/ClaimModel";
+import type { TableRowSelection } from "antd/es/table/interface";
 
 interface ClaimTableProps {
   loading: boolean;
@@ -15,6 +16,7 @@ interface ClaimTableProps {
   onView: (record: Claim) => void;
   actionButtons?: (record: Claim) => React.ReactNode;
   showAmount?: boolean;
+  rowSelection?: TableRowSelection<Claim>;
 }
 
 const ClaimTable = ({
@@ -24,6 +26,7 @@ const ClaimTable = ({
   onView,
   actionButtons,
   showAmount = false,
+  rowSelection,
 }: ClaimTableProps) => {
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -39,19 +42,31 @@ const ClaimTable = ({
 
   const columns = [
     {
+      title: "No.",
+      key: "index",
+      width: "70px",
+      className: "text-center",
+      render: (_: any, __: any, index: number) => (
+        <div className="text-gray-600 font-medium">
+          {((pagination.current - 1) * pagination.pageSize) + index + 1}
+        </div>
+      ),
+    },
+    {
       title: "Staff",
       key: "staff",
       width: "18%",
       render: (_: any, record: Claim) => (
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 py-2">
           <Avatar
-            size="large"
-            icon={<UserOutlined />}
-            className="bg-blue-500"
+            size={45}
+            src={record.employee_info?.avatar_url}
+            icon={!record.employee_info?.avatar_url && <UserOutlined />}
+            className="bg-blue-500 shadow-sm"
           />
-          <div className="mb-1">
-            <div className="font-medium">{record.staff_name}</div>
-            <div className="text-xs text-gray-500">{record.staff_email}</div>
+          <div>
+            <div className="font-medium text-gray-800">{record.staff_name}</div>
+            <div className="text-sm text-gray-500">{record.staff_email}</div>
           </div>
         </div>
       ),
@@ -61,18 +76,24 @@ const ClaimTable = ({
       dataIndex: "claim_name",
       key: "claim_name",
       width: "15%",
+      className: "text-gray-800 font-medium",
     },
     {
       title: "Period",
       key: "period",
       width: "22%",
       render: (_: any, record: Claim) => (
-        <div>
-          <div className="flex items-center gap-1 mb-1">
+        <div className="py-2">
+          <div className="flex items-center gap-2">
             <CalendarOutlined className="text-gray-400" />
-            <span>
-              {dayjs(record.claim_start_date).format("DD MMM YYYY")} - {dayjs(record.claim_end_date).format("DD MMM YYYY")}
-            </span>
+            <div className="flex flex-col">
+              <span className="text-gray-800">
+                {dayjs(record.claim_start_date).format("DD MMM YYYY")}
+              </span>
+              <span className="text-gray-800">
+                {dayjs(record.claim_end_date).format("DD MMM YYYY")}
+              </span>
+            </div>
           </div>
         </div>
       ),
@@ -82,12 +103,26 @@ const ClaimTable = ({
       dataIndex: "total_work_time",
       key: "total_work_time",
       width: "15%",
-      render: (total_work_time: number) => `${total_work_time} hours`,
+      className: "text-gray-800 font-medium",
+      render: (total_work_time: number) => (
+        <div className="py-2">
+          <span className="bg-blue-50 px-3 py-1 rounded-full">
+            {total_work_time} hours
+          </span>
+        </div>
+      ),
     },
     ...(showAmount ? [{
       title: "Amount",
       key: "amount",
-      render: (_: any, record: Claim) => `$${record.total_work_time * 50}`,
+      className: "text-gray-800 font-medium",
+      render: (_: any, record: Claim) => (
+        <div className="py-2">
+          <span className="bg-green-50 text-green-700 px-3 py-1 rounded-full">
+            ${record.total_work_time * 50}
+          </span>
+        </div>
+      ),
     }] : []),
     {
       title: "Status",
@@ -95,21 +130,24 @@ const ClaimTable = ({
       key: "claim_status",
       width: "120px",
       render: (status: string) => (
-        <Tag color={getStatusColor(status)}>
-          {status}
-        </Tag>
+        <div className="py-2">
+          <Tag color={getStatusColor(status)} className="px-3 py-1 text-sm font-medium rounded-full">
+            {status}
+          </Tag>
+        </div>
       ),
     },
     {
       title: "Actions",
       key: "actions",
       render: (_: any, record: Claim) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 py-2">
           <Button
             type="text"
-            icon={<EyeOutlined />}
+            icon={<EyeOutlined className="text-blue-500" />}
             onClick={() => onView(record)}
             title="View"
+            className="hover:bg-blue-50 rounded-full"
           />
           {actionButtons && actionButtons(record)}
         </div>
@@ -123,14 +161,16 @@ const ClaimTable = ({
       dataSource={dataSource}
       columns={columns}
       rowKey="_id"
+      rowSelection={rowSelection}
       pagination={{
         ...pagination,
         showSizeChanger: true,
         showQuickJumper: true,
         showTotal: (total) => `Total ${total} claims`,
       }}
-      className="overflow-x-auto"
+      className="overflow-x-auto shadow-sm rounded-lg"
       scroll={{ x: 1000 }}
+      rowClassName={() => 'hover:bg-gray-50 transition-colors'}
     />
   );
 };

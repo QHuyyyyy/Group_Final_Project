@@ -39,7 +39,7 @@ const Menu = () => {
           icon: document, 
           label: "Approvals", 
           href: "/userdashboard/approvals",
-          allowedRoles: ["A002", "A003"]
+          allowedRoles: ["A003"]
         },
         { 
           icon: finance, 
