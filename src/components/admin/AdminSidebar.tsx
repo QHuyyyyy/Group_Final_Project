@@ -106,8 +106,8 @@ const AdminSidebar = () => {
         navigate('/dashboard/project-manager');
       }
     } catch (error: any) {
-      console.error('Error creating project:', error);
-      message.error(error.message || 'An error occurred while creating the project');
+      toast.error('Error creating project:', error);
+      
     } finally {
       setLoading(false);
     }
@@ -131,8 +131,7 @@ const AdminSidebar = () => {
         navigate('/dashboard/user-manager');
       }
     } catch (error: any) {
-      console.error('Error creating user:', error);
-      message.error(error.message || 'An error occurred while creating the user');
+      toast.error('Error creating user:', error);
     } finally {
       setLoading(false);
     }
@@ -187,8 +186,7 @@ const AdminSidebar = () => {
           setDepartments(formattedDepartments);
         }
       } catch (error) {
-        console.error('Error fetching initial data:', error);
-        message.error('Failed to load necessary data');
+        toast.error('Failed to load necessary data');
       }
     };
 
