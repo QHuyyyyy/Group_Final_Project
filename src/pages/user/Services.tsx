@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, Row, Col, Typography, Menu } from "antd";
 import {
     CarOutlined,
@@ -34,8 +34,47 @@ const services = [
     { name: "Retail", icon: <ShoppingOutlined /> },
 ];
 
+const capabilities = [
+    {
+        id: "IT Strategic Consultancy",
+        title: "DX Garage",
+        subtitle: "No-code / Low-code",
+        description: "Digital transformation (DX) is challenging from ideation to enterprise-wide adoption. DX Garage provides tools, methodologies, and packages to accelerate your DX journey, reducing time to market and optimizing costs.",
+        image: "https://fptsoftware.com/-/media/project/fpt-software/fso/uplift/overall/our-services/dx-garage.webp?extension=webp&modified=20241224073736&hash=692AE575D0AE00DB7FC2548A964BF221"
+    },
+    {
+        id: "Digital Technologies and Platforms",
+        title: "No-code Workflow Platform",
+        subtitle: "FezyFlow Platform",
+        description: "FezyFlow is a solution to manage and digitalize all business workflow processes on a single platform, to help businesses overcome expansion challenges with comprehensive services, optimal solutions, and reasonable costs.",
+        image: "https://fptsoftware.com/-/media/project/fpt-software/fso/uplift/overall/our-services/no-code-workflow-platform.webp?extension=webp&modified=20241224073933&hash=3E29E8ECE2D111F823718648A2CEDCB4"
+    },
+    {
+        id: "Product Engineering Services",
+        title: "Product Development",
+        subtitle: "End-to-End Solutions",
+        description: "Our product engineering services deliver innovative solutions from concept to deployment. We help businesses build scalable, secure, and user-friendly products that meet market demands.",
+        image: "https://fptsoftware.com/-/media/project/fpt-software/fso/uplift/overall/our-services/automative-services.webp?extension=webp&modified=20241224074500&hash=105C7AF0E6FF9D741E845019F5EA6380"
+    },
+    {
+        id: "IT Management Services",
+        title: "Managed IT Services",
+        subtitle: "24/7 Support & Maintenance",
+        description: "Comprehensive IT management services that ensure your infrastructure runs smoothly. We provide proactive monitoring, maintenance, and support to optimize your IT operations.",
+        image: "https://fptsoftware.com/-/media/project/fpt-software/fso/uplift/overall/our-services/managed-services.webp?extension=webp&modified=20241224074808&hash=360C09908326717761773C17AC9A204C"
+    },
+    {
+        id: "IT Services",
+        title: "Enterprise Solutions",
+        subtitle: "Custom IT Solutions",
+        description: "Tailored IT services that address your specific business needs. From cloud solutions to cybersecurity, we provide the expertise and technology to drive your digital success.",
+        image: "https://fptsoftware.com/-/media/project/fpt-software/fso/uplift/overall/our-services/application-development-and-modernization.webp?extension=webp&modified=20241224075044&hash=EC6E70EBA9E86864E4B55FA3EF8871F1"
+    }
+];
 
 const Services: React.FC = () => {
+    const [selectedCapability, setSelectedCapability] = useState("IT Strategic Consultancy");
+
     return (
         <div className="min-h-screen">
             <Header />
@@ -73,14 +112,8 @@ domain expertise and cutting-edge AI solutions."
             </div>
 
             {/* Capabilities Section */}
-
-
             <div className="relative bg-gradient-to-b from-gray-100 via-gray-100 to-gray-100 text-black py-20 px-6">
-
-
                 <div className="max-w-7xl mx-auto text-center">
-
-                    {/* Tiêu đề chính */}
                     <motion.div
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -91,82 +124,79 @@ domain expertise and cutting-edge AI solutions."
                         </Title>
                     </motion.div>
 
-                    {/* Thanh Menu */}
                     <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2, duration: 0.6 }}
                         className="mt-6"
                     >
-                        <Menu mode="horizontal" className="flex justify-center bg-transparent border-none">
-                            {[
-                                "IT Strategic Consultancy",
-                                "Digital Technologies and Platforms",
-                                "Product Engineering Services",
-                                "IT Management Services",
-                                "IT Services"
-                            ].map((item, index) => (
+                        <Menu 
+                            mode="horizontal" 
+                            className="flex justify-center bg-transparent border-none"
+                            selectedKeys={[selectedCapability]}
+                            onClick={({key}) => setSelectedCapability(key.toString())}
+                        >
+                            {capabilities.map((item) => (
                                 <Menu.Item
-                                    key={index}
-                                    className={`text-gray-300 hover:text-orange-400 transition-all duration-300 text-lg font-medium ${index === 0 ? "text-orange-400  " : ""
-                                        }`}
+                                    key={item.id}
+                                    className={`text-gray-300 hover:text-orange-400 transition-all duration-300 text-lg font-medium ${
+                                        item.id === selectedCapability ? "text-orange-400" : ""
+                                    }`}
                                     style={{ paddingBottom: "8px" }}
                                 >
-                                    {item}
+                                    {item.id}
                                 </Menu.Item>
                             ))}
                         </Menu>
                     </motion.div>
 
-                    {/* Nội dung chính */}
-                    <Row gutter={[48, 48]} align="middle" className="mt-16">
-                        {/* Phần text bên trái */}
-                        <Col xs={24} md={12}>
-                            <motion.div
-                                initial={{ opacity: 0, x: -30 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.5 }}
-                                className="text-left"
-                            >
-                                <Title level={3} className="text-orange-400 text-4xl font-bold">
-                                    DX Garage
-                                </Title>
-                                <Paragraph className="text-lg font-semibold text-gray-300">
-                                    No-code / Low-code
-                                </Paragraph>
-                                <Paragraph className="text-gray-300 leading-relaxed text-xl">
-                                    Digital transformation (DX) is challenging from ideation to enterprise-wide adoption.
-                                    DX Garage provides tools, methodologies, and packages to accelerate your DX journey,
-                                    reducing time to market and optimizing costs.
-                                </Paragraph>
-                                <a
-                                    href="#"
-                                    className="inline-flex items-center text-orange-400 text-lg font-semibold transition-all duration-300 hover:text-orange-300"
-                                >
-                                    See More →
-                                </a>
-                            </motion.div>
-                        </Col>
-
-                        {/* Phần hình ảnh bên phải */}
-                        <Col xs={24} md={12}>
-                            <motion.div
-                                initial={{ opacity: 0, x: 30 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.5 }}
-                                className="flex justify-center"
-                            >
-                                <img
-                                    src="https://fptsoftware.com/-/media/project/fpt-software/fso/uplift/overall/our-services/dx-garage.webp?extension=webp&modified=20241224073736&hash=692AE575D0AE00DB7FC2548A964BF221"
-                                    alt="DX Garage"
-                                    className="rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300"
-                                />
-                            </motion.div>
-                        </Col>
-                    </Row>
+                    {/* Content based on selected capability */}
+                    {capabilities.map((capability) => (
+                        capability.id === selectedCapability && (
+                            <Row key={capability.id} gutter={[48, 48]} align="middle" className="mt-16">
+                                <Col xs={24} md={12}>
+                                    <motion.div
+                                        initial={{ opacity: 0, x: -30 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ duration: 0.5 }}
+                                        className="text-left"
+                                    >
+                                        <Title level={3} className="text-orange-400 text-4xl font-bold">
+                                            {capability.title}
+                                        </Title>
+                                        <Paragraph className="text-lg font-semibold text-gray-300">
+                                            {capability.subtitle}
+                                        </Paragraph>
+                                        <Paragraph className="text-gray-300 leading-relaxed text-xl">
+                                            {capability.description}
+                                        </Paragraph>
+                                        <a
+                                            href="#"
+                                            className="inline-flex items-center text-orange-400 text-lg font-semibold transition-all duration-300 hover:text-orange-300"
+                                        >
+                                            See More →
+                                        </a>
+                                    </motion.div>
+                                </Col>
+                                <Col xs={24} md={12}>
+                                    <motion.div
+                                        initial={{ opacity: 0, x: 30 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ duration: 0.5 }}
+                                        className="flex justify-center"
+                                    >
+                                        <img
+                                            src={capability.image}
+                                            alt={capability.title}
+                                            className="rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300"
+                                        />
+                                    </motion.div>
+                                </Col>
+                            </Row>
+                        )
+                    ))}
                 </div>
             </div>
-
 
             {/* You Might Like Section */}
             <div className="py-16 px-8 text-center">
