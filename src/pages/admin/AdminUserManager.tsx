@@ -74,7 +74,7 @@ const AdminUserManager: React.FC = () => {
         }
       };
 
-      const response = await userService.searchUsers(params);
+      const response = await userService.searchUsers(params, {showSpinner:false});
     
       
       if (response && response.data) {

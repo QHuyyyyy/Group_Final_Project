@@ -7,8 +7,7 @@ import { debounce } from "lodash";
 import dayjs from "dayjs";
 import ClaimDetailsModal from "../../components/shared/ClaimDetailsModal";
 import ClaimTable from '../../components/shared/ClaimTable';
-
-const { Search } = Input;
+import PageHeader from "../../components/shared/PageHeader";
 
 interface PaginationState {
   current: number;
@@ -204,16 +203,11 @@ function ApprovalPage() {
   return (
     <div className="overflow-x-auto">
       <Card className="shadow-md">
-        <div className="mb-4 flex">
-          <h1 className="text-2xl font-bold text-gray-800">Claim Approvals</h1>
-          <Search
-              placeholder="Search by claim name"
-              onSearch={handleSearch}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="ml-10 !w-72"
-              allowClear
-            />
-        </div>
+        <PageHeader
+          title="Claim Approvals"
+          onSearch={handleSearch}
+          onChange={(e) => handleSearch(e.target.value)}
+        />
 
         <div className="overflow-auto custom-scrollbar">
           <div className="flex flex-wrap gap-18 items-center mb-5 mx-2">

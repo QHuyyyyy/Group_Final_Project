@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, useEffect } from 'react';
+import { lazy, Suspense} from 'react';
 import Header from '../layout/header';
 import Banner from '../layout/banner';
 import UserSpinner from '../components/user/UserSpinner';
@@ -11,18 +11,6 @@ const Footer = lazy(() => import('../layout/footer'));
 
 
 const Homepage = () => {
-  const [isLoading, setIsLoading] = useState(true)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
-    return <UserSpinner/>;
-  }
   return (
     <div className="min-h-screen">
       <Header />

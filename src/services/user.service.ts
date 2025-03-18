@@ -34,8 +34,8 @@ export const userService = {
   },
 
   // Lấy thông tin người dùng theo ID
-  getUserById: async (id: string): Promise<ApiResponse<UserData>> => {
-    const response = await apiUtils.get<ApiResponse<UserData>>(`${USERS_ENDPOINT}/${id}`);
+  getUserById: async (id: string, config={}): Promise<ApiResponse<UserData>> => {
+    const response = await apiUtils.get<ApiResponse<UserData>>(`${USERS_ENDPOINT}/${id}`, {}, config);
     console.log("fetch data:", response.data);
     return response.data;
   },
