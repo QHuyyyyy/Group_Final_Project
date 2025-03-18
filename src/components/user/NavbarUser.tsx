@@ -22,12 +22,12 @@ const Navbar = () => {
   const [notificationCount, setNotificationCount] = useState(0);
 
   useEffect(() => {
-    const fetchPendingClaims = async () => {
-      if (user?.role_code === 'A003') {
+    const fetchClaims = async () => {
+      if (user?.role_code === 'A003' || user?.role_code === 'A002') {
         try {
           const response = await claimService.searchClaims({
             searchCondition: {
-              claim_status: 'Pending Approval',
+              claim_status: user?.role_code === 'A003' ? 'Pending Approval' : 'Approved',
               is_delete: false
             },
             pageInfo: {
@@ -36,30 +36,32 @@ const Navbar = () => {
             }
           });
           
-          const pendingClaims = response.data.pageData;
+          const claims = response.data.pageData;
           
-          // Nhóm các claim theo staff_name
-          const groupedClaims = pendingClaims.reduce((acc: { [key: string]: number }, claim: Claim) => {
+          // Group claims by staff_name
+          const groupedClaims = claims.reduce((acc: { [key: string]: number }, claim: Claim) => {
             acc[claim.staff_name] = (acc[claim.staff_name] || 0) + 1;
             return acc;
           }, {});
 
-          // Tạo thông báo tổng hợp
+          // Create grouped notifications
           const newNotifications = Object.entries(groupedClaims).map(([staffName, count]) => ({
             key: staffName,
-            message: `⬇️ ${count} claim requests from ${staffName} need to be action`,
-            timestamp: new Date().toISOString(), // Sử dụng thời gian hiện tại cho thông báo nhóm
+            message: user?.role_code === 'A003' 
+              ? `⬇️ ${count} claim requests from ${staffName} need to be action`
+              : `✅ ${count} approved claims from ${staffName}`,
+            timestamp: new Date().toISOString(),
           }));
           
           setNotifications(newNotifications);
-          setNotificationCount(pendingClaims.length); // Vẫn giữ tổng số claim trong badge
+          setNotificationCount(claims.length);
         } catch (error) {
           console.error('Error fetching notifications:', error);
         }
       }
     };
 
-    fetchPendingClaims();
+    fetchClaims();
   }, [user]);
 
   const handleLogout = () => {
@@ -120,7 +122,7 @@ const Navbar = () => {
       <div className="flex items-center">
         <Row gutter={[16, 16]} align="middle">
           <Col>
-            {user?.role_code === 'A003' && (
+            {(user?.role_code === 'A003' || user?.role_code === 'A002') && (
               <Popover
                 content={notificationContent}
                 trigger="click"

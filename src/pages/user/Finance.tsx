@@ -9,6 +9,7 @@ import dayjs from "dayjs";
 import ClaimDetailsModal from '../../components/shared/ClaimDetailsModal';
 import ClaimTable from '../../components/shared/ClaimTable';
 import PageHeader from "../../components/shared/PageHeader";
+import type { Key } from 'react';
 
 const debouncedSearch = debounce((
   value: string,
@@ -44,6 +45,8 @@ const Finance = () => {
   });
   const [allClaims, setAllClaims] = useState<Claim[]>([]);
   const [displayClaims, setDisplayClaims] = useState<Claim[]>([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
+  const [isBatchPaymentModalVisible, setIsBatchPaymentModalVisible] = useState(false);
 
   const fetchClaims = async () => {
     setLoading(true);
@@ -201,7 +204,71 @@ const Finance = () => {
     }
   };
 
-  
+  const handleBatchPayment = () => {
+    if (selectedRowKeys.length === 0) {
+      message.warning('Please select claims to pay');
+      return;
+    }
+    setIsBatchPaymentModalVisible(true);
+  };
+
+  const handleConfirmBatchPayment = async () => {
+    try {
+      const promises = selectedRowKeys.map(id => 
+        claimService.changeClaimStatus({
+          _id: id.toString(),
+          claim_status: "Paid"
+        })
+      );
+      
+      await Promise.all(promises);
+      message.success(`Successfully paid ${selectedRowKeys.length} claims`);
+      setSelectedRowKeys([]);
+      setIsBatchPaymentModalVisible(false);
+      fetchClaims();
+    } catch (error) {
+      message.error('Failed to process batch payment');
+    }
+  };
+
+  const handleDownloadSelectedClaims = () => {
+    if (selectedRowKeys.length === 0) {
+      message.warning('Please select claims to download');
+      return;
+    }
+
+    const selectedClaimsData = displayClaims
+      .filter(claim => selectedRowKeys.includes(claim._id))
+      .map(claim => ({
+        "Claim ID": claim._id,
+        "Staff Name": claim.staff_name,
+        "Project": claim.project_info?.project_name || 'N/A',
+        "From": dayjs(claim.claim_start_date).format('DD/MM/YYYY'),
+        "To": dayjs(claim.claim_end_date).format('DD/MM/YYYY'),
+        "Total Hours": claim.total_work_time,
+        "Amount": claim.total_work_time * 50,
+        "Status": claim.claim_status
+      }));
+
+    exportToExcel(selectedClaimsData, 'Selected_Claims', 'Selected Claims');
+    message.success(`Successfully downloaded ${selectedRowKeys.length} claims`);
+  };
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (_: Key[], selectedRows: Claim[]) => {
+      // Only allow selection of Approved claims
+      const approvedKeys = selectedRows
+        .filter(claim => claim.claim_status === "Approved")
+        .map(claim => claim._id);
+      setSelectedRowKeys(approvedKeys);
+    },
+    getCheckboxProps: (record: Claim) => ({
+      disabled: record.claim_status !== "Approved",
+      name: record.claim_name,
+    }),
+  };
+
   return (
     <div className="overflow-x-auto">
       <Card className="shadow-md">
@@ -255,22 +322,45 @@ const Finance = () => {
               ]}
             />
           </div>
-          <button
-            type="button"
-            className="px-4 py-2 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-            onClick={handleDownloadAllClaims}
-            title="Download All Claims"
-            aria-label="Download All Claims"
-          >
-            <span className="text-white mr-1">Download</span>
+          <div className="flex items-center gap-2">
+            {selectedRowKeys.length > 0 && (
+              <>
+                <button
+                  type="button"
+                  onClick={handleBatchPayment}
+                  className="px-4 py-2 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                >
+                  <DollarOutlined style={{ color: 'white', marginRight: '8px' }} />
+                  <span className="text-white mr-1">Pay Selected ({selectedRowKeys.length})</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDownloadSelectedClaims}
+                  className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  <FileExcelOutlined style={{ color: 'white', marginRight: '8px' }} />
+                  <span className="text-white mr-1">Download Selected ({selectedRowKeys.length})</span>
+                </button>
+              </>
+            )}
+            <button
+              type="button"
+              className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              onClick={handleDownloadAllClaims}
+              title="Download All Claims"
+              aria-label="Download All Claims"
+            >
             <FileExcelOutlined style={{ color: 'white', marginRight: '8px' }} />
-          </button>
+              <span className="text-white mr-1">Download All</span>
+            </button>
+          </div>
         </div>
 
         <ClaimTable
           loading={loading}
           dataSource={displayClaims}
           showAmount={true}
+          rowSelection={rowSelection}
           pagination={{
             current: pagination.current,
             pageSize: pagination.pageSize,
@@ -308,35 +398,71 @@ const Finance = () => {
 
       {showConfirmDialog && (
         <Modal
-          title={<h2 className="text-2xl font-bold text-center">Confirm Payment</h2>}
+          title={<h2 className="text-2xl font-bold text-center text-green-800">Payment Confirmation <DollarOutlined style={{ color: 'green', fontSize: '30px' }} className="mb-2 animate-bounce" /></h2>}
           open={showConfirmDialog}
           onCancel={() => setShowConfirmDialog(false)}
           footer={[
-            <Button key="cancel" onClick={() => setShowConfirmDialog(false)}>
+            <Button key="cancel" onClick={() => setShowConfirmDialog(false)} className="bg-gray-300 hover:bg-gray-400 rounded-md transition duration-200">
               Cancel
             </Button>,
             <Button 
               key="submit" 
               type="primary" 
               onClick={handleConfirmPayment}
-              style={{ backgroundColor: '#1890ff' }}
+              className="bg-green-600 hover:bg-green-700 text-white rounded-md transition duration-200 flex items-center"
             >
-              Confirm
+            
+              Confirm Payment
             </Button>
           ]}
           width={600}
-          className="rounded-lg shadow-lg"
-          style={{ zIndex: 1000, backgroundColor: '#f9f9f9' }}
+          className="rounded-lg shadow-lg relative"
+          style={{ zIndex: 1000, backgroundColor: '#ffffff' }}
         >
-          <div className="flex items-center justify-center mb-4">
-            <DollarOutlined style={{ color: 'green' }} className="text-5xl mr-2" />
-            <p className="text-lg text-center">
-              Are you sure you want to mark this claim as paid? <br />
-              This action cannot be undone.
+          <div className="flex flex-col items-center justify-center mb-4">
+            <p className="text-lg text-center text-gray-800 mb-2">
+              Are you sure you want to mark this claim as paid?
             </p>
+            <span className="font-semibold text-red-600">This action cannot be undone.</span>
           </div>
+          <div className="absolute bottom-0 left-0 w-1/4 h-1/3 bg-green-100 opacity-50 rounded-tl-lg"></div>
+           <div className="absolute top-0 right-0 w-1/8 h-1/4 bg-green-100 opacity-50 rounded-br-lg"></div>
+             <div className="absolute top-0 left-0 w-1/9 h-1/6 bg-green-100 opacity-50 rounded-br-lg"></div>
         </Modal>
       )}
+
+      <Modal
+        title={<h2 className="text-2xl font-bold text-center text-green-800">Batch Payment Confirmation <DollarOutlined style={{ color: 'green', fontSize: '30px' }} className="mb-2 animate-bounce" /></h2>}
+        open={isBatchPaymentModalVisible}
+        onCancel={() => setIsBatchPaymentModalVisible(false)}
+        footer={[
+          <Button key="cancel" onClick={() => setIsBatchPaymentModalVisible(false)} className="bg-gray-300 hover:bg-gray-400 rounded-md transition duration-200">
+            Cancel
+          </Button>,
+          <Button 
+            key="submit" 
+            type="primary" 
+            onClick={handleConfirmBatchPayment}
+            className="bg-green-600 hover:bg-green-700 text-white rounded-md transition duration-200 flex items-center"
+          >
+            <DollarOutlined className="mr-2" />
+            Confirm Payment
+          </Button>
+        ]}
+        width={600}
+        className="rounded-lg shadow-lg relative"
+        style={{ zIndex: 1000, backgroundColor: '#ffffff' }}
+      >
+        <div className="flex flex-col items-center justify-center mb-4">
+          <p className="text-lg text-center text-gray-800 mb-2">
+            Are you sure you want to mark {selectedRowKeys.length} claims as paid?
+          </p>
+          <span className="font-semibold text-red-600">This action cannot be undone.</span>
+        </div>
+        <div className="absolute bottom-0 left-0 w-1/4 h-1/3 bg-green-100 opacity-50 rounded-tl-lg"></div>
+        <div className="absolute top-0 right-0 w-1/8 h-1/4 bg-green-100 opacity-50 rounded-br-lg"></div>
+        <div className="absolute top-0 left-0 w-1/9 h-1/6 bg-green-100 opacity-50 rounded-br-lg"></div>
+      </Modal>
 
         <ClaimDetailsModal
           visible={isViewModalVisible}
