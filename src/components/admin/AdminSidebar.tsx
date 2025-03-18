@@ -206,51 +206,6 @@ const AdminSidebar = () => {
 
         {/* Main Menu */}
         <div className="flex-1 space-y-4">
-          {/* Project Management Section */}
-          <div>
-            <button
-              onClick={() => setIsProjectExpanded(!isProjectExpanded)}
-              className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg transition-all duration-200 ${
-                isProjectExpanded ? 'bg-[#2E3754] text-white' : 'text-gray-300 hover:bg-[#2E3754]/50'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <ProjectOutlined className="text-xl" />
-                <span className="font-medium">Project Management</span>
-              </div>
-              {isProjectExpanded ? 
-                <DownOutlined className="text-xs opacity-60" /> : 
-                <RightOutlined className="text-xs opacity-60" />
-              }
-            </button>
-            
-            {isProjectExpanded && (
-              <div className="mt-2 ml-4 space-y-1.5">
-                {projectMenuItems.map((item, index) => (
-                  <Link
-                    key={index}
-                    to={item.path}
-                    className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 ${
-                      location.pathname === item.path
-                        ? 'bg-[#2E3754] text-white font-medium shadow-sm'
-                        : 'text-gray-300 hover:bg-[#2E3754]/50'
-                    }`}
-                  >
-                    <span className="text-lg">{item.icon}</span>
-                    <span>{item.title}</span>
-                  </Link>
-                ))}
-                <button
-                  onClick={handleCreateModalOpen}
-                  className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 transition-colors text-white w-full shadow-sm"
-                >
-                  <PlusOutlined className="text-lg" />
-                  <span className="font-medium">Create New Project</span>
-                </button>
-              </div>
-            )}
-          </div>
-
           {/* User Management Section */}
           <div>
             <button
@@ -291,6 +246,51 @@ const AdminSidebar = () => {
                 >
                   <UserAddOutlined className="text-lg" />
                   <span className="font-medium">Add User</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Project Management Section */}
+          <div>
+            <button
+              onClick={() => setIsProjectExpanded(!isProjectExpanded)}
+              className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg transition-all duration-200 ${
+                isProjectExpanded ? 'bg-[#2E3754] text-white' : 'text-gray-300 hover:bg-[#2E3754]/50'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <ProjectOutlined className="text-xl" />
+                <span className="font-medium">Project Management</span>
+              </div>
+              {isProjectExpanded ? 
+                <DownOutlined className="text-xs opacity-60" /> : 
+                <RightOutlined className="text-xs opacity-60" />
+              }
+            </button>
+            
+            {isProjectExpanded && (
+              <div className="mt-2 ml-4 space-y-1.5">
+                {projectMenuItems.map((item, index) => (
+                  <Link
+                    key={index}
+                    to={item.path}
+                    className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 ${
+                      location.pathname === item.path
+                        ? 'bg-[#2E3754] text-white font-medium shadow-sm'
+                        : 'text-gray-300 hover:bg-[#2E3754]/50'
+                    }`}
+                  >
+                    <span className="text-lg">{item.icon}</span>
+                    <span>{item.title}</span>
+                  </Link>
+                ))}
+                <button
+                  onClick={handleCreateModalOpen}
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 transition-colors text-white w-full shadow-sm"
+                >
+                  <PlusOutlined className="text-lg" />
+                  <span className="font-medium">Create New Project</span>
                 </button>
               </div>
             )}
