@@ -54,7 +54,7 @@ const CancelRequest: React.FC<CancelRequestProps> = ({ id, visible, onCancelRequ
                 <div style={{ display: 'flex', alignItems: 'start', gap: '8px' }}>
                     <QuestionCircleOutlined style={{ marginTop: '4px', color: '#1890ff' }} />
                     <div>
-                        <p>Are you sure you want to cancel request {id ? `ID ${id}` : "this request"}?</p>
+                        <p>Are you sure you want to cancel request?</p>
                         <p>Once cancelled, the status will change to "Canceled".</p>
                     </div>
                 </div>

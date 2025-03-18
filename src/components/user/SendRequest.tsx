@@ -52,7 +52,7 @@ const SendRequest: React.FC<SendRequestProps> = ({ id, visible, onSend, onCancel
                     <div style={{ display: 'flex', alignItems: 'start', gap: '8px' }}>
                         <QuestionCircleOutlined style={{ marginTop: '4px', color: '#1890ff' }} />
                         <div>
-                            <p>Are you sure you want to send request {id ? `ID ${id}` : "this request"} for approval?</p>
+                            <p>Are you sure you want to send request for approval?</p>
                             <p>Once sent, the status will change to "Pending Approval".</p>
                         </div>
                     </div>
