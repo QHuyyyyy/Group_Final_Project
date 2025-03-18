@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { DollarOutlined, DownloadOutlined, FileExcelOutlined, FilterOutlined } from '@ant-design/icons';
-import { Modal, Tabs, message, Button, Card,  } from 'antd';
+import { Modal, Tabs, Button, Card,  } from 'antd';
 import { exportToExcel } from '../../utils/xlsxUtils';
 import type { Claim, SearchParams } from "../../models/ClaimModel";
 import { claimService } from "../../services/claim.service";
@@ -10,6 +10,8 @@ import ClaimDetailsModal from '../../components/shared/ClaimDetailsModal';
 import ClaimTable from '../../components/shared/ClaimTable';
 import PageHeader from "../../components/shared/PageHeader";
 import type { Key } from 'react';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const debouncedSearch = debounce((
   value: string,
@@ -95,7 +97,7 @@ const Finance = () => {
         }));
       }
     } catch (error) {
-      message.error('Failed to fetch claims');
+      toast.error('Failed to fetch claims');
     } finally {
       setLoading(false);
     }
@@ -143,7 +145,7 @@ const Finance = () => {
 
   const handleDownloadClaim = (claim: Claim) => {
     if (!claim) {
-        message.error('No claim data available for download.');
+        toast.error('No claim data available for download.');
         return;
     }
     
@@ -165,7 +167,7 @@ const Finance = () => {
 
   const handleDownloadAllClaims = () => {
     if (displayClaims.length === 0) {
-        message.error('No claims available for download.');
+        toast.error('No claims available for download.');
         return;
     }
 
@@ -195,18 +197,33 @@ const Finance = () => {
       await claimService.changeClaimStatus({
         _id: selectedClaimForInfo._id,
         claim_status: "Paid"
-      }, {showSpinner:false});
-      message.success('Claim has been marked as paid successfully');
+      }, {showSpinner:true});
+      
+      toast.success( 
+        <p>Successfully processed payment for claim {selectedClaimForInfo.claim_name} </p>,
+        {
+          position: "bottom-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        }
+      );
+      
       setShowConfirmDialog(false);
-      fetchClaims(); // Refresh the claims list
+      fetchClaims();
     } catch (error) {
-      message.error('Failed to update claim status');
+      toast.error('Failed to process payment. Please try again.', {
+        position: "bottom-right",
+        autoClose: 5000,
+      });
     }
   };
 
   const handleBatchPayment = () => {
     if (selectedRowKeys.length === 0) {
-      message.warning('Please select claims to pay');
+      toast.warning('Please select claims to pay');
       return;
     }
     setIsBatchPaymentModalVisible(true);
@@ -222,18 +239,33 @@ const Finance = () => {
       );
       
       await Promise.all(promises);
-      message.success(`Successfully paid ${selectedRowKeys.length} claims`);
+      
+      toast.success(
+        <p>Successfully processed payment for {selectedRowKeys.length} claims</p>,
+        {
+          position: "bottom-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        }
+      );
+      
       setSelectedRowKeys([]);
       setIsBatchPaymentModalVisible(false);
       fetchClaims();
     } catch (error) {
-      message.error('Failed to process batch payment');
+      toast.error('Failed to process batch payment. Please try again.', {
+        position: "bottom-right",
+        autoClose: 5000,
+      });
     }
   };
 
   const handleDownloadSelectedClaims = () => {
     if (selectedRowKeys.length === 0) {
-      message.warning('Please select claims to download');
+      toast.warning('Please select claims to download');
       return;
     }
 
@@ -251,7 +283,7 @@ const Finance = () => {
       }));
 
     exportToExcel(selectedClaimsData, 'Selected_Claims', 'Selected Claims');
-    message.success(`Successfully downloaded ${selectedRowKeys.length} claims`);
+    toast.success(`Successfully downloaded ${selectedRowKeys.length} claims`);
   };
 
   const rowSelection = {
@@ -271,9 +303,21 @@ const Finance = () => {
 
   return (
     <div className="overflow-x-auto">
+      <ToastContainer
+        position="bottom-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <Card className="shadow-md">
         <PageHeader
-          title="Paid Claims"
+          title="Paid Claim"
           onSearch={handleSearch}
           onChange={(e) => handleSearch(e.target.value)}
         />
@@ -432,7 +476,7 @@ const Finance = () => {
       )}
 
       <Modal
-        title={<h2 className="text-2xl font-bold text-center text-green-800">Batch Payment Confirmation <DollarOutlined style={{ color: 'green', fontSize: '30px' }} className="mb-2 animate-bounce" /></h2>}
+        title={<h2 className="text-2xl font-bold text-center text-green-800">Payment Confirmation <DollarOutlined style={{ color: 'green', fontSize: '30px' }} className="mb-2 animate-bounce" /></h2>}
         open={isBatchPaymentModalVisible}
         onCancel={() => setIsBatchPaymentModalVisible(false)}
         footer={[
