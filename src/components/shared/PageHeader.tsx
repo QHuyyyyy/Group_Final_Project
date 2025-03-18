@@ -11,18 +11,20 @@ interface PageHeaderProps {
 
 const PageHeader = ({ title, onSearch, onChange, rightContent }: PageHeaderProps) => {
   return (
-    <div className="mb-4 flex justify-between items-center">
-      <div className="flex items-center">
+    <div className="mb-4">
+      <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
-        <Search
-          placeholder="Search by claim name"
-          onSearch={onSearch}
-          onChange={onChange}
-          className="ml-10 !w-72"
-          allowClear
-        />
+        <div className="flex items-center gap-4">
+          <Search
+            placeholder="Search by claim name"
+            onSearch={onSearch}
+            onChange={onChange}
+            className="!w-72"
+            allowClear
+          />
+          {rightContent}
+        </div>
       </div>
-      {rightContent}
     </div>
   );
 };
