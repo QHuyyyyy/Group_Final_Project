@@ -1,10 +1,12 @@
 import { useEffect, useState, useCallback } from "react";
-import { Table, Tag, Space, Button, Modal, Card, Input, message, Form, Typography, Tabs, Avatar } from "antd";
-import { CheckOutlined, CloseOutlined, UndoOutlined, EyeOutlined, FilterOutlined, CalendarOutlined, UserOutlined } from "@ant-design/icons";
+import {Space, Button, Modal, Card, Input, message, Form, Typography, Tabs } from "antd";
+import { CheckOutlined, CloseOutlined, UndoOutlined, FilterOutlined } from "@ant-design/icons";
 import { claimService } from "../../services/claim.service";
 import type { Claim, SearchParams } from "../../models/ClaimModel";
 import { debounce } from "lodash";
 import dayjs from "dayjs";
+import ClaimDetailsModal from "../../components/shared/ClaimDetailsModal";
+import ClaimTable from '../../components/shared/ClaimTable';
 
 const { Search } = Input;
 
@@ -14,17 +16,31 @@ interface PaginationState {
   total: number;
 }
 
+const debouncedSearch = debounce((
+  value: string,
+  allClaims: Claim[],
+  statusFilter: string,
+  setClaims: (claims: Claim[]) => void
+) => {
+  const filteredData = allClaims.filter(claim => {
+    const matchesSearch = claim.claim_name.toLowerCase().includes(value.toLowerCase());
+    const matchesStatus = statusFilter ? claim.claim_status === statusFilter : true;
+    return matchesSearch && matchesStatus;
+  });
+  setClaims(filteredData);
+}, 1000);
+
 function ApprovalPage() {
   const [claims, setClaims] = useState<Claim[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
-  const [statusCounts, setStatusCounts] = useState({
-    all: 0,
-    pendingApproval: 0,
-    approved: 0,
-    rejected: 0,
-    draft: 0
+  const [statusCounts, setStatusCounts] = useState<Record<string, number>>({
+    "": 0,
+    "Draft": 0,
+    "Pending Approval": 0,
+    "Approved": 0,
+    "Rejected": 0
   });
   const [pagination, setPagination] = useState<PaginationState>({
     current: 1,
@@ -42,28 +58,13 @@ function ApprovalPage() {
 
   useEffect(() => {
     fetchClaims();
-    fetchAllClaimsForCounts();
-  }, []);
+  }, [pagination.current, pagination.pageSize]);
 
-  useEffect(() => {
-    fetchClaims();
-  }, [pagination.current, pagination.pageSize, searchText, statusFilter]);
-
-  useEffect(() => {
-    const counts = {
-      all: allClaims.length,
-      pendingApproval: allClaims.filter(claim => claim.claim_status === "Pending Approval").length,
-      approved: allClaims.filter(claim => claim.claim_status === "Approved").length,
-      rejected: allClaims.filter(claim => claim.claim_status === "Rejected").length,
-      draft: allClaims.filter(claim => claim.claim_status === "Draft").length
-    };
-    setStatusCounts(counts);
-  }, [allClaims]);
-
-  const fetchAllClaimsForCounts = async () => {
+  const fetchClaims = async () => {
+    setLoading(true);
     const params: SearchParams = {
       searchCondition: {
-        keyword: "",
+        keyword: searchText || "",
         claim_status: "",
         claim_start_date: "",
         claim_end_date: "",
@@ -75,43 +76,36 @@ function ApprovalPage() {
       },
     };
 
-    const response = await claimService.searchClaimsForApproval(params, {showSpinner:false});
-    if (response && response.data && response.data.pageData) {
-      setAllClaims(response.data.pageData);
+    try {
+      const response = await claimService.searchClaimsForApproval(params, {showSpinner:false});
+      if (response?.data?.pageData) {
+        const claimsData = response.data.pageData;
+        setAllClaims(claimsData);
+
+        const newCounts: Record<string, number> = {
+          "": claimsData.length,
+          "Draft": claimsData.filter(claim => claim.claim_status === "Draft").length,
+          "Pending Approval": claimsData.filter(claim => claim.claim_status === "Pending Approval").length,
+          "Approved": claimsData.filter(claim => claim.claim_status === "Approved").length,
+          "Rejected": claimsData.filter(claim => claim.claim_status === "Rejected").length
+        };
+        setStatusCounts(newCounts);
+
+        const filteredData = statusFilter 
+          ? claimsData.filter(claim => claim.claim_status === statusFilter)
+          : claimsData;
+        setClaims(filteredData);
+
+        setPagination((prev) => ({
+          ...prev,
+          total: response.data.pageInfo.totalItems || 0,
+        }));
+      }
+    } catch (error) {
+      message.error('Failed to fetch claims');
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const fetchClaims = async () => {
-    setLoading(true);
-    const params: SearchParams = {
-      searchCondition: {
-        keyword: searchText || "",
-        claim_status: statusFilter || "",
-        claim_start_date: "",
-        claim_end_date: "",
-        is_delete: false,
-      },
-      pageInfo: {
-        pageNum: pagination.current,
-        pageSize: pagination.pageSize,
-      },
-    };
-
-    const response = await claimService.searchClaimsForApproval(params, {showSpinner:false});
-    if (response && response.data && response.data.pageData) {
-      const claimsData = response.data.pageData;
-      setClaims(claimsData);
-      setPagination((prev) => ({
-        ...prev,
-        total: response.data.pageInfo.totalItems || 0,
-      }));
-    }
-    setLoading(false);
-  };
-
-  const refreshData = async () => {
-    await fetchClaims();
-    await fetchAllClaimsForCounts();
   };
 
   const handleTableChange = (newPagination: any) => {
@@ -122,42 +116,28 @@ function ApprovalPage() {
     }));
   };
 
-  const filterClaims = (query: string, status: string) => {
-    let filtered = claims;
-    if (query) {
-      filtered = filtered.filter(
-        (claim) =>
-          claim.claim_name.toLowerCase().includes(query.toLowerCase())
-      );
-    }
-
-    if (status) {
-      filtered = filtered.filter((claim) => claim.claim_status === status);
-    }
-
-    return filtered;
-  };
-
-  const handleSearch = useCallback(
-    debounce((query: string) => {
-      setSearchText(query);
-      setPagination((prev) => ({
-        ...prev,
-        current: 1,
-      }));
-    }, 500),
-    []
-  );
-
-  const handleStatusFilterChange = (value: string) => {
-    setStatusFilter(value);
+  const handleSearch = useCallback((value: string) => {
+    setSearchText(value);
     setPagination((prev) => ({
       ...prev,
       current: 1,
     }));
-  };
+    
+    debouncedSearch(value, allClaims, statusFilter, setClaims);
+  }, [allClaims, statusFilter]);
 
-  const filteredClaims = filterClaims(searchText, statusFilter);
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value);
+    setPagination(prev => ({
+      ...prev,
+      current: 1,
+    }));
+
+    const filteredData = value 
+      ? allClaims.filter(claim => claim.claim_status === value)
+      : allClaims;
+    setClaims(filteredData);
+  };
 
   const showConfirmation = (
     claim: Claim,
@@ -196,7 +176,7 @@ function ApprovalPage() {
     }
     const actionText = confirmationType === "Draft" ? "returned to draft" : confirmationType.toLowerCase();
     message.success(`Claim has been ${actionText} successfully`);
-    refreshData();
+    fetchClaims();
 
     setLoading(false);
     setSelectedClaim(null);
@@ -215,18 +195,11 @@ function ApprovalPage() {
     setSelectedClaim(null);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Approved":
-        return "success";
-      case "Rejected":
-        return "error";
-      case "Pending Approval":
-        return "processing";
-      default:
-        return "warning";
-    }
-  };
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, []);
 
   return (
     <div className="overflow-x-auto">
@@ -257,7 +230,7 @@ function ApprovalPage() {
                       <span className="flex items-center text-gray-600">
                         All
                         <span className="ml-1 text-gray-500">
-                          ({statusCounts.all})
+                          ({statusCounts[""] || 0})
                         </span>
                       </span>
                     )
@@ -268,7 +241,7 @@ function ApprovalPage() {
                       <span className="flex items-center text-gray-600">
                         Pending Approval
                         <span className="ml-1 text-gray-500">
-                          ({statusCounts.pendingApproval})
+                          ({statusCounts["Pending Approval"] || 0})
                         </span>
                       </span>
                     )
@@ -279,7 +252,7 @@ function ApprovalPage() {
                       <span className="flex items-center text-gray-600">
                         Approved
                         <span className="ml-1 text-gray-500">
-                          ({statusCounts.approved})
+                          ({statusCounts["Approved"] || 0})
                         </span>
                       </span>
                     )
@@ -290,7 +263,7 @@ function ApprovalPage() {
                       <span className="flex items-center text-gray-600">
                         Rejected
                         <span className="ml-1 text-gray-500">
-                          ({statusCounts.rejected})
+                          ({statusCounts["Rejected"] || 0})
                         </span>
                       </span>
                     )
@@ -301,7 +274,7 @@ function ApprovalPage() {
                       <span className="flex items-center text-gray-600">
                         Draft
                         <span className="ml-1 text-gray-500">
-                          ({statusCounts.draft})
+                          ({statusCounts["Draft"] || 0})
                         </span>
                       </span>
                     )
@@ -311,122 +284,41 @@ function ApprovalPage() {
             </div>
           </div>
 
-          <Table
-            dataSource={filteredClaims}
+          <ClaimTable
             loading={loading}
-            rowKey="_id"
-            columns={[
-              {
-                title: "Staff",
-                key: "staff",
-                width: "18%",
-                render: (_, record) => (
-                  <div className="flex items-center gap-4">
-                    <Avatar
-                      size="large"
-                      icon={<UserOutlined />}
-                      className="bg-blue-500"
-                    />
-                    <div className="mb-1">
-                      <div className="font-medium">{record.staff_name}</div>
-                      <div className="text-xs text-gray-500">{record.staff_email}</div>
-                    </div>
-                  </div>
-                ),
-              },
-              {
-                title: "Claim name",
-                dataIndex: "claim_name",
-                key: "claim_name",
-                width: "15%",
-              },
-              {
-                title: "Period",
-                key: "period",
-                width: "22%",
-                render: (_, record) => (
-                  <div>
-                    <div className="flex items-center gap-1 mb-1">
-                      <CalendarOutlined className="text-gray-400" />
-                      <span>
-                        {dayjs(record.claim_start_date).format("DD MMM YYYY")} - {dayjs(record.claim_end_date).format("DD MMM YYYY")}
-                      </span>
-                    </div>
-                  </div>
-                ),
-              },
-              {
-                title: "Total work time",
-                dataIndex: "total_work_time",
-                key: "total_work_time",
-                width: "15%",
-                render: (_, record) => (
-                  <div className="flex items-center gap-1 mb-1">
-                      <span>{record.total_work_time} hours</span>
-                  </div>
-                ),
-              },
-              {
-                title: "Status",
-                key: "status",
-                width: "7%",
-                render: (_, record) => (
-                  <Tag color={getStatusColor(record.claim_status)}>
-                    {record.claim_status}
-                  </Tag>
-                ),
-              },
-              {
-                title: "Actions",
-                key: "actions",
-                width: "15%",
-                render: (_, record) => {
-                  return (
-                    <Space>
-                      <Button
-                        type="text"
-                        icon={<EyeOutlined />}
-                        onClick={() => showDetails(record)}
-                      />
-                      {record.claim_status === "Pending Approval" && (
-                        <>
-                          <Button
-                            type="text"
-                            icon={<CheckOutlined />}
-                            onClick={() => showConfirmation(record, "Approved")}
-                            title="Approve"
-                          />
-                          <Button
-                            type="text"
-                            icon={<CloseOutlined />}
-                            onClick={() => showConfirmation(record, "Rejected")}
-                            title="Reject"
-                          />
-                          <Button
-                            type="text"
-                            icon={<UndoOutlined />}
-                            onClick={() => showConfirmation(record, "Draft")}
-                            title="Return to Draft"
-                          />
-                        </>
-                      )}
-                    </Space>
-                  );
-                },
-              },
-            ]}
+            dataSource={claims}
             pagination={{
               current: pagination.current,
               pageSize: pagination.pageSize,
               total: pagination.total,
-              showSizeChanger: true,
-              showQuickJumper: true,
-              showTotal: (total) => `Total ${total} claims`,
               onChange: (page, pageSize) =>
                 handleTableChange({ current: page, pageSize }),
             }}
-            className="overflow-x-auto"
-            scroll={{ x: 1000 }}
+            onView={showDetails}
+            actionButtons={(record) => 
+              record.claim_status === "Pending Approval" && (
+                <Space>
+                  <Button
+                    type="text"
+                    icon={<CheckOutlined />}
+                    onClick={() => showConfirmation(record, "Approved")}
+                    title="Approve"
+                  />
+                  <Button
+                    type="text"
+                    icon={<CloseOutlined />}
+                    onClick={() => showConfirmation(record, "Rejected")}
+                    title="Reject"
+                  />
+                  <Button
+                    type="text"
+                    icon={<UndoOutlined />}
+                    onClick={() => showConfirmation(record, "Draft")}
+                    title="Return to Draft"
+                  />
+                </Space>
+              )
+            }
           />
         </div>
       </Card>
@@ -526,110 +418,11 @@ function ApprovalPage() {
       </Modal>
 
       {/* Claim Details Modal */}
-      <Modal
-        title={
-          <div className="flex items-center gap-2">
-            <EyeOutlined className="text-blue-500" />
-            <span className="text-lg font-medium">Claim Details</span>
-          </div>
-        }
-        open={detailsModalVisible}
-        onCancel={handleDetailsModalClose}
-        footer={[
-          <Button
-            key="close"
-            onClick={handleDetailsModalClose}
-            size="large"
-            className="px-6"
-          >
-            Close
-          </Button>,
-        ]}
-        width={800}
-        className="details-modal"
-      >
-        {selectedClaim && (
-          <div className="p-2">
-            <div className="mb-4 flex justify-between items-center">
-              <div>
-                <h2 className="text-xl font-bold">{selectedClaim.claim_name}</h2>
-                <p className="text-gray-500">ID: {selectedClaim._id}</p>
-              </div>
-              <Tag
-                color={getStatusColor(selectedClaim.claim_status)}
-                className="px-3 py-1 text-base"
-              >
-                {selectedClaim.claim_status}
-              </Tag>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-              <Card title="Staff Information" className="shadow-sm">
-                <p><strong>Name:</strong> {selectedClaim.staff_name}</p>
-                <p><strong>ID:</strong> {selectedClaim.staff_id}</p>
-                <p><strong>Email:</strong> {selectedClaim.staff_email}</p>
-              </Card>
-
-              <Card title="Project Information" className="shadow-sm">
-                <p><strong>Project:</strong> {selectedClaim.project_info?.project_name || "N/A"}</p>
-                <p><strong>Role:</strong> {selectedClaim.role_in_project || "N/A"}</p>
-                <p><strong>Work Time:</strong> {selectedClaim.total_work_time || "N/A"} hours</p>
-              </Card>
-            </div>
-
-            <Card title="Claim Period" className="p-5 rounded-lg mb-6 border border-gray-100 shadow-sm">
-              <div className="flex items-center">
-                <div className="text-center">
-                  <div className="bg-blue-100 text-blue-800 font-medium px-4 py-2 rounded-lg">
-                    {dayjs(selectedClaim.claim_start_date).format("DD MMM YYYY")}
-                  </div>
-                  <p className="mt-1 text-sm text-gray-500">
-                    {dayjs(selectedClaim.claim_start_date).format("HH:mm")}
-                  </p>
-                </div>
-                <div className="flex-2 mx-4 relative mb-8">
-                  <div className="h-0.5 bg-blue-300 w-full absolute top-1/2 transform -translate-y-1/2"></div>
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-3 text-gray-500 font-medium border border-blue-200 rounded-full">
-                    {`${selectedClaim.total_work_time} hours`}
-                  </div>
-                </div>
-
-                <div className="text-center">
-                  <div className="bg-blue-100 text-blue-800 font-medium px-4 py-2 rounded-lg">
-                    {dayjs(selectedClaim.claim_end_date).format("DD MMM YYYY")}
-                  </div>
-                  <p className="mt-1 text-sm text-gray-500">
-                    {dayjs(selectedClaim.claim_end_date).format("HH:mm")}
-                  </p>
-                </div>
-              </div>
-            </Card>
-
-            <Card title="Additional Information" className="shadow-sm !mt-3">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Created Date</p>
-                  <p className="font-medium flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    {dayjs(selectedClaim.created_at).format("DD MMM YYYY HH:mm")}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Last Updated</p>
-                  <p className="font-medium flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {dayjs(selectedClaim.updated_at).format("DD MMM YYYY HH:mm")}
-                  </p>
-                </div>
-              </div>
-            </Card>
-          </div>
-        )}
-      </Modal>
+      <ClaimDetailsModal
+        visible={detailsModalVisible}
+        claim={selectedClaim}
+        onClose={handleDetailsModalClose}
+      />
     </div>
   );
 }

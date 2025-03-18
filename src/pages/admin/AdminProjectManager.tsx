@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import SideBarAdminProject from '../../components/admin/SideBarAdminProject';
 import { Card, Table, Tag, Button, Modal, Form, Input,   message, Spin, Empty, Select } from 'antd';
 import {  ArrowLeftOutlined, SearchOutlined,  } from '@ant-design/icons';
 import dayjs from 'dayjs';
@@ -14,6 +13,7 @@ import { getProjectColumns } from '../../components/admin/ProjectColumns';
 import ProjectModal from '../../components/admin/ProjectModal';
 import { departmentService } from '../../services/Department.service';
 import { debounce } from 'lodash';
+import AdminSidebar from '../../components/admin/AdminSidebar';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -346,17 +346,6 @@ const AdminProjectManager: React.FC = () => {
     });
   };
 
-  const handleCreate = () => {
-    createForm.setFieldsValue({
-      technical_leader: [],
-      business_analyst: [],
-      developers: [],
-      testers: [],
-      technical_consultant: []
-    });
-    setIsCreateModalVisible(true);
-  };
-
   const handleCreateModalClose = () => {
     createForm.resetFields();
     setTeamMembers([]); // Reset team members khi đóng modal
@@ -502,12 +491,8 @@ const AdminProjectManager: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <SideBarAdminProject
-        favoriteProjects={favoriteProjects}
-        projects={projects}
-        onCreateProject={handleCreate}
-      />
-      <div className="flex-1 ml-64 p-8">
+      <AdminSidebar />
+      <div className="flex-1 ml-[260px] p-8">
         <div className="flex items-center justify-between mb-6">
           <Button
             type="default"
@@ -672,8 +657,8 @@ const AdminProjectManager: React.FC = () => {
           disabledEndDate={disabledEndDate}
           teamMembers={teamMembers}
           setTeamMembers={setTeamMembers}
-          handleStartDateChange={handleCreateStartDateChange}
-          handleEndDateChange={handleCreateEndDateChange}
+          handleStartDateChange={(date: dayjs.Dayjs | null) => handleCreateStartDateChange(date)}
+          handleEndDateChange={(date: dayjs.Dayjs | null) => handleCreateEndDateChange(date)}
         />
 
         <ProjectModal
@@ -688,8 +673,8 @@ const AdminProjectManager: React.FC = () => {
           disabledEndDate={disabledEndDate}
           teamMembers={editTeamMembers}
           setTeamMembers={setEditTeamMembers}
-          handleStartDateChange={handleEditStartDateChange}
-          handleEndDateChange={handleEditEndDateChange}
+          handleStartDateChange={(date: dayjs.Dayjs | null) => handleEditStartDateChange(date)}
+          handleEndDateChange={(date: dayjs.Dayjs | null) => handleEditEndDateChange(date)}
         />
 
         <Modal
