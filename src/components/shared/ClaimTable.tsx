@@ -1,5 +1,5 @@
 import { Table, Tag, Button, Avatar } from "antd";
-import { EyeOutlined, UserOutlined, CalendarOutlined } from "@ant-design/icons";
+import { EyeOutlined, UserOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import type { Claim } from "../../models/ClaimModel";
 import type { TableRowSelection } from "antd/es/table/interface";
@@ -44,7 +44,7 @@ const ClaimTable = ({
     {
       title: "No.",
       key: "index",
-      width: "70px",
+      width: "30px",
       className: "text-center",
       render: (_: any, __: any, index: number) => (
         <div className="text-gray-600 font-medium">
@@ -57,7 +57,7 @@ const ClaimTable = ({
       key: "staff",
       width: "18%",
       render: (_: any, record: Claim) => (
-        <div className="flex items-center gap-4 py-2">
+        <div className="flex items-center gap-3 py-1">
           <Avatar
             size={45}
             src={record.employee_info?.avatar_url}
@@ -81,35 +81,27 @@ const ClaimTable = ({
     {
       title: "Period",
       key: "period",
-      width: "22%",
+      width: "17%",
       render: (_: any, record: Claim) => (
-        <div className="py-2">
           <div className="flex items-center gap-2">
-            <CalendarOutlined className="text-gray-400" />
             <div className="flex flex-col">
               <span className="text-gray-800">
-                {dayjs(record.claim_start_date).format("DD MMM YYYY")}
-              </span>
-              <span className="text-gray-800">
-                {dayjs(record.claim_end_date).format("DD MMM YYYY")}
+                {dayjs(record.claim_start_date).format("DD MMM")} - {dayjs(record.claim_end_date).format("DD MMM YYYY")}
               </span>
             </div>
           </div>
-        </div>
       ),
     },
     {
-      title: "Total work time",
+      title: "Total Work Time",
       dataIndex: "total_work_time",
       key: "total_work_time",
-      width: "15%",
+      width: "10%",
       className: "text-gray-800 font-medium",
       render: (total_work_time: number) => (
-        <div className="py-2">
           <span className="bg-blue-50 px-3 py-1 rounded-full">
-            {total_work_time} hours
+            {total_work_time}h
           </span>
-        </div>
       ),
     },
     ...(showAmount ? [{

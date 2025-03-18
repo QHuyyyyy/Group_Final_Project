@@ -55,7 +55,6 @@ export const claimService = {
   // Thay đổi trạng thái claim
   changeClaimStatus: async (requestBody: ChangeClaimStatusRequest, config={}): Promise<ApiResponse<null>> => {
     const response = await  api.put('/api/claims/change-status', requestBody || {}, config);
-
     console.log("fetch data:", response.data.data);
     return response.data.data;
   },
@@ -159,7 +158,7 @@ export const claimService = {
     return response.data;
   },
   
-  getPendingApprovalClaims: async (): Promise<ApiResponse<SearchResponse>> => {
+  getPendingApprovalClaims: async (config = {}): Promise<ApiResponse<SearchResponse>> => {
     const response = await api.post('/api/claims/approval-search', {
       searchCondition: {
         keyword: "",
@@ -171,11 +170,11 @@ export const claimService = {
         pageNum: 1,
         pageSize: 10
       }
-    })
+    }, config)
     return response.data;
   },
   
-  getApprovedApprovalClaims: async (): Promise<ApiResponse<SearchResponse>> => {
+  getApprovedApprovalClaims: async (config = {}): Promise<ApiResponse<SearchResponse>> => {
     const response = await api.post('/api/claims/approval-search', {
       searchCondition: {
         keyword: "",
@@ -187,11 +186,11 @@ export const claimService = {
         pageNum: 1,
         pageSize: 10
       }
-    })
+    }, config)
     return response.data;
   },
 
-  getRejectedApprovalClaims: async (): Promise<ApiResponse<SearchResponse>> => {
+  getRejectedApprovalClaims: async (config = {}): Promise<ApiResponse<SearchResponse>> => {
     const response = await api.post('/api/claims/approval-search', {
       searchCondition: {
         keyword: "",
@@ -203,11 +202,11 @@ export const claimService = {
         pageNum: 1,
         pageSize: 10
       }
-    })
+    }, config)
     return response.data;
   },
 
-  getPaidApprovalClaims: async (): Promise<ApiResponse<SearchResponse>> => {
+  getPaidApprovalClaims: async (config = {}): Promise<ApiResponse<SearchResponse>> => {
     const response = await api.post('/api/claims/approval-search', {
       searchCondition: {
         keyword: "",
@@ -219,11 +218,11 @@ export const claimService = {
         pageNum: 1,
         pageSize: 10
       }
-    })
+    }, config)
     return response.data;
   },
 
-  getDraftApprovalClaims: async (): Promise<ApiResponse<SearchResponse>> => {
+  getDraftApprovalClaims: async (config = {}): Promise<ApiResponse<SearchResponse>> => {
     const response = await api.post('/api/claims/approval-search', {
       searchCondition: {
         keyword: "",
@@ -235,11 +234,11 @@ export const claimService = {
         pageNum: 1,
         pageSize: 10
       }
-    })
+    }, config)
     return response.data;
   },
   
-  getCanceledApprovalClaims: async (): Promise<ApiResponse<SearchResponse>> => {
+  getCanceledApprovalClaims: async (config = {}): Promise<ApiResponse<SearchResponse>> => {
     const response = await api.post('/api/claims/approval-search', {
       searchCondition: {
         keyword: "",
@@ -251,7 +250,7 @@ export const claimService = {
         pageNum: 1,
         pageSize: 10
       }
-    })
+    }, config)
     return response.data;
   }
 };
