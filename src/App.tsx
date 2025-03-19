@@ -10,6 +10,7 @@ import ProtectedRoute from './routes/ProtectedRoute';
 import { RoutePermissions } from './routes/RoutePermissions';
 import SettingUser from './pages/user/SettingUser';
 import ForgotPassword from './pages/common/ForgotPassword';
+import UserSpinner from './components/user/UserSpinner';
 
 
 // Lazy load components
@@ -26,9 +27,11 @@ const Finance = lazy(() => import('./pages/user/Finance'));
 const IndustriesPage = lazy(() => import('./pages/InductriesPage'));
 const ViewClaimRequest = lazy(() => import('./pages/admin/ViewClaimRequest'));
 const Project= lazy(() => import('./pages/user/Project'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+
 const Loading = () => (
-  <div className="h-screen w-screen flex items-center justify-center">
-    <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+  <div className="flex justify-center items-center h-screen">
+    <UserSpinner />
   </div>
 );
 
@@ -44,9 +47,8 @@ const App = () => {
           <Route path='/forgot-password' element={<ForgotPassword />} />
           <Route path='/login' element={<Login />} />
           <Route path='/contactus' element={<ContactUs />} />
-
           <Route path='/verify-email/:token' element={<VerifyToken />} />
-                  <Route path='/resend-token' element={<ResendToken />} />
+          <Route path='/resend-token' element={<ResendToken />} />
 
           {/* User Dashboard Routes */}
           <Route path='/userdashboard/' element={
@@ -128,6 +130,8 @@ const App = () => {
                 <TransactionPage />
               </ProtectedRoute>
             } />
+            
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
     </Router>
