@@ -10,7 +10,6 @@ import {
   ArrowLeftOutlined,
   UserOutlined,
   SearchOutlined,
-  UserAddOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -28,7 +27,6 @@ import { debounce } from 'lodash';
 import BlockUserButton from '../../components/admin/BlockUserButton';
 import { SearchParams } from '../../models/UserModel';
 import EmployeeDetailModal from '../../components/admin/EmployeeDetailModal';
-import NavbarAdminDashboard from '../../components/NavbarAdminDashboard';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -139,6 +137,15 @@ const AdminUserManager: React.FC = () => {
     setIsEmployeeModalVisible(true);
   };
 
+  const handleTableChange = (page: number, pageSize: number) => {
+    setPagination(prev => ({
+      ...prev,
+      current: page,
+      pageSize: pageSize || 10
+    }));
+    fetchUsers(page);
+  };
+
   const columns: ColumnsType<UserData> = [
     {
       title: 'No.',
@@ -223,12 +230,12 @@ const AdminUserManager: React.FC = () => {
           <DeleteUserButton
             userId={record._id}
             onSuccess={() => fetchUsers(pagination.current)}
-            className="px-1.5"
+            isBlocked={record.is_blocked}
           />
           <BlockUserButton
-            user={record}
+            userId={record._id}
+            isBlocked={record.is_blocked}
             onSuccess={() => fetchUsers(pagination.current)}
-            className="px-1.5"
           />
         </Space>
       ),
@@ -239,7 +246,6 @@ const AdminUserManager: React.FC = () => {
     <div className="flex min-h-screen bg-sky-50">
       <AdminSidebar />
       <div className="flex-1 ml-[260px]">
-        <NavbarAdminDashboard />
         <div className="p-8">
           <div className="flex items-center justify-between mb-6">
             <Button
@@ -289,17 +295,11 @@ const AdminUserManager: React.FC = () => {
                   total: pagination.totalItems,
                   showSizeChanger: true,
                   showQuickJumper: true,
-                  showTotal: (total) => `Total ${total} staff members`
+                  showTotal: (total) => `Total ${total} staff members`,
+                  onChange: (page: number, pageSize: number) => {
+                    handleTableChange(page, pageSize);
+                  }
                 }}
-                onChange={(page, pageSize) => {
-                  setPagination(prev => ({
-                    ...prev,
-                    current: page,
-                    pageSize: pageSize || 10
-                  }));
-                  fetchUsers(page);
-                }}
-                className="overflow-hidden"
               />
             </div>
           </Card>
@@ -335,11 +335,13 @@ const AdminUserManager: React.FC = () => {
           onClose={handleDetailsModalClose}
         />
 
-        <EmployeeDetailModal
-          visible={isEmployeeModalVisible}
-          employeeId={selectedEmployeeId}
-          onClose={() => setIsEmployeeModalVisible(false)}
-        />
+        {isEmployeeModalVisible && (
+          <EmployeeDetailModal
+            visible={isEmployeeModalVisible}
+            employeeId={selectedEmployeeId}
+            onClose={() => setIsEmployeeModalVisible(false)}
+          />
+        )}
       </div>
     </div>
   );

@@ -14,7 +14,6 @@ import ProjectModal from '../../components/admin/ProjectModal';
 import { departmentService } from '../../services/Department.service';
 import { debounce } from 'lodash';
 import AdminSidebar from '../../components/admin/AdminSidebar';
-import NavbarAdminDashboard from '../../components/NavbarAdminDashboard';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -494,7 +493,6 @@ const AdminProjectManager: React.FC = () => {
     <div className="flex min-h-screen bg-sky-50">
       <AdminSidebar />
       <div className="flex-1 ml-[260px]">
-        <NavbarAdminDashboard />
         <div className="p-8">
           <div className="flex items-center justify-between mb-6">
             <Button

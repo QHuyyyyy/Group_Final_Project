@@ -289,32 +289,4 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
   );
 };
 
-// Add these styles to your CSS
-const styles = `
-.employee-modal .ant-modal-content {
-  border-radius: 16px;
-  overflow: hidden;
-}
-
-.employee-modal .ant-modal-header {
-  border-bottom: 1px solid #f0f0f0;
-  padding: 20px 24px;
-}
-
-.employee-modal .ant-modal-body {
-  padding: 0;
-}
-
-.employee-modal .ant-avatar {
-  border: 4px solid white;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-}
-
-.employee-modal .ant-input:hover,
-.employee-modal .ant-select-selector:hover,
-.employee-modal .ant-picker:hover {
-  border-color: #4B5563;
-}
-`;
-
 export default EmployeeDetailModal;
