@@ -9,7 +9,7 @@ import {
   EyeOutlined, 
   ArrowLeftOutlined,
   UserOutlined,
-  SearchOutlined
+  SearchOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -137,24 +137,33 @@ const AdminUserManager: React.FC = () => {
     setIsEmployeeModalVisible(true);
   };
 
+  const handleTableChange = (page: number, pageSize: number) => {
+    setPagination(prev => ({
+      ...prev,
+      current: page,
+      pageSize: pageSize || 10
+    }));
+    fetchUsers(page);
+  };
+
   const columns: ColumnsType<UserData> = [
     {
       title: 'No.',
       key: 'index',
       render: (_, __, index) => pagination.pageSize * (pagination.current - 1) + index + 1,
-      width: 50,
+      width: '70px',
     },
     {
       title: 'Username',
       dataIndex: 'user_name',
       key: 'user_name',
-      width: 100,
+      width: '180px',
     },
     {
       title: 'Role',
       dataIndex: 'role_code',
       key: 'role_code',
-      width: 80,
+      width: '140px',
       render: (role: string) => (
         <Tag color={
           role === 'A001' ? 'red' :
@@ -173,21 +182,21 @@ const AdminUserManager: React.FC = () => {
       title: 'Created At',
       dataIndex: 'created_at',
       key: 'created_at',
-      width: 120,
+      width: '180px',
       render: (date: string) => dayjs(date).tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss')
     },
     {
       title: 'Updated At',
       dataIndex: 'updated_at',
       key: 'updated_at',
-      width: 120,
-      render: (date: string) => dayjs(date).tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss') 
+      width: '180px',
+      render: (date: string) => dayjs(date).tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss')
     },
     {
       title: 'Verified',
       dataIndex: 'is_verified',
       key: 'is_verified',
-      width: 60,
+      width: '100px',
       render: (verified: boolean) => (
         <Tag color={verified ? 'success' : 'error'}>
           {verified ? 'Verified' : 'Unverified'}
@@ -197,35 +206,31 @@ const AdminUserManager: React.FC = () => {
     {
       title: 'Actions',
       key: 'actions',
-      fixed: 'right' as const,
-      width: 150,
+      width: '150px',
       render: (_, record: UserData) => (
-        <Space size="middle">
-          <Button 
-            type="text" 
+        <Space size="small">
+          <Button
+            type="text"
             icon={<EyeOutlined />}
             onClick={() => handleViewDetails(record)}
-            className="text-blue-600 hover:text-blue-800"
+            className="px-1.5"
           />
-          <Button 
-            type="text" 
+          <Button
+            type="text"
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
-            disabled={record.is_blocked}
-            className="text-gray-600 hover:text-gray-800"
+            className="px-1.5"
           />
           <Button
             type="text"
             icon={<UserOutlined />}
             onClick={() => handleEmployeeClick(record._id)}
-            className="text-green-600 hover:text-green-800"
+            className="px-1.5"
           />
           <DeleteUserButton
             userId={record._id}
+            onSuccess={() => fetchUsers(pagination.current)}
             isBlocked={record.is_blocked}
-            onSuccess={() => {
-              fetchUsers(pagination.current);
-            }}
           />
           <BlockUserButton
             userId={record._id}
@@ -234,29 +239,24 @@ const AdminUserManager: React.FC = () => {
           />
         </Space>
       ),
-    },
+    }
   ];
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-sky-50">
       <AdminSidebar />
-      <div className="flex-1 ml-[260px] p-8">
-        <div className="flex items-center justify-between mb-6">
-          <Button 
-            type="default" 
-            icon={<ArrowLeftOutlined />}
-            onClick={() => navigate('/dashboard')}
-            className="flex items-center"
-          >
-            Back to Dashboard
-          </Button>
-          
-          
-        </div>
-
-        <Card className="shadow-md">
-          <div className="mb-6 flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-800">Staff Information</h1>
+      <div className="flex-1 ml-[260px]">
+        <div className="p-8">
+          <div className="flex items-center justify-between mb-6">
+            <Button
+              type="default"
+              icon={<ArrowLeftOutlined />}
+              onClick={() => navigate('/dashboard')}
+              className="flex items-center"
+            >
+              Back to Dashboard
+            </Button>
+            
             <div>
             <Space>
               <span>Blocked: </span>
@@ -279,32 +279,31 @@ const AdminUserManager: React.FC = () => {
            
           </div>
           
-          <div className="overflow-auto custom-scrollbar">
-            <Table 
-              columns={columns} 
-              dataSource={staffData}
-              rowKey="_id"
-              loading={loading}
-              pagination={{
-                current: pagination.current,
-                pageSize: pagination.pageSize,
-                total: pagination.totalItems,
-                onChange: (page, pageSize) => {
-                  setPagination(prev => ({
-                    ...prev,
-                    current: page,
-                    pageSize: pageSize || 10
-                  }));
-                  fetchUsers(page);
-                },
-                showSizeChanger: true,
-                showQuickJumper: true,
-              }}
-              className="overflow-hidden"
-              scroll={{ x: 1000 }}
-            />
-          </div>
-        </Card>
+          <Card className="shadow-md">
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold text-gray-800">Staff Information</h1>
+            </div>
+            <div className="overflow-auto custom-scrollbar">
+              <Table
+                columns={columns}
+                dataSource={staffData}
+                loading={loading}
+                rowKey="_id"
+                pagination={{
+                  current: pagination.current,
+                  pageSize: pagination.pageSize,
+                  total: pagination.totalItems,
+                  showSizeChanger: true,
+                  showQuickJumper: true,
+                  showTotal: (total) => `Total ${total} staff members`,
+                  onChange: (page: number, pageSize: number) => {
+                    handleTableChange(page, pageSize);
+                  }
+                }}
+              />
+            </div>
+          </Card>
+        </div>
 
         <AddUserModal
           visible={isAddModalVisible}
@@ -336,11 +335,13 @@ const AdminUserManager: React.FC = () => {
           onClose={handleDetailsModalClose}
         />
 
-        <EmployeeDetailModal
-          visible={isEmployeeModalVisible}
-          employeeId={selectedEmployeeId}
-          onClose={() => setIsEmployeeModalVisible(false)}
-        />
+        {isEmployeeModalVisible && (
+          <EmployeeDetailModal
+            visible={isEmployeeModalVisible}
+            employeeId={selectedEmployeeId}
+            onClose={() => setIsEmployeeModalVisible(false)}
+          />
+        )}
       </div>
     </div>
   );
