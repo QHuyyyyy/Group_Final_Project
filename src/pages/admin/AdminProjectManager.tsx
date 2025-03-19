@@ -14,6 +14,7 @@ import ProjectModal from '../../components/admin/ProjectModal';
 import { departmentService } from '../../services/Department.service';
 import { debounce } from 'lodash';
 import AdminSidebar from '../../components/admin/AdminSidebar';
+import NavbarAdminDashboard from '../../components/NavbarAdminDashboard';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -490,240 +491,243 @@ const AdminProjectManager: React.FC = () => {
   });
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-sky-50">
       <AdminSidebar />
-      <div className="flex-1 ml-[260px] p-8">
-        <div className="flex items-center justify-between mb-6">
-          <Button
-            type="default"
-            icon={<ArrowLeftOutlined />}
-            onClick={() => navigate('/dashboard')}
-            className="flex items-center"
-          >
-            Back to Dashboard
-          </Button>
+      <div className="flex-1 ml-[260px]">
+        <NavbarAdminDashboard />
+        <div className="p-8">
+          <div className="flex items-center justify-between mb-6">
+            <Button
+              type="default"
+              icon={<ArrowLeftOutlined />}
+              onClick={() => navigate('/dashboard')}
+              className="flex items-center"
+            >
+              Back to Dashboard
+            </Button>
 
-          <Input
-            placeholder="Tìm kiếm dự án..."
-            prefix={<SearchOutlined className="text-gray-400" />}
-            onChange={(e) => handleSearch(e.target.value)}
-            style={{ width: 300 }}
-            className="ml-4"
-          />
-        </div>
-
-        <Card className="shadow-md">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">Projects Overview</h1>
-          </div>
-          <div className="overflow-auto custom-scrollbar">
-            <Table
-              columns={columns}
-              dataSource={projects}
-              rowKey="_id"
-              loading={loading}
-              pagination={{
-                current: pagination.current,
-                pageSize: pagination.pageSize,
-                total: pagination.total,
-                showSizeChanger: true,
-                showQuickJumper: true,
-                showTotal: (total) => `Tổng ${total} dự án`
-              }}
-              onChange={handleTableChange}
-              className="overflow-hidden"
+            <Input
+              placeholder="Tìm kiếm dự án..."
+              prefix={<SearchOutlined className="text-gray-400" />}
+              onChange={(e) => handleSearch(e.target.value)}
+              style={{ width: 300 }}
+              className="ml-4"
             />
           </div>
-        </Card>
 
-        {/* Modal Project Details */}
-        <Modal
-          title={<h2 className="text-2xl font-bold mb-0">Project Details</h2>}
-          open={isModalVisible}
-          onCancel={handleModalClose}
-          footer={null}
-          width={800}
-          className="custom-modal"
-        >
-          {loading ? (
-            <div className="text-center py-4">
-              <Spin />
+          <Card className="shadow-md">
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold text-gray-800">Projects Overview</h1>
             </div>
-          ) : selectedProject ? (
-            <div className="mt-4">
-              {/* Header - Key Information */}
-              <div className="bg-blue-50 p-4 rounded-lg mb-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-800">{selectedProject.project_name}</h3>
-                    <p className="text-gray-500 mt-1">Code: {selectedProject.project_code}</p>
-                  </div>
-                  <div className="text-right">
-                    <Tag color={
-                      selectedProject.project_status === 'New' ? 'blue' :
-                        selectedProject.project_status === 'Pending' ? 'orange' :
-                          'green'
-                    } className="text-base px-4 py-1">
-                      {selectedProject.project_status}
-                    </Tag>
+            <div className="overflow-auto custom-scrollbar">
+              <Table
+                columns={columns}
+                dataSource={projects}
+                rowKey="_id"
+                loading={loading}
+                pagination={{
+                  current: pagination.current,
+                  pageSize: pagination.pageSize,
+                  total: pagination.total,
+                  showSizeChanger: true,
+                  showQuickJumper: true,
+                  showTotal: (total) => `Tổng ${total} dự án`
+                }}
+                onChange={handleTableChange}
+                className="overflow-hidden"
+              />
+            </div>
+          </Card>
+
+          {/* Modal Project Details */}
+          <Modal
+            title={<h2 className="text-2xl font-bold mb-0">Project Details</h2>}
+            open={isModalVisible}
+            onCancel={handleModalClose}
+            footer={null}
+            width={800}
+            className="custom-modal"
+          >
+            {loading ? (
+              <div className="text-center py-4">
+                <Spin />
+              </div>
+            ) : selectedProject ? (
+              <div className="mt-4">
+                {/* Header - Key Information */}
+                <div className="bg-blue-50 p-4 rounded-lg mb-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-800">{selectedProject.project_name}</h3>
+                      <p className="text-gray-500 mt-1">Code: {selectedProject.project_code}</p>
+                    </div>
+                    <div className="text-right">
+                      <Tag color={
+                        selectedProject.project_status === 'New' ? 'blue' :
+                          selectedProject.project_status === 'Pending' ? 'orange' :
+                            'green'
+                      } className="text-base px-4 py-1">
+                        {selectedProject.project_status}
+                      </Tag>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Main Content - Two Columns */}
-              <div className="grid grid-cols-2 gap-6">
-                {/* Left Column */}
-                <div>
-                  {/* Timeline */}
-                  <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                    <h3 className="font-semibold text-gray-800 mb-3">Timeline</h3>
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="text-sm text-gray-500">Start</p>
-                        <p className="font-medium">{dayjs(selectedProject.project_start_date).format('DD/MM/YYYY')}</p>
+                {/* Main Content - Two Columns */}
+                <div className="grid grid-cols-2 gap-6">
+                  {/* Left Column */}
+                  <div>
+                    {/* Timeline */}
+                    <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                      <h3 className="font-semibold text-gray-800 mb-3">Timeline</h3>
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="text-sm text-gray-500">Start</p>
+                          <p className="font-medium">{dayjs(selectedProject.project_start_date).format('DD/MM/YYYY')}</p>
+                        </div>
+                        <div className="text-gray-400">→</div>
+                        <div>
+                          <p className="text-sm text-gray-500">End</p>
+                          <p className="font-medium">{dayjs(selectedProject.project_end_date).format('DD/MM/YYYY')}</p>
+                        </div>
                       </div>
-                      <div className="text-gray-400">→</div>
-                      <div>
-                        <p className="text-sm text-gray-500">End</p>
-                        <p className="font-medium">{dayjs(selectedProject.project_end_date).format('DD/MM/YYYY')}</p>
-                      </div>
+                    </div>
+
+                    {/* Department & Description */}
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <h3 className="font-semibold text-gray-800 mb-3">Department</h3>
+                      <p className="text-gray-700 mb-4">{selectedProject.project_department}</p>
+
+                      <h3 className="font-semibold text-gray-800 mb-3">Description</h3>
+                      <p className="text-gray-700">{selectedProject.project_description}</p>
                     </div>
                   </div>
 
-                  {/* Department & Description */}
+                  {/* Right Column - Project Members */}
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="font-semibold text-gray-800 mb-3">Department</h3>
-                    <p className="text-gray-700 mb-4">{selectedProject.project_department}</p>
+                    <h3 className="font-semibold text-gray-800 mb-4">Project Members</h3>
+                    <div className="space-y-3">
+                      {[
+                        { role: 'Project Manager', color: 'gold' },
+                        { role: 'Quality Analytics', color: 'green' },
+                        { role: 'Technical Leader', color: 'blue' },
+                        { role: 'Business Analytics', color: 'purple' },
+                        { role: 'Developer', color: 'cyan' },
+                        { role: 'Tester', color: 'magenta' },
+                        { role: 'Technical Consultant', color: 'geekblue' }
+                      ].map(({ role, color }) => {
+                        const members = selectedProject.project_members.filter(
+                          member => member.project_role === role
+                        );
 
-                    <h3 className="font-semibold text-gray-800 mb-3">Description</h3>
-                    <p className="text-gray-700">{selectedProject.project_description}</p>
+                        return (
+                          <div key={role} className="flex items-center justify-between py-2 border-b border-gray-200 last:border-0">
+                            <Tag color={color} className="min-w-[140px]">{role}</Tag>
+                            <span className="text-gray-700 text-right">
+                              {members.length > 0
+                                ? members.map(m => m.full_name || m.user_name).join(', ')
+                                : <span className="text-gray-400 italic">No information available</span>}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
 
-                {/* Right Column - Project Members */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-gray-800 mb-4">Project Members</h3>
-                  <div className="space-y-3">
-                    {[
-                      { role: 'Project Manager', color: 'gold' },
-                      { role: 'Quality Analytics', color: 'green' },
-                      { role: 'Technical Leader', color: 'blue' },
-                      { role: 'Business Analytics', color: 'purple' },
-                      { role: 'Developer', color: 'cyan' },
-                      { role: 'Tester', color: 'magenta' },
-                      { role: 'Technical Consultant', color: 'geekblue' }
-                    ].map(({ role, color }) => {
-                      const members = selectedProject.project_members.filter(
-                        member => member.project_role === role
-                      );
-
-                      return (
-                        <div key={role} className="flex items-center justify-between py-2 border-b border-gray-200 last:border-0">
-                          <Tag color={color} className="min-w-[140px]">{role}</Tag>
-                          <span className="text-gray-700 text-right">
-                            {members.length > 0
-                              ? members.map(m => m.full_name || m.user_name).join(', ')
-                              : <span className="text-gray-400 italic">No information available</span>}
-                          </span>
-                        </div>
-                      );
-                    })}
+                {/* Footer - Metadata */}
+                <div className="mt-6 pt-4 border-t border-gray-200 text-sm text-gray-500">
+                  <div className="flex justify-between items-center">
+                    <span>Created: {dayjs(selectedProject.created_at).tz('Asia/Ho_Chi_Minh').format('DD/MM/YYYY HH:mm')}</span>
+                    <span>Last updated: {dayjs(selectedProject.updated_at).tz('Asia/Ho_Chi_Minh').format('DD/MM/YYYY HH:mm')}</span>
+                    <span>By: {selectedProject.updated_by}</span>
                   </div>
                 </div>
               </div>
+            ) : (
+              <Empty description="No data available" />
+            )}
+          </Modal>
 
-              {/* Footer - Metadata */}
-              <div className="mt-6 pt-4 border-t border-gray-200 text-sm text-gray-500">
-                <div className="flex justify-between items-center">
-                  <span>Created: {dayjs(selectedProject.created_at).tz('Asia/Ho_Chi_Minh').format('DD/MM/YYYY HH:mm')}</span>
-                  <span>Last updated: {dayjs(selectedProject.updated_at).tz('Asia/Ho_Chi_Minh').format('DD/MM/YYYY HH:mm')}</span>
-                  <span>By: {selectedProject.updated_by}</span>
-                </div>
-              </div>
+          <ProjectModal
+            visible={isCreateModalVisible}
+            onCancel={handleCreateModalClose}
+            onSubmit={handleCreateSubmit}
+            isEditMode={false}
+            users={users}
+            departments={departments}
+            disabledStartDate={disabledStartDate}
+            disabledEndDate={disabledEndDate}
+            teamMembers={teamMembers}
+            setTeamMembers={setTeamMembers}
+            handleStartDateChange={(date: dayjs.Dayjs | null) => handleCreateStartDateChange(date)}
+            handleEndDateChange={(date: dayjs.Dayjs | null) => handleCreateEndDateChange(date)}
+          />
+
+          <ProjectModal
+            visible={isEditModalVisible}
+            onCancel={handleEditModalClose}
+            onSubmit={handleEditSubmit}
+            initialValues={selectedProject || undefined}
+            isEditMode={true}
+            users={users}
+            departments={departments}
+            disabledStartDate={disabledStartDate}
+            disabledEndDate={disabledEndDate}
+            teamMembers={editTeamMembers}
+            setTeamMembers={setEditTeamMembers}
+            handleStartDateChange={(date: dayjs.Dayjs | null) => handleEditStartDateChange(date)}
+            handleEndDateChange={(date: dayjs.Dayjs | null) => handleEditEndDateChange(date)}
+          />
+
+          <Modal
+            title="Confirm Delete Project"
+            open={isDeleteModalVisible}
+            onOk={handleConfirmDelete}
+            onCancel={() => {
+              setIsDeleteModalVisible(false);
+              setProjectToDelete(null);
+            }}
+            okText="Delete"
+            cancelText="Cancel"
+            okButtonProps={{ danger: true }}
+          >
+            <p>Are you sure you want to delete this project?</p>
+            <p>This action cannot be undone.</p>
+          </Modal>
+
+          <Modal
+            title="Change Project Status"
+            open={isStatusModalVisible}
+            onOk={handleStatusSubmit}
+            onCancel={() => setIsStatusModalVisible(false)}
+            okText="Update"
+            cancelText="Cancel"
+          >
+            <div className="mb-4">
+              <p>Current Status: <Tag color={
+                selectedStatusProject?.project_status === 'New' ? 'blue' :
+                selectedStatusProject?.project_status === 'Active' ? 'green' :
+                selectedStatusProject?.project_status === 'Pending' ? 'orange' :
+                selectedStatusProject?.project_status === 'Closed' ? 'red' :
+                'default'
+              }>{selectedStatusProject?.project_status}</Tag></p>
             </div>
-          ) : (
-            <Empty description="No data available" />
-          )}
-        </Modal>
-
-        <ProjectModal
-          visible={isCreateModalVisible}
-          onCancel={handleCreateModalClose}
-          onSubmit={handleCreateSubmit}
-          isEditMode={false}
-          users={users}
-          departments={departments}
-          disabledStartDate={disabledStartDate}
-          disabledEndDate={disabledEndDate}
-          teamMembers={teamMembers}
-          setTeamMembers={setTeamMembers}
-          handleStartDateChange={(date: dayjs.Dayjs | null) => handleCreateStartDateChange(date)}
-          handleEndDateChange={(date: dayjs.Dayjs | null) => handleCreateEndDateChange(date)}
-        />
-
-        <ProjectModal
-          visible={isEditModalVisible}
-          onCancel={handleEditModalClose}
-          onSubmit={handleEditSubmit}
-          initialValues={selectedProject || undefined}
-          isEditMode={true}
-          users={users}
-          departments={departments}
-          disabledStartDate={disabledStartDate}
-          disabledEndDate={disabledEndDate}
-          teamMembers={editTeamMembers}
-          setTeamMembers={setEditTeamMembers}
-          handleStartDateChange={(date: dayjs.Dayjs | null) => handleEditStartDateChange(date)}
-          handleEndDateChange={(date: dayjs.Dayjs | null) => handleEditEndDateChange(date)}
-        />
-
-        <Modal
-          title="Confirm Delete Project"
-          open={isDeleteModalVisible}
-          onOk={handleConfirmDelete}
-          onCancel={() => {
-            setIsDeleteModalVisible(false);
-            setProjectToDelete(null);
-          }}
-          okText="Delete"
-          cancelText="Cancel"
-          okButtonProps={{ danger: true }}
-        >
-          <p>Are you sure you want to delete this project?</p>
-          <p>This action cannot be undone.</p>
-        </Modal>
-
-        <Modal
-          title="Change Project Status"
-          open={isStatusModalVisible}
-          onOk={handleStatusSubmit}
-          onCancel={() => setIsStatusModalVisible(false)}
-          okText="Update"
-          cancelText="Cancel"
-        >
-          <div className="mb-4">
-            <p>Current Status: <Tag color={
-              selectedStatusProject?.project_status === 'New' ? 'blue' :
-              selectedStatusProject?.project_status === 'Active' ? 'green' :
-              selectedStatusProject?.project_status === 'Pending' ? 'orange' :
-              selectedStatusProject?.project_status === 'Closed' ? 'red' :
-              'default'
-            }>{selectedStatusProject?.project_status}</Tag></p>
-          </div>
-          <div>
-            <p className="mb-2">Select New Status:</p>
-            <Select
-              value={newStatus}
-              onChange={setNewStatus}
-              style={{ width: '100%' }}
-            >
-              <Select.Option value="New">New</Select.Option>
-              <Select.Option value="Active">Active</Select.Option>
-              <Select.Option value="Pending">Pending</Select.Option>
-              <Select.Option value="Closed">Closed</Select.Option>
-            </Select>
-          </div>
-        </Modal>
+            <div>
+              <p className="mb-2">Select New Status:</p>
+              <Select
+                value={newStatus}
+                onChange={setNewStatus}
+                style={{ width: '100%' }}
+              >
+                <Select.Option value="New">New</Select.Option>
+                <Select.Option value="Active">Active</Select.Option>
+                <Select.Option value="Pending">Pending</Select.Option>
+                <Select.Option value="Closed">Closed</Select.Option>
+              </Select>
+            </div>
+          </Modal>
+        </div>
       </div>
     </div>
   );

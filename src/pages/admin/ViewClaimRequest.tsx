@@ -9,6 +9,7 @@ import { claimService } from '../../services/claim.service';
 import { Claim, ClaimById } from '../../models/ClaimModel';
 import RequestDetails from '../../components/user/RequestDetails';
 import debounce from 'lodash/debounce';
+import NavbarAdminDashboard from '../../components/NavbarAdminDashboard';
 
 const ViewClaimRequest: React.FC = () => {
   const navigate = useNavigate();
@@ -106,44 +107,55 @@ const ViewClaimRequest: React.FC = () => {
     setPagination(prev => ({ ...prev, current: 1 }));
 };
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Draft':
+        return { color: 'orange', bgColor: '#fff7e6', borderColor: '#ffd591' };
+      case 'Pending Approval':
+        return { color: '#1890ff', bgColor: '#e6f7ff', borderColor: '#91d5ff' };
+      case 'Approved':
+        return { color: '#52c41a', bgColor: '#f6ffed', borderColor: '#b7eb8f' };
+      case 'Rejected':
+        return { color: '#ff4d4f', bgColor: '#fff1f0', borderColor: '#ffa39e' };
+      case 'Canceled':
+        return { color: '#434343', bgColor: '#fafafa', borderColor: '#d9d9d9' };
+      case 'Paid':
+        return { color: '#13c2c2', bgColor: '#e6fffb', borderColor: '#87e8de' };
+      default:
+        return { color: '#d9d9d9', bgColor: '#fafafa', borderColor: '#d9d9d9' };
+    }
+  };
+
   const renderStatusButtons = () => (
-    <div className="flex gap-2">
-      {claimStatuses.map(status => (
-        <Button
-          key={status.value}
-          onClick={() => handleStatusFilter(status.value)}
-          style={{
-            borderColor: status.color,
-            backgroundColor: selectedStatus === status.value ? status.color : status.bgColor,
-            color: selectedStatus === status.value ? '#fff' : status.color,
-            fontWeight: 500,
-            display: 'flex',
-            alignItems: 'center',
-            height: '32px',
-            padding: '4px 12px',
-            borderRadius: '6px',
-            transition: 'all 0.3s'
-          }}
-          className="hover:opacity-80"
-        >
-          {status.label}
-          <span
+    <div className="flex gap-2 mb-6">
+      {claimStatuses.map(status => {
+        const { color, bgColor, borderColor } = getStatusColor(status.value);
+        return (
+          <Button
+            key={status.value}
+            onClick={() => handleStatusFilter(status.value)}
             style={{
-              marginLeft: '8px',
-              padding: '2px 8px',
-              fontSize: '12px',
-              borderRadius: '10px',
-              backgroundColor: selectedStatus === status.value ? '#ffffff' : '#ffffff',
-              color: status.color,
-              fontWeight: 'bold',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-              border: `1px solid ${status.color}`
+              color: selectedStatus === status.value ? 'white' : color,
+              backgroundColor: selectedStatus === status.value ? color : bgColor,
+              borderColor: borderColor,
+              fontWeight: 500,
             }}
+            className="flex items-center hover:opacity-80"
           >
-            {status.value === '' ? pagination.totalItems : statusCounts[status.value] || 0}
-          </span>
-        </Button>
-      ))}
+            {status.label}
+            <span
+              className="ml-2 px-2 py-0.5 text-xs rounded-full"
+              style={{
+                backgroundColor: selectedStatus === status.value ? bgColor : 'white',
+                color: color,
+                border: `1px solid ${borderColor}`,
+              }}
+            >
+              {status.value === '' ? pagination.totalItems : statusCounts[status.value] || 0}
+            </span>
+          </Button>
+        )
+      })}
     </div>
   );
 
@@ -158,20 +170,27 @@ const ViewClaimRequest: React.FC = () => {
       title: 'Status',
       dataIndex: 'claim_status',
       key: 'claim_status',
-      width: 150,
-      render: (status: string) => (
-        <Tag color={
-          status === 'Draft' ? '#faad14' :
-          status === 'Pending Approval' ? '#1890ff' :
-          status === 'Approved' ? '#52c41a' :
-          status === 'Rejected' ? '#ff4d4f' :
-          status === 'Canceled' ? '#ff4d4f' :
-          status === 'Paid' ? '#52c41a' :
-          'default'
-        }>
-          {status}
-        </Tag>
-      )
+      width: '15%',
+      render: (status: string) => {
+        const { color, bgColor, borderColor } = getStatusColor(status);
+        return (
+          <Tag
+            style={{
+              color: color,
+              backgroundColor: bgColor,
+              borderColor: borderColor,
+              borderWidth: '1px',
+              borderStyle: 'solid',
+              borderRadius: '4px',
+              padding: '4px 8px',
+              fontSize: '14px',
+              fontWeight: 500,
+            }}
+          >
+            {status}
+          </Tag>
+        );
+      },
     },
     {
       title: 'Claimer',
@@ -226,73 +245,76 @@ const ViewClaimRequest: React.FC = () => {
   );
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-sky-50">
       <AdminSidebar />
-      <div className="flex-1 ml-64 p-8">
-        <div className="flex items-center justify-between mb-6">
-          <Button 
-            type="default" 
-            icon={<ArrowLeftOutlined />}
-            onClick={() => navigate('/dashboard')}
-            className="flex items-center"
-          >
-            Back to Dashboard
-          </Button>
-          
-          <Input
-            placeholder="Search by claim name..."
-            prefix={<SearchOutlined className="text-gray-400" />}
-            defaultValue={searchText}
-            onChange={(e) => debouncedSearch(e.target.value)}
-            style={{ width: 300 }}
+      <div className="flex-1 ml-[260px]">
+        <NavbarAdminDashboard />
+        <div className="p-8">
+          <div className="flex items-center justify-between mb-6">
+            <Button 
+              type="default" 
+              icon={<ArrowLeftOutlined />}
+              onClick={() => navigate('/dashboard')}
+              className="flex items-center"
+            >
+              Back to Dashboard
+            </Button>
+            
+            <Input
+              placeholder="Search by claim name..."
+              prefix={<SearchOutlined className="text-gray-400" />}
+              defaultValue={searchText}
+              onChange={(e) => debouncedSearch(e.target.value)}
+              style={{ width: 300 }}
+            />
+          </div>
+
+          <Card className="shadow-md">
+            <div className="mb-6">
+              <div className="flex justify-between items-center">
+                <h1 className="text-2xl font-bold text-gray-800">View Claim Requests</h1>
+                {renderStatusButtons()}
+              </div>
+            </div>
+            <Table 
+              loading={loading}
+              columns={columns} 
+              dataSource={filteredClaims}
+              rowKey="_id"
+              onRow={(record) => ({
+                onClick: () => handleRowClick(record),
+                style: { cursor: 'pointer' }
+              })}
+              pagination={{
+                current: pagination.current,
+                pageSize: pagination.pageSize,
+                total: pagination.totalItems,
+                showSizeChanger: true,
+                showQuickJumper: true,
+                onChange: (page, pageSize) => {
+                  setPagination(prev => ({
+                    ...prev,
+                    current: page,
+                    pageSize: pageSize || 10,
+                  }));
+                  fetchClaims(page);
+                },
+              }}
+              className="overflow-hidden"
+              scroll={{ x: 1000 }}
+            />
+          </Card>
+
+          {/* Add RequestDetails Modal */}
+          <RequestDetails
+            visible={isDetailsModalVisible}
+            claim={selectedClaim}
+            onClose={() => {
+              setIsDetailsModalVisible(false);
+              setSelectedClaim(undefined);
+            }}
           />
         </div>
-
-        <Card className="shadow-md">
-          <div className="mb-6">
-            <div className="flex justify-between items-center">
-              <h1 className="text-2xl font-bold text-gray-800">View Claim Requests</h1>
-              {renderStatusButtons()}
-            </div>
-          </div>
-          <Table 
-            loading={loading}
-            columns={columns} 
-            dataSource={filteredClaims}
-            rowKey="_id"
-            onRow={(record) => ({
-              onClick: () => handleRowClick(record),
-              style: { cursor: 'pointer' }
-            })}
-            pagination={{
-              current: pagination.current,
-              pageSize: pagination.pageSize,
-              total: pagination.totalItems,
-              showSizeChanger: true,
-              showQuickJumper: true,
-              onChange: (page, pageSize) => {
-                setPagination(prev => ({
-                  ...prev,
-                  current: page,
-                  pageSize: pageSize || 10,
-                }));
-                fetchClaims(page);
-              },
-            }}
-            className="overflow-hidden"
-            scroll={{ x: 1000 }}
-          />
-        </Card>
-
-        {/* Add RequestDetails Modal */}
-        <RequestDetails
-          visible={isDetailsModalVisible}
-          claim={selectedClaim}
-          onClose={() => {
-            setIsDetailsModalVisible(false);
-            setSelectedClaim(undefined);
-          }}
-        />
       </div>
     </div>
   );

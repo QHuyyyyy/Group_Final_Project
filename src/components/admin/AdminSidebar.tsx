@@ -197,7 +197,7 @@ const AdminSidebar = () => {
   }, []);
 
   return (
-    <div className="bg-[#1E2640] min-h-screen w-[260px] fixed left-0 top-0 text-white">
+    <div className="bg-[#1E2640] min-h-screen w-[260px] fixed left-0 top-0 text-white z-50">
       <div className="p-4 flex flex-col h-full">
         {/* Header */}
         <div className="text-xl font-bold mb-8 text-center tracking-wide border-b border-gray-700 pb-4">
