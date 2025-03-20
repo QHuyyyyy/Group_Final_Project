@@ -15,6 +15,7 @@ const Projects: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const userId = useUserStore((state) => state.id);
   const [expandedProject, setExpandedProject] = useState<string | null>(null);
+  const [expandedMembers, setExpandedMembers] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -60,6 +61,14 @@ const Projects: React.FC = () => {
 
   const handleProjectClick = (projectId: string) => {
     setExpandedProject(expandedProject === projectId ? null : projectId);
+  };
+
+  const toggleShowMoreMembers = (projectId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    setExpandedMembers(prev => ({
+      ...prev,
+      [projectId]: !prev[projectId]
+    }));
   };
 
   const renderProjectCard = (project: any) => (
@@ -196,30 +205,52 @@ const Projects: React.FC = () => {
                   </motion.div>
                   <Text className="font-medium text-gray-700">Team</Text>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {project.project_members?.map((member: any, index: number) => (
+                <div className="flex flex-col gap-2">
+                  <div className="flex flex-wrap gap-2">
+                    {(project.project_members || [])
+                      .slice(0, expandedMembers[project._id] ? undefined : 5)
+                      .map((member: any, index: number) => (
+                        <motion.div
+                          key={member.user_id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                        >
+                          <Tag 
+                            className="rounded-full px-3 py-1.5 shadow-sm hover:shadow-md
+                              transition-all duration-300 cursor-default"
+                            color={
+                              member.project_role === 'Project Manager' ? 'blue' :
+                              member.project_role === 'Developer' ? 'green' :
+                              member.project_role === 'Quality Analytics' ? 'purple' :
+                              member.project_role === 'Technical Leader' ? 'orange' :
+                              'default'
+                            }
+                          >
+                            {member.user_name}
+                            <span className="opacity-75 ml-1">• {member.project_role}</span>
+                          </Tag>
+                        </motion.div>
+                    ))}
+                  </div>
+                  
+                  {/* Show more/less button */}
+                  {project.project_members?.length > 3 && (
                     <motion.div
-                      key={member.user_id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="mt-2"
                     >
-                      <Tag 
-                        className="rounded-full px-3 py-1.5 shadow-sm hover:shadow-md
-                          transition-all duration-300 cursor-default"
-                        color={
-                          member.project_role === 'Project Manager' ? 'blue' :
-                          member.project_role === 'Developer' ? 'green' :
-                          member.project_role === 'Quality Analytics' ? 'purple' :
-                          member.project_role === 'Technical Leader' ? 'orange' :
-                          'default'
-                        }
+                      <Button
+                        type="link"
+                        size="small"
+                        onClick={(e) => toggleShowMoreMembers(project._id, e)}
+                        className="text-blue-500 hover:text-blue-600 px-0"
                       >
-                        {member.user_name}
-                        <span className="opacity-75 ml-1">• {member.project_role}</span>
-                      </Tag>
+                        {expandedMembers[project._id] ? 'Show less' : `+${project.project_members.length - 3} more`}
+                      </Button>
                     </motion.div>
-                  ))}
+                  )}
                 </div>
               </div>
 
