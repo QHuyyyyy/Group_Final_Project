@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
-import TransactionPage from './pages/user/Transaction';
 import AboutUs from './pages/AboutUs';
 import Services from './pages/user/Services';
 import ContactUs from './pages/Contactus';
@@ -58,11 +57,7 @@ const App = () => {
                 <Profile />
               </ProtectedRoute>
             } />
-            <Route path="transaction" element={
-              <ProtectedRoute allowedRoles={RoutePermissions.transaction}>
-                <TransactionPage />
-              </ProtectedRoute>
-            } />
+          
             <Route path="approvals" element={
               <ProtectedRoute allowedRoles={RoutePermissions.approvals}>
                 <ApprovalPage />
@@ -122,11 +117,6 @@ const App = () => {
               <Profile />
             </ProtectedRoute>
           } />
-            <Route path="/dashboard/transaction" element={
-              <ProtectedRoute allowedRoles={RoutePermissions.transaction}>
-                <TransactionPage />
-              </ProtectedRoute>
-            } />
         </Routes>
       </Suspense>
     </Router>

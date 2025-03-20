@@ -16,6 +16,7 @@ import ClaimDetailsModal from '../../components/shared/ClaimDetailsModal';
 import StatusTabs from '../../components/shared/StatusTabs';
 import ClaimTable from '../../components/shared/ClaimTable';
 import PageHeader from '../../components/shared/PageHeader';
+import ClaimHistoryModal from '../../components/shared/ClaimHistoryModal';
 
 // Tạo debounced function bên ngoài component để tránh tạo lại mỗi lần render
 const debouncedSearch = debounce((
@@ -64,6 +65,7 @@ const Claim = () => {
   const [isCancelModalVisible, setIsCancelModalVisible] = useState(false);  // Add cancel modal visibility state
   const [allClaimsData, setAllClaimsData] = useState<Claim[]>([]);
   const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
+  const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
 
   const handleSearch = useCallback((value: string) => {
     setSearchText(value);
@@ -267,6 +269,11 @@ const Claim = () => {
     message.success("Claim updated successfully");
   };
 
+  const handleViewHistory = (record: Claim) => {
+    setSelectedClaim(record);
+    setIsHistoryModalVisible(true);
+  };
+  
   useEffect(() => {
     return () => {
       debouncedSearch.cancel();
@@ -322,6 +329,7 @@ const Claim = () => {
             },
           }}
           onView={handleView}
+          onViewHistory={handleViewHistory}
           actionButtons={(record) => 
             record.claim_status === "Draft" && (
               <div className="flex items-center gap-2">
@@ -379,6 +387,11 @@ const Claim = () => {
           onSuccess={handleUpdateSuccess}
         />
       )}
+      <ClaimHistoryModal
+        visible={isHistoryModalVisible}
+        claim={selectedClaim}
+        onClose={() => setIsHistoryModalVisible(false)}
+      />
     </div>
   );
 };

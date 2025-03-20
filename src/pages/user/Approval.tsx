@@ -14,6 +14,7 @@ import StatusTabs from "../../components/shared/StatusTabs";
 import ClaimDetailsModal from "../../components/shared/ClaimDetailsModal";
 import dayjs from "dayjs";
 import { toast } from 'react-toastify';
+import ClaimHistoryModal from "../../components/shared/ClaimHistoryModal";
 
 interface PaginationState {
   current: number;
@@ -47,7 +48,11 @@ function ApprovalPage() {
   const [isDetailsModalVisible, setDetailsModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [actionLoading, setActionLoading] = useState(false);
-  
+  const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
+  const handleViewHistory = (record: Claim) => {
+    setSelectedClaim(record);
+    setIsHistoryModalVisible(true);
+  };
   const fetchClaims = async (pageNum: number = pagination.current) => {
     setLoading(true);
     const params: SearchParams = {
@@ -223,6 +228,7 @@ function ApprovalPage() {
               }));
             },
           }}
+          onViewHistory={handleViewHistory}
           onView={showDetails}
           actionButtons={(record) => 
             record.claim_status === "Pending Approval" && (
@@ -259,7 +265,11 @@ function ApprovalPage() {
         claim={selectedClaim}
         onClose={handleDetailsModalClose}
       />
-
+ <ClaimHistoryModal
+        visible={isHistoryModalVisible}
+        claim={selectedClaim}
+        onClose={() => setIsHistoryModalVisible(false)}
+      />
       <Modal
         title={
           <div className="flex items-center gap-2">
