@@ -13,7 +13,6 @@ import {
 import { useLocation } from 'react-router-dom';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 
-import NavbarAdminDashboard from '../../components/NavbarAdminDashboard';
 import { useUserStore } from '../../stores/userStore';
 
 import { employeeService } from '../../services/employee.service';
@@ -53,7 +52,7 @@ const Profile = () => {
       case 'A003':
         return 'BUL, PM';
       case 'A004':
-        return 'All Members';
+        return 'Members';
       default:
         return roleCode;
     }
@@ -76,12 +75,7 @@ const Profile = () => {
       {isAdminDashboard && <AdminSidebar />}
       
       <div className={`flex-1 ${isAdminDashboard ? 'ml-64' : ''}`}>
-        {isAdminDashboard && (
-          <div className="fixed top-0 left-64 right-0 bg-white/80 backdrop-blur-sm shadow-sm z-50">
-            <NavbarAdminDashboard />
-          </div>
-        )}
-        
+              
         <div className={`p-8 ${isAdminDashboard ? 'mt-20' : ''}`}>
           <div className="max-w-7xl mx-auto space-y-8">
             {/* Header Section với animation */}

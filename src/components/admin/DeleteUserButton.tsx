@@ -1,7 +1,8 @@
 import React from 'react';
-import { Button, Popconfirm, message } from 'antd';
+import { Button, Popconfirm} from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
 import { userService } from '../../services/user.service';
+import { toast } from 'react-toastify';
 
 interface DeleteUserButtonProps {
   userId: string;
@@ -13,13 +14,13 @@ const DeleteUserButton: React.FC<DeleteUserButtonProps> = ({ userId, isBlocked, 
   const handleDelete = async () => {
     try {
       await userService.deleteUser(userId);
-      message.success('User deleted successfully');
+      toast.success('User deleted successfully');
       if (onSuccess) {
         onSuccess();
       }
     } catch (error) {
-      message.error('Failed to delete user');
-      console.error('Delete user error:', error);
+      toast.error('Failed to delete user');
+      
     }
   };
 
