@@ -32,7 +32,7 @@ const Menu = () => {
           icon: request, 
           label: "Requests", 
           href: "/userdashboard/claimrequest",
-          allowedRoles: ["A004"]
+          allowedRoles: ["A002","A003","A004"]
         },
         { 
           icon: document, 
