@@ -8,6 +8,7 @@ import dayjs from "dayjs";
 import ClaimDetailsModal from "../../components/shared/ClaimDetailsModal";
 import ClaimTable from '../../components/shared/ClaimTable';
 import PageHeader from "../../components/shared/PageHeader";
+import ClaimHistoryModal from "../../components/shared/ClaimHistoryModal";
 
 interface PaginationState {
   current: number;
@@ -54,6 +55,7 @@ function ApprovalPage() {
   const [comment, setComment] = useState("");
   const [form] = Form.useForm();
   const [allClaims, setAllClaims] = useState<Claim[]>([]);
+  const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
 
   useEffect(() => {
     fetchClaims();
@@ -194,6 +196,11 @@ function ApprovalPage() {
     setSelectedClaim(null);
   };
 
+  const handleViewHistory = (record: Claim) => {
+    setSelectedClaim(record);
+    setIsHistoryModalVisible(true);
+  };
+
   useEffect(() => {
     return () => {
       debouncedSearch.cancel();
@@ -289,6 +296,7 @@ function ApprovalPage() {
                 handleTableChange({ current: page, pageSize }),
             }}
             onView={showDetails}
+            onViewHistory={handleViewHistory}
             actionButtons={(record) => 
               record.claim_status === "Pending Approval" && (
                 <Space>
@@ -410,6 +418,13 @@ function ApprovalPage() {
           </Form>
         </div>
       </Modal>
+
+      {/* Claim History Modal */}
+      <ClaimHistoryModal
+        visible={isHistoryModalVisible}
+        claim={selectedClaim}
+        onClose={() => setIsHistoryModalVisible(false)}
+      />
 
       {/* Claim Details Modal */}
       <ClaimDetailsModal
