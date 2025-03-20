@@ -38,7 +38,6 @@ const Finance = () => {
   const [statusCounts, setStatusCounts] = useState<Record<string, number>>({
     "": 0,
     "Approved": 0,
-    "Paid": 0
   });
   const [pagination, setPagination] = useState({
     current: 1,
@@ -77,7 +76,6 @@ const Finance = () => {
         const newCounts: Record<string, number> = {
           "": claimsData.length,
           "Approved": claimsData.filter(claim => claim.claim_status === "Approved").length,
-          "Paid": claimsData.filter(claim => claim.claim_status === "Paid").length
         };
         setStatusCounts(newCounts);
 
@@ -359,17 +357,6 @@ const Finance = () => {
                     </span>
                   )
                 },
-                {
-                  key: "Paid",
-                  label: (
-                    <span className="flex items-center text-gray-600">
-                      Paid
-                      <span className="ml-1 text-gray-500">
-                        ({statusCounts["Paid"] || 0})
-                      </span>
-                    </span>
-                  )
-                }
               ]}
             />
           </div>

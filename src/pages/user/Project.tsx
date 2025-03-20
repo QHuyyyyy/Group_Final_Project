@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {  Typography, Tag, Spin, Input, Button } from 'antd';
+import {  Typography, Tag, Spin, Input, Button, Pagination } from 'antd';
 import { ProjectOutlined, ClockCircleOutlined, TeamOutlined, CodeOutlined, BankOutlined, SearchOutlined, FilterOutlined } from '@ant-design/icons';
 import projectService from '../../services/project.service';
 import { useUserStore } from '../../stores/userStore';
@@ -15,6 +15,12 @@ const Projects: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const userId = useUserStore((state) => state.id);
   const [expandedProject, setExpandedProject] = useState<string | null>(null);
+  const [expandedMembers, setExpandedMembers] = useState<{ [key: string]: boolean }>({});
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 8,
+    total: 0
+  });
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -52,14 +58,37 @@ const Projects: React.FC = () => {
                          project.project_code.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = selectedStatus === 'all' || project.project_status === selectedStatus;
     return matchesSearch && matchesStatus;
-  }).sort((a, b) => {
-    if (a._id === expandedProject) return -1;
-    if (b._id === expandedProject) return 1;
-    return 0;
   });
+
+  const paginatedProjects = filteredProjects
+    .slice(
+      (pagination.current - 1) * pagination.pageSize,
+      pagination.current * pagination.pageSize
+    )
+    .sort((a, b) => {
+      if (a._id === expandedProject) return -1;
+      if (b._id === expandedProject) return 1;
+      return 0;
+    });
+
+  const handlePaginationChange = (page: number, pageSize: number) => {
+    setPagination(prev => ({
+      ...prev,
+      current: page,
+      pageSize: pageSize
+    }));
+  };
 
   const handleProjectClick = (projectId: string) => {
     setExpandedProject(expandedProject === projectId ? null : projectId);
+  };
+
+  const toggleShowMoreMembers = (projectId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    setExpandedMembers(prev => ({
+      ...prev,
+      [projectId]: !prev[projectId]
+    }));
   };
 
   const renderProjectCard = (project: any) => (
@@ -196,30 +225,52 @@ const Projects: React.FC = () => {
                   </motion.div>
                   <Text className="font-medium text-gray-700">Team</Text>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {project.project_members?.map((member: any, index: number) => (
+                <div className="flex flex-col gap-2">
+                  <div className="flex flex-wrap gap-2">
+                    {(project.project_members || [])
+                      .slice(0, expandedMembers[project._id] ? undefined : 5)
+                      .map((member: any, index: number) => (
+                        <motion.div
+                          key={member.user_id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                        >
+                          <Tag 
+                            className="rounded-full px-3 py-1.5 shadow-sm hover:shadow-md
+                              transition-all duration-300 cursor-default"
+                            color={
+                              member.project_role === 'Project Manager' ? 'blue' :
+                              member.project_role === 'Developer' ? 'green' :
+                              member.project_role === 'Quality Analytics' ? 'purple' :
+                              member.project_role === 'Technical Leader' ? 'orange' :
+                              'default'
+                            }
+                          >
+                            {member.user_name}
+                            <span className="opacity-75 ml-1">• {member.project_role}</span>
+                          </Tag>
+                        </motion.div>
+                    ))}
+                  </div>
+                  
+                  {/* Show more/less button */}
+                  {project.project_members?.length > 5 && (
                     <motion.div
-                      key={member.user_id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="mt-2"
                     >
-                      <Tag 
-                        className="rounded-full px-3 py-1.5 shadow-sm hover:shadow-md
-                          transition-all duration-300 cursor-default"
-                        color={
-                          member.project_role === 'Project Manager' ? 'blue' :
-                          member.project_role === 'Developer' ? 'green' :
-                          member.project_role === 'Quality Analytics' ? 'purple' :
-                          member.project_role === 'Technical Leader' ? 'orange' :
-                          'default'
-                        }
+                      <Button
+                        type="link"
+                        size="small"
+                        onClick={(e) => toggleShowMoreMembers(project._id, e)}
+                        className="text-blue-500 hover:text-blue-600 px-0"
                       >
-                        {member.user_name}
-                        <span className="opacity-75 ml-1">• {member.project_role}</span>
-                      </Tag>
+                        {expandedMembers[project._id] ? 'Show less' : `+${project.project_members.length - 5} more`}
+                      </Button>
                     </motion.div>
-                  ))}
+                  )}
                 </div>
               </div>
 
@@ -309,11 +360,25 @@ const Projects: React.FC = () => {
         </div>
 
         {/* Projects Grid */}
-        <AnimatePresence mode="popLayout">
-          <div className="grid grid-cols-12 gap-6">
-            {filteredProjects.map((project) => renderProjectCard(project))}
-          </div>
-        </AnimatePresence>
+        <div className="flex-1">
+          <AnimatePresence mode="popLayout">
+            <div className="grid grid-cols-12 gap-6">
+              {paginatedProjects.map((project) => renderProjectCard(project))}
+            </div>
+          </AnimatePresence>
+        </div>
+
+        {/* Pagination - đặt ở cuối và không bị đè */}
+        <div className="flex justify-end mt-8 pt-4 border-t border-gray-200">
+          <Pagination
+            current={pagination.current}
+            pageSize={pagination.pageSize}
+            total={filteredProjects.length}
+            onChange={handlePaginationChange}
+            showSizeChanger={true}
+            pageSizeOptions={['8', '16', '32', '64']}
+          />
+        </div>
       </motion.div>
     </div>
   );
