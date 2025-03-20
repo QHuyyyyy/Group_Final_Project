@@ -90,7 +90,7 @@ const Navbar = () => {
     {
       key: "1",
       label: (
-        <Link to="/userdashboard/profile">
+        <Link to="/userdashboard/userprofile">
           <UserOutlined className="pr-2" />
           Profile
         </Link>

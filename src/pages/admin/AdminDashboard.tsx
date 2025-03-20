@@ -1,10 +1,5 @@
 import React, { lazy, Suspense } from "react";
-import { UserOutlined,LogoutOutlined } from '@ant-design/icons';
-import {Dropdown} from "antd"
 import AdminSidebar from '../../components/admin/AdminSidebar';
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
-import avatar from "../../assets/avatar.png";
 
 
 const AdminUserStats = lazy(()=>import('../../components/admin/AdminUserStats'))
@@ -12,49 +7,10 @@ const AdminClaimStats = lazy(() => import('../../components/admin/AdminClaimStat
 const AdminProjectStats = lazy(() => import('../../components/admin/AdminProjectStats'))
 const AdminDashboard: React.FC = () => {
 
-  const { logout } = useAuth();
-  const navigate = useNavigate();
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
-  const menu = [
-    {
-      key: "1",
-      label: (
-        <Link to="/dashboard/profile">
-          <UserOutlined className="pr-2" />
-          Profile
-        </Link>
-      ),
-    },
 
-    {
-      key: "2",
-      label: (
-        <span onClick={handleLogout} className="cursor-pointer">
-          <LogoutOutlined className="pr-2" />
-          Logout
-        </span>
-      ),
-    },
-  ];
   return (
     <>
     <Suspense>
-      <div className="flex items-center justify-between p-5">
-        <div className="flex items-center gap-5 justify-end w-full">
-          <Dropdown menu={{ items: menu }} trigger={["click"]}>
-            <img
-              src={avatar}
-              alt="User Avatar"
-              width={40}
-              height={40}
-              className="cursor-pointer"
-            />
-          </Dropdown>
-        </div>
-      </div>
       <div className="flex min-h-screen bg-gray-100">
         <AdminSidebar />
         <div className="flex-1 ml-64  bg-sky-50">
