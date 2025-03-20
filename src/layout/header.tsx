@@ -88,7 +88,7 @@ const Header = () => {
             )}
             {isShowUserD && (
               <Link
-                to="/userdashboard/profile"
+                to="/userdashboard/userprofile"
                 className={`font-medium transition-all duration-300 hover:text-amber-500 ${
                   isScrolled ? 'text-gray-700' : 'text-white'
                 }`}

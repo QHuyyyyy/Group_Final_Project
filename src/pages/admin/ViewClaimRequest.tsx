@@ -146,7 +146,7 @@ const ViewClaimRequest: React.FC = () => {
     <div className="flex min-h-screen bg-sky-50">
       <AdminSidebar />
       <div className="flex-1 ml-64 p-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-8">
           <Button 
             type="default" 
             icon={<ArrowLeftOutlined />}
@@ -155,27 +155,27 @@ const ViewClaimRequest: React.FC = () => {
           >
             Back to Dashboard
           </Button>
-          
-          <Input
-            placeholder="Search by claim name..."
-            prefix={<SearchOutlined className="text-gray-400" />}
-            defaultValue={searchText}
-            onChange={(e) => debouncedSearch(e.target.value)}
-            style={{ width: 300 }}
-          />
-        </div>  
+        </div>
 
         <Card className="shadow-md">
-          <div className="mb-6">
-            <div className="flex flex-col gap-4">
-              <h1 className="text-2xl font-bold text-gray-800">View Claim Requests</h1>
-              <StatusTabs
-                activeKey={selectedStatus}
-                onChange={handleStatusFilter}
-                items={statusTabItems}
-              />
-            </div>
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl font-bold text-gray-800">View Claim Requests</h1>
+            <Input
+              placeholder="Search by claim name..."
+              prefix={<SearchOutlined className="text-gray-400" />}
+              defaultValue={searchText}
+              onChange={(e) => debouncedSearch(e.target.value)}
+              style={{ width: 300 }}
+            />
           </div>
+          
+          <StatusTabs
+            activeKey={selectedStatus}
+            onChange={handleStatusFilter}
+            items={statusTabItems}
+          
+          />
+
           <ClaimTable 
             loading={loading}
             dataSource={filteredClaims}

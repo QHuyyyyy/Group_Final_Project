@@ -14,11 +14,12 @@ import NotFound from './pages/NotFound';
 // Lazy load components
 const Homepage = lazy(() => import('./pages/Homepage'));
 const Login = lazy(() => import('./pages/common/Login'));
-const Profile = lazy(() => import('./pages/common/Profile'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const AdminProjectManager = lazy(() => import('./pages/admin/AdminProjectManager'));
 const AdminUserManager = lazy(() => import('./pages/admin/AdminUserManager'));
 const UserDashBoard = lazy(() => import('./pages/user/UserDashboard'));
+const UserProfile = lazy(() => import('./pages/user/UserProfile'));
+const AdminProfile = lazy(() => import('./pages/admin/AdminProfile'));
 const ApprovalPage = lazy(() => import('./pages/user/Approval'));
 const Claim = lazy(() => import('./pages/user/Request'));
 const Finance = lazy(() => import('./pages/user/Finance'));
@@ -51,9 +52,9 @@ const App = () => {
               <UserDashBoard />
             </ProtectedRoute>
           }>
-            <Route path="profile" element={
+            <Route path="userprofile" element={
               <ProtectedRoute allowedRoles={RoutePermissions.user}>
-                <Profile />
+                <UserProfile />
               </ProtectedRoute>
             } />
           
@@ -111,9 +112,9 @@ const App = () => {
               <ViewClaimRequest />
             </ProtectedRoute>
           } />
-          <Route path='/dashboard/profile' element={
+          <Route path='/dashboard/adminprofile' element={
             <ProtectedRoute allowedRoles={RoutePermissions.admin} redirectPath="/">
-              <Profile />
+              <AdminProfile />
             </ProtectedRoute>
           } />
         </Routes>

@@ -49,80 +49,67 @@ export default function AdminClaimStats() {
     const [pageSize, setPageSize] = useState(10);
     const [totalItems, setTotalItems] = useState(0);
     
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
 
-                const fetchClaims = async (status = '', pageSize = 200) => {
-                    let allItems: Claim[] = [];
-                    let pageNum = 1;
+    const fetchClaims = async (status = '', pageSize = 10000) => {
+        let allItems: Claim[] = [];
+        let pageNum = 1;
+            const params = {
+                searchCondition: {
+                    keyword: "",
+                    claim_status: status,
+                    is_delete: false,
+                },
+                pageInfo: {
+                    pageNum,
+                    pageSize,
+                },
+            };
 
-                    while (true) {
-                        const params = {
-                            searchCondition: {
-                                keyword: "",
-                                claim_status: status,
-                                is_delete: false,
-                            },
-                            pageInfo: {
-                                pageNum,
-                                pageSize,
-                            },
-                        };
+            const response = await claimService.searchClaims(params);
+            allItems = [...allItems, ...response.data.pageData];
 
-                        const response = await claimService.searchClaims(params);
+        return allItems;
+    };
 
-                        if (!response || !response.data.pageData || response.data.pageData.length === 0) break;
 
-                        allItems = [...allItems, ...response.data.pageData];
-                        pageNum++;
-                    }
+    const fetchUsers = async (pageSize = 10000) => {
+        let allUsers: User[] = [];
+        let pageNum = 1;
 
-                    return allItems;
-                };
-                const fetchUsers = async (pageSize = 200) => {
-                    let allUsers: User[] = [];
-                    let pageNum = 1;
+            const params = {
+                searchCondition: {
+                    keyword: "",
+                    is_delete: false,
+                },
+                pageInfo: {
+                    pageNum,
+                    pageSize,
+                },
+            };
 
-                    while (true) {
-                        const params = {
-                            searchCondition: {
-                                keyword: "",
-                                is_delete: false,
-                            },
-                            pageInfo: {
-                                pageNum,
-                                pageSize,
-                            },
-                        };
+            const response = await userService.searchUsers(params);
 
-                        const response = await userService.searchUsers(params);
 
-                        if (!response || !response.data.pageData || response.data.pageData.length === 0) break;
+            allUsers = [...allUsers, ...response.data.pageData];
 
-                        allUsers = [...allUsers, ...response.data.pageData];
-                        pageNum++;
-                    }
+        return allUsers;
+    };
 
-                    return allUsers;
-                };
+    const loadAllData = async () => {
+        try {
+            const [allClaims, allUsers] = await Promise.all([
+                fetchClaims(),
+                fetchUsers()
+            ]);
 
-                const [
-                    allClaims,
-                    allUsers,
-                ] = await Promise.all([
-                    fetchClaims(),
-                    fetchUsers()
-                ]);
+            const pendingClaims = allClaims.filter(item => item.claim_status === "Pending Approval");
+            const approvedClaims = allClaims.filter(item => item.claim_status === "Approved");
+            const rejectedClaims = allClaims.filter(item => item.claim_status === "Rejected");
+            const paidClaims = allClaims.filter(item => item.claim_status === "Paid");
+            const draftClaims = allClaims.filter(item => item.claim_status === "Draft");
+            const canceledClaims = allClaims.filter(item => item.claim_status === "Canceled");
 
-                const pendingClaims = allClaims.filter(item => item.claim_status === "Pending Approval");
-                const approvedClaims = allClaims.filter(item => item.claim_status === "Approved");
-                const rejectedClaims = allClaims.filter(item => item.claim_status === "Rejected");
-                const paidClaims = allClaims.filter(item => item.claim_status === "Paid");
-                const draftClaims = allClaims.filter(item => item.claim_status === "Draft");
-                const canceledClaims = allClaims.filter(item => item.claim_status === "Canceled");
-
-                setClaims(allClaims);
+            setClaims(allClaims);
                 setPendingClaims(pendingClaims);
                 setApprovedClaims(approvedClaims);
                 setRejectedClaims(rejectedClaims);
@@ -152,14 +139,16 @@ export default function AdminClaimStats() {
                 setFilteredPaidClaims(paidClaims);
                 setFilteredDraftClaims(draftClaims);
                 setFilteredCanceledClaims(canceledClaims);
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            }
-        };
+            
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        }
+    };
 
-        fetchData();
+    useEffect(() => {
+        loadAllData();
     }, []);
-    
+
     useEffect(() => {
         const recentClaims = getRecentClaims();
         setTotalItems(recentClaims.length);
@@ -275,7 +264,6 @@ export default function AdminClaimStats() {
         
         const limitedClaims = sortedClaims.slice(0, 25);
         return limitedClaims.map(claim => ({
-            id: claim._id,
             name: claim.claim_name || "Unnamed Claim",
             status: claim.claim_status === "Pending Approval" ? "Pending" : claim.claim_status,
             claimer: claim.employee_info?.account || "Unknown",
@@ -327,7 +315,6 @@ export default function AdminClaimStats() {
     };
     
     const columns = [
-        { title: "ID", dataIndex: "id", key: "id" },
         { title: "Claim Name", dataIndex: "name", key: "name" },
         {
             title: "Status",
