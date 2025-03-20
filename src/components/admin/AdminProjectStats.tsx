@@ -15,7 +15,7 @@ export default function AdminProjectStats() {
   const [, setSelectedRange] = useState<string | null>(null);
   const [, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
   const [filterType, setFilterType] = useState<'relative' | 'static' | 'year'>('relative');
-  const [selectedYear, setSelectedYear] = useState<number | null>(null);
+  const [selectedYear, setSelectedYear] = useState<number | null>(dayjs().year());
   const [, setDataLoaded] = useState({
     projects: false,
     ongoingProjects: false,

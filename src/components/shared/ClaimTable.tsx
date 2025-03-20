@@ -1,5 +1,5 @@
 import { Table, Tag, Button, Avatar } from "antd";
-import { EyeOutlined, UserOutlined } from "@ant-design/icons";
+import { EyeOutlined, UserOutlined, HistoryOutlined  } from "@ant-design/icons";
 import dayjs from "dayjs";
 import type { Claim } from "../../models/ClaimModel";
 import type { TableRowSelection } from "antd/es/table/interface";
@@ -14,6 +14,7 @@ interface ClaimTableProps {
     onChange: (page: number, pageSize: number) => void;
   };
   onView: (record: Claim) => void;
+  onViewHistory?: (record: Claim) => void;
   actionButtons?: (record: Claim) => React.ReactNode;
   showAmount?: boolean;
   rowSelection?: TableRowSelection<Claim>;
@@ -24,6 +25,7 @@ const ClaimTable = ({
   dataSource,
   pagination,
   onView,
+  onViewHistory,
   actionButtons,
   showAmount = false,
   rowSelection,
@@ -81,9 +83,7 @@ const ClaimTable = ({
     {
       title: "Period",
       key: "period",
-
-      width: "17%",
-
+      width: "15%",
       render: (_: any, record: Claim) => (
           <div className="flex items-center gap-2">
             <div className="flex flex-col">
@@ -144,6 +144,13 @@ const ClaimTable = ({
             onClick={() => onView(record)}
             title="View"
             className="hover:bg-blue-50 rounded-full"
+          />
+          <Button
+            type="text"
+            icon={<HistoryOutlined className="text-green-500" />}
+            onClick={() => onViewHistory?.(record)}
+            title="View History"
+            className="hover:bg-green-50 rounded-full"
           />
           {actionButtons && actionButtons(record)}
         </div>

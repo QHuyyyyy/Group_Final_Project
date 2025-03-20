@@ -9,6 +9,7 @@ import ClaimDetailsModal from '../../components/shared/ClaimDetailsModal';
 import debounce from 'lodash/debounce';
 import ClaimTable from '../../components/shared/ClaimTable';
 import StatusTabs from '../../components/shared/StatusTabs';
+import ClaimHistoryModal from '../../components/shared/ClaimHistoryModal';
 
 const ViewClaimRequest: React.FC = () => {
   const navigate = useNavigate();
@@ -25,6 +26,11 @@ const ViewClaimRequest: React.FC = () => {
   const [statusCounts, setStatusCounts] = useState<Record<string, number>>({});
   const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
+  const handleViewHistory = (record: Claim) => {
+    setSelectedClaim(record);
+    setIsHistoryModalVisible(true);
+  };
 
   const claimStatuses = [
     { label: 'All', value: '', color: '#1890ff', bgColor: '#e6f7ff' },
@@ -191,10 +197,15 @@ const ViewClaimRequest: React.FC = () => {
               },
             }}
             onView={handleView}
+            onViewHistory={handleViewHistory}
             showAmount={true}
           />
         </Card>
-
+        <ClaimHistoryModal
+        visible={isHistoryModalVisible}
+        claim={selectedClaim}
+        onClose={() => setIsHistoryModalVisible(false)}
+      />
         {/* Add RequestDetails Modal */}
         <ClaimDetailsModal
           visible={isModalVisible}

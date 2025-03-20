@@ -7,8 +7,6 @@ import { useAuth } from "../../contexts/AuthContext";
 import avatar from "../../assets/avatar.png";
 import AdminClaimStats from "../../components/admin/AdminClaimStats";
 
-
-// const AdminClaimStats = lazy(() => import('../../components/admin/AdminClaimStats'));
 const AdminProjectStats = lazy(() => import('../../components/admin/AdminProjectStats'))
 const AdminDashboard: React.FC = () => {
 
