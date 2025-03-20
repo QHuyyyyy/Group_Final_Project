@@ -10,7 +10,6 @@ import type { Claim, SearchParams } from "../../models/ClaimModel";
 import { debounce } from "lodash";
 import ClaimTable from "../../components/shared/ClaimTable";
 import PageHeader from "../../components/shared/PageHeader";
-import StatusTabs from "../../components/shared/StatusTabs";
 import ClaimDetailsModal from "../../components/shared/ClaimDetailsModal";
 import dayjs from "dayjs";
 import { toast } from 'react-toastify';
@@ -26,8 +25,8 @@ function ApprovalPage() {
   const [claims, setClaims] = useState<Claim[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("");
-  const [statusCounts, setStatusCounts] = useState({
+  const [statusFilter, ] = useState<string>("");
+  const [, setStatusCounts] = useState({
     all: 0,
     pendingApproval: 0,
     approved: 0,
@@ -110,14 +109,6 @@ function ApprovalPage() {
     []
   );
 
-  const handleStatusFilterChange = (value: string) => {
-    setStatusFilter(value);
-    setPagination((prev) => ({
-      ...prev,
-      current: 1,
-    }));
-  };
-
   const showConfirmation = (
     claim: Claim,
     type: "Approved" | "Rejected" | "Draft"
@@ -199,20 +190,6 @@ function ApprovalPage() {
           onChange={(e) => handleSearch(e.target.value)}
         />
 
-        <StatusTabs
-          activeKey={statusFilter}
-          onChange={handleStatusFilterChange}
-          items={[
-            { key: "", label: "All", count: statusCounts.all || 0 },
-            { key: "Pending Approval", label: "Pending Approval", count: statusCounts.pendingApproval || 0 },
-            { key: "Approved", label: "Approved", count: statusCounts.approved || 0 },
-            { key: "Rejected", label: "Rejected", count: statusCounts.rejected || 0 },
-            { key: "Draft", label: "Draft", count: statusCounts.draft || 0 },
-            { key: "Paid", label: "Paid", count: statusCounts.paid || 0 },
-            { key: "Canceled", label: "Canceled", count: statusCounts.canceled || 0 },
-          ]}
-        />
-
         <ClaimTable
           loading={loading}
           dataSource={claims}
@@ -224,7 +201,7 @@ function ApprovalPage() {
               setPagination((prev) => ({
                 ...prev,
                 current: page,
-                pageSize: pageSize,
+                pageSize: pageSize || 10,
               }));
             },
           }}

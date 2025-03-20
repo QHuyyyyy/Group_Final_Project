@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {  Typography, Tag, Spin, Input, Button, Pagination } from 'antd';
+import {  Typography, Tag, Input, Button, Pagination } from 'antd';
 import { ProjectOutlined, ClockCircleOutlined, TeamOutlined, CodeOutlined, BankOutlined, SearchOutlined, FilterOutlined } from '@ant-design/icons';
 import projectService from '../../services/project.service';
 import { useUserStore } from '../../stores/userStore';
@@ -10,7 +10,7 @@ const { Title, Text } = Typography;
 
 const Projects: React.FC = () => {
   const [projects, setProjects] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const userId = useUserStore((state) => state.id);

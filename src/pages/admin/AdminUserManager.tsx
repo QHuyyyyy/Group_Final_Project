@@ -75,7 +75,7 @@ const AdminUserManager: React.FC = () => {
         }
       };
 
-      const response = await userService.searchUsers(params, {showSpinner:false});
+      const response = await userService.searchUsers(params);
     
       
       if (response && response.data) {
@@ -153,7 +153,7 @@ const AdminUserManager: React.FC = () => {
       await userService.changeRole({
         user_id: userId,
         role_code: newRoleCode
-      }, {showSpinner: false});
+      });
       
       message.success('User role updated successfully');
       fetchUsers(pagination.current);
