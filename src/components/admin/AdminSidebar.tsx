@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ProjectOutlined, UserOutlined, HomeOutlined, ProfileOutlined, TeamOutlined, EyeOutlined, HistoryOutlined, ClockCircleOutlined, StarOutlined, PlusOutlined, UserAddOutlined, DownOutlined, RightOutlined, LogoutOutlined } from '@ant-design/icons';
+import { ProjectOutlined, UserOutlined, HomeOutlined, ProfileOutlined, TeamOutlined, EyeOutlined,ClockCircleOutlined, StarOutlined, PlusOutlined, UserAddOutlined, DownOutlined, RightOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useState, useEffect } from 'react';
 import ProjectModal from '../admin/ProjectModal';
 import { message } from 'antd';
@@ -55,11 +55,7 @@ const AdminSidebar = () => {
       icon: <EyeOutlined />,
       path: "/dashboard/view-claim-request"
     },
-    {
-      title: "Claim History",
-      icon: <HistoryOutlined />,
-      path: "/dashboard/transaction"
-    }
+    
   ];
 
   const otherItems = [
