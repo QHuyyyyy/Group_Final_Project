@@ -12,7 +12,6 @@ import SettingUser from './pages/user/SettingUser';
 import ForgotPassword from './pages/common/ForgotPassword';
 import UserSpinner from './components/user/UserSpinner';
 
-
 // Lazy load components
 const Homepage = lazy(() => import('./pages/Homepage'));
 const Login = lazy(() => import('./pages/common/Login'));
