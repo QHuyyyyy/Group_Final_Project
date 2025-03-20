@@ -48,60 +48,9 @@ function ApprovalPage() {
   const [form] = Form.useForm();
   const [actionLoading, setActionLoading] = useState(false);
   
-  useEffect(() => {
-    fetchStatusCounts();
-    fetchClaims();
-  }, [statusFilter, searchText, pagination.current, pagination.pageSize]);
-
-  const fetchStatusCounts = async () => {
-    try {
-      const [
-        allResponse,
-        pendingResponse,
-        approvedResponse,
-        rejectedResponse,
-        draftResponse,
-        paidResponse,
-        canceledResponse
-      ] = await Promise.all([
-        claimService.searchClaimsForApproval({
-          searchCondition: {
-            keyword: "",
-            claim_status: "",
-            claim_start_date: "",
-            claim_end_date: "",
-            is_delete: false,
-          },
-          pageInfo: {
-            pageNum: 1,
-            pageSize: 1
-          }
-        }, {showSpinner: false}),
-        claimService.getPendingApprovalClaims({showSpinner: false}),
-        claimService.getApprovedApprovalClaims({showSpinner: false}),
-        claimService.getRejectedApprovalClaims({showSpinner: false}),
-        claimService.getDraftApprovalClaims({showSpinner: false}),
-        claimService.getPaidApprovalClaims({showSpinner: false}),
-        claimService.getCanceledApprovalClaims({showSpinner: false})
-      ]);
-
-      setStatusCounts({
-        all: allResponse.data.pageInfo.totalItems || 0,
-        pendingApproval: pendingResponse.data.pageInfo.totalItems || 0,
-        approved: approvedResponse.data.pageInfo.totalItems || 0,
-        rejected: rejectedResponse.data.pageInfo.totalItems || 0,
-        draft: draftResponse.data.pageInfo.totalItems || 0,
-        paid: paidResponse.data.pageInfo.totalItems || 0,
-        canceled: canceledResponse.data.pageInfo.totalItems || 0
-      });
-    } catch (error) {
-      console.error("Error fetching status counts:", error);
-    }
-  };
-
-  const fetchClaims = async () => {
+  const fetchClaims = async (pageNum: number = pagination.current) => {
     setLoading(true);
-    const Params: SearchParams = {
+    const params: SearchParams = {
       searchCondition: {
         keyword: searchText || "",
         claim_status: statusFilter || "",
@@ -110,32 +59,40 @@ function ApprovalPage() {
         is_delete: false,
       },
       pageInfo: {
-        pageNum: pagination.current,
+        pageNum: pageNum,
         pageSize: pagination.pageSize,
       },
     };
-    try {
-      const response = await claimService.searchClaimsForApproval(Params, {showSpinner: false});
-      if (response && response.data && response.data.pageData) {
-        const claimsData = response.data.pageData;
-        setClaims(claimsData);
-        setPagination((prev) => ({
-          ...prev,
-          total: response.data.pageInfo.totalItems || 0,
-        }));
-      }
-    } catch (error) {
-      console.error("Error fetching claims:", error);
-      toast.error("Failed to fetch claims");
-    } finally {
-      setLoading(false);
+
+    const response = await claimService.searchClaimsForApproval(params, {showSpinner: false});
+    
+    if (response?.data?.pageData) {
+      const claimsData = response.data.pageData;
+      setClaims(claimsData);
+
+      const newCounts = {
+        all: claimsData.length,
+        pendingApproval: claimsData.filter(claim => claim.claim_status === "Pending Approval").length,
+        approved: claimsData.filter(claim => claim.claim_status === "Approved").length,
+        rejected: claimsData.filter(claim => claim.claim_status === "Rejected").length,
+        draft: claimsData.filter(claim => claim.claim_status === "Draft").length,
+        paid: claimsData.filter(claim => claim.claim_status === "Paid").length,
+        canceled: claimsData.filter(claim => claim.claim_status === "Canceled").length
+      };
+      setStatusCounts(newCounts);
+
+      setPagination((prev) => ({
+        ...prev,
+        total: response.data.pageInfo.totalItems || 0,
+        current: pageNum
+      }));
     }
+    setLoading(false);
   };
 
-  const refreshData = async () => {
-    await fetchClaims();
-    await fetchStatusCounts();
-  };
+  useEffect(() => {
+    fetchClaims(pagination.current);
+  }, [statusFilter, searchText, pagination.current, pagination.pageSize]);
 
   const handleSearch = useCallback(
     debounce((query: string) => {
@@ -204,7 +161,7 @@ function ApprovalPage() {
       
       toast.success(`The claim "${selectedClaim.claim_name}" has been successfully ${actionText}.`);
       
-      refreshData();
+      fetchClaims(pagination.current);
 
       form.resetFields();
       setSelectedClaim(null);
