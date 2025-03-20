@@ -41,7 +41,7 @@ const verificationData = [
         { name: 'Admin', value: users.filter(user => user.role_code==="A001").length, color: '#3F51B5' },
         { name: 'Finance', value: users.filter(user => user.role_code==="A002").length, color: '#2196F3' },
         { name: 'BUL, PM', value: users.filter(user => user.role_code==="A003").length, color: '#03A9F4' },
-        { name: 'All Members Remaning', value: users.filter(user => user.role_code==="A004").length, color: '#00BCD4' }
+        { name: 'Others', value: users.filter(user => user.role_code==="A004").length, color: '#00BCD4' }
     ];
 
     return (
@@ -85,6 +85,7 @@ const verificationData = [
                         <BarChart
                             data={roleData}
                             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                            barCategoryGap={30}
                         >
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="name" />
