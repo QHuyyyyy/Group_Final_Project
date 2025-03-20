@@ -1,4 +1,4 @@
-import { Col, Row, Card, Statistic, Table, Pagination, Select, Tag, DatePicker, Radio } from "antd"
+import { Col, Row, Card, Statistic, Table, Pagination, Select, Tag, DatePicker, Radio, Button } from "antd"
 import { UserOutlined, FileTextOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { useEffect, useState } from "react";
 import { User } from "../../models/UserModel";
@@ -30,6 +30,7 @@ export default function AdminClaimStats() {
     const [draftClaims, setDraftClaims] = useState<Claim[]>([]);
     const [canceledClaims, setCanceledClaims] = useState<Claim[]>([]);
     const [selectedRange, setSelectedRange] = useState<string | null>(null);
+    const [selectedDepartment, setSelectedDepartment] = useState<string | null>(null);
 
     const [filteredClaims, setFilteredClaims] = useState<Claim[]>([]);
     const [filteredPendingClaims, setFilteredPendingClaims] = useState<Claim[]>([]);
@@ -38,6 +39,7 @@ export default function AdminClaimStats() {
     const [filteredPaidClaims, setFilteredPaidClaims] = useState<Claim[]>([]);
     const [filteredDraftClaims, setFilteredDraftClaims] = useState<Claim[]>([]);
     const [filteredCanceledClaims, setFilteredCanceledClaims] = useState<Claim[]>([]);
+    const [departments, setDepartments] = useState<string[]>([]);
     const [, setDataLoaded] = useState({
         claims: false,
         users: false
@@ -128,9 +130,15 @@ export default function AdminClaimStats() {
                 setDraftClaims(draftClaims);
                 setCanceledClaims(canceledClaims);
 
+                // Extract unique departments
+                const uniqueDepartments = Array.from(new Set(
+                    allClaims
+                        .filter(claim => claim.employee_info?.department_code)
+                        .map(claim => claim.employee_info?.department_code || "")
+                ));
+                setDepartments(uniqueDepartments);
 
                 setUsers(allUsers);
-
 
                 setDataLoaded({
                     claims: true,
@@ -166,25 +174,21 @@ export default function AdminClaimStats() {
         { status: "Canceled", count: filteredCanceledClaims.length, date: "2024-03-22" }
     ];
 
+    const getClaimsByDepartment = () => {
+        const departmentCounts = departments.map(dept => {
+            return {
+                name: dept === "DE01" ? "Department 01" : 
+                      dept === "DE02" ? "Department 02" : 
+                      dept === "DE03" ? "Department 03" : 
+                      dept === "DE04" ? "Department 04" : dept,
+                value: filteredClaims.filter((claim) => claim.employee_info?.department_code === dept).length
+            };
+        }).filter(dept => dept.value > 0);
 
-    const claimCategories = [
-        {
-            name: "Department 01",
-            value: claims.filter((claim) => claim.employee_info?.department_name === "Department 01").length
-        },
-        {
-            name: "Department 02",
-            value: claims.filter((claim) => claim.employee_info?.department_name === "Department 02").length
-        },
-        {
-            name: "Department 03",
-            value: claims.filter((claim) => claim.employee_info?.department_name === "Department 03").length
-        },
-        {
-            name: "Department 04",
-            value: claims.filter((claim) => claim.employee_info?.department_name === "Department 04").length
-        },
-    ];
+        return departmentCounts;
+    };
+
+    const claimCategories = getClaimsByDepartment();
 
     const [, setFilteredClaimData] = useState<ClaimData[]>(claimsData);
     const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
@@ -218,11 +222,12 @@ export default function AdminClaimStats() {
                 endDate = today.endOf("year");
                 break;
             default:
-                resetFilters();
+                resetDateFilters();
                 return;
         }
-        filterClaimsByDateRange(startDate, endDate);
+        applyFilters(startDate, endDate);
     };
+
 
     const handleDateRangeChange = (dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null) => {
         setDateRange(dates);
@@ -230,21 +235,26 @@ export default function AdminClaimStats() {
         setSelectedRange(null);
 
         if (dates && dates[0] && dates[1]) {
-            filterClaimsByDateRange(dates[0], dates[1]);
+            applyFilters(dates[0], dates[1]);
         } else {
             setFilteredClaimData(claimsData);
         }
     };
 
-    const filterClaimsByDateRange = (startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) => {
-        // Filter claims based on creation date
-        const filtered = claims.filter((claim) => {
-            if (!claim.claim_start_date) return false;
-            const claimDate = dayjs(claim.claim_start_date);
-            return claimDate.isAfter(startDate) && claimDate.isBefore(endDate);
-        });
-        
+    const applyFilters = (startDate: dayjs.Dayjs | null, endDate: dayjs.Dayjs | null) => {
 
+        let filtered = [...claims];
+        
+        // Apply date filter if provided
+        if (startDate && endDate) {
+            filtered = filtered.filter((claim) => {
+                if (!claim.claim_start_date) return false;
+                const claimDate = dayjs(claim.claim_start_date);
+                return claimDate.isAfter(startDate) && claimDate.isBefore(endDate);
+            });
+        }
+        
+        // Update all filtered states
         setFilteredClaims(filtered);
         setFilteredPendingClaims(filtered.filter(item => item.claim_status === "Pending Approval"));
         setFilteredApprovedClaims(filtered.filter(item => item.claim_status === "Approved"));
@@ -256,28 +266,21 @@ export default function AdminClaimStats() {
     };
 
     const getRecentClaims = () => {
-        const today = dayjs();
-        const startOfMonth = today.startOf("month");
-        const endOfMonth = today.endOf("month");
-        const filtered = claims.filter((claim) => {
-            if (!claim.claim_start_date) return false;
-            const claimDate = dayjs(claim.claim_start_date);
-            return claimDate.isAfter(startOfMonth) && claimDate.isBefore(endOfMonth);
-        });
-        
-        const sortedClaims = filtered.sort((a, b) => {
+        // Use filtered claims instead of all claims
+        const sortedClaims = filteredClaims.sort((a, b) => {
             const dateA = dayjs(a.claim_start_date);
             const dateB = dayjs(b.claim_start_date);
             return dateB.valueOf() - dateA.valueOf();
         });
         
-        const filteredClaims = sortedClaims.slice(0,25)
-        return filteredClaims.map(claim => ({
+        const limitedClaims = sortedClaims.slice(0, 25);
+        return limitedClaims.map(claim => ({
             id: claim._id,
             name: claim.claim_name || "Unnamed Claim",
             status: claim.claim_status === "Pending Approval" ? "Pending" : claim.claim_status,
-            claimer: claim.employee_info?.account|| "Unknown",
-            startDate: claim.claim_start_date ? dayjs(claim.claim_start_date).format('YYYY-MM-DD') : 'N/A'
+            claimer: claim.employee_info?.account || "Unknown",
+            startDate: claim.claim_start_date ? dayjs(claim.claim_start_date).format('YYYY-MM-DD') : 'N/A',
+            department: claim.employee_info?.department_code || 'N/A'
         }));
     };
     
@@ -296,6 +299,11 @@ export default function AdminClaimStats() {
         }
     };
 
+    const resetDateFilters = () => {
+        setDateRange(null);
+        setSelectedRange(null);
+    };
+
     const resetFilters = () => {
         setFilteredClaims(claims);
         setFilteredPendingClaims(pendingClaims);
@@ -304,6 +312,9 @@ export default function AdminClaimStats() {
         setFilteredPaidClaims(paidClaims);
         setFilteredDraftClaims(draftClaims);
         setFilteredCanceledClaims(canceledClaims);
+        setSelectedDepartment(null);
+        setDateRange(null);
+        setSelectedRange(null);
         setCurrentPage(1);
     };
 
@@ -327,6 +338,7 @@ export default function AdminClaimStats() {
             ),
         },
         { title: "Claimer", dataIndex: "claimer", key: "claimer" },
+        { title: "Department", dataIndex: "department", key: "department" },
         {
             title: "Start Date",
             dataIndex: "startDate",
@@ -335,7 +347,7 @@ export default function AdminClaimStats() {
         }
     ];
 
-    const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"]; // colors for pie chart
+    const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d"]; // colors for pie chart
 
     return (
         <>
@@ -417,18 +429,27 @@ export default function AdminClaimStats() {
                     }
                     extra={
                         <div className="flex flex-col gap-2 p-5">
+                            
                             <Radio.Group
                                 value={filterType}
                                 onChange={(e) => {
                                     setFilterType(e.target.value);
-                                    // Clear filters when switching
                                     if (e.target.value === 'relative') {
                                         setDateRange(null);
                                         setFilteredClaimData(claimsData);
-                                        resetFilters()
+                                        if (selectedDepartment) {
+                                            applyFilters(null, null);
+                                        } else {
+                                            resetDateFilters();
+                                        }
                                     } else {
                                         setSelectedRange(null);
                                         setFilteredClaimData(claimsData);
+                                        if (selectedDepartment) {
+                                            applyFilters(null, null);
+                                        } else {
+                                            resetDateFilters();
+                                        }
                                     }
                                 }}
                                 style={{ marginBottom: 8 }}
@@ -443,6 +464,7 @@ export default function AdminClaimStats() {
                                     style={{ width: '100%' }}
                                     onChange={handleFilterChange}
                                     value={selectedRange}
+                                    allowClear
                                 >
                                     <Option value="this_week">This Week</Option>
                                     <Option value="this_month">This Month</Option>
@@ -457,6 +479,15 @@ export default function AdminClaimStats() {
                                     style={{ width: '100%' }}
                                 />
                             )}
+                            
+                            <Button 
+                                onClick={resetFilters} 
+                                type="primary" 
+                                danger
+                                style={{ marginTop: 8 }}
+                            >
+                                Reset All Filters
+                            </Button>
                         </div>
                     }
                     style={{
