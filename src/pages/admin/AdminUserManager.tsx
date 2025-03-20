@@ -52,29 +52,30 @@ const AdminUserManager: React.FC = () => {
   const [isEmployeeModalVisible, setIsEmployeeModalVisible] = useState(false);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('');
 
+  const [roleFilter, setRoleFilter] = useState<string | null>(null);
+
   useEffect(() => {
     fetchUsers(pagination.current);
     fetchRoles();
-  }, [pagination.current, pagination.pageSize, searchText, isBlockedFilter]);
+  }, [pagination.current, pagination.pageSize, searchText, isBlockedFilter, roleFilter]);
 
-  const fetchUsers = async (pageNum: number) => {
+  const fetchUsers = async (page: number) => {
     try {
       setLoading(true);
-      const params: SearchParams = {
+      const searchParams: SearchParams = {
         searchCondition: {
           keyword: searchText || "",
-          role_code: "",
-          is_blocked: isBlockedFilter !== undefined ? isBlockedFilter : false,
+          is_blocked: isBlockedFilter === true,
           is_delete: false,
-          is_verified: ""
+          role_code: roleFilter || undefined
         },
         pageInfo: {
-          pageNum: pageNum,
-          pageSize: pagination.pageSize
+          pageNum: page,
+          pageSize: pagination.pageSize,
         }
       };
 
-      const response = await userService.searchUsers(params, {showSpinner:false});
+      const response = await userService.searchUsers(searchParams);
     
       
       if (response && response.data) {
@@ -83,7 +84,7 @@ const AdminUserManager: React.FC = () => {
           ...prev,
           totalItems: response.data.pageInfo.totalItems,
           totalPages: response.data.pageInfo.totalPages,
-          current: pageNum
+          current: page
         }));
       }
     } catch (error) {
@@ -137,13 +138,35 @@ const AdminUserManager: React.FC = () => {
     setIsEmployeeModalVisible(true);
   };
 
-  const handleTableChange = (page: number, pageSize: number) => {
+  const handleTableChange = (pagination: any, filters: any) => {
+    const newRoleFilter = filters.role_code?.[0] || null;
+    setRoleFilter(newRoleFilter);
+    
     setPagination(prev => ({
       ...prev,
-      current: page,
-      pageSize: pageSize || 10
+      current: pagination.current,
+      pageSize: pagination.pageSize,
+      totalItems: prev.totalItems,
+      totalPages: prev.totalPages
     }));
-    fetchUsers(page);
+  };
+
+  const handleRoleChange = async (userId: string, newRoleCode: string) => {
+    try {
+      setLoading(true);
+      await userService.changeRole({
+        user_id: userId,
+        role_code: newRoleCode
+      }, {showSpinner: false});
+      
+      message.success('User role updated successfully');
+      fetchUsers(pagination.current);
+    } catch (error) {
+      console.error('Error changing user role:', error);
+      message.error('Failed to update user role');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const columns: ColumnsType<UserData> = [
@@ -164,18 +187,21 @@ const AdminUserManager: React.FC = () => {
       dataIndex: 'role_code',
       key: 'role_code',
       width: '140px',
-      render: (role: string) => (
-        <Tag color={
-          role === 'A001' ? 'red' :
-          role === 'A002' ? 'blue' :
-          role === 'A003' ? 'yellow' :
-           'default'
-        }>
-          {role === 'A001' ? 'Administrator' :
-           role === 'A002' ? 'Finance' :
-           role === 'A003' ? 'BUL, PM' :
-           role === 'A004' ? 'Members' : role}
-        </Tag>
+      filters: [
+        { text: 'Administrator', value: 'A001' },
+        { text: 'Finance', value: 'A002' },
+        { text: 'BUL, PM', value: 'A003' },
+        { text: 'Members', value: 'A004' },
+      ],
+      filterMode: 'tree',
+      filterMultiple: false,
+      filteredValue: roleFilter ? [roleFilter] : null,
+      render: (_, record: UserData) => (
+        <UserRoleDropdown 
+          record={record}
+          roleOptions={roleOptions}
+          onRoleChange={handleRoleChange}
+        />
       )
     },
     {
@@ -247,7 +273,7 @@ const AdminUserManager: React.FC = () => {
       <AdminSidebar />
       <div className="flex-1 ml-[260px]">
         <div className="p-8">
-          <div className="flex items-center justify-between mb-6">
+          <div className="mb-8">
             <Button
               type="default"
               icon={<ArrowLeftOutlined />}
@@ -256,50 +282,47 @@ const AdminUserManager: React.FC = () => {
             >
               Back to Dashboard
             </Button>
-            
-            <div>
-            <Space>
-              <span>Blocked: </span>
-              <Switch 
-                checked={isBlockedFilter === true} 
-                onChange={(checked) => {
-                  setIsBlockedFilter(checked);
-                  setPagination(prev => ({ ...prev, current: 1 }));
-                }} 
-              />
-            </Space>
-            <Input
-            placeholder="Search by name..."
-            prefix={<SearchOutlined className="text-gray-400" />}
-            onChange={(e) => handleSearch(e.target.value)}
-            style={{ width: 300 }}
-            className="ml-4"
-          />
-            </div>
-           
           </div>
-          
+
           <Card className="shadow-md">
-            <div className="mb-6">
+            <div className="flex items-center justify-between mb-6">
               <h1 className="text-2xl font-bold text-gray-800">Staff Information</h1>
+              <div>
+                <Space>
+                  <span>Blocked: </span>
+                  <Switch 
+                    checked={isBlockedFilter === true} 
+                    onChange={(checked) => {
+                      setIsBlockedFilter(checked);
+                      setPagination(prev => ({ ...prev, current: 1 }));
+                    }} 
+                  />
+                </Space>
+                <Input
+                  placeholder="Search by name..."
+                  prefix={<SearchOutlined className="text-gray-400" />}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  style={{ width: 300 }}
+                  className="ml-4"
+                />
+              </div>
             </div>
             <div className="overflow-auto custom-scrollbar">
               <Table
                 columns={columns}
                 dataSource={staffData}
                 loading={loading}
-                rowKey="_id"
+                onChange={handleTableChange}
                 pagination={{
                   current: pagination.current,
                   pageSize: pagination.pageSize,
                   total: pagination.totalItems,
                   showSizeChanger: true,
                   showQuickJumper: true,
-                  showTotal: (total) => `Total ${total} staff members`,
-                  onChange: (page: number, pageSize: number) => {
-                    handleTableChange(page, pageSize);
-                  }
+                  showTotal: (total) => `Total ${total} items`,
+                  pageSizeOptions: ['10', '20', '50', '100']
                 }}
+                className="overflow-hidden"
               />
             </div>
           </Card>

@@ -494,7 +494,7 @@ const AdminProjectManager: React.FC = () => {
       <AdminSidebar />
       <div className="flex-1 ml-[260px]">
         <div className="p-8">
-          <div className="flex items-center justify-between mb-6">
+          <div className="mb-8">
             <Button
               type="default"
               icon={<ArrowLeftOutlined />}
@@ -503,20 +503,19 @@ const AdminProjectManager: React.FC = () => {
             >
               Back to Dashboard
             </Button>
-
-            <Input
-              placeholder="Tìm kiếm dự án..."
-              prefix={<SearchOutlined className="text-gray-400" />}
-              onChange={(e) => handleSearch(e.target.value)}
-              style={{ width: 300 }}
-              className="ml-4"
-            />
           </div>
 
           <Card className="shadow-md">
-            <div className="mb-6">
+            <div className="flex items-center justify-between mb-6">
               <h1 className="text-2xl font-bold text-gray-800">Projects Overview</h1>
+              <Input
+                placeholder="Tìm kiếm dự án..."
+                prefix={<SearchOutlined className="text-gray-400" />}
+                onChange={(e) => handleSearch(e.target.value)}
+                style={{ width: 300 }}
+              />
             </div>
+            
             <div className="overflow-auto custom-scrollbar">
               <Table
                 columns={columns}
