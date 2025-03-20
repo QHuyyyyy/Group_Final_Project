@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
-import TransactionPage from './pages/user/Transaction';
 import AboutUs from './pages/AboutUs';
 import Services from './pages/user/Services';
 import ContactUs from './pages/Contactus';
@@ -10,7 +9,6 @@ import ProtectedRoute from './routes/ProtectedRoute';
 import { RoutePermissions } from './routes/RoutePermissions';
 import SettingUser from './pages/user/SettingUser';
 import ForgotPassword from './pages/common/ForgotPassword';
-
 
 // Lazy load components
 const Homepage = lazy(() => import('./pages/Homepage'));
@@ -26,10 +24,9 @@ const Finance = lazy(() => import('./pages/user/Finance'));
 const IndustriesPage = lazy(() => import('./pages/InductriesPage'));
 const ViewClaimRequest = lazy(() => import('./pages/admin/ViewClaimRequest'));
 const Project= lazy(() => import('./pages/user/Project'));
+const UserSpinner = lazy(() => import('./components/user/UserSpinner'));
 const Loading = () => (
-  <div className="h-screen w-screen flex items-center justify-center">
-    <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
-  </div>
+  <UserSpinner />
 );
 
 const App = () => {
@@ -44,9 +41,8 @@ const App = () => {
           <Route path='/forgot-password' element={<ForgotPassword />} />
           <Route path='/login' element={<Login />} />
           <Route path='/contactus' element={<ContactUs />} />
-
           <Route path='/verify-email/:token' element={<VerifyToken />} />
-                  <Route path='/resend-token' element={<ResendToken />} />
+          <Route path='/resend-token' element={<ResendToken />} />
 
           {/* User Dashboard Routes */}
           <Route path='/userdashboard/' element={
@@ -59,11 +55,7 @@ const App = () => {
                 <Profile />
               </ProtectedRoute>
             } />
-            <Route path="transaction" element={
-              <ProtectedRoute allowedRoles={RoutePermissions.transaction}>
-                <TransactionPage />
-              </ProtectedRoute>
-            } />
+          
             <Route path="approvals" element={
               <ProtectedRoute allowedRoles={RoutePermissions.approvals}>
                 <ApprovalPage />
@@ -123,11 +115,6 @@ const App = () => {
               <Profile />
             </ProtectedRoute>
           } />
-            <Route path="/dashboard/transaction" element={
-              <ProtectedRoute allowedRoles={RoutePermissions.transaction}>
-                <TransactionPage />
-              </ProtectedRoute>
-            } />
         </Routes>
       </Suspense>
     </Router>

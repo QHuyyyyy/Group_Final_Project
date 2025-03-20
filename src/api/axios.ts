@@ -9,16 +9,15 @@ const loadingManager = {
   count: 0,
   spinnerElement: null as HTMLDivElement | null,
   spinnerRoot: null as any,
-  previousActiveElement: null as HTMLElement | null,
 
   show() {
     this.count++;
     if (this.count === 1) {
-      this.previousActiveElement = document.activeElement as HTMLElement;
-      
+      // Tạo container cho spinner
       this.spinnerElement = document.createElement('div');
       this.spinnerElement.id = 'global-loading-spinner';
       
+      // Style cho container
       Object.assign(this.spinnerElement.style, {
         position: 'fixed',
         top: '0',
@@ -27,63 +26,49 @@ const loadingManager = {
         height: '100%',
         zIndex: '9999',
         opacity: '0',
-        transition: 'opacity 0.3s ease-in-out',
-        pointerEvents: 'all',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.3)'
+        transition: 'opacity 0.2s ease-in-out',
       });
-      this.spinnerElement.setAttribute('tabindex', '0');
       
       document.body.appendChild(this.spinnerElement);
       
+      // Render spinner component
       this.spinnerRoot = createRoot(this.spinnerElement);
       this.spinnerRoot.render(React.createElement(UserSpinner));
+      
+      // Force reflow để trigger animation
       this.spinnerElement.offsetHeight;
       this.spinnerElement.style.opacity = '1';
       
-      this.spinnerElement.focus();
-
+      // Prevent scrolling on the main content
       document.body.style.overflow = 'hidden';
     }
   },
 
   hide() {
     this.count--;
+    
     if (this.count <= 0) {
       this.count = 0;
       if (this.spinnerElement && this.spinnerRoot) {
-
+        // Re-enable scrolling
         document.body.style.overflow = '';
         
+        // Fade out animation
         this.spinnerElement.style.opacity = '0';
-
+        
+        // Remove after animation
         const element = this.spinnerElement;
         const root = this.spinnerRoot;
-        const previousElement = this.previousActiveElement;
         
         setTimeout(() => {
           if (element && root) {
             root.unmount();
-            if (element.parentNode) {
-              element.parentNode.removeChild(element);
-            }
-
-            if (previousElement && typeof previousElement.focus === 'function') {
-              try {
-                previousElement.focus();
-              } 
-              catch (error) {
-                console.log(error)
-              }
-            }
+            element.parentNode?.removeChild(element);
           }
-        }, 300);
+        }, 200);
         
         this.spinnerElement = null;
         this.spinnerRoot = null;
-        this.previousActiveElement = null;
       }
     }
   }

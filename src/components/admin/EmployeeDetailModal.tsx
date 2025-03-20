@@ -26,7 +26,6 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
   onClose,
 }) => {
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
   const [departments, setDepartments] = useState<DepartmentModel[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [contracts, setContracts] = useState<Contract[]>([]);
@@ -52,7 +51,6 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
   };
 
   const fetchEmployeeData = async (employeeId: string) => {
-    setLoading(true);
     try {
       const response = await employeeService.getEmployeeById(employeeId, {showSpinner:false});
       const employeeData = response.data;
@@ -68,15 +66,12 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
       });
     } catch (error) {
       toast.error('Failed to fetch employee data');
-    } finally {
-      setLoading(false);
     }
   };
 
   const onFinish = async (values: any) => {
     if (!employeeId) return;
     
-    setLoading(true);
     try {
       const updateData: EmployeeUpdateData = {
         ...values,
@@ -93,8 +88,6 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
       onClose();
     } catch (error) {
       toast.error('An error occurred while updating employee information!');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -278,7 +271,6 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
           <Button 
             type="primary" 
             htmlType="submit" 
-            loading={loading}
             className="px-8 py-2 h-auto text-base font-medium rounded-lg bg-blue-600 hover:bg-blue-700 min-w-[200px]"
           >
             Update Information
