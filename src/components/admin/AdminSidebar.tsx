@@ -67,8 +67,8 @@ const AdminSidebar = () => {
     {
       title: "Profile",
       icon: <ProfileOutlined />,
-      path: "/dashboard/profile"
-    }
+      path: "/dashboard/adminprofile"
+    },
   ];
 
   const handleCreateModalOpen = () => {
