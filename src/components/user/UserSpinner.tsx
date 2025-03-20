@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Layout } from 'antd';
+
 
 const UserSpinner: React.FC = () => {
   const logoVariants = {
@@ -52,8 +52,8 @@ const UserSpinner: React.FC = () => {
   };
 
   return (
-    <Layout className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="flex flex-col items-center justify-center h-screen">
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white p-8 rounded-lg shadow-xl">
         {/* Logo Container */}
         <motion.div
           initial="hidden"
@@ -61,8 +61,8 @@ const UserSpinner: React.FC = () => {
           variants={logoVariants}
           className="mb-4"
         >
-          <div className="w-45 h-20 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg shadow-lg flex items-center justify-center">
-            <span className="text-2xl font-bold text-white">ClaimRequest</span>
+          <div className="w-full h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg shadow-lg flex items-center justify-center px-6">
+            <span className="text-xl font-bold text-white">ClaimRequest</span>
           </div>
         </motion.div>
 
@@ -71,7 +71,7 @@ const UserSpinner: React.FC = () => {
           initial="hidden"
           animate="visible"
           variants={textVariants}
-          className="text-2xl font-semibold text-gray-700 mb-4"
+          className="text-2xl font-semibold text-gray-700 mb-4 text-center"
         >
           Loading
         </motion.h2>
@@ -80,7 +80,7 @@ const UserSpinner: React.FC = () => {
         <motion.div
           variants={dotsVariants}
           animate="animate"
-          className="flex gap-2 mb-5"
+          className="flex gap-2 justify-center mb-5"
         >
           {[...Array(3)].map((_, i) => (
             <motion.div
@@ -96,12 +96,12 @@ const UserSpinner: React.FC = () => {
           initial="hidden"
           animate="visible"
           variants={textVariants}
-          className="text-gray-500 text-sm"
+          className="text-gray-500 text-sm text-center"
         >
-          <p>Please wait while we prepare your experience</p>
+          <p>Please wait while we process your request</p>
         </motion.div>
       </div>
-    </Layout>
+    </div>
   );
 };
 
