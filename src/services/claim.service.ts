@@ -55,7 +55,6 @@ export const claimService = {
   // Thay đổi trạng thái claim
   changeClaimStatus: async (requestBody: ChangeClaimStatusRequest, config={}): Promise<ApiResponse<null>> => {
     const response = await  api.put('/api/claims/change-status', requestBody || {}, config);
-
     console.log("fetch data:", response.data.data);
     return response.data.data;
   },
@@ -157,7 +156,5 @@ export const claimService = {
     console.log("fetch data:", response.data);
 
     return response.data;
-  }
-
-  
+  },
 };

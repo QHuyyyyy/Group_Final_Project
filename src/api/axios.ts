@@ -27,12 +27,9 @@ const loadingManager = {
         height: '100%',
         zIndex: '9999',
         opacity: '0',
-        transition: 'opacity 0.3s ease-in-out',
-        pointerEvents: 'all',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.3)'
       });
       this.spinnerElement.setAttribute('tabindex', '0');
       
