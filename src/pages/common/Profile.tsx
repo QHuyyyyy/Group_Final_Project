@@ -21,6 +21,8 @@ import { useUserStore } from '../../stores/userStore';
 import { employeeService } from '../../services/employee.service';
 import { useEffect, useState } from 'react';
 import { Employee } from '../../models/EmployeeModel';
+import { claimService } from '../../services/claim.service';
+import { SearchResponse } from '../../models/ClaimModel';
 
 const Profile = () => {
   const location = useLocation();
@@ -28,6 +30,8 @@ const Profile = () => {
 
   const user = useUserStore((state) => state);
   const [employeeData, setEmployeeData] = useState<Employee | null>(null);
+  const [claimsData, setClaimsData] = useState<SearchResponse | null>(null);
+  const [showSummary, setShowSummary] = useState(false);
 
   useEffect(() => {
     const fetchEmployeeData = async () => {
@@ -41,6 +45,32 @@ const Profile = () => {
 
     if (user.id) {
       fetchEmployeeData();
+    }
+  }, [user.id]);  
+
+  useEffect(() => {
+    const fetchClaimsData = async () => {
+      try {
+        const response = await claimService.searchClaimsByClaimer({
+          searchCondition: {
+            keyword: "",
+            claim_status: "",
+            claim_start_date: "",
+            claim_end_date: "",
+          },
+          pageInfo: {
+            pageNum: 1,
+            pageSize: 100
+          }
+        });
+        setClaimsData(response.data);
+      } catch (error) {
+        console.error('Error fetching claims data:', error);
+      }
+    };
+
+    if (user.id) {
+      fetchClaimsData();
     }
   }, [user.id]);
 
@@ -70,6 +100,86 @@ const Profile = () => {
   const formatSalary = (salary: number | undefined) => {
     if (!salary) return 'N/A';
     return salary.toLocaleString() + ' VND';
+  };
+
+  const getClaimStats = () => {
+    if (!claimsData?.pageData) return {
+      total: 0,
+      pending: 0,
+      approved: 0,
+      rejected: 0,
+      paid: 0,
+      draft: 0,
+      canceled: 0
+    };
+    
+    return {
+      total: claimsData.pageData.length,
+      pending: claimsData.pageData.filter(claim => claim.claim_status === 'Pending Approval').length,
+      approved: claimsData.pageData.filter(claim => claim.claim_status === 'Approved').length,
+      rejected: claimsData.pageData.filter(claim => claim.claim_status === 'Rejected').length,
+      paid: claimsData.pageData.filter(claim => claim.claim_status === 'Paid').length,
+      draft: claimsData.pageData.filter(claim => claim.claim_status === 'Draft').length,
+      canceled: claimsData.pageData.filter(claim => claim.claim_status === 'Canceled').length
+    };
+  };
+
+  const stats = getClaimStats();
+
+  const statisticsCardContent = (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <Card className="rounded-xl border-0 shadow-md hover:shadow-lg transition-all duration-300">
+        <Statistic 
+          title={<span className="text-gray-600 font-medium">Total Requests</span>}
+          value={stats.total}
+          prefix={<FileTextOutlined className="text-blue-500" />}
+          className="[&_.ant-statistic-content-value]:text-2xl [&_.ant-statistic-content-value]:font-bold [&_.ant-statistic-content-value]:text-gray-800"
+        />
+      </Card>
+
+      <Card className="rounded-xl border-0 shadow-md hover:shadow-lg transition-all duration-300">
+        <Statistic 
+          title={<span className="text-gray-600 font-medium">Pending Requests</span>}
+          value={stats.pending}
+          prefix={<ClockCircleOutlined className="text-amber-500" />}
+          className="[&_.ant-statistic-content-value]:text-2xl [&_.ant-statistic-content-value]:font-bold [&_.ant-statistic-content-value]:text-gray-800"
+        />
+      </Card>
+    </div>
+  );
+
+  const requestSummaryContent = (
+    <div className="space-y-3">
+      {[
+        { key: 'Total', value: stats.total },
+        { key: 'Pending', value: stats.pending },
+        { key: 'Approved', value: stats.approved },
+        { key: 'Rejected', value: stats.rejected },
+        { key: 'Paid', value: stats.paid },
+        { key: 'Draft', value: stats.draft },
+        { key: 'Canceled', value: stats.canceled }
+      ].map(({ key, value }) => (
+        <div key={key} 
+             className="flex justify-between items-center p-4 hover:bg-gray-50 rounded-xl transition-colors border border-gray-100">
+          <span className="capitalize text-gray-700 font-medium">
+            {key} Requests
+          </span>
+          <Badge 
+            count={value} 
+            className={`px-4 py-1 rounded-full ${
+              key === 'Pending' ? 'bg-amber-500' :
+              key === 'Approved' ? 'bg-emerald-500' :
+              key === 'Rejected' ? 'bg-red-500' :
+              'bg-blue-500'
+            }`}
+          />
+        </div>
+      ))}
+    </div>
+  );
+
+  const handleViewAll = () => {
+    setShowSummary(!showSummary);
   };
 
   return (
@@ -114,7 +224,7 @@ const Profile = () => {
                         {[
                           { label: "Email", value: user.email, icon: <MailOutlined className="text-blue-500" /> },
                           { label: "Phone", value: employeeData?.phone, icon: <PhoneOutlined className="text-green-500" /> },
-                          { label: "Department", value: employeeData?.department_code, icon: <TeamOutlined className="text-purple-500" /> },
+                          { label: "Department", value: employeeData?.department_name, icon: <TeamOutlined className="text-purple-500" /> },
                           { label: "Job Rank", value: employeeData?.job_rank, icon: <BankOutlined className="text-indigo-500" /> },
                           { label: "Address", value: employeeData?.address, icon: <EnvironmentOutlined className="text-red-500" /> },
                           { label: "Start Date", value: formatDate(employeeData?.start_date), icon: <CalendarOutlined className="text-orange-500" /> },
@@ -135,64 +245,23 @@ const Profile = () => {
                   {/* Right Column - Stats & Activities */}
                   <Col xs={24} md={16}>
                     <div className="space-y-6">
-          
-                  
-
                       {/* Statistics Cards */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Card className="rounded-xl border-0 shadow-md hover:shadow-lg transition-all duration-300">
-                          <Statistic 
-                            title={<span className="text-gray-600 font-medium">Total Requests</span>}
-                            value={0}
-                            prefix={<FileTextOutlined className="text-blue-500" />}
-                            className="[&_.ant-statistic-content-value]:text-2xl [&_.ant-statistic-content-value]:font-bold [&_.ant-statistic-content-value]:text-gray-800"
-                          />
-                        </Card>
-
-                        <Card className="rounded-xl border-0 shadow-md hover:shadow-lg transition-all duration-300">
-                          <Statistic 
-                            title={<span className="text-gray-600 font-medium">Pending Requests</span>}
-                            value={0}
-                            prefix={<ClockCircleOutlined className="text-amber-500" />}
-                            className="[&_.ant-statistic-content-value]:text-2xl [&_.ant-statistic-content-value]:font-bold [&_.ant-statistic-content-value]:text-gray-800"
-                          />
-                        </Card>
-                      </div>
+                      {statisticsCardContent}
 
                       {/* Requests Summary */}
                       <Card 
                         title={<span className="text-xl font-bold">Request Summary</span>}
                         className="rounded-xl border-0 shadow-md"
                         extra={
-                          <button className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors">
-                            View All
+                          <button 
+                            onClick={handleViewAll}
+                            className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                          >
+                            {showSummary ? 'Hide Details' : 'View All'}
                           </button>
                         }
                       >
-                        <div className="space-y-3">
-                          {[
-                            { key: 'Total', value: 0 },
-                            { key: 'Pending', value: 0 },
-                            { key: 'Approved', value: 0 },
-                            { key: 'Rejected', value: 0 }
-                          ].map(({ key, value }) => (
-                            <div key={key} 
-                                 className="flex justify-between items-center p-4 hover:bg-gray-50 rounded-xl transition-colors border border-gray-100">
-                              <span className="capitalize text-gray-700 font-medium">
-                                {key} Requests
-                              </span>
-                              <Badge 
-                                count={value} 
-                                className={`px-4 py-1 rounded-full ${
-                                  key === 'Pending' ? 'bg-amber-500' :
-                                  key === 'Approved' ? 'bg-emerald-500' :
-                                  key === 'Rejected' ? 'bg-red-500' :
-                                  'bg-blue-500'
-                                }`}
-                              />
-                            </div>
-                          ))}
-                        </div>
+                        {showSummary && requestSummaryContent}
                       </Card>
                     </div>
                   </Col>
@@ -240,7 +309,7 @@ const Profile = () => {
                         </div>
                         <div className="flex items-center p-3 bg-gray-50 rounded-lg">
                           <span className="text-gray-500 w-24">Department:</span>
-                          <span className="text-gray-800 font-medium">{employeeData?.department_code || 'N/A'}</span>
+                          <span className="text-gray-800 font-medium">{employeeData?.department_name || 'N/A'}</span>
                         </div>
                         <div className="flex items-center p-3 bg-gray-50 rounded-lg">
                           <span className="text-gray-500 w-24">Job Rank:</span>
@@ -270,6 +339,30 @@ const Profile = () => {
 
               
                     </Card>
+                  </Col>
+
+                  {/* Right Column - Stats & Activities */}
+                  <Col xs={24} md={16}>
+                    <div className="space-y-6">
+                      {/* Statistics Cards */}
+                      {statisticsCardContent}
+
+                      {/* Requests Summary */}
+                      <Card 
+                        title={<span className="text-xl font-bold">Request Summary</span>}
+                        className="rounded-xl border-0 shadow-md"
+                        extra={
+                          <button 
+                            onClick={handleViewAll}
+                            className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                          >
+                            {showSummary ? 'Hide Details' : 'View All'}
+                          </button>
+                        }
+                      >
+                        {showSummary && requestSummaryContent}
+                      </Card>
+                    </div>
                   </Col>
                 </Row>
               </div>
