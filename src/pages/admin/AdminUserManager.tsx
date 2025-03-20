@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Table, Button,Input,Space, Tag, Switch} from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import type { SortOrder } from 'antd/es/table/interface';
 import 'antd/dist/reset.css';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import { useNavigate } from 'react-router-dom';
@@ -52,30 +53,40 @@ const AdminUserManager: React.FC = () => {
   const [isBlockedFilter, setIsBlockedFilter] = useState<boolean | undefined>(undefined);
   const [isEmployeeModalVisible, setIsEmployeeModalVisible] = useState(false);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('');
+  const [sortedInfo, setSortedInfo] = useState<{
+    columnKey: string | null;
+    order: SortOrder | null;
+  }>({
+    columnKey: null,
+    order: null
+  });
+  const [roleFilter, setRoleFilter] = useState<string | null>(null);
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUsers(pagination.current);
     fetchRoles();
-  }, [pagination.current, pagination.pageSize, searchText, isBlockedFilter]);
+  }, [pagination.current, pagination.pageSize, searchText, isBlockedFilter, roleFilter]);
 
-  const fetchUsers = async (pageNum: number) => {
+  const fetchUsers = async (page: number) => {
     try {
       setLoading(true);
-      const params: SearchParams = {
+      const searchParams: SearchParams = {
         searchCondition: {
           keyword: searchText || "",
-          role_code: "",
-          is_blocked: isBlockedFilter !== undefined ? isBlockedFilter : false,
+          is_blocked: isBlockedFilter === true,
           is_delete: false,
-          is_verified: ""
+          role_code: selectedRole || undefined
         },
         pageInfo: {
-          pageNum: pageNum,
-          pageSize: pagination.pageSize
+          pageNum: page,
+          pageSize: pagination.pageSize,
+          totalItems: 0,
+          totalPages: 0
         }
       };
 
-      const response = await userService.searchUsers(params, {showSpinner:false});
+      const response = await userService.searchUsers(searchParams);
     
       
       if (response && response.data) {
@@ -84,7 +95,7 @@ const AdminUserManager: React.FC = () => {
           ...prev,
           totalItems: response.data.pageInfo.totalItems,
           totalPages: response.data.pageInfo.totalPages,
-          current: pageNum
+          current: page
         }));
       }
     } catch (error) {
@@ -138,13 +149,13 @@ const AdminUserManager: React.FC = () => {
     setIsEmployeeModalVisible(true);
   };
 
-  const handleTableChange = (page: number, pageSize: number) => {
+  const handleTableChange = (pagination: any, filters: any) => {
+    setSelectedRole(filters.role_code?.[0] || null);
     setPagination(prev => ({
       ...prev,
-      current: page,
-      pageSize: pageSize || 10
+      current: pagination.current,
+      pageSize: pagination.pageSize
     }));
-    fetchUsers(page);
   };
 
   const handleRoleChange = async (userId: string, newRoleCode: string) => {
@@ -183,6 +194,16 @@ const AdminUserManager: React.FC = () => {
       dataIndex: 'role_code',
       key: 'role_code',
       width: '140px',
+      filters: [
+        { text: 'Administrator', value: 'A001' },
+        { text: 'Finance', value: 'A002' },
+        { text: 'BUL, PM', value: 'A003' },
+        { text: 'Members', value: 'A004' },
+      ],
+      filterMode: 'tree',
+      filterMultiple: false,
+      filteredValue: selectedRole ? [selectedRole] : null,
+      onFilter: (value, record) => record.role_code === value,
       render: (_, record: UserData) => (
         <UserRoleDropdown 
           record={record}
@@ -260,7 +281,7 @@ const AdminUserManager: React.FC = () => {
       <AdminSidebar />
       <div className="flex-1 ml-[260px]">
         <div className="p-8">
-          <div className="flex items-center justify-between mb-6">
+          <div className="mb-8">
             <Button
               type="default"
               icon={<ArrowLeftOutlined />}
@@ -269,50 +290,44 @@ const AdminUserManager: React.FC = () => {
             >
               Back to Dashboard
             </Button>
-            
-            <div>
-            <Space>
-              <span>Blocked: </span>
-              <Switch 
-                checked={isBlockedFilter === true} 
-                onChange={(checked) => {
-                  setIsBlockedFilter(checked);
-                  setPagination(prev => ({ ...prev, current: 1 }));
-                }} 
-              />
-            </Space>
-            <Input
-            placeholder="Search by name..."
-            prefix={<SearchOutlined className="text-gray-400" />}
-            onChange={(e) => handleSearch(e.target.value)}
-            style={{ width: 300 }}
-            className="ml-4"
-          />
-            </div>
-           
           </div>
-          
+
           <Card className="shadow-md">
-            <div className="mb-6">
+            <div className="flex items-center justify-between mb-6">
               <h1 className="text-2xl font-bold text-gray-800">Staff Information</h1>
+              <div>
+                <Space>
+                  <span>Blocked: </span>
+                  <Switch 
+                    checked={isBlockedFilter === true} 
+                    onChange={(checked) => {
+                      setIsBlockedFilter(checked);
+                      setPagination(prev => ({ ...prev, current: 1 }));
+                    }} 
+                  />
+                </Space>
+                <Input
+                  placeholder="Search by name..."
+                  prefix={<SearchOutlined className="text-gray-400" />}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  style={{ width: 300 }}
+                  className="ml-4"
+                />
+              </div>
             </div>
             <div className="overflow-auto custom-scrollbar">
               <Table
                 columns={columns}
                 dataSource={staffData}
                 loading={loading}
-                rowKey="_id"
                 pagination={{
                   current: pagination.current,
                   pageSize: pagination.pageSize,
                   total: pagination.totalItems,
-                  showSizeChanger: true,
-                  showQuickJumper: true,
-                  showTotal: (total) => `Total ${total} staff members`,
-                  onChange: (page: number, pageSize: number) => {
-                    handleTableChange(page, pageSize);
-                  }
+                  showSizeChanger: true
                 }}
+                onChange={handleTableChange}
+                className="overflow-hidden"
               />
             </div>
           </Card>
