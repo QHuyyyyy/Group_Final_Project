@@ -177,7 +177,7 @@ const ViewClaimRequest: React.FC = () => {
             activeKey={selectedStatus}
             onChange={handleStatusFilter}
             items={statusTabItems}
-            className="mb-6"
+          
           />
 
           <ClaimTable 

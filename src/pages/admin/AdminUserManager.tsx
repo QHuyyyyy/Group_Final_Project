@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Table, Button,Input,Space, Tag, Switch} from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import type { SortOrder } from 'antd/es/table/interface';
 import 'antd/dist/reset.css';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import { useNavigate } from 'react-router-dom';
@@ -53,15 +52,8 @@ const AdminUserManager: React.FC = () => {
   const [isBlockedFilter, setIsBlockedFilter] = useState<boolean | undefined>(undefined);
   const [isEmployeeModalVisible, setIsEmployeeModalVisible] = useState(false);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('');
-  const [sortedInfo, setSortedInfo] = useState<{
-    columnKey: string | null;
-    order: SortOrder | null;
-  }>({
-    columnKey: null,
-    order: null
-  });
+
   const [roleFilter, setRoleFilter] = useState<string | null>(null);
-  const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUsers(pagination.current);
@@ -76,13 +68,11 @@ const AdminUserManager: React.FC = () => {
           keyword: searchText || "",
           is_blocked: isBlockedFilter === true,
           is_delete: false,
-          role_code: selectedRole || undefined
+          role_code: roleFilter || undefined
         },
         pageInfo: {
           pageNum: page,
           pageSize: pagination.pageSize,
-          totalItems: 0,
-          totalPages: 0
         }
       };
 
@@ -150,11 +140,15 @@ const AdminUserManager: React.FC = () => {
   };
 
   const handleTableChange = (pagination: any, filters: any) => {
-    setSelectedRole(filters.role_code?.[0] || null);
+    const newRoleFilter = filters.role_code?.[0] || null;
+    setRoleFilter(newRoleFilter);
+    
     setPagination(prev => ({
       ...prev,
       current: pagination.current,
-      pageSize: pagination.pageSize
+      pageSize: pagination.pageSize,
+      totalItems: prev.totalItems,
+      totalPages: prev.totalPages
     }));
   };
 
@@ -202,8 +196,7 @@ const AdminUserManager: React.FC = () => {
       ],
       filterMode: 'tree',
       filterMultiple: false,
-      filteredValue: selectedRole ? [selectedRole] : null,
-      onFilter: (value, record) => record.role_code === value,
+      filteredValue: roleFilter ? [roleFilter] : null,
       render: (_, record: UserData) => (
         <UserRoleDropdown 
           record={record}
@@ -320,13 +313,16 @@ const AdminUserManager: React.FC = () => {
                 columns={columns}
                 dataSource={staffData}
                 loading={loading}
+                onChange={handleTableChange}
                 pagination={{
                   current: pagination.current,
                   pageSize: pagination.pageSize,
                   total: pagination.totalItems,
-                  showSizeChanger: true
+                  showSizeChanger: true,
+                  showQuickJumper: true,
+                  showTotal: (total) => `Total ${total} items`,
+                  pageSizeOptions: ['10', '20', '50', '100']
                 }}
-                onChange={handleTableChange}
                 className="overflow-hidden"
               />
             </div>
