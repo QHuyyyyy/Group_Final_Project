@@ -81,7 +81,9 @@ const ClaimTable = ({
     {
       title: "Period",
       key: "period",
+
       width: "17%",
+
       render: (_: any, record: Claim) => (
           <div className="flex items-center gap-2">
             <div className="flex flex-col">
@@ -107,6 +109,7 @@ const ClaimTable = ({
     ...(showAmount ? [{
       title: "Amount",
       key: "amount",
+      width: "10%",
       className: "text-gray-800 font-medium",
       render: (_: any, record: Claim) => (
         <div className="py-2">
@@ -132,6 +135,7 @@ const ClaimTable = ({
     {
       title: "Actions",
       key: "actions",
+      width: "15%",
       render: (_: any, record: Claim) => (
         <div className="flex items-center gap-2 py-2">
           <Button
