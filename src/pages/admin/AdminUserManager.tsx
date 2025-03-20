@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Table, Button,Input,Space, Tag, Switch } from 'antd';
+import { Card, Table, Button,Input,Space, Tag, Switch} from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import 'antd/dist/reset.css';
 import AdminSidebar from '../../components/admin/AdminSidebar';
@@ -27,6 +27,7 @@ import { debounce } from 'lodash';
 import BlockUserButton from '../../components/admin/BlockUserButton';
 import { SearchParams } from '../../models/UserModel';
 import EmployeeDetailModal from '../../components/admin/EmployeeDetailModal';
+import UserRoleDropdown from '../../components/admin/UserRoleDropdown';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -146,6 +147,24 @@ const AdminUserManager: React.FC = () => {
     fetchUsers(page);
   };
 
+  const handleRoleChange = async (userId: string, newRoleCode: string) => {
+    try {
+      setLoading(true);
+      await userService.changeRole({
+        user_id: userId,
+        role_code: newRoleCode
+      }, {showSpinner: false});
+      
+      message.success('User role updated successfully');
+      fetchUsers(pagination.current);
+    } catch (error) {
+      console.error('Error changing user role:', error);
+      message.error('Failed to update user role');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const columns: ColumnsType<UserData> = [
     {
       title: 'No.',
@@ -164,18 +183,12 @@ const AdminUserManager: React.FC = () => {
       dataIndex: 'role_code',
       key: 'role_code',
       width: '140px',
-      render: (role: string) => (
-        <Tag color={
-          role === 'A001' ? 'red' :
-          role === 'A002' ? 'blue' :
-          role === 'A003' ? 'yellow' :
-           'default'
-        }>
-          {role === 'A001' ? 'Administrator' :
-           role === 'A002' ? 'Finance' :
-           role === 'A003' ? 'BUL, PM' :
-           role === 'A004' ? 'All Members' : role}
-        </Tag>
+      render: (_, record: UserData) => (
+        <UserRoleDropdown 
+          record={record}
+          roleOptions={roleOptions}
+          onRoleChange={handleRoleChange}
+        />
       )
     },
     {
@@ -183,14 +196,14 @@ const AdminUserManager: React.FC = () => {
       dataIndex: 'created_at',
       key: 'created_at',
       width: '180px',
-      render: (date: string) => dayjs(date).tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss')
+      render: (date: string) => dayjs(date).tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD')
     },
     {
       title: 'Updated At',
       dataIndex: 'updated_at',
       key: 'updated_at',
       width: '180px',
-      render: (date: string) => dayjs(date).tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD HH:mm:ss')
+      render: (date: string) => dayjs(date).tz('Asia/Ho_Chi_Minh').format('YYYY-MM-DD')
     },
     {
       title: 'Verified',
