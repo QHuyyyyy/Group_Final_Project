@@ -12,6 +12,7 @@ import PageHeader from "../../components/shared/PageHeader";
 import type { Key } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ClaimHistoryModal from '../../components/shared/ClaimHistoryModal';
 
 const debouncedSearch = debounce((
   value: string,
@@ -49,6 +50,7 @@ const Finance = () => {
   const [displayClaims, setDisplayClaims] = useState<Claim[]>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [isBatchPaymentModalVisible, setIsBatchPaymentModalVisible] = useState(false);
+  const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
 
   const fetchClaims = async () => {
     setLoading(true);
@@ -301,6 +303,11 @@ const Finance = () => {
     }),
   };
 
+  const handleViewHistory = (record: Claim) => {
+    setSelectedClaimForInfo(record);
+    setIsHistoryModalVisible(true);
+  };
+
   return (
     <div className="overflow-x-auto">
       <ToastContainer
@@ -419,6 +426,7 @@ const Finance = () => {
             },
           }}
           onView={handleViewClaim}
+          onViewHistory={handleViewHistory}
           actionButtons={(record) => (
             <>
               <Button
@@ -508,11 +516,17 @@ const Finance = () => {
         <div className="absolute top-0 left-0 w-1/9 h-1/6 bg-green-100 opacity-50 rounded-br-lg"></div>
       </Modal>
 
-        <ClaimDetailsModal
-          visible={isViewModalVisible}
-          claim={selectedClaimForInfo}
-          onClose={handleViewModalClose}
-        />
+      <ClaimHistoryModal
+        visible={isHistoryModalVisible}
+        claim={selectedClaimForInfo}
+        onClose={() => setIsHistoryModalVisible(false)}
+      />
+
+      <ClaimDetailsModal
+        visible={isViewModalVisible}
+        claim={selectedClaimForInfo}
+        onClose={handleViewModalClose}
+      />
     </div>
   );
 };
