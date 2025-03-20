@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Button, DatePicker, InputNumber } from 'antd';
+import { Modal, Form, Button, DatePicker, InputNumber, Avatar, Input } from 'antd';
 import { employeeService } from '../../services/employee.service';
 import { EmployeeUpdateData } from '../../models/EmployeeModel';
 import dayjs from 'dayjs';
@@ -12,6 +12,7 @@ import { Contract } from '../../models/ContractModel';
 import { toast } from 'react-toastify';
 import { InputVaild } from '../../constants/InputVaild';
 import CommonField from './CommonFieldAddUser';
+import { UserOutlined } from '@ant-design/icons';
 
 interface EmployeeDetailModalProps {
   visible: boolean;
@@ -29,6 +30,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
   const [departments, setDepartments] = useState<DepartmentModel[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [contracts, setContracts] = useState<Contract[]>([]);
+  const [avatarPreview, setAvatarPreview] = useState('');
 
   useEffect(() => {
     if (visible && employeeId) {
@@ -55,6 +57,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
       const response = await employeeService.getEmployeeById(employeeId, {showSpinner:false});
       const employeeData = response.data;
       
+      setAvatarPreview(employeeData.avatar_url || '');
       form.setFieldsValue({
         ...employeeData,
         user_id: employeeData.user_id,
@@ -95,37 +98,81 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
     }
   };
 
+  const handleAvatarUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    setAvatarPreview(url);
+    form.setFieldValue('avatar_url', url);
+  };
+
   return (
     <Modal
       open={visible}
       onCancel={onClose}
       width={1200}
       footer={null}
-      title={<h2 className="text-2xl font-semibold text-gray-800">Employee Information</h2>}
-    >
-      <div className="p-4">
-        <div className="mb-8 flex justify-center">
-          {form.getFieldValue('avatar_url') && (
-            <div className="relative group">
-              <img
-                src={form.getFieldValue('avatar_url')}
-                alt="Employee avatar"
-                className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
-              />
-            </div>
-          )}
+      centered
+      className="employee-modal"
+      title={
+        <div className="text-xl font-semibold text-gray-800 text-center pb-4">
+          Employee Information
         </div>
+      }
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={onFinish}
+        className="px-6 py-4"
+      >
+        <div className="grid grid-cols-12 gap-6">
+          {/* Avatar Preview Section */}
+          <div className="col-span-3 bg-gray-50 p-6 rounded-xl flex flex-col items-center justify-center">
+            <div className="mb-6 relative group">
+              <Avatar 
+                size={160}
+                src={avatarPreview}
+                icon={!avatarPreview && <UserOutlined />}
+                className="shadow-lg transition-transform duration-300 group-hover:scale-105"
+              />
+              {avatarPreview && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full">
+                  <img 
+                    src={avatarPreview} 
+                    alt="Preview" 
+                    className="w-full h-full object-cover rounded-full"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = ''; // Set to default avatar or error image
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+            <Form.Item
+              name="avatar_url"
+              label="Avatar URL"
+              className="w-full"
+              rules={[
+                { required: true, message: "Please input avatar URL!" },
+                { type: 'url', message: "Please enter a valid URL!" }
+              ]}
+            >
+              <Input 
+                placeholder="Enter image URL"
+                onChange={handleAvatarUrlChange}
+                className="rounded-lg"
+                allowClear
+              />
+            </Form.Item>
+          </div>
 
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={onFinish}
-          disabled={loading}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Profile Section */}
-            <div className="border rounded-lg p-4">
-              <h3 className="text-lg font-semibold mb-4 text-center border-b pb-2">Profile</h3>
+          {/* Main Information Sections */}
+          <div className="col-span-9 grid grid-cols-3 gap-4">
+            {/* Basic Information */}
+            <div className="bg-gray-50 p-4 rounded-xl">
+              <h3 className="text-lg font-semibold mb-4 border-l-4 border-blue-500 pl-2">
+                Basic Information
+              </h3>
               <CommonField 
                 name="full_name"
                 label="Full Name"
@@ -134,7 +181,8 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
               <CommonField 
                 name="account"
                 label="Account"
-                rules={InputVaild.required("Please input account!")}
+                disabled
+                className="bg-gray-100"
               />
               <CommonField 
                 name="phone"
@@ -147,21 +195,16 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
               <CommonField 
                 name="address"
                 label="Address"
+                type="textarea"
                 rules={InputVaild.required("Please input address!")}
-              />
-              <CommonField 
-                name="avatar_url"
-                label="Avatar URL"
-                rules={[
-                  { required: true, message: "Please input avatar URL!" },
-                  { type: 'url', message: "Please enter a valid URL!" }
-                ]}
               />
             </div>
 
-            {/* Work Information Section */}
-            <div className="border rounded-lg p-4">
-              <h3 className="text-lg font-semibold mb-4 text-center border-b pb-2">Work Information</h3>
+            {/* Work Information */}
+            <div className="bg-gray-50 p-4 rounded-xl">
+              <h3 className="text-lg font-semibold mb-4 border-l-4 border-green-500 pl-2">
+                Work Information
+              </h3>
               <CommonField 
                 name="job_rank"
                 label="Job Rank"
@@ -194,9 +237,11 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
               />
             </div>
 
-            {/* Other Information Section */}
-            <div className="border rounded-lg p-4">
-              <h3 className="text-lg font-semibold mb-4 text-center border-b pb-2">Other Information</h3>
+            {/* Other Information */}
+            <div className="bg-gray-50 p-4 rounded-xl">
+              <h3 className="text-lg font-semibold mb-4 border-l-4 border-purple-500 pl-2">
+                Other Information
+              </h3>
               <Form.Item 
                 name="salary" 
                 label="Salary"
@@ -226,19 +271,20 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
               </Form.Item>
             </div>
           </div>
+        </div>
 
-          <Form.Item className="mt-6 text-center">
-            <Button 
-              type="primary" 
-              htmlType="submit" 
-              loading={loading}
-              className="w-full md:w-auto px-8 py-2 h-auto text-base font-medium rounded-lg bg-blue-600 hover:bg-blue-700"
-            >
-              Update Information
-            </Button>
-          </Form.Item>
-        </Form>
-      </div>
+        {/* Submit Button */}
+        <div className="mt-8 flex justify-center">
+          <Button 
+            type="primary" 
+            htmlType="submit" 
+            loading={loading}
+            className="px-8 py-2 h-auto text-base font-medium rounded-lg bg-blue-600 hover:bg-blue-700 min-w-[200px]"
+          >
+            Update Information
+          </Button>
+        </div>
+      </Form>
     </Modal>
   );
 };
