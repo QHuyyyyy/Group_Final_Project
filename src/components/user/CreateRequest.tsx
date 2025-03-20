@@ -313,12 +313,18 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                                     label="Total Hours Worked"
                                     name="total_work_time"
                                     rules={[
-                                        { required: true, message: "Please enter total hours worked!" },                                      
+                                        { required: true, message: "Please enter total hours worked!" },
+                                        { 
+                                            type: 'number',
+                                            min: 1,
+                                            message: "Total work time must be at least 1 hour!"
+                                        }
                                     ]}
                                 >
                                     <Input 
                                         type="number" 
                                         placeholder="Enter total hours worked"
+                                        min={1}
                                     />
                                 </Form.Item>
                                 
