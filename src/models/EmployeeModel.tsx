@@ -8,6 +8,7 @@ export interface Employee {
     phone: string;
     full_name: string;
     avatar_url: string;
+    department_name: string;
     department_code: string;
     salary: number;
     start_date: string;

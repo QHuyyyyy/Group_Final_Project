@@ -10,20 +10,14 @@ import {
   DollarOutlined,
   FileProtectOutlined,
 } from '@ant-design/icons';
-import { useLocation } from 'react-router-dom';
-import AdminSidebar from '../../components/admin/AdminSidebar';
-
-import NavbarAdminDashboard from '../../components/NavbarAdminDashboard';
 import { useUserStore } from '../../stores/userStore';
-
 import { employeeService } from '../../services/employee.service';
 import { useEffect, useState } from 'react';
 import { Employee } from '../../models/EmployeeModel';
 import { motion } from 'framer-motion';
+import AdminSidebar from '../../components/admin/AdminSidebar';
 
-const Profile = () => {
-  const location = useLocation();
-  const isAdminDashboard = location.pathname === '/dashboard/profile';
+const AdminProfile = () => {
   const user = useUserStore((state) => state);
   const [employeeData, setEmployeeData] = useState<Employee | null>(null);
   const [isOnline] = useState(true);
@@ -44,20 +38,6 @@ const Profile = () => {
   }, [user.id]);
 
   // Update the role name display to use proper mapping
-  const getRoleDisplayName = (roleCode: string) => {
-    switch (roleCode) {
-      case 'A001':
-        return 'Administrator';
-      case 'A002':
-        return 'Finance';
-      case 'A003':
-        return 'BUL, PM';
-      case 'A004':
-        return 'All Members';
-      default:
-        return roleCode;
-    }
-  };
 
   // Format date helper function
   const formatDate = (dateString: string | undefined) => {
@@ -73,18 +53,11 @@ const Profile = () => {
 
   return (
     <div className="flex min-h-screen bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-gray-50 via-blue-50 to-gray-50">
-      {isAdminDashboard && <AdminSidebar />}
-      
-      <div className={`flex-1 ${isAdminDashboard ? 'ml-64' : ''}`}>
-        {isAdminDashboard && (
-          <div className="fixed top-0 left-64 right-0 bg-white/80 backdrop-blur-sm shadow-sm z-50">
-            <NavbarAdminDashboard />
-          </div>
-        )}
-        
-        <div className={`p-8 ${isAdminDashboard ? 'mt-20' : ''}`}>
+      <AdminSidebar />
+      <div className="flex-1 ml-[260px]">
+        <div className="p-8">
           <div className="max-w-7xl mx-auto space-y-8">
-            {/* Header Section với animation */}
+            {/* Header Section */}
             <motion.div 
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -92,7 +65,7 @@ const Profile = () => {
             >
               <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 blur-3xl -z-10"></div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                Employee Profile
+                Profile
               </h1>
               <p className="text-gray-500 mt-2">Manage your personal information and settings</p>
             </motion.div>
@@ -136,7 +109,7 @@ const Profile = () => {
                           <div 
                             className="px-6 py-2 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white rounded-full text-sm font-medium shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 whitespace-nowrap"
                           >
-                            {getRoleDisplayName(user.role_code)}
+                            Administrator
                           </div>
                         </motion.div>
                       </div>
@@ -200,7 +173,7 @@ const Profile = () => {
                       <div className="flex items-center space-x-3 py-2">
                         <div className="w-1 h-8 bg-gradient-to-b from-blue-600 via-purple-600 to-pink-600 rounded-full"></div>
                         <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                          Employee Information
+                          Admin Information
                         </h3>
                       </div>
                     }
@@ -251,4 +224,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default AdminProfile;
