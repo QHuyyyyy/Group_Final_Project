@@ -61,15 +61,15 @@ export default function AdminProjectStats() {
     monthOrder.forEach(month => {
       counts[month] = 0;
     });
-    
+
     projects.forEach(({ project_start_date }) => {
       if (!project_start_date) return;
       const date = new Date(project_start_date);
       const month = date.toLocaleString("en-US", { month: "short" });
-      
+
       counts[month] = (counts[month] || 0) + 1;
     });
-    
+
     return monthOrder.map(month => ({ month, projects: counts[month] }));
   };
 
@@ -77,82 +77,73 @@ export default function AdminProjectStats() {
   const [filteredActiveProjects, setFilteredActiveProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const fetchProjects = async (status = '', pageSize = 200) => {
-          let allProjects: Project[] = [];
-          let pageNum = 1;
 
-          while (true) {
-            const params = {
-              searchCondition: {
-                project_status: status,
-                is_deleted: false,
-              },
-              pageInfo: {
-                pageNum,
-                pageSize,
-                totalItems: 0,
-                totalPages: 0
-              },
-            };
 
-            const response = await projectService.searchProjects(params);
-
-            if (!response || !response.data.pageData || response.data.pageData.length === 0) break;
-
-            allProjects = [...allProjects, ...response.data.pageData];
-            pageNum++;
-          }
-
-          return allProjects;
-        };
-
-        const [
-          allProjects,
-        ] = await Promise.all([
-          fetchProjects(),
-        ]);
-        const ongoingProjects = allProjects.filter(item => item.project_status === "Active");
-        const completedProjects = allProjects.filter(item => item.project_status === "Closed");
-        // Update states
-        setProjects(allProjects);
-        setOngoingProjects(ongoingProjects);
-        setCompletedProjects(completedProjects);
-
-        // Set initial filtered projects
-        setFilteredProjects(allProjects);
-        setFilteredActiveProjects(ongoingProjects);
-        setFilteredCompletedProjects(completedProjects);
-
-        // Update data loaded status
-        setDataLoaded({
-          projects: true,
-          ongoingProjects: true,
-          completedProjects: true,
-        });
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
+  const fetchProjects = async (status = '', pageSize = 10000) => {
+    let allProjects: Project[] = [];
+    let pageNum = 1;
+    const params = {
+      searchCondition: {
+        project_status: status,
+        is_deleted: false,
+      },
+      pageInfo: {
+        pageNum,
+        pageSize,
+        totalItems: 0,
+        totalPages: 0
+      },
     };
 
-    fetchData();
+    const response = await projectService.searchProjects(params)
+
+    allProjects = [...allProjects, ...response.data.pageData];
+    return allProjects;
+  };
+
+  const loadAllData = async () => {
+    const [
+      allProjects,
+    ] = await Promise.all([
+      fetchProjects(),
+    ]);
+    const ongoingProjects = allProjects.filter(item => item.project_status === "Active");
+    const completedProjects = allProjects.filter(item => item.project_status === "Closed");
+    // Update states
+    setProjects(allProjects);
+    setOngoingProjects(ongoingProjects);
+    setCompletedProjects(completedProjects);
+
+    // Set initial filtered projects
+    setFilteredProjects(allProjects);
+    setFilteredActiveProjects(ongoingProjects);
+    setFilteredCompletedProjects(completedProjects);
+
+    // Update data loaded status
+    setDataLoaded({
+      projects: true,
+      ongoingProjects: true,
+      completedProjects: true,
+    });
+  }
+
+  useEffect(() => {
+    loadAllData();
   }, []);
 
   const createCombinedChartData = () => {
     const monthOrder = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    
+
     // Create counts for both project types
     const activeCounts: Record<string, number> = {};
     const completedCounts: Record<string, number> = {};
-    
+
     // Initialize all months with zero
     monthOrder.forEach(month => {
       activeCounts[month] = 0;
       completedCounts[month] = 0;
     });
-    
+
     // Count active projects by month
     filteredActiveProjects.forEach(({ project_start_date }) => {
       if (!project_start_date) return;
@@ -160,7 +151,7 @@ export default function AdminProjectStats() {
       const month = date.toLocaleString("en-US", { month: "short" });
       activeCounts[month] = (activeCounts[month] || 0) + 1;
     });
-    
+
     // Count completed projects by month
     filteredCompletedProjects.forEach(({ project_start_date }) => {
       if (!project_start_date) return;
@@ -168,15 +159,15 @@ export default function AdminProjectStats() {
       const month = date.toLocaleString("en-US", { month: "short" });
       completedCounts[month] = (completedCounts[month] || 0) + 1;
     });
-    
+
     // Combine into a single dataset
-    return monthOrder.map(month => ({ 
-      month, 
+    return monthOrder.map(month => ({
+      month,
       activeProjects: activeCounts[month],
       completedProjects: completedCounts[month]
     }));
   };
-  
+
   // Calculate combined data
   const combinedChartData = createCombinedChartData();
   const projectTrendData = processProjectData(filteredProjects);
@@ -291,17 +282,17 @@ export default function AdminProjectStats() {
                   >
                   </Radio.Group>
 
-                    <Select
-                      placeholder="Select year"
-                      style={{ width: '100%' }}
-                      onChange={handleYearChange}
-                      value={selectedYear}
-                    >
-                      {getAvailableYears().map(year => (
-                        <Option key={year} value={year}>{year}</Option>
-                      ))}
-                    </Select>
-                 
+                  <Select
+                    placeholder="Select year"
+                    style={{ width: '100%' }}
+                    onChange={handleYearChange}
+                    value={selectedYear}
+                  >
+                    {getAvailableYears().map(year => (
+                      <Option key={year} value={year}>{year}</Option>
+                    ))}
+                  </Select>
+
                 </div>
               }
             >
@@ -328,36 +319,18 @@ export default function AdminProjectStats() {
           }}
         >
           <ResponsiveContainer width="100%" height={300}>
-  <LineChart data={combinedChartData}>
-    <CartesianGrid strokeDasharray="3 3" />
-    <XAxis dataKey="month" />
-    <YAxis />
-    <Tooltip />
-    <Legend />
-    <Line type="monotone" dataKey="activeProjects" stroke="#FF7300" name="Active Projects" />
-    <Line type="monotone" dataKey="completedProjects" stroke="#00C49F" name="Completed Projects" />
-  </LineChart>
-</ResponsiveContainer>
+            <LineChart data={combinedChartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="activeProjects" stroke="#FF7300" name="Active Projects" />
+              <Line type="monotone" dataKey="completedProjects" stroke="#00C49F" name="Completed Projects" />
+            </LineChart>
+          </ResponsiveContainer>
         </Card>
       </div>
-
-      {/* <div className="mt-5">
-        <Card title="Recent Activities" style={{
-          boxShadow: "10px 10px 25px -19px rgba(0,0,0,0.75)"
-        }}>
-          <List
-            dataSource={recentActivities}
-            renderItem={(item: any) => (
-              <List.Item>
-                <List.Item.Meta title={item.activity} description={item.time} />
-              </List.Item>
-            )}
-          />
-          <Pagination align="center" defaultCurrent={1} total={50} style={{
-            marginTop: "2%"
-          }} />
-        </Card>
-      </div> */}
     </>
   );
 }
