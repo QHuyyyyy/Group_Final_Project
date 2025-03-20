@@ -95,7 +95,7 @@ const ClaimTable = ({
       ),
     },
     {
-      title: "Total Work Time",
+      title: "Time",
       dataIndex: "total_work_time",
       key: "total_work_time",
       width: "10%",
@@ -160,7 +160,6 @@ const ClaimTable = ({
 
   return (
     <Table
-      loading={loading}
       dataSource={dataSource}
       columns={columns}
       rowKey="_id"

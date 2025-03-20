@@ -69,7 +69,7 @@ const Finance = () => {
     };
 
     try {
-      const response = await claimService.searchClaimsForFinance(params,  {showSpinner:false});
+      const response = await claimService.searchClaimsForFinance(params);
       if (response?.data?.pageData) {
         const claimsData = response.data.pageData;
         setAllClaims(claimsData);
@@ -199,7 +199,7 @@ const Finance = () => {
       await claimService.changeClaimStatus({
         _id: selectedClaimForInfo._id,
         claim_status: "Paid"
-      }, {showSpinner:true});
+      });
       
       toast.success( 
         <p>Successfully processed payment for claim {selectedClaimForInfo.claim_name} </p>,

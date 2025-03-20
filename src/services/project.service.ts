@@ -14,7 +14,7 @@ import {
 const projectService = {
   // Tạo dự án mới
   createProject: async (projectData: CreateProjectRequest): Promise<ApiResponse<Project>> => {
-    const response = await apiUtils.post<ApiResponse<Project>> (`${PROJECTS_ENDPOINT}`, projectData, {showSpinner:false});
+    const response = await apiUtils.post<ApiResponse<Project>> (`${PROJECTS_ENDPOINT}`, projectData);
     console.log("fetch data:", response.data);
     return response.data;
   },
@@ -39,7 +39,7 @@ const projectService = {
           pageNum: params.pageInfo.pageNum,
           pageSize: params.pageInfo.pageSize
         }
-      }, {showSpinner:false});
+      });
       console.log('API response in service:', response);
       return response.data;
     } catch (error) {
@@ -57,14 +57,14 @@ const projectService = {
 
   // Cập nhật thông tin dự án
   updateProject: async (id: string, projectData: UpdateProjectRequest): Promise<ApiResponse<ProjectData>> => {
-    const response = await apiUtils.put<ApiResponse<ProjectData>>(`${PROJECTS_ENDPOINT}/${id}`, projectData, {showSpinner:false});
+    const response = await apiUtils.put<ApiResponse<ProjectData>>(`${PROJECTS_ENDPOINT}/${id}`, projectData);
     console.log("fetch data:", response.data);
     return response.data;
   },
 
   // Xóa dự án
   deleteProject: async (id: string): Promise<ApiResponse<null>> => {
-    const response = await apiUtils.delete<ApiResponse<null>>(`${PROJECTS_ENDPOINT}/${id}`, {showSpinner:false});
+    const response = await apiUtils.delete<ApiResponse<null>>(`${PROJECTS_ENDPOINT}/${id}`);
     console.log("fetch data:", response.data);
     return response.data;
   },

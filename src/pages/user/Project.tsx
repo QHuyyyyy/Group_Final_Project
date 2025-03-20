@@ -265,17 +265,6 @@ const Projects: React.FC = () => {
     </motion.div>
   );
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen bg-gray-50">
-        <div className="text-center">
-          <Spin size="large" className="scale-150 mb-4" />
-          <Text className="text-gray-500 mt-4 block">Loading your projects...</Text>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 p-8">
       <motion.div 

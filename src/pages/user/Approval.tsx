@@ -69,7 +69,7 @@ function ApprovalPage() {
       },
     };
 
-    const response = await claimService.searchClaimsForApproval(params, {showSpinner: false});
+    const response = await claimService.searchClaimsForApproval(params);
     
     if (response?.data?.pageData) {
       const claimsData = response.data.pageData;
@@ -152,7 +152,7 @@ function ApprovalPage() {
         comment: values.comment,
       };
       
-      const response = await claimService.changeClaimStatus(requestBody, {showSpinner: false});
+      const response = await claimService.changeClaimStatus(requestBody);
       
       if (response && response.success === false) {
         toast.error(response.message || "Failed to change claim status");
@@ -224,7 +224,7 @@ function ApprovalPage() {
               setPagination((prev) => ({
                 ...prev,
                 current: page,
-                pageSize: pageSize || 10,
+                pageSize: pageSize,
               }));
             },
           }}
