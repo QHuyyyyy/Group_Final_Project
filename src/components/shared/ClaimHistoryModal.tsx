@@ -13,38 +13,53 @@ interface ClaimHistoryModalProps {
 }
 
 const ClaimHistoryModal = ({ visible, claim, onClose }: ClaimHistoryModalProps) => {
-  const [loading, setLoading] = useState(false);
+
   const [logs, setLogs] = useState<ClaimLog[]>([]);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 5,
+    totalItems: 0,
+    totalPages: 0
+  });
 
   useEffect(() => {
     if (visible && claim) {
-      fetchClaimLogs();
+      fetchClaimLogs(pagination.current, pagination.pageSize);
     }
   }, [visible, claim]);
 
-  const fetchClaimLogs = async () => {
+  const fetchClaimLogs = async (page: number, pageSize: number) => {
     if (!claim) return;
     
     try {
-      setLoading(true);
+   
       const response = await claimLogService.searchClaimLogs({
         searchCondition: {
           claim_id: claim._id,
         },
         pageInfo: {
-          pageNum: 1,
-          pageSize: 100
+          pageNum: page,
+          pageSize: pageSize
         }
       });
       
-      if (response?.data?.pageData) {
-        setLogs(response.data.pageData);
+      if (response?.data) {
+        setLogs(response.data.pageData || []);
+        setPagination(prev => ({
+          ...prev,
+          current: page,
+          pageSize: pageSize,
+          totalItems: response.data.pageInfo.totalItems,
+          totalPages: response.data.pageInfo.totalPages
+        }));
       }
     } catch (error) {
       console.error('Failed to fetch claim logs:', error);
-    } finally {
-      setLoading(false);
-    }
+    } 
+  };
+
+  const handleTableChange = (newPagination: any) => {
+    fetchClaimLogs(newPagination.current, newPagination.pageSize);
   };
 
   const getStatusColor = (status: string) => {
@@ -67,9 +82,9 @@ const ClaimHistoryModal = ({ visible, claim, onClose }: ClaimHistoryModalProps) 
       render: (_, __, index) => index + 1,
     },
     {
-      title: "Updated By",
-      dataIndex: "updated_by",
-      key: "updated_by",
+      title: "Claim",
+      dataIndex: "claim_name",
+      key: "claim_name",
       width: 200,
     },
     {
@@ -150,11 +165,18 @@ const ClaimHistoryModal = ({ visible, claim, onClose }: ClaimHistoryModalProps) 
       className="claims-history-modal"
     >
       <Table
-        loading={loading}
+       
         columns={columns}
         dataSource={logs}
         rowKey="_id"
-        pagination={false}
+        pagination={{
+          current: pagination.current,
+          pageSize: pagination.pageSize,
+          total: pagination.totalItems,
+          showSizeChanger: true,
+          showTotal: (total) => `Tổng ${total} bản ghi`
+        }}
+        onChange={handleTableChange}
         className="mt-4"
       />
     </Modal>
