@@ -315,16 +315,28 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                                     rules={[
                                         { required: true, message: "Please enter total hours worked!" },
                                         { 
-                                            type: 'number',
-                                            min: 1,
-                                            message: "Total work time must be at least 1 hour!"
+                                            validator: async (_, value) => {
+                                                if (value && Number(value) < 1) {
+                                                    throw new Error("Total work time must be at least 1 hour!");
+                                                }
+                                            }
                                         }
                                     ]}
+                                    initialValue={1}
                                 >
                                     <Input 
                                         type="number" 
                                         placeholder="Enter total hours worked"
                                         min={1}
+                                        step={1}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            if (value === '') {
+                                                form.setFieldValue('total_work_time', undefined);
+                                            } else {
+                                                form.setFieldValue('total_work_time', Number(value));
+                                            }
+                                        }}
                                     />
                                 </Form.Item>
                                 
