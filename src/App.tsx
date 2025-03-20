@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
-import TransactionPage from './pages/user/Transaction';
 import AboutUs from './pages/AboutUs';
 import Services from './pages/user/Services';
 import ContactUs from './pages/Contactus';
@@ -10,7 +9,6 @@ import ProtectedRoute from './routes/ProtectedRoute';
 import { RoutePermissions } from './routes/RoutePermissions';
 import SettingUser from './pages/user/SettingUser';
 import ForgotPassword from './pages/common/ForgotPassword';
-import UserSpinner from './components/user/UserSpinner';
 
 // Lazy load components
 const Homepage = lazy(() => import('./pages/Homepage'));
@@ -26,12 +24,9 @@ const Finance = lazy(() => import('./pages/user/Finance'));
 const IndustriesPage = lazy(() => import('./pages/InductriesPage'));
 const ViewClaimRequest = lazy(() => import('./pages/admin/ViewClaimRequest'));
 const Project= lazy(() => import('./pages/user/Project'));
-const NotFound = lazy(() => import('./pages/NotFound'));
-
+const UserSpinner = lazy(() => import('./components/user/UserSpinner'));
 const Loading = () => (
-  <div className="flex justify-center items-center h-screen">
-    <UserSpinner />
-  </div>
+  <UserSpinner />
 );
 
 const App = () => {
@@ -60,11 +55,7 @@ const App = () => {
                 <Profile />
               </ProtectedRoute>
             } />
-            <Route path="transaction" element={
-              <ProtectedRoute allowedRoles={RoutePermissions.transaction}>
-                <TransactionPage />
-              </ProtectedRoute>
-            } />
+          
             <Route path="approvals" element={
               <ProtectedRoute allowedRoles={RoutePermissions.approvals}>
                 <ApprovalPage />
@@ -124,13 +115,6 @@ const App = () => {
               <Profile />
             </ProtectedRoute>
           } />
-            <Route path="/dashboard/transaction" element={
-              <ProtectedRoute allowedRoles={RoutePermissions.transaction}>
-                <TransactionPage />
-              </ProtectedRoute>
-            } />
-            
-          <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
     </Router>

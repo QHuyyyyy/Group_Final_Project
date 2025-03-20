@@ -4,7 +4,6 @@ import user from "../../assets/user.png";
 import request from "../../assets/send.png";
 import finance from "../../assets/finance.png";
 import home from "../../assets/home.png";
-import transaction from "../../assets/transaction.png";
 import { useUserStore } from "../../stores/userStore";
 
 interface MenuItem {
@@ -53,12 +52,7 @@ const Menu = () => {
           href: "/userdashboard/projects", 
           allowedRoles: ["A001", "A002", "A003", "A004"] // Cho phép tất cả role truy cập
         },
-        { 
-          icon: transaction, 
-          label: "Request History", 
-          href: "/userdashboard/transaction",
-          allowedRoles: ["A004"]
-        },
+        
       ],
     },
     {
