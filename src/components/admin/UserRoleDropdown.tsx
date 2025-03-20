@@ -15,11 +15,11 @@ const UserRoleDropdown: React.FC<UserRoleDropdownProps> = ({
   onRoleChange 
 }) => {
   const role = record.role_code;
-  
+
   const items: MenuProps['items'] = roleOptions.map(option => ({
     key: option.value,
     label: option.label,
-    onClick: () => onRoleChange(record._id, option.value)
+    onClick: () => onRoleChange(record._id, option.value),
   }));
 
   const getRoleLabel = (roleCode: string): string => {
@@ -42,7 +42,10 @@ const UserRoleDropdown: React.FC<UserRoleDropdownProps> = ({
   };
 
   return (
-    <Dropdown menu={{ items }} trigger={['click']}>
+    <Dropdown 
+      menu={{ items }}
+      trigger={['click']}
+    >
       <a onClick={e => e.preventDefault()} className="cursor-pointer">
         <Tag color={getRoleColor(role)}>
           {getRoleLabel(role)}
