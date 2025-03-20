@@ -83,9 +83,7 @@ const ClaimTable = ({
     {
       title: "Period",
       key: "period",
-
-      width: "17%",
-
+      width: "15%",
       render: (_: any, record: Claim) => (
           <div className="flex items-center gap-2">
             <div className="flex flex-col">
