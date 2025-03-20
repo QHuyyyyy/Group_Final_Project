@@ -18,21 +18,6 @@ import ClaimTable from '../../components/shared/ClaimTable';
 import PageHeader from '../../components/shared/PageHeader';
 import ClaimHistoryModal from '../../components/shared/ClaimHistoryModal';
 
-// Tạo debounced function bên ngoài component để tránh tạo lại mỗi lần render
-const debouncedSearch = debounce((
-  value: string,
-  allClaimsData: Claim[],
-  selectedStatus: string,
-  setFilteredClaims: (claims: Claim[]) => void
-) => {
-  const filteredData = allClaimsData.filter(claim => {
-    const matchesSearch = claim.claim_name.toLowerCase().includes(value.toLowerCase());
-    const matchesStatus = selectedStatus ? claim.claim_status === selectedStatus : true;
-    return matchesSearch && matchesStatus;
-  });
-  setFilteredClaims(filteredData);
-}, 1000);
-
 const Claim = () => {
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -52,43 +37,58 @@ const Claim = () => {
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
   const [selectedCancelClaimId, setSelectedCancelClaimId] = useState<string | null>(null); // Add cancel claim ID
   const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [, setAllClaims] = useState<Claim[]>([]);
   const [filteredClaims, setFilteredClaims] = useState<Claim[]>([]);
   const [statusCounts, setStatusCounts] = useState<Record<string, number>>({
-    "": 0, // cho All
-    "Draft": 0,
-    "Pending Approval": 0,
-    "Approved": 0,
-    "Rejected": 0,
-    "Canceled": 0,
-    "Paid": 0
+    all: 0,
+    draft: 0,
+    pendingApproval: 0,
+    approved: 0,
+    rejected: 0,
+    canceled: 0,
+    paid: 0
   });
-  const [isCancelModalVisible, setIsCancelModalVisible] = useState(false);  // Add cancel modal visibility state
-  const [allClaimsData, setAllClaimsData] = useState<Claim[]>([]);
+  const [isCancelModalVisible, setIsCancelModalVisible] = useState(false); 
   const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
   const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
 
-  const handleSearch = useCallback((value: string) => {
-    setSearchText(value);
-    setPagination(prev => ({
-      ...prev,
-      current: 1,
-    }));
-
-    // Gọi debounced function với các tham số cần thiết
-    debouncedSearch(value, allClaimsData, selectedStatus, setFilteredClaims);
-  }, [allClaimsData, selectedStatus]);
-
+  const handleSearch = useCallback(
+    debounce((query: string) => {
+      setSearchText(query);
+      setPagination((prev) => ({
+        ...prev,
+        current: 1,
+      }));
+    }, 500),
+    []
+  );
+  
   useEffect(() => {
     fetchClaims(pagination.current);
-  }, [pagination.current, pagination.pageSize]);
+  }, [pagination.current, pagination.pageSize, searchText, selectedStatus]);
 
   const fetchClaims = async (pageNum: number) => {
     try {
       setLoading(true);
-      const params: SearchParams = {
+  
+      const allClaimsParams: SearchParams = {
         searchCondition: {
           keyword: searchText || "",
           claim_status: "",
+          claim_start_date: "",
+          claim_end_date: "",
+          is_delete: false,
+        },
+        pageInfo: {
+          pageNum: 1,
+          pageSize: 1000,
+        },
+      };
+  
+      const filteredClaimsParams: SearchParams = {
+        searchCondition: {
+          keyword: searchText || "",
+          claim_status: selectedStatus || "",
           claim_start_date: "",
           claim_end_date: "",
           is_delete: false,
@@ -98,38 +98,40 @@ const Claim = () => {
           pageSize: pagination.pageSize,
         },
       };
-
-      const response = await claimService.searchClaimsByClaimer(params, {showSpinner:false});
-
-      if (response?.data?.pageData) {
-        const claimsData = response.data.pageData;
-        setAllClaimsData(claimsData);
-
-        // Cập nhật counts theo đúng key
-        const newCounts: Record<string, number> = {
-          "": claimsData.length, // Tổng số cho All
-          "Draft": claimsData.filter(claim => claim.claim_status === "Draft").length,
-          "Pending Approval": claimsData.filter(claim => claim.claim_status === "Pending Approval").length,
-          "Approved": claimsData.filter(claim => claim.claim_status === "Approved").length,
-          "Rejected": claimsData.filter(claim => claim.claim_status === "Rejected").length,
-          "Canceled": claimsData.filter(claim => claim.claim_status === "Canceled").length,
-          "Paid": claimsData.filter(claim => claim.claim_status === "Paid").length
+  
+      const [allClaimsResponse, filteredClaimsResponse] = await Promise.all([
+        claimService.searchClaimsByClaimer(allClaimsParams),
+        claimService.searchClaimsByClaimer(filteredClaimsParams),
+      ]);
+  
+      if (allClaimsResponse?.data?.pageData) {
+        const allClaimsData = allClaimsResponse.data.pageData;
+        setAllClaims(allClaimsData);
+  
+        const newCounts = {
+          all: allClaimsData.length,
+          draft: allClaimsData.filter(claim => claim.claim_status === "Draft").length,
+          pendingApproval: allClaimsData.filter(claim => claim.claim_status === "Pending Approval").length,
+          approved: allClaimsData.filter(claim => claim.claim_status === "Approved").length,
+          rejected: allClaimsData.filter(claim => claim.claim_status === "Rejected").length,
+          canceled: allClaimsData.filter(claim => claim.claim_status === "Canceled").length,
+          paid: allClaimsData.filter(claim => claim.claim_status === "Paid").length
         };
         setStatusCounts(newCounts);
-
-        // Filter theo status hiện tại
-        const filteredData = selectedStatus 
-          ? claimsData.filter(claim => claim.claim_status === selectedStatus)
-          : claimsData;
-        setFilteredClaims(filteredData);
-
+      }
+  
+      if (filteredClaimsResponse?.data?.pageData) {
+        const claimsData = filteredClaimsResponse.data.pageData;
+        setFilteredClaims(claimsData);
+  
         setPagination((prev) => ({
           ...prev,
-          totalItems: response.data.pageInfo.totalItems,
-          totalPages: response.data.pageInfo.totalPages,
-          current: pageNum
+          totalItems: filteredClaimsResponse.data.pageInfo.totalItems,
+          totalPages: filteredClaimsResponse.data.pageInfo.totalPages,
+          current: pageNum,
         }));
       }
+  
     } catch (error) {
       console.error("Error fetching claims:", error);
       message.error("An error occurred while fetching claims.");
@@ -178,7 +180,7 @@ const Claim = () => {
         _id: id,
         claim_status: "Canceled",
         comment: comment
-      },{showSpinner:false  });
+      });
       notification.success({
         message: 'Success',
         description: 'Request has been canceled successfully.',
@@ -212,12 +214,6 @@ const Claim = () => {
       ...prev,
       current: 1,
     }));
-
-    // Filter từ allClaimsData
-    const filteredData = value 
-      ? allClaimsData.filter(claim => claim.claim_status === value)
-      : allClaimsData;
-    setFilteredClaims(filteredData);
   };
 
   const handleSendRequest = async (id: string, comment: string) => {
@@ -226,7 +222,7 @@ const Claim = () => {
         _id: id,
         claim_status: "Pending Approval",
         comment: comment
-      }, {showSpinner:false});
+      });
       notification.success({
         message: 'Success',
         description: 'Request has been sent for approval successfully.',
@@ -247,7 +243,7 @@ const Claim = () => {
   const handleOpenUpdateModal = async (record: Claim) => {
     try {
       setLoading(true)
-      const response = await claimService.getClaimById(record._id, {showSpinner:false});
+      const response = await claimService.getClaimById(record._id);
       if (response?.data) {
         setLoading(false)
         setSelectedRequest(response.data);
@@ -273,12 +269,6 @@ const Claim = () => {
     setSelectedClaim(record);
     setIsHistoryModalVisible(true);
   };
-  
-  useEffect(() => {
-    return () => {
-      debouncedSearch.cancel();
-    };
-  }, []);
 
   return (
     <div className="overflow-x-auto">
@@ -294,13 +284,13 @@ const Claim = () => {
             activeKey={selectedStatus}
             onChange={handleStatusFilter}
             items={[
-              { key: "", label: "All", count: statusCounts[""] || 0 },
-              { key: "Draft", label: "Draft", count: statusCounts["Draft"] || 0 },
-              { key: "Pending Approval", label: "Pending Approval", count: statusCounts["Pending Approval"] || 0 },
-              { key: "Approved", label: "Approved", count: statusCounts["Approved"] || 0 },
-              { key: "Rejected", label: "Rejected", count: statusCounts["Rejected"] || 0 },
-              { key: "Canceled", label: "Canceled", count: statusCounts["Canceled"] || 0 },
-              { key: "Paid", label: "Paid", count: statusCounts["Paid"] || 0 },
+              { key: "", label: "All", count: statusCounts.all || 0 },
+              { key: "Draft", label: "Draft", count: statusCounts.draft || 0 },
+              { key: "Pending Approval", label: "Pending Approval", count: statusCounts.pendingApproval || 0 },
+              { key: "Approved", label: "Approved", count: statusCounts.approved || 0 },
+              { key: "Rejected", label: "Rejected", count: statusCounts.rejected || 0 },
+              { key: "Canceled", label: "Canceled", count: statusCounts.canceled || 0 },
+              { key: "Paid", label: "Paid", count: statusCounts.paid || 0 },
             ]}
           />
           <button 
