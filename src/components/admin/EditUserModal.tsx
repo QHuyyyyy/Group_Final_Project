@@ -1,6 +1,5 @@
 import React from 'react';
-import { Modal, Form, Input, Button, Select} from 'antd';
-import dayjs from 'dayjs';
+import { Modal, Form, Input, Button} from 'antd';
 import { userService } from '../../services/user.service';
 import { UserData } from '../../models/UserModel';
 import { toast } from 'react-toastify';
@@ -18,7 +17,6 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   onCancel,
   onSuccess,
   editingRecord,
-  roleOptions,
 }) => {
   const [form] = Form.useForm();
 
@@ -27,8 +25,6 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
       form.setFieldsValue({
         email: editingRecord.email,
         user_name: editingRecord.user_name,
-        role_code: editingRecord.role_code,
-        createdAt: dayjs(editingRecord.created_at).format('YYYY-MM-DD')
       });
     }
   }, [editingRecord, form]);
@@ -46,22 +42,11 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
       
       await userService.updateUser(editingRecord._id, userInfo, {showSpinner:false});
       
-      if (values.role_code !== editingRecord.role_code) {
-        await userService.changeRole({ 
-          user_id: editingRecord._id, 
-          role_code: values.role_code 
-        }, {showSpinner:false});
-      }
-
-      toast.success('Staff member updated successfully');
+      toast.success('Staff updated successfully');
       onSuccess();
       form.resetFields();
     } catch (error) {
-      console.error('Error saving staff member:', error);
-      Modal.error({
-        title: 'Error',
-        content: 'Failed to update staff member. Please try again.',
-      });
+      toast.error('Failed to update staff. Please try again.');
     }
   };
 
@@ -102,20 +87,6 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
             label="Email"
           >
             <Input />
-          </Form.Item>
-
-          <Form.Item
-            name="role_code"
-            label="Role"
-          >
-            <Select options={roleOptions} className="w-full" />
-          </Form.Item>
-
-          <Form.Item
-            name="createdAt"
-            label="Created At"
-          >
-            <Input disabled className="bg-gray-100" />
           </Form.Item>
         </div>
       </Form>
