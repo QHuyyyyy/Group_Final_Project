@@ -27,6 +27,7 @@ import { debounce } from 'lodash';
 import BlockUserButton from '../../components/admin/BlockUserButton';
 import { SearchParams } from '../../models/UserModel';
 import EmployeeDetailModal from '../../components/admin/EmployeeDetailModal';
+import UserRoleDropdown from '../../components/admin/UserRoleDropdown';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
