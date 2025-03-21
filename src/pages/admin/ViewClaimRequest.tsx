@@ -72,7 +72,7 @@ const ViewClaimRequest: React.FC = () => {
               pageSize: 1,
             },
           };
-          const countResponse = await claimService.searchClaims(countParams, {showSpinner:false});
+          const countResponse = await claimService.searchClaims(countParams);
           return { status: status.value, count: countResponse.data.pageInfo.totalItems };
         }
         return null;
@@ -99,7 +99,7 @@ const ViewClaimRequest: React.FC = () => {
         },
       };
 
-      const response = await claimService.searchClaims(params, {showSpinner:false});
+      const response = await claimService.searchClaims(params);
       if (response?.data?.pageData) {
         setFilteredClaims(response.data.pageData);
         setPagination(prev => ({
@@ -134,10 +134,6 @@ const ViewClaimRequest: React.FC = () => {
       }))
   ];
 
-  // Modify handleRowClick to show details modal
-
-
-  // Add debounced search function
   const debouncedSearch = useCallback(
     debounce((value: string) => {
       setSearchText(value);

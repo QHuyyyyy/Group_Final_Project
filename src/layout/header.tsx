@@ -101,8 +101,9 @@ const Header = () => {
           {/* Auth Section */}
           <div className="flex items-center space-x-4">
             {token ? (
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-2 cursor-pointer"
+                 onClick={() => navigate("/userdashboard/profile")}>
                   <Avatar
                     size={40}
                     icon={<UserOutlined />}
