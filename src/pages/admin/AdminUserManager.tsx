@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Table, Button,Input,Space, Tag, Switch} from 'antd';
+import { Card, Table, Button,Input,Space, Tag, Switch } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import 'antd/dist/reset.css';
 import AdminSidebar from '../../components/admin/AdminSidebar';
@@ -16,7 +16,6 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import StaffDetails from '../../components/admin/StaffDetails';
 import { userService } from '../../services/user.service';
-import { message } from 'antd';
 import { roleService } from '../../services/role.service';
 import { UserData } from '../../models/UserModel';
 
@@ -28,6 +27,7 @@ import BlockUserButton from '../../components/admin/BlockUserButton';
 import { SearchParams } from '../../models/UserModel';
 import EmployeeDetailModal from '../../components/admin/EmployeeDetailModal';
 import UserRoleDropdown from '../../components/admin/UserRoleDropdown';
+import { toast } from 'react-toastify';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -89,8 +89,7 @@ const AdminUserManager: React.FC = () => {
         }));
       }
     } catch (error) {
-      console.error('Error fetching users:', error);
-      message.error('An error occurred while fetching users.');
+      toast.error('An error occurred while fetching users.');
     } finally {
       setLoading(false);
     }
@@ -105,7 +104,7 @@ const AdminUserManager: React.FC = () => {
       }));
       setRoleOptions(options);
     } catch (error) {
-      console.error('Error fetching roles:', error);
+      toast.error('Error fetching roles');
     }
   };
 
@@ -160,11 +159,10 @@ const AdminUserManager: React.FC = () => {
         role_code: newRoleCode
       });
       
-      message.success('User role updated successfully');
+      toast.success('User role updated successfully');
       fetchUsers(pagination.current);
     } catch (error) {
-      console.error('Error changing user role:', error);
-      message.error('Failed to update user role');
+      toast.error('Failed to update user role');
     } finally {
       setLoading(false);
     }
