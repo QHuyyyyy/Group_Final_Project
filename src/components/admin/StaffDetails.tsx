@@ -252,7 +252,7 @@ const StaffDetails: React.FC<StaffDetailsProps> = ({ visible, staff, onClose }) 
                         <span className="text-gray-600 font-medium">Email</span>
                       </div>
                       <div className="w-2/3 px-4 text-gray-800">
-                        {renderSensitiveField(staff?.email, 'Email', 'email')}
+                        {staff?.email || 'N/A'}
                       </div>
                     </div>
                     
