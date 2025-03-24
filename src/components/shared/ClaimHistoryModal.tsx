@@ -70,7 +70,7 @@ const ClaimHistoryModal = ({ visible, claim, onClose }: ClaimHistoryModalProps) 
       case "Rejected": return "red";
       case "Canceled": return "red";
       case "Paid": return "green";
-      default: return "default";
+      default: return "";
     }
   };
 
@@ -78,14 +78,8 @@ const ClaimHistoryModal = ({ visible, claim, onClose }: ClaimHistoryModalProps) 
     {
       title: "No.",
       key: "index",
-      width: 70,
+      width: "5%",
       render: (_, __, index) => index + 1,
-    },
-    {
-      title: "Claim",
-      dataIndex: "claim_name",
-      key: "claim_name",
-      width: 200,
     },
     {
         title: "Status Change",
@@ -152,8 +146,8 @@ const ClaimHistoryModal = ({ visible, claim, onClose }: ClaimHistoryModalProps) 
         <div className="flex flex-col">
           <span className="text-xl font-semibold">Claim History</span>
           {claim && (
-            <span className="text-sm text-gray-500">
-              Claim Name: {claim.claim_name}
+            <span className="text-base font-medium text-gray-700">
+              Claim Name: <strong>{claim.claim_name}</strong>
             </span>
           )}
         </div>
