@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { DollarOutlined, DownloadOutlined, FileExcelOutlined, FilterOutlined } from '@ant-design/icons';
-import { Modal, Tabs, Button, Card,  } from 'antd';
+import {Tabs, Button, Card,  } from 'antd';
 import { exportToExcel } from '../../utils/xlsxUtils';
 import type { Claim, SearchParams } from "../../models/ClaimModel";
 import { claimService } from "../../services/claim.service";
@@ -13,6 +13,7 @@ import type { Key } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ClaimHistoryModal from '../../components/shared/ClaimHistoryModal';
+import PaymentConfirmationModal from '../../components/shared/FinanceModal';
 
 const debouncedSearch = debounce((
   value: string,
@@ -435,73 +436,18 @@ const Finance = () => {
         />
       </Card>
 
-      {showConfirmDialog && (
-        <Modal
-          title={<h2 className="text-2xl font-bold text-center text-green-800">Payment Confirmation <DollarOutlined style={{ color: 'green', fontSize: '30px' }} className="mb-2 animate-bounce" /></h2>}
-          open={showConfirmDialog}
-          onCancel={() => setShowConfirmDialog(false)}
-          footer={[
-            <Button key="cancel" onClick={() => setShowConfirmDialog(false)} className="bg-gray-300 hover:bg-gray-400 rounded-md transition duration-200">
-              Cancel
-            </Button>,
-            <Button 
-              key="submit" 
-              type="primary" 
-              onClick={handleConfirmPayment}
-              className="bg-green-600 hover:bg-green-700 text-white rounded-md transition duration-200 flex items-center"
-            >
-            
-              Confirm Payment
-            </Button>
-          ]}
-          width={600}
-          className="rounded-lg shadow-lg relative"
-          style={{ zIndex: 1000, backgroundColor: '#ffffff' }}
-        >
-          <div className="flex flex-col items-center justify-center mb-4">
-            <p className="text-lg text-center text-gray-800 mb-2">
-              Are you sure you want to mark this claim as paid?
-            </p>
-            <span className="font-semibold text-red-600">This action cannot be undone.</span>
-          </div>
-          <div className="absolute bottom-0 left-0 w-1/4 h-1/3 bg-green-100 opacity-50 rounded-tl-lg"></div>
-           <div className="absolute top-0 right-0 w-1/8 h-1/4 bg-green-100 opacity-50 rounded-br-lg"></div>
-             <div className="absolute top-0 left-0 w-1/9 h-1/6 bg-green-100 opacity-50 rounded-br-lg"></div>
-        </Modal>
-      )}
+      <PaymentConfirmationModal
+        visible={showConfirmDialog}
+        onCancel={() => setShowConfirmDialog(false)}
+        onConfirm={handleConfirmPayment}
+      />
 
-      <Modal
-        title={<h2 className="text-2xl font-bold text-center text-green-800">Payment Confirmation <DollarOutlined style={{ color: 'green', fontSize: '30px' }} className="mb-2 animate-bounce" /></h2>}
-        open={isBatchPaymentModalVisible}
+      <PaymentConfirmationModal
+        visible={isBatchPaymentModalVisible}
         onCancel={() => setIsBatchPaymentModalVisible(false)}
-        footer={[
-          <Button key="cancel" onClick={() => setIsBatchPaymentModalVisible(false)} className="bg-gray-300 hover:bg-gray-400 rounded-md transition duration-200">
-            Cancel
-          </Button>,
-          <Button 
-            key="submit" 
-            type="primary" 
-            onClick={handleConfirmBatchPayment}
-            className="bg-green-600 hover:bg-green-700 text-white rounded-md transition duration-200 flex items-center"
-          >
-            <DollarOutlined className="mr-2" />
-            Confirm Payment
-          </Button>
-        ]}
-        width={600}
-        className="rounded-lg shadow-lg relative"
-        style={{ zIndex: 1000, backgroundColor: '#ffffff' }}
-      >
-        <div className="flex flex-col items-center justify-center mb-4">
-          <p className="text-lg text-center text-gray-800 mb-2">
-            Are you sure you want to mark {selectedRowKeys.length} claims as paid?
-          </p>
-          <span className="font-semibold text-red-600">This action cannot be undone.</span>
-        </div>
-        <div className="absolute bottom-0 left-0 w-1/4 h-1/3 bg-green-100 opacity-50 rounded-tl-lg"></div>
-        <div className="absolute top-0 right-0 w-1/8 h-1/4 bg-green-100 opacity-50 rounded-br-lg"></div>
-        <div className="absolute top-0 left-0 w-1/9 h-1/6 bg-green-100 opacity-50 rounded-br-lg"></div>
-      </Modal>
+        onConfirm={handleConfirmBatchPayment}
+        count={selectedRowKeys.length}
+      />
 
       <ClaimHistoryModal
         visible={isHistoryModalVisible}
