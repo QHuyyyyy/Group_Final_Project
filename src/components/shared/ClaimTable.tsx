@@ -31,9 +31,9 @@ const ClaimTable = ({
 }: ClaimTableProps) => {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Draft": return "gold";
+      case "Draft": return "default";
       case "Pending Approval": return "blue";
-      case "Approved": return "green";
+      case "Approved": return "gold";
       case "Rejected": return "red";
       case "Canceled": return "red";
       case "Paid": return "green";
