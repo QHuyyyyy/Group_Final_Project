@@ -7,13 +7,16 @@ import {
 } from "@ant-design/icons";
 import { claimService } from "../../services/claim.service";
 import type { Claim, SearchParams } from "../../models/ClaimModel";
-import { debounce } from "lodash";
 import ClaimTable from "../../components/shared/ClaimTable";
 import PageHeader from "../../components/shared/PageHeader";
 import ClaimDetailsModal from "../../components/shared/ClaimDetailsModal";
 import dayjs from "dayjs";
 import { toast } from 'react-toastify';
 import ClaimHistoryModal from "../../components/shared/ClaimHistoryModal";
+import { createDebouncedSearch } from "../../utils/searchUtils";
+
+// Create a debounced search instance that can be reused
+const debouncedSearch = createDebouncedSearch(500);
 
 interface PaginationState {
   current: number;
@@ -23,6 +26,7 @@ interface PaginationState {
 
 function ApprovalPage() {
   const [claims, setClaims] = useState<Claim[]>([]);
+  const [allClaims, setAllClaims] = useState<Claim[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [statusFilter, ] = useState<string>("");
@@ -48,6 +52,8 @@ function ApprovalPage() {
   const [form] = Form.useForm();
   const [actionLoading, setActionLoading] = useState(false);
   const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
+  const [searchType, setSearchType] = useState<string>("claim_name");
+  
   const handleViewHistory = (record: Claim) => {
     setSelectedClaim(record);
     setIsHistoryModalVisible(true);
@@ -72,6 +78,7 @@ function ApprovalPage() {
     
     if (response?.data?.pageData) {
       const claimsData = response.data.pageData;
+      setAllClaims(claimsData);
       setClaims(claimsData);
 
       const newCounts = {
@@ -96,18 +103,30 @@ function ApprovalPage() {
 
   useEffect(() => {
     fetchClaims(pagination.current);
-  }, [statusFilter, searchText, pagination.current, pagination.pageSize]);
+  }, [statusFilter, pagination.current, pagination.pageSize]);
 
-  const handleSearch = useCallback(
-    debounce((query: string) => {
-      setSearchText(query);
-      setPagination((prev) => ({
-        ...prev,
-        current: 1,
-      }));
-    }, 500),
-    []
-  );
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, []);
+
+  const handleSearch = useCallback((value: string) => {
+    setSearchText(value);
+    setPagination((prev) => ({
+      ...prev,
+      current: 1,
+    }));
+    
+    debouncedSearch(value, allClaims, statusFilter, searchType, setClaims);
+  }, [allClaims, statusFilter, searchType]);
+
+  const handleSearchTypeChange = (value: string) => {
+    setSearchType(value);
+    if (searchText) {
+      debouncedSearch(searchText, allClaims, statusFilter, value, setClaims);
+    }
+  };
 
   const showConfirmation = (
     claim: Claim,
@@ -188,6 +207,9 @@ function ApprovalPage() {
           title="Approval Management"
           onSearch={handleSearch}
           onChange={(e) => handleSearch(e.target.value)}
+          searchType={searchType}
+          onSearchTypeChange={handleSearchTypeChange}
+          searchPlaceholder={`Search by ${searchType === 'claim_name' ? 'claim name' : 'staff name'}`}
         />
 
         <ClaimTable

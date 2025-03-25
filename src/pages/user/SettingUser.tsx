@@ -19,7 +19,6 @@ const SettingUser = () => {
   const user = useUserStore((state) => state);
   const [employeeData, setEmployeeData] = useState<Employee | null>(null);
   const [departmentName, setDepartmentName] = useState<string>('');
-  const [loading, setLoading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string>('');
   const [isPasswordModalVisible, setIsPasswordModalVisible] = useState(false);
 
@@ -72,7 +71,6 @@ const SettingUser = () => {
   // Handle form submission
   const onFinish = async (values: any) => {
     console.log(employeeData)
-    setLoading(true);
     try {
       if (!employeeData?._id) {
         toast.error('No employee data available');
@@ -104,9 +102,7 @@ const SettingUser = () => {
     } catch (error) {
       console.error('Error updating profile:', error);
       toast.error('Failed to update profile');
-    } finally {
-      setLoading(false);
-    }
+    } 
   };
 
   // Mock upload props (in a real app, you would implement actual file upload)
@@ -270,7 +266,7 @@ const SettingUser = () => {
                         <InputNumber 
                           disabled
                           size="large"
-                          style={{ width: '30%' }}
+                          style={{ width: '100%' }}
                           className="w-full"
                           formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                         />
@@ -293,7 +289,6 @@ const SettingUser = () => {
                   <Button 
                     type="primary" 
                     htmlType="submit" 
-                    loading={loading}
                     size="large"
                     className="px-8 bg-blue-600 hover:bg-blue-700"
                   >
