@@ -25,10 +25,8 @@ const Navbar = () => {
 
   useEffect(() => {
     const fetchEmployeeData = async () => {
-
         const response = await employeeService.getEmployeeById(user.id);
         setEmployeeData(response.data);
-      
     };
 
     if (user.id) {
@@ -36,64 +34,70 @@ const Navbar = () => {
     }
   }, [user.id]);
 
-  useEffect(() => {
-    const fetchClaims = async () => {
-      if (user?.role_code === 'A003' || user?.role_code === 'A002') {
-
-          let claims: Claim[] = [];
-          
-          if (user?.role_code === 'A003') {
-            const response = await claimService.searchClaimsForApproval({
-              searchCondition: {
-                claim_status: 'Pending Approval',
-                is_delete: false
-              },
-              pageInfo: {
-                pageSize: 100,
-                pageNum: 1
-              }
-            });
-            claims = response.data.pageData.filter(claim => 
-              claim.approval_info && claim.approval_info._id === user.id
-            );
-          } else if (user?.role_code === 'A002') {
-            const response = await claimService.searchClaimsForFinance({
-              searchCondition: {
-                claim_status: 'Approved',
-                is_delete: false
-              },
-              pageInfo: {
-                pageSize: 100,
-                pageNum: 1
-              }
-            });
-            claims = response.data.pageData;
-          }
-          
-          // Group claims by staff_name
-          const groupedClaims = claims.reduce((acc: { [key: string]: number }, claim: Claim) => {
-            acc[claim.staff_name] = (acc[claim.staff_name] || 0) + 1;
-            return acc;
-          }, {});
-
-          // Create grouped notifications
-          const newNotifications = Object.entries(groupedClaims).map(([staffName, count]) => ({
-            key: staffName,
-            message: user?.role_code === 'A003' 
-              ? `⬇️ ${count} claim requests from ${staffName} need to be action`
-              : `✅ ${count} approved claims from ${staffName}`,
-            timestamp: new Date().toISOString(),
-          }));
-          
-          setNotifications(newNotifications);
-          setNotificationCount(claims.length);
+  const fetchClaims = async () => {
+    if (user?.role_code === 'A003' || user?.role_code === 'A002') {
+        let claims: Claim[] = [];
         
-      }
-    };
+        if (user?.role_code === 'A003') {
+          const response = await claimService.searchClaimsForApproval({
+            searchCondition: {
+              claim_status: 'Pending Approval',
+              is_delete: false
+            },
+            pageInfo: {
+              pageSize: 100,
+              pageNum: 1
+            }
+          });
+          claims = response.data.pageData.filter(claim => 
+            claim.approval_info && claim.approval_info._id === user.id
+          );
+        } else if (user?.role_code === 'A002') {
+          const response = await claimService.searchClaimsForFinance({
+            searchCondition: {
+              claim_status: 'Approved',
+              is_delete: false
+            },
+            pageInfo: {
+              pageSize: 100,
+              pageNum: 1
+            }
+          });
+          claims = response.data.pageData;
+        }
+        
+        // Group claims by staff_name
+        const groupedClaims = claims.reduce((acc: { [key: string]: number }, claim: Claim) => {
+          acc[claim.staff_name] = (acc[claim.staff_name] || 0) + 1;
+          return acc;
+        }, {});
 
+        // Create grouped notifications
+        const newNotifications = Object.entries(groupedClaims).map(([staffName, count]) => ({
+          key: staffName,
+          message: user?.role_code === 'A003' 
+            ? `⬇️ ${count} claim requests from ${staffName} need to be action`
+            : `✅ ${count} approved claims from ${staffName}`,
+          timestamp: new Date().toISOString(),
+        })); 
+        setNotifications(newNotifications);
+        setNotificationCount(claims.length);
+    }
+  };
+
+  useEffect(() => {
     fetchClaims();
+    // Add event listener for the refreshNotifications event
+    const handleRefreshNotifications = () => {
+      fetchClaims();
+    };
+    window.addEventListener('refreshNotifications', handleRefreshNotifications);
+    // Cleanup function to remove event listener
+    return () => {
+      window.removeEventListener('refreshNotifications', handleRefreshNotifications);
+    };
   }, [user]);
-
+  
   const handleLogout = () => {
     logout();
     navigate("/login");

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { DollarOutlined, DownloadOutlined, FileExcelOutlined, FilterOutlined } from '@ant-design/icons';
-import {Tabs, Button, Card,  } from 'antd';
+import { DollarOutlined, DownloadOutlined, FileExcelOutlined } from '@ant-design/icons';
+import { Button, Card } from 'antd';
 import { exportToExcel } from '../../utils/xlsxUtils';
 import type { Claim, SearchParams } from "../../models/ClaimModel";
 import { claimService } from "../../services/claim.service";
@@ -13,36 +13,32 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ClaimHistoryModal from '../../components/shared/ClaimHistoryModal';
 import PaymentConfirmationModal from '../../components/shared/FinanceModal';
-import { createDebouncedSearch } from '../../utils/searchUtils';
-
-// Create a debounced search instance that can be reused
-const debouncedSearch = createDebouncedSearch(1000);
+import { debounce } from "lodash";
 
 const Finance = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [selectedClaimForInfo, setSelectedClaimForInfo] = useState<Claim | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string>("");
   const [isViewModalVisible, setIsViewModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [statusCounts, setStatusCounts] = useState<Record<string, number>>({
-    "": 0,
-    "Approved": 0,
-  });
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
     totalItems: 0,
     totalPages: 0
   });
-  const [allClaims, setAllClaims] = useState<Claim[]>([]);
   const [displayClaims, setDisplayClaims] = useState<Claim[]>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [isBatchPaymentModalVisible, setIsBatchPaymentModalVisible] = useState(false);
   const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
   const [searchType, setSearchType] = useState<string>("claim_name");
 
-  const fetchClaims = async () => {
+  const refreshNotifications = () => {
+    const event = new CustomEvent('refreshNotifications');
+    window.dispatchEvent(event);
+  };
+
+  const fetchClaims = async (pageNum: number = pagination.current) => {
     setLoading(true);
     const params: SearchParams = {
       searchCondition: {
@@ -53,7 +49,7 @@ const Finance = () => {
         is_delete: false,
       },
       pageInfo: {
-        pageNum: pagination.current,
+        pageNum: pageNum,
         pageSize: pagination.pageSize,
       },
     };
@@ -61,24 +57,20 @@ const Finance = () => {
     try {
       const response = await claimService.searchClaimsForFinance(params);
       if (response?.data?.pageData) {
-        const claimsData = response.data.pageData;
-        setAllClaims(claimsData);
-
-        const newCounts: Record<string, number> = {
-          "": claimsData.length,
-          "Approved": claimsData.filter(claim => claim.claim_status === "Approved").length,
-        };
-        setStatusCounts(newCounts);
+        const claimsData = response.data.pageData.sort((a, b) => 
+          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+        );
 
         const filteredData = claimsData.filter(claim => {
-          const matchesSearch = searchTerm 
-            ? claim.claim_name.toLowerCase().includes(searchTerm.toLowerCase())
-            : true;
-          const matchesStatus = statusFilter 
-            ? claim.claim_status === statusFilter 
-            : true;
-          return matchesSearch && matchesStatus;
+          if (!searchTerm) return true;
+          if (searchType === 'claim_name') {
+            return claim.claim_name.toLowerCase().includes(searchTerm.toLowerCase());
+          } else if (searchType === 'staff_name') {
+            return claim.staff_name.toLowerCase().includes(searchTerm.toLowerCase());
+          }
+          return true;
         });
+        
         setDisplayClaims(filteredData);
 
         setPagination(prev => ({
@@ -94,53 +86,30 @@ const Finance = () => {
     }
   };
 
-  useEffect(() => {
-    fetchClaims();
-  }, [pagination.current, pagination.pageSize]);
-
-  const handleSearch = useCallback((value: string) => {
-    setSearchTerm(value);
-    setPagination(prev => ({ ...prev, current: 1 }));
-    
-    debouncedSearch(value, allClaims, statusFilter, searchType, setDisplayClaims);
-  }, [allClaims, statusFilter, searchType]);
 
   useEffect(() => {
-    return () => {
-      debouncedSearch.cancel();
-    };
-  }, []);
+    fetchClaims(pagination.current);
+  }, [pagination.current, pagination.pageSize, searchTerm, searchType]);
 
+  const handleSearch = useCallback(
+    debounce((value: string) => {
+      setSearchTerm(value);
+      setPagination((prev) => ({
+        ...prev,
+        current: 1,
+      }));
+    }, 1000),
+    []
+  );
   const handleSearchTypeChange = (value: string) => {
     setSearchType(value);
     if (searchTerm) {
-      debouncedSearch(searchTerm, allClaims, statusFilter, value, setDisplayClaims);
+      setSearchTerm(searchTerm);
+      setPagination((prev) => ({
+        ...prev,
+        current: 1,
+      }));
     }
-  };
-
-  const handleStatusFilterChange = (value: string) => {
-    setStatusFilter(value);
-    setPagination(prev => ({
-      ...prev,
-      current: 1,
-    }));
-
-    const filteredData = allClaims.filter(claim => {
-      let matchesSearch = true;
-      
-      if (searchTerm) {
-        if (searchType === 'claim_name') {
-          matchesSearch = claim.claim_name.toLowerCase().includes(searchTerm.toLowerCase());
-        } else if (searchType === 'staff_name') {
-          matchesSearch = claim.staff_name.toLowerCase().includes(searchTerm.toLowerCase());
-        }
-      }
-      
-      const matchesStatus = value ? claim.claim_status === value : true;
-      return matchesSearch && matchesStatus;
-    });
-    
-    setDisplayClaims(filteredData);
   };
 
   const handleViewClaim = (claim: Claim) => {
@@ -223,6 +192,7 @@ const Finance = () => {
       
       setShowConfirmDialog(false);
       fetchClaims();
+      refreshNotifications(); 
     } catch (error) {
       toast.error('Failed to process payment. Please try again.', {
         position: "bottom-right",
@@ -265,6 +235,7 @@ const Finance = () => {
       setSelectedRowKeys([]);
       setIsBatchPaymentModalVisible(false);
       fetchClaims();
+      refreshNotifications(); // Refresh notifications after batch payment
     } catch (error) {
       toast.error('Failed to process batch payment. Please try again.', {
         position: "bottom-right",
@@ -281,6 +252,7 @@ const Finance = () => {
 
     const selectedClaimsData = displayClaims
       .filter(claim => selectedRowKeys.includes(claim._id))
+      .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
       .map(claim => ({
         "Claim ID": claim._id,
         "Staff Name": claim.staff_name,
@@ -332,48 +304,15 @@ const Finance = () => {
       />
       <Card className="shadow-md">
         <PageHeader
-          title="Paid Claim"
+          title="Pay Management"
           onSearch={handleSearch}
           onChange={(e) => handleSearch(e.target.value)}
           searchType={searchType}
           onSearchTypeChange={handleSearchTypeChange}
           searchPlaceholder={`Search by ${searchType === 'claim_name' ? 'claim name' : 'staff name'}`}
-        
         />
 
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center">
-            <FilterOutlined className="mr-4 text-gray-600" />
-            <Tabs
-              activeKey={statusFilter}
-              onChange={handleStatusFilterChange}
-              className="status-tabs"
-              items={[
-                {
-                  key: "",
-                  label: (
-                    <span className="flex items-center text-gray-600">
-                      All
-                      <span className="ml-1 text-gray-500">
-                        ({statusCounts[""] || 0})
-                      </span>
-                    </span>
-                  )
-                },
-                {
-                  key: "Approved",
-                  label: (
-                    <span className="flex items-center text-gray-600">
-                      Approved
-                      <span className="ml-1 text-gray-500">
-                        ({statusCounts["Approved"] || 0})
-                      </span>
-                    </span>
-                  )
-                },
-              ]}
-            />
-          </div>
+        <div className="flex items-center justify-end mb-6">
           <div className="flex items-center gap-2">
             {selectedRowKeys.length > 0 && (
               <>
