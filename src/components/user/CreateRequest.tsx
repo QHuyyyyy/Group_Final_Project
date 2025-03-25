@@ -63,7 +63,10 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                 setProjects(projectsResponse.data.pageData);
             }
             if (approversResponse.success) {
-                setApprovers(approversResponse.data.pageData);
+                const filteredApprovers = approversResponse.data.pageData.filter(
+                    approver => approver._id !== userId
+                );
+                setApprovers(filteredApprovers);
             }
         } catch {
             toast.error("Failed to fetch initial data");

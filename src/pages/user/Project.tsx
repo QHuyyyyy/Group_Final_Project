@@ -15,7 +15,6 @@ const Projects: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const userId = useUserStore((state) => state.id);
   const [expandedProject, setExpandedProject] = useState<string | null>(null);
-  const [expandedMembers, setExpandedMembers] = useState<{ [key: string]: boolean }>({});
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 8,
@@ -81,14 +80,6 @@ const Projects: React.FC = () => {
 
   const handleProjectClick = (projectId: string) => {
     setExpandedProject(expandedProject === projectId ? null : projectId);
-  };
-
-  const toggleShowMoreMembers = (projectId: string, event: React.MouseEvent) => {
-    event.stopPropagation();
-    setExpandedMembers(prev => ({
-      ...prev,
-      [projectId]: !prev[projectId]
-    }));
   };
 
   const renderProjectCard = (project: any) => (
@@ -208,7 +199,21 @@ const Projects: React.FC = () => {
                   <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-pink-500 rounded-full" />
                   <Text className="font-medium text-gray-700">Description</Text>
                 </div>
-                <div className="prose prose-sm max-w-none text-gray-600">
+                <div className="prose prose-sm max-w-none text-gray-600 h-[180px] overflow-y-auto pr-2
+                  [&::-webkit-scrollbar]:w-2
+                  [&::-webkit-scrollbar]:h-2
+                  [&::-webkit-scrollbar-track]:rounded-full
+                  [&::-webkit-scrollbar-track]:bg-gray-100
+                  [&::-webkit-scrollbar-thumb]:rounded-full
+                  [&::-webkit-scrollbar-thumb]:bg-gradient-to-b
+                  [&::-webkit-scrollbar-thumb]:from-blue-500
+                  [&::-webkit-scrollbar-thumb]:to-purple-500
+                  [&::-webkit-scrollbar-thumb]:hover:bg-gradient-to-b
+                  [&::-webkit-scrollbar-thumb]:hover:from-blue-600
+                  [&::-webkit-scrollbar-thumb]:hover:to-purple-600
+                  scrollbar-thin
+                  scrollbar-track-gray-100
+                  scrollbar-thumb-blue-500">
                   {project.project_description || 'No description available'}
                 </div>
               </div>
@@ -225,52 +230,49 @@ const Projects: React.FC = () => {
                   </motion.div>
                   <Text className="font-medium text-gray-700">Team</Text>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <div className="flex flex-wrap gap-2">
-                    {(project.project_members || [])
-                      .slice(0, expandedMembers[project._id] ? undefined : 5)
-                      .map((member: any, index: number) => (
-                        <motion.div
-                          key={member.user_id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.1 }}
+                <div className="flex flex-col">
+                  <div className="flex flex-col gap-2 h-[180px] overflow-y-auto pr-2
+                    [&::-webkit-scrollbar]:w-2
+                    [&::-webkit-scrollbar]:h-2
+                    [&::-webkit-scrollbar-track]:rounded-full
+                    [&::-webkit-scrollbar-track]:bg-gray-100
+                    [&::-webkit-scrollbar-thumb]:rounded-full
+                    [&::-webkit-scrollbar-thumb]:bg-gradient-to-b
+                    [&::-webkit-scrollbar-thumb]:from-blue-500
+                    [&::-webkit-scrollbar-thumb]:to-purple-500
+                    [&::-webkit-scrollbar-thumb]:hover:bg-gradient-to-b
+                    [&::-webkit-scrollbar-thumb]:hover:from-blue-600
+                    [&::-webkit-scrollbar-thumb]:hover:to-purple-600
+                    scrollbar-thin
+                    scrollbar-track-gray-100
+                    scrollbar-thumb-blue-500">
+                    {(project.project_members || []).map((member: any, index: number) => (
+                      <motion.div
+                        key={member.user_id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        <Tag 
+                          className="rounded-full px-3 py-1.5 shadow-sm hover:shadow-md
+                            transition-all duration-300 cursor-default w-full whitespace-normal break-words"
+                          style={{ height: 'auto', maxWidth: '100%' }}
+                          color={
+                            member.project_role === 'Project Manager' ? 'blue' :
+                            member.project_role === 'Developer' ? 'green' :
+                            member.project_role === 'Quality Analytics' ? 'purple' :
+                            member.project_role === 'Technical Leader' ? 'orange' :
+                            'default'
+                          }
                         >
-                          <Tag 
-                            className="rounded-full px-3 py-1.5 shadow-sm hover:shadow-md
-                              transition-all duration-300 cursor-default"
-                            color={
-                              member.project_role === 'Project Manager' ? 'blue' :
-                              member.project_role === 'Developer' ? 'green' :
-                              member.project_role === 'Quality Analytics' ? 'purple' :
-                              member.project_role === 'Technical Leader' ? 'orange' :
-                              'default'
-                            }
-                          >
-                            {member.user_name}
-                            <span className="opacity-75 ml-1">• {member.project_role}</span>
-                          </Tag>
-                        </motion.div>
+                          <div className="flex flex-wrap items-center gap-1">
+                            <span>{member.user_name}</span>
+                            <span className="opacity-75">• {member.project_role}</span>
+                          </div>
+                        </Tag>
+                      </motion.div>
                     ))}
                   </div>
-                  
-                  {/* Show more/less button */}
-                  {project.project_members?.length > 5 && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="mt-2"
-                    >
-                      <Button
-                        type="link"
-                        size="small"
-                        onClick={(e) => toggleShowMoreMembers(project._id, e)}
-                        className="text-blue-500 hover:text-blue-600 px-0"
-                      >
-                        {expandedMembers[project._id] ? 'Show less' : `+${project.project_members.length - 5} more`}
-                      </Button>
-                    </motion.div>
-                  )}
                 </div>
               </div>
 
