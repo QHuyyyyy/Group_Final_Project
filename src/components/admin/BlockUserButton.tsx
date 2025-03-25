@@ -1,7 +1,8 @@
 import React from 'react';
-import { Button, message } from 'antd';
+import { Button } from 'antd';
 import { LockOutlined, UnlockOutlined } from '@ant-design/icons';
 import { userService } from '../../services/user.service';
+import { toast } from 'react-toastify';
 
 interface BlockUserButtonProps {
   userId: string;
@@ -17,11 +18,10 @@ const BlockUserButton: React.FC<BlockUserButtonProps> = ({ userId, isBlocked, on
         is_blocked: !isBlocked
       }, {showSpinner:false});
       
-      message.success(`User successfully ${isBlocked ? 'unblocked' : 'blocked'}`);
+      toast.success(`User successfully ${isBlocked ? 'unblocked' : 'blocked'}`);
       onSuccess();
     } catch (error) {
-      console.error('Error toggling user block status:', error);
-      message.error('Failed to change user status');
+      toast.error('Failed to change user status');
     }
   };
 

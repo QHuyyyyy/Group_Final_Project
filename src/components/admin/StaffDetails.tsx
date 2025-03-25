@@ -22,7 +22,7 @@ import {
 import { UserData } from '../../models/UserModel';
 import { Employee } from '../../models/EmployeeModel';
 import { employeeService } from '../../services/employee.service';
-import { message } from 'antd';
+import { toast } from 'react-toastify';
 
 interface StaffDetailsProps {
   visible: boolean;
@@ -61,7 +61,7 @@ const StaffDetails: React.FC<StaffDetailsProps> = ({ visible, staff, onClose }) 
       const response = await employeeService.getEmployeeById(userId, {showSpinner: false});
       setEmployeeData(response.data);
     } catch (error) {
-      console.error('Error fetching employee data:', error);
+     
     } finally {
       setLoading(false);
     }
@@ -91,10 +91,10 @@ const StaffDetails: React.FC<StaffDetailsProps> = ({ visible, staff, onClose }) 
   const copyToClipboard = (text: string, fieldName: string) => {
     navigator.clipboard.writeText(text)
       .then(() => {
-        message.success(`${fieldName} đã được sao chép vào clipboard`);
+        toast.success(`${fieldName} đã được sao chép vào clipboard`);
       })
       .catch(() => {
-        message.error('Không thể sao chép. Vui lòng thử lại.');
+        toast.error('Không thể sao chép. Vui lòng thử lại.');
       });
   };
 

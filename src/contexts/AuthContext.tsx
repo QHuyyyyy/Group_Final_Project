@@ -23,7 +23,7 @@ export const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
           const userInfo = await authService.getinfo();
           useUserStore.getState().setUser(userInfo.data);
         } catch (error) {
-          console.error("Lỗi khi khôi phục phiên đăng nhập:", error);
+        
           localStorage.removeItem("token");
           useUserStore.getState().clearUser();
         } 

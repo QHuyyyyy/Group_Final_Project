@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, Select, DatePicker, Button, Empty, message } from 'antd';
+import { Modal, Form, Input, Select, DatePicker, Button, Empty } from 'antd';
 import dayjs from 'dayjs';
 import { ProjectData } from '../../models/ProjectModel';
 import { CalendarOutlined,  ClockCircleOutlined } from '@ant-design/icons';
 import { PlusOutlined } from '@ant-design/icons';
+import { toast } from 'react-toastify';
+import { InputVaild } from '../../constants/InputVaild';
+import CommonField from './CommonFieldAddUser';
+
 
 interface ProjectModalProps {
   visible: boolean;
@@ -138,13 +142,9 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
           </h3>
           
           <div className="grid grid-cols-3 gap-x-6 mb-4">
-            <Form.Item name="project_code" label="Project Code" rules={[{ required: true }]}>
-              <Input placeholder="Enter project code" className="hover:border-blue-400 focus:border-blue-500" />
-            </Form.Item>
+            <CommonField name="project_code" label="Project Code" rules={InputVaild.projectCode} />
 
-            <Form.Item name="project_name" label="Project Name" rules={[{ required: true }]}>
-              <Input placeholder="Enter project name" className="hover:border-blue-400 focus:border-blue-500" />
-            </Form.Item>
+            <CommonField name="project_name" label="Project Name" rules={[{ required: true }]} />
 
             <Form.Item name="project_department" label="Department" rules={[{ required: true }]}>
               <Select 
@@ -187,7 +187,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
                       const endDate = form.getFieldValue('endDate');
                       if (date && endDate) {
                         if (date.isAfter(endDate)) {
-                          message.warning('Start date cannot be after end date');
+                          toast.warning('Start date cannot be after end date');
                           form.setFieldValue('startDate', null);
                         } else {
                           setDaysBetween(endDate.diff(date, 'days'));
@@ -233,7 +233,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
                       const startDate = form.getFieldValue('startDate');
                       if (startDate && date) {
                         if (date.isBefore(startDate)) {
-                          message.warning('End date cannot be before start date');
+                          toast.warning('End date cannot be before start date');
                           form.setFieldValue('endDate', null);
                         } else {
                           setDaysBetween(date.diff(startDate, 'days'));
