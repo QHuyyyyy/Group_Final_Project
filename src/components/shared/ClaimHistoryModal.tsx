@@ -100,9 +100,6 @@ const ClaimHistoryModal = ({ visible, claim, onClose }: ClaimHistoryModalProps) 
         width: "15%",
         render: (_, record) => (
           <div>
-            <div className="text-sm">
-              {dayjs(record.created_at).format("HH:mm:ss")}
-            </div>
             <div className="text-xs text-gray-500">
               {dayjs(record.created_at).format("DD/MM/YYYY")}
             </div>
@@ -120,9 +117,6 @@ const ClaimHistoryModal = ({ visible, claim, onClose }: ClaimHistoryModalProps) 
     },
     render: (_, record) => (
       <div>
-        <div className="text-sm">
-          {dayjs(record.updated_at).format("HH:mm:ss")}
-        </div>
         <div className="text-xs text-gray-500">
           {dayjs(record.updated_at).format("DD/MM/YYYY")}
         </div>
