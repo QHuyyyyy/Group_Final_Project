@@ -6,56 +6,56 @@ export const claimService = {
   // Tạo claim mới
   createClaim: async (claimData: CreateClaimRequest, config={}): Promise<ApiResponse<CreateClaim>> => {
     const response = await apiUtils.post<ApiResponse<CreateClaim>>('/api/claims', claimData || {}, config);
-    console.log("fetch data:", response.data);
+    
     return response.data;
   },
 
   // Tìm kiếm claims với phân trang
   searchClaims: async (params: SearchParams, config={}) /*Promise<ApiResponse<SearchResponse>> */ => {
     const response = await api.post('/api/claims/search', params || {}, config);
-    console.log("fetch data:", response.data);
+    
     return response.data;
   },
 
   // Tìm kiếm claims theo người yêu cầu
   searchClaimsByClaimer: async (params: SearchParams, config={}): Promise<ApiResponse<SearchResponse>> => {
     const response = await  apiUtils.post<ApiResponse<SearchResponse>>('/api/claims/claimer-search', params || {}, config);
-    console.log("fetch data:", response.data);
+    
     return response.data;
   },
 
   // Tìm kiếm claims cần phê duyệt
   searchClaimsForApproval: async (params: SearchParams, config={}): Promise<ApiResponse<SearchResponse>> => {
     const response = await  apiUtils.post<ApiResponse<SearchResponse>>('/api/claims/approval-search', params || {}, config );
-    console.log("fetch data:", response.data);
+    
     return response.data;
   },
 
   // Tìm kiếm claims cho bộ phận tài chính
   searchClaimsForFinance: async (params: SearchParams, config={}): Promise<ApiResponse<SearchResponse>> => {
     const response = await  apiUtils.post<ApiResponse<SearchResponse>>('/api/claims/finance-search', params || {}, config);
-    console.log("fetch data:", response.data);
+    
     return response.data;
   },
 
   // Lấy thông tin claim theo ID
   getClaimById: async (id: string, config={}): Promise<ApiResponse<ClaimById>> => {
     const response = await  apiUtils.get<ApiResponse<ClaimById>>(`/api/claims/${id}`, {}, config);
-    console.log("fetch data:", response.data);
+    
     return response.data;
   },
 
   // Cập nhật thông tin claim
   updateClaim: async (id: string, claimData: UpdateClaimRequest, config={}) => {
     const response = await  apiUtils.put(`/api/claims/${id}`, claimData || {}, config);
-    console.log("fetch data:", response.data);
+    
     return response.data;
   },
 
   // Thay đổi trạng thái claim
   changeClaimStatus: async (requestBody: ChangeClaimStatusRequest, config={}): Promise<ApiResponse<null>> => {
     const response = await  api.put('/api/claims/change-status', requestBody || {}, config);
-    console.log("fetch data:", response.data.data);
+
     return response.data.data;
   },
 
@@ -153,7 +153,7 @@ export const claimService = {
       }
     })
 
-    console.log("fetch data:", response.data);
+    
 
     return response.data;
   },

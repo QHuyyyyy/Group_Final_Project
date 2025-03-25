@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Form, Input, Button, InputNumber, message,Avatar, Upload} from 'antd';
+import { Form, Input, Button, InputNumber, Avatar, Upload} from 'antd';
 import { UserOutlined, UploadOutlined, KeyOutlined } from '@ant-design/icons';
 import { useUserStore } from '../../stores/userStore';
 import { employeeService } from '../../services/employee.service';
@@ -27,7 +27,6 @@ const SettingUser = () => {
   // Fetch employee data when component mounts
   useEffect(() => {
     const fetchEmployeeData = async () => {
-      try {
         if (user.id) {
           const { data } = await employeeService.getEmployeeById(user.id);
           setEmployeeData(data);
@@ -45,10 +44,6 @@ const SettingUser = () => {
             end_date: data.end_date ? moment(data.end_date) : null,
           });
         }
-      } catch (error) {
-        console.error('Error fetching employee data:', error);
-        message.error('Failed to load employee data');
-      }
     };
 
     fetchEmployeeData();
@@ -56,21 +51,18 @@ const SettingUser = () => {
 
   // Fetch department name based on department code
   const fetchDepartmentName = async (departmentCode: string) => {
-    try {
+
       const { data: departments } = await departmentService.getAllDepartments();
       const department = departments.find(dept => dept.department_code === departmentCode);
       if (department) {
         setDepartmentName(department.department_name);
         form.setFieldsValue({ department_name: department.department_name });
       }
-    } catch (error) {
-      console.error('Error fetching department data:', error);
-    }
+    
   };
 
   // Handle form submission
   const onFinish = async (values: any) => {
-    console.log(employeeData)
     try {
       if (!employeeData?._id) {
         toast.error('No employee data available');
@@ -100,7 +92,7 @@ const SettingUser = () => {
       setEmployeeData(response.data);
       toast.success('Profile updated successfully');
     } catch (error) {
-      console.error('Error updating profile:', error);
+     
       toast.error('Failed to update profile');
     } 
   };

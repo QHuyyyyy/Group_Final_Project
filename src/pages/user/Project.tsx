@@ -42,7 +42,7 @@ const Projects: React.FC = () => {
         }
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching projects:', error);
+      
         setLoading(false);
       }
     };

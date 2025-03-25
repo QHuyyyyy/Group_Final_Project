@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, Select, DatePicker, Button, Empty, message } from 'antd';
+import { Modal, Form, Input, Select, DatePicker, Button, Empty } from 'antd';
 import dayjs from 'dayjs';
 import { ProjectData } from '../../models/ProjectModel';
 import { CalendarOutlined,  ClockCircleOutlined } from '@ant-design/icons';
 import { PlusOutlined } from '@ant-design/icons';
+import { toast } from 'react-toastify';
 
 interface ProjectModalProps {
   visible: boolean;
@@ -187,7 +188,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
                       const endDate = form.getFieldValue('endDate');
                       if (date && endDate) {
                         if (date.isAfter(endDate)) {
-                          message.warning('Start date cannot be after end date');
+                          toast.warning('Start date cannot be after end date');
                           form.setFieldValue('startDate', null);
                         } else {
                           setDaysBetween(endDate.diff(date, 'days'));
@@ -233,7 +234,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
                       const startDate = form.getFieldValue('startDate');
                       if (startDate && date) {
                         if (date.isBefore(startDate)) {
-                          message.warning('End date cannot be before start date');
+                          toast.warning('End date cannot be before start date');
                           form.setFieldValue('endDate', null);
                         } else {
                           setDaysBetween(date.diff(startDate, 'days'));

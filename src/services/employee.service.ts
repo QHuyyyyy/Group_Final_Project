@@ -7,14 +7,12 @@ export const employeeService = {
   // Lấy thông tin nhân viên theo ID
   getEmployeeById: async (id: string, config={}): Promise<ApiResponse<Employee>> => {
     const response = await apiUtils.get<ApiResponse<Employee>>(`${EMPLOYEES_ENDPOINT}/${id}`, {}, config);
-    console.log("fetch data:", response.data);
     return response.data;
   },
 
   // Cập nhật thông tin nhân viên
   updateEmployee: async (id: string, employeeData: EmployeeUpdateData, config={}): Promise<ApiResponse<Employee>> => {
     const response = await  apiUtils.put<ApiResponse<Employee>>(`${EMPLOYEES_ENDPOINT}/${id}`, employeeData || {}, config);
-    console.log("fetch data:", response.data);
     return response.data;
   }
 };

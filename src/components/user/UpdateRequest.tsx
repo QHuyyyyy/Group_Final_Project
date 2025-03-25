@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Modal, Input, DatePicker, Form, Button, Tag, message, Card } from "antd";
+import { Modal, Input, DatePicker, Form, Button, Tag,  Card } from "antd";
 import dayjs from 'dayjs';
 import React, { useMemo } from "react";
 import { UpdateClaimRequest, ClaimById } from "../../models/ClaimModel";
@@ -43,7 +43,7 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, claim, onClose, 
                         setProjectDetails(response.data);
                     }
                 } catch (error) {
-                    console.error("Error fetching project details:", error);
+                  
                     toast.error("Failed to fetch project details");
                 }
             }
@@ -56,15 +56,12 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, claim, onClose, 
     useEffect(() => {
         const fetchApproverInfo = async () => {
             if (claim?.approval_id) {
-                try {
+           
                     const response = await userService.getUserById(claim.approval_id, {showSpinner:false});
                     if (response.success && response.data) {
                         setApprover(response.data);
                     }
-                } catch (error) {
-                    console.error("Error fetching approver details:", error);
-                    message.error("Failed to fetch approver details");
-                }
+                
             }
         };
 
@@ -128,11 +125,11 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, claim, onClose, 
             };
 
             await claimService.updateClaim(claim._id, updatedRequest, {showSpinner:false});
-            message.success("Claim updated successfully");
+            toast.success("Claim updated successfully");
             onSuccess();
             onClose();
         } catch (error) {
-            console.error("Error updating claim:", error);
+            
             toast.error('Failed to update claim');
         } finally {
             setLoading(false);

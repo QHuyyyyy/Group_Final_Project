@@ -7,6 +7,7 @@ import dayjs from "dayjs"
 import { Bar, BarChart, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from "recharts";
 import { userService } from "../../services/user.service";
 import { claimService } from "../../services/claim.service";
+import { toast } from "react-toastify";
 interface ClaimStatus {
     id: number;
     name: string;
@@ -141,7 +142,7 @@ export default function AdminClaimStats() {
                 setFilteredCanceledClaims(canceledClaims);
             
         } catch (error) {
-            console.error("Error fetching data:", error);
+            toast.error("Error fetching data");
         }
     };
 

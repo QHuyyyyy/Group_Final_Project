@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Table, Tag, Button, Modal, Form, Input,   message, Spin, Empty, Select } from 'antd';
+import { Card, Table, Tag, Button, Modal, Form, Input,  Spin, Empty, Select } from 'antd';
 import {  ArrowLeftOutlined, SearchOutlined,  } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import projectService from '../../services/project.service';
@@ -85,7 +85,7 @@ const AdminProjectManager: React.FC = () => {
       const endDate = createForm.getFieldValue('endDate');
       if (endDate && date.isAfter(endDate)) {
         createForm.setFieldValue('endDate', null);
-        message.warning('Start date cannot be after end date');
+        toast.warning('Start date cannot be after end date');
       }
     }
     createForm.setFieldValue('startDate', date);
@@ -97,7 +97,7 @@ const AdminProjectManager: React.FC = () => {
       const endDate = editForm.getFieldValue('endDate');
       if (endDate && date.isAfter(endDate)) {
         editForm.setFieldValue('endDate', null);
-        message.warning('Start date cannot be after end date');
+        toast.warning('Start date cannot be after end date');
       }
     }
     editForm.setFieldValue('startDate', date);
@@ -108,7 +108,7 @@ const AdminProjectManager: React.FC = () => {
     if (date) {
       const startDate = createForm.getFieldValue('startDate');
       if (startDate && date.isBefore(startDate)) {
-        message.warning('End date cannot be before start date');
+        toast.warning('End date cannot be before start date');
         createForm.setFieldValue('endDate', null);
       } else {
         createForm.setFieldValue('endDate', date);
@@ -121,7 +121,7 @@ const AdminProjectManager: React.FC = () => {
     if (date) {
       const startDate = editForm.getFieldValue('startDate');
       if (startDate && date.isBefore(startDate)) {
-        message.warning('End date cannot be before start date');
+        toast.warning('End date cannot be before start date');
         editForm.setFieldValue('endDate', null);
       } else {
         editForm.setFieldValue('endDate', date);
@@ -131,7 +131,6 @@ const AdminProjectManager: React.FC = () => {
 
   // Thêm useEffect để fetch data khi component mount
   useEffect(() => {
-    console.log('Component mounted or dependencies changed');
     fetchProjects();
   }, [pagination.current, pagination.pageSize, searchText]); // Thêm dependencies
 
@@ -163,13 +162,12 @@ const AdminProjectManager: React.FC = () => {
           ...prev,
           total: response.data.pageInfo?.totalItems || 0
         }));
-        console.log('Updated projects:', response.data.pageData);
+       
       } else {
-        message.error(' Cannot load project data');
+        toast.error(' Cannot load project data');
       }
     } catch (error) {
-      console.error('Error fetching projects:', error);
-      message.error(' An error occurred while fetching the project data');
+      toast.error(' An error occurred while fetching the project data');
     } finally {
       setLoading(false);
     }
@@ -195,11 +193,11 @@ const AdminProjectManager: React.FC = () => {
     try {
       setLoading(true);
       await projectService.deleteProject(projectToDelete);
-      message.success('Project deleted successfully');
+      toast.success('Project deleted successfully');
       fetchProjects();
     } catch (error) {
-      console.error('Error deleting project:', error);
-      message.error('An error occurred while deleting the project');
+    
+      toast.error('An error occurred while deleting the project');
     } finally {
       setLoading(false);
       setIsDeleteModalVisible(false);
@@ -220,8 +218,8 @@ const AdminProjectManager: React.FC = () => {
       
       setIsModalVisible(true);
     } catch (error) {
-      console.error('Lỗi khi lấy thông tin dự án:', error);
-      message.error('Đã xảy ra lỗi khi lấy thông tin dự án');
+    
+      toast.error('Đã xảy ra lỗi khi lấy thông tin dự án');
     } finally {
       setLoading(false);
     }
@@ -247,8 +245,8 @@ const AdminProjectManager: React.FC = () => {
       setIsEditModalVisible(true);
 
     } catch (error) {
-      console.error('Error in handleEdit:', error);
-      message.error('Có lỗi xảy ra khi mở form chỉnh sửa');
+    
+      toast.error('Có lỗi xảy ra khi mở form chỉnh sửa');
     } finally {
       setLoading(false);
     }
@@ -265,13 +263,13 @@ const AdminProjectManager: React.FC = () => {
   // Đổi tên hàm validateTeamMembers thành validateTeamMembersData để tránh conflict
   const validateTeamMembersData = (members: Array<{userId: string, role: string}>) => {
     if (members.length === 0) {
-      message.error('Please add at least one member to the project');
+      toast.error('Please add at least one member to the project');
       return false;
     }
 
     const isValid = members.every(member => member.userId && member.role);
     if (!isValid) {
-      message.error('Please fill in all member information and roles');
+      toast.error('Please fill in all member information and roles');
       return false;
     }
 
@@ -280,12 +278,12 @@ const AdminProjectManager: React.FC = () => {
     const qaCount = members.filter(m => m.role === 'Quality Analytics').length;
 
     if (pmCount !== 1) {
-      message.error('Project must have exactly one Project Manager');
+      toast.error('Project must have exactly one Project Manager');
       return false;
     }
 
     if (qaCount > 1) {
-      message.error('Project can have at most one Quality Analytics');
+      toast.error('Project can have at most one Quality Analytics');
       return false;
     }
 
@@ -296,7 +294,7 @@ const AdminProjectManager: React.FC = () => {
   const handleEditSubmit = async (values: any) => {
     try {
       if (!selectedProject?._id) {
-        message.error('Project ID not found');
+       toast.error('Project ID not found');
         return;
       }
 
@@ -330,8 +328,8 @@ const AdminProjectManager: React.FC = () => {
         fetchProjects();
       }
     } catch (error) {
-      console.error('Error updating project:', error);
-      message.error('An error occurred while updating the project');
+     
+      toast.error('An error occurred while updating the project');
     } finally {
       setLoading(false);
     }
@@ -386,8 +384,8 @@ const AdminProjectManager: React.FC = () => {
         fetchProjects(); // Refresh danh sách
       }
     } catch (error) {
-      console.error('Error creating project:', error);
-      message.error('An error occurred while creating the project');
+      
+      toast.error('An error occurred while creating the project');
     } finally {
       setLoading(false);
     }
@@ -418,8 +416,7 @@ const AdminProjectManager: React.FC = () => {
         setUsers(formattedUsers);
       }
     } catch (error) {
-      console.error('Error fetching users:', error);
-      message.error('Không thể tải danh sách người dùng');
+     toast.error('Không thể tải danh sách người dùng');
     }
   };
 
@@ -445,8 +442,7 @@ const AdminProjectManager: React.FC = () => {
         setDepartments(formattedDepartments);
       }
     } catch (error) {
-      console.error('Error fetching departments:', error);
-      message.error('Không thể tải danh sách phòng ban');
+     toast.error('Không thể tải danh sách phòng ban');
     }
   };
 
@@ -468,12 +464,12 @@ const AdminProjectManager: React.FC = () => {
         project_status: newStatus,
       });
       
-      message.success('Project status updated successfully');
+      toast.success('Project status updated successfully');
       setIsStatusModalVisible(false);
       fetchProjects();
     } catch (error) {
-      console.error('Error updating project status:', error);
-      message.error('An error occurred while updating the project status');
+      
+      toast.error('An error occurred while updating the project status');
     } finally {
       setLoading(false);
     }
