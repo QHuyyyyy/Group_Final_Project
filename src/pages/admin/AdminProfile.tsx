@@ -1,4 +1,4 @@
-import { Card,   Row, Col, Avatar } from 'antd';
+import { Card,   Row, Col, Avatar, Button } from 'antd';
 import { 
   UserOutlined, 
   MailOutlined,
@@ -9,6 +9,7 @@ import {
   CalendarOutlined,
   DollarOutlined,
   FileProtectOutlined,
+  KeyOutlined,
 } from '@ant-design/icons';
 import { useUserStore } from '../../stores/userStore';
 import { employeeService } from '../../services/employee.service';
@@ -16,11 +17,13 @@ import { useEffect, useState } from 'react';
 import { Employee } from '../../models/EmployeeModel';
 import { motion } from 'framer-motion';
 import AdminSidebar from '../../components/admin/AdminSidebar';
+import ChangePasswordModal from '../../components/user/ChangePasswordModal';
 
 const AdminProfile = () => {
   const user = useUserStore((state) => state);
   const [employeeData, setEmployeeData] = useState<Employee | null>(null);
   const [isOnline] = useState(true);
+  const [isPasswordModalVisible, setIsPasswordModalVisible] = useState(false);
 
   useEffect(() => {
     const fetchEmployeeData = async () => {
@@ -57,12 +60,15 @@ const AdminProfile = () => {
       <div className="flex-1 ml-[260px]">
         <div className="p-8">
           <div className="max-w-7xl mx-auto space-y-8">
-            {/* Header Section */}
+            {/* Header Section with Settings Icon */}
             <motion.div 
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               className="text-center mb-12 relative"
             >
+              {/* Settings Icon */}
+             
+
               <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 blur-3xl -z-10"></div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                 Profile
@@ -77,6 +83,7 @@ const AdminProfile = () => {
                   <Card 
                     className="rounded-3xl border-0 shadow-xl hover:shadow-2xl transition-all duration-500 bg-white/90 backdrop-blur-lg overflow-visible"
                   >
+                    
                     <div className="text-center relative">
                       {/* Avatar Container với animation mới */}
                       <div className="relative inline-block group">
@@ -127,6 +134,15 @@ const AdminProfile = () => {
                         <p className="text-gray-500 font-medium">{user.email}</p>
                       </motion.div>
                     </div>
+                    <div className="pt-2">
+                    <Button
+                      onClick={() => setIsPasswordModalVisible(true)}
+                      icon={<KeyOutlined />}
+                      className="w-full"
+                    >
+                      Change Password
+                    </Button>
+                  </div>
                   </Card>
 
                   {/* Quick Stats Card với animation mới */}
@@ -220,6 +236,11 @@ const AdminProfile = () => {
           </div>
         </div>
       </div>
+      <ChangePasswordModal
+        visible={isPasswordModalVisible}
+        onCancel={() => setIsPasswordModalVisible(false)}
+        onSuccess={() => setIsPasswordModalVisible(false)}
+      />
     </div>
   );
 };
