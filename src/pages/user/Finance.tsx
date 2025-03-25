@@ -4,7 +4,6 @@ import {Tabs, Button, Card,  } from 'antd';
 import { exportToExcel } from '../../utils/xlsxUtils';
 import type { Claim, SearchParams } from "../../models/ClaimModel";
 import { claimService } from "../../services/claim.service";
-import { debounce } from "lodash";
 import dayjs from "dayjs";
 import ClaimDetailsModal from '../../components/shared/ClaimDetailsModal';
 import ClaimTable from '../../components/shared/ClaimTable';
@@ -14,20 +13,10 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ClaimHistoryModal from '../../components/shared/ClaimHistoryModal';
 import PaymentConfirmationModal from '../../components/shared/FinanceModal';
+import { createDebouncedSearch } from '../../utils/searchUtils';
 
-const debouncedSearch = debounce((
-  value: string,
-  allClaims: Claim[],
-  statusFilter: string,
-  setDisplayClaims: (claims: Claim[]) => void
-) => {
-  const filteredData = allClaims.filter(claim => {
-    const matchesSearch = claim.claim_name.toLowerCase().includes(value.toLowerCase());
-    const matchesStatus = statusFilter ? claim.claim_status === statusFilter : true;
-    return matchesSearch && matchesStatus;
-  });
-  setDisplayClaims(filteredData);
-}, 1000);
+// Create a debounced search instance that can be reused
+const debouncedSearch = createDebouncedSearch(1000);
 
 const Finance = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -51,6 +40,7 @@ const Finance = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [isBatchPaymentModalVisible, setIsBatchPaymentModalVisible] = useState(false);
   const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
+  const [searchType, setSearchType] = useState<string>("claim_name");
 
   const fetchClaims = async () => {
     setLoading(true);
@@ -112,14 +102,21 @@ const Finance = () => {
     setSearchTerm(value);
     setPagination(prev => ({ ...prev, current: 1 }));
     
-    debouncedSearch(value, allClaims, statusFilter, setDisplayClaims);
-  }, [allClaims, statusFilter]);
+    debouncedSearch(value, allClaims, statusFilter, searchType, setDisplayClaims);
+  }, [allClaims, statusFilter, searchType]);
 
   useEffect(() => {
     return () => {
       debouncedSearch.cancel();
     };
   }, []);
+
+  const handleSearchTypeChange = (value: string) => {
+    setSearchType(value);
+    if (searchTerm) {
+      debouncedSearch(searchTerm, allClaims, statusFilter, value, setDisplayClaims);
+    }
+  };
 
   const handleStatusFilterChange = (value: string) => {
     setStatusFilter(value);
@@ -128,9 +125,21 @@ const Finance = () => {
       current: 1,
     }));
 
-    const filteredData = allClaims.filter(claim => 
-      value ? claim.claim_status === value : true
-    );
+    const filteredData = allClaims.filter(claim => {
+      let matchesSearch = true;
+      
+      if (searchTerm) {
+        if (searchType === 'claim_name') {
+          matchesSearch = claim.claim_name.toLowerCase().includes(searchTerm.toLowerCase());
+        } else if (searchType === 'staff_name') {
+          matchesSearch = claim.staff_name.toLowerCase().includes(searchTerm.toLowerCase());
+        }
+      }
+      
+      const matchesStatus = value ? claim.claim_status === value : true;
+      return matchesSearch && matchesStatus;
+    });
+    
     setDisplayClaims(filteredData);
   };
 
@@ -326,6 +335,10 @@ const Finance = () => {
           title="Paid Claim"
           onSearch={handleSearch}
           onChange={(e) => handleSearch(e.target.value)}
+          searchType={searchType}
+          onSearchTypeChange={handleSearchTypeChange}
+          searchPlaceholder={`Search by ${searchType === 'claim_name' ? 'claim name' : 'staff name'}`}
+        
         />
 
         <div className="flex items-center justify-between mb-6">

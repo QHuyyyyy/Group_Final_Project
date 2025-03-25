@@ -168,7 +168,7 @@ const ClaimHistoryModal = ({ visible, claim, onClose }: ClaimHistoryModalProps) 
           pageSize: pagination.pageSize,
           total: pagination.totalItems,
           showSizeChanger: true,
-          showTotal: (total) => `Tổng ${total} bản ghi`
+          showTotal: (total) => `Total ${total} records`
         }}
         onChange={handleTableChange}
         className="mt-4"
