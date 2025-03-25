@@ -2,7 +2,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ProjectOutlined, UserOutlined, HomeOutlined, ProfileOutlined, TeamOutlined, EyeOutlined,ClockCircleOutlined, StarOutlined, PlusOutlined, UserAddOutlined, DownOutlined, RightOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useState, useEffect } from 'react';
 import ProjectModal from '../admin/ProjectModal';
-import { message } from 'antd';
 import projectService from '../../services/project.service';
 import { userService } from '../../services/user.service';
 import { departmentService } from '../../services/Department.service';
@@ -146,8 +145,7 @@ const AdminSidebar = () => {
         setRoles(formattedRoles);
       }
     } catch (error) {
-      console.error('Error fetching roles:', error);
-      message.error('Could not load roles');
+      toast.error('Could not load roles');
     }
   };
 

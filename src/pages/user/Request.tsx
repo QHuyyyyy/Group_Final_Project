@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Card, message, Button, notification } from "antd";
+import { Card,  Button, notification } from "antd";
 import { claimService } from "../../services/claim.service";
 import UpdateRequest from "../../components/user/UpdateRequest";
 import {
@@ -17,6 +17,7 @@ import StatusTabs from '../../components/shared/StatusTabs';
 import ClaimTable from '../../components/shared/ClaimTable';
 import PageHeader from '../../components/shared/PageHeader';
 import ClaimHistoryModal from '../../components/shared/ClaimHistoryModal';
+import { toast } from "react-toastify";
 
 const Claim = () => {
   const [loading, setLoading] = useState(false);
@@ -133,8 +134,8 @@ const Claim = () => {
       }
   
     } catch (error) {
-      console.error("Error fetching claims:", error);
-      message.error("An error occurred while fetching claims.");
+    
+      toast.error("An error occurred while fetching claims.");
     } finally {
       setLoading(false);
     }
@@ -171,7 +172,7 @@ const Claim = () => {
   const handleCreateSuccess = () => {
     setIsCreateModalVisible(false);
     fetchClaims(pagination.current);
-    message.success("Claim created successfully");
+    toast.success("Claim created successfully");
   };
 
   const handleCancelRequest = async (id: string, comment: string) => {
@@ -250,7 +251,7 @@ const Claim = () => {
         setIsUpdateModalVisible(true);
       }
     } catch {
-      message.error("Failed to fetch claim details for update");
+      toast.error("Failed to fetch claim details for update");
     }
   };
 
@@ -262,7 +263,7 @@ const Claim = () => {
   const handleUpdateSuccess = () => {
     setIsUpdateModalVisible(false);
     fetchClaims(pagination.current);
-    message.success("Claim updated successfully");
+    toast.success("Claim updated successfully");
   };
 
   const handleViewHistory = (record: Claim) => {

@@ -12,7 +12,7 @@ export default function ForgotPassword() {
   const navigate = useNavigate();
 
   const handleSubmit = async (values: { email: string }) => {
-      console.log(values.email)
+    
       await authService.forgotPassword(values.email);
       toast.success('Please check your email to reset password!');
 

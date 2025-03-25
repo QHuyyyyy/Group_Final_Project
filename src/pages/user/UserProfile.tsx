@@ -43,7 +43,7 @@ const UserProfile = () => {
 
   useEffect(() => {
     const fetchClaimsData = async () => {
-      try {
+
         const response = await claimService.searchClaimsByClaimer({
           searchCondition: {
             keyword: "",
@@ -57,9 +57,7 @@ const UserProfile = () => {
           }
         });
         setClaimsData(response.data);
-      } catch (error) {
-        console.error('Error fetching claims data:', error);
-      }
+     
     };
 
     if (user.id) {

@@ -1,6 +1,4 @@
 import { Modal, Form, Button } from "antd";
-import { message } from "antd";
-import { toast } from "react-toastify";
 import { InputVaild } from "../../constants/InputVaild";
 import CommonField from "./CommonFieldAddUser";
 
@@ -20,16 +18,9 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ visible, onCancel, onSucces
   };
 
   const handleSave = async (values: any) => {
-    const loadingMessage = message.loading("Creating user...", 0);
-
-    try {
-      loadingMessage();
       onSuccess(values);
       form.resetFields();
-    } catch (error: any) {
-      loadingMessage();
-      toast.error("An error occurred while processing the form.");
-    }
+    
   };
 
   return (

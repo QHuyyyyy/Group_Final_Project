@@ -27,7 +27,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ visible, onCa
       form.resetFields();
       onSuccess();
     } catch (error) {
-      console.error('Error changing password:', error);
+   
       toast.error('Failed to change password');
     } finally {
       setLoading(false);

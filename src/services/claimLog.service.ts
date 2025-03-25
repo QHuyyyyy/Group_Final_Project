@@ -7,7 +7,6 @@ export const claimLogService = {
   // Search claim logs with pagination
   searchClaimLogs: async (requestData: SearchClaimLogsRequest, config = {}): Promise<ApiResponse<SearchClaimLogsResponse>> => {
     const response = await apiUtils.post<ApiResponse<SearchClaimLogsResponse>>(`${CLAIM_LOGS_ENDPOINT}/search`, requestData || {}, config);
-    console.log("fetch data:", response.data); // Log dữ liệu phản hồi để debug
     return response.data;
   },
 };

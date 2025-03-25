@@ -27,12 +27,9 @@ const AdminProfile = () => {
 
   useEffect(() => {
     const fetchEmployeeData = async () => {
-      try {
         const response = await employeeService.getEmployeeById(user.id);
         setEmployeeData(response.data);
-      } catch (error) {
-        console.error('Error fetching employee data:', error);
-      }
+      
     };
 
     if (user.id) {

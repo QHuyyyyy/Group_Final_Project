@@ -31,7 +31,6 @@ const ClaimHistoryModal = ({ visible, claim, onClose }: ClaimHistoryModalProps) 
   const fetchClaimLogs = async (page: number, pageSize: number) => {
     if (!claim) return;
     
-    try {
    
       const response = await claimLogService.searchClaimLogs({
         searchCondition: {
@@ -53,9 +52,7 @@ const ClaimHistoryModal = ({ visible, claim, onClose }: ClaimHistoryModalProps) 
           totalPages: response.data.pageInfo.totalPages
         }));
       }
-    } catch (error) {
-      console.error('Failed to fetch claim logs:', error);
-    } 
+   
   };
 
   const handleTableChange = (newPagination: any) => {

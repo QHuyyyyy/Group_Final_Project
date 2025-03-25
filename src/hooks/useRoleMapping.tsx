@@ -19,9 +19,7 @@ export const useRoleMapping = () => {
           return acc;
         }, {});
         setRoleMapping(mapping);
-      } catch (error) {
-        console.error('Error:', error);
-      } finally {
+      }  finally {
         setLoading(false);
       }
     };
