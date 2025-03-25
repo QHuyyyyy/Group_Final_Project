@@ -7,7 +7,7 @@ export const InputVaild = {
   ],
 
   oldPassword: [
-    { required: false, message: "Please input your old password!" },
+    { required: true, message: "Please input your old password!" },
     { min: 6, message: "Password must be at least 6 characters!" },
   ],
   
@@ -21,7 +21,7 @@ export const InputVaild = {
   ],
 
   newPassword: (getFieldValue: any) => [
-    { required: false, message: "Please input password!" },
+    { required: true, message: "Please input password!" },
     { min: 6, message: "Password must be at least 6 characters!" },
     {
       pattern: /^(?=.*[A-Z])[A-Z](?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*]).{6,}$/,
@@ -51,7 +51,7 @@ export const InputVaild = {
   ],
 
   confirmNewPassword: (getFieldValue: any) => [
-    { required: false, message: "Please confirm your password!" },
+    { required: true, message: "Please confirm your password!" },
     {
       validator(_: any, value: string) {
         if (!value || getFieldValue("new_password") === value) {

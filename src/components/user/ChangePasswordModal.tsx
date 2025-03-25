@@ -36,7 +36,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ visible, onCa
 
   return (
     <Modal
-      title="Change Password"
+      title={<div style={{ textAlign: 'center', width: '100%' }}>Change Password</div>}
       open={visible}
       onCancel={onCancel}
       footer={null}
@@ -72,7 +72,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ visible, onCa
         >
           <Input.Password placeholder="Confirm your new password" style={{ width: '100%' }} />
         </Form.Item>
-        <Form.Item>
+        <Form.Item style={{ textAlign: 'right' }}>
           <Button type="primary" htmlType="submit" loading={loading}>
             Change Password
           </Button>

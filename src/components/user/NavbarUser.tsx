@@ -42,18 +42,35 @@ const Navbar = () => {
     const fetchClaims = async () => {
       if (user?.role_code === 'A003' || user?.role_code === 'A002') {
         try {
-          const response = await claimService.searchClaims({
-            searchCondition: {
-              claim_status: user?.role_code === 'A003' ? 'Pending Approval' : 'Approved',
-              is_delete: false
-            },
-            pageInfo: {
-              pageSize: 10,
-              pageNum: 1
-            }
-          });
+          let claims: Claim[] = [];
           
-          const claims = response.data.pageData;
+          if (user?.role_code === 'A003') {
+            const response = await claimService.searchClaimsForApproval({
+              searchCondition: {
+                claim_status: 'Pending Approval',
+                is_delete: false
+              },
+              pageInfo: {
+                pageSize: 100,
+                pageNum: 1
+              }
+            });
+            claims = response.data.pageData.filter(claim => 
+              claim.approval_info && claim.approval_info._id === user.id
+            );
+          } else if (user?.role_code === 'A002') {
+            const response = await claimService.searchClaimsForFinance({
+              searchCondition: {
+                claim_status: 'Approved',
+                is_delete: false
+              },
+              pageInfo: {
+                pageSize: 100,
+                pageNum: 1
+              }
+            });
+            claims = response.data.pageData;
+          }
           
           // Group claims by staff_name
           const groupedClaims = claims.reduce((acc: { [key: string]: number }, claim: Claim) => {
@@ -120,11 +137,15 @@ const Navbar = () => {
     <div className="w-80 p-3 bg-white rounded-lg">
       <p className="flex justify-center font-semibold text-gray-700">🔔 Notifications</p>
       <div className="mt-2 border-t pt-2 space-y-2">
-        {notifications.map((notif) => (
-          <div key={notif.key} className="p-2 bg-gray-100 rounded-md">
-            {notif.message}
-          </div>
-        ))}
+        {notifications.length > 0 ? (
+          notifications.map((notif) => (
+            <div key={notif.key} className="p-2 bg-gray-100 rounded-md">
+              {notif.message}
+            </div>
+          ))
+        ) : (
+          <div className="p-2 text-center text-gray-500">No notifications</div>
+        )}
       </div>
       <div className="mt-2 text-right">
         <button className="hover:underline" onClick={() => setOpen(false)}>Close</button>
