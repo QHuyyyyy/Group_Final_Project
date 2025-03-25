@@ -7,17 +7,13 @@ import {
 } from "@ant-design/icons";
 import { claimService } from "../../services/claim.service";
 import type { Claim, SearchParams } from "../../models/ClaimModel";
+import { debounce } from "lodash";
 import ClaimTable from "../../components/shared/ClaimTable";
 import PageHeader from "../../components/shared/PageHeader";
 import ClaimDetailsModal from "../../components/shared/ClaimDetailsModal";
 import dayjs from "dayjs";
 import { toast } from 'react-toastify';
 import ClaimHistoryModal from "../../components/shared/ClaimHistoryModal";
-import { createDebouncedSearch } from "../../utils/searchUtils";
-
-// Create a debounced search instance that can be reused
-const debouncedSearch = createDebouncedSearch(500);
-
 interface PaginationState {
   current: number;
   pageSize: number;
@@ -26,7 +22,6 @@ interface PaginationState {
 
 function ApprovalPage() {
   const [claims, setClaims] = useState<Claim[]>([]);
-  const [allClaims, setAllClaims] = useState<Claim[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [statusFilter, ] = useState<string>("");
@@ -53,6 +48,10 @@ function ApprovalPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
   const [searchType, setSearchType] = useState<string>("claim_name");
+  const refreshNotifications = () => {
+    const event = new CustomEvent('refreshNotifications');
+    window.dispatchEvent(event);
+  };
   
   const handleViewHistory = (record: Claim) => {
     setSelectedClaim(record);
@@ -62,8 +61,8 @@ function ApprovalPage() {
     setLoading(true);
     const params: SearchParams = {
       searchCondition: {
-        keyword: searchText || "",
-        claim_status: statusFilter || "",
+        keyword:"",
+        claim_status:"",
         claim_start_date: "",
         claim_end_date: "",
         is_delete: false,
@@ -78,8 +77,18 @@ function ApprovalPage() {
     
     if (response?.data?.pageData) {
       const claimsData = response.data.pageData;
-      setAllClaims(claimsData);
-      setClaims(claimsData);
+
+      const filteredData = claimsData.filter(claim => {
+        if (!searchText) return true;
+        if (searchType === 'claim_name') {
+          return claim.claim_name.toLowerCase().includes(searchText.toLowerCase());
+        } else if (searchType === 'staff_name') {
+          return claim.staff_name.toLowerCase().includes(searchText.toLowerCase());
+        }
+        return true;
+      });
+
+      setClaims(filteredData);
 
       const newCounts = {
         all: claimsData.length,
@@ -94,8 +103,8 @@ function ApprovalPage() {
 
       setPagination((prev) => ({
         ...prev,
-        total: response.data.pageInfo.totalItems || 0,
-        current: pageNum
+        totalItems: response.data.pageInfo.totalItems,
+        totalPages: response.data.pageInfo.totalPages,
       }));
     }
     setLoading(false);
@@ -103,28 +112,27 @@ function ApprovalPage() {
 
   useEffect(() => {
     fetchClaims(pagination.current);
-  }, [statusFilter, pagination.current, pagination.pageSize]);
+  }, [statusFilter, searchText, pagination.current, pagination.pageSize, searchType]);
 
-  useEffect(() => {
-    return () => {
-      debouncedSearch.cancel();
-    };
-  }, []);
-
-  const handleSearch = useCallback((value: string) => {
-    setSearchText(value);
-    setPagination((prev) => ({
-      ...prev,
-      current: 1,
-    }));
-    
-    debouncedSearch(value, allClaims, statusFilter, searchType, setClaims);
-  }, [allClaims, statusFilter, searchType]);
+  const handleSearch = useCallback(
+    debounce((query: string) => {
+      setSearchText(query);
+      setPagination((prev) => ({
+        ...prev,
+        current: 1,
+      }));
+    }, 1000),
+    []
+  );
 
   const handleSearchTypeChange = (value: string) => {
     setSearchType(value);
     if (searchText) {
-      debouncedSearch(searchText, allClaims, statusFilter, value, setClaims);
+      setSearchText(searchText);
+      setPagination((prev) => ({
+        ...prev,
+        current: 1,
+      }));
     }
   };
 
@@ -177,6 +185,7 @@ function ApprovalPage() {
       toast.success(`The claim "${selectedClaim.claim_name}" has been successfully ${actionText}.`);
       
       fetchClaims(pagination.current);
+      refreshNotifications();
 
       form.resetFields();
       setSelectedClaim(null);

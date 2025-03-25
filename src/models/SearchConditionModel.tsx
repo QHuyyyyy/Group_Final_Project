@@ -17,13 +17,14 @@ export interface SearchProjectCondition {
  
 export interface SearchClaimCondition {
     keyword?: string;
+    search_type?: string;
     claim_status?: string;
     claim_start_date?: string;
     claim_end_date?: string;
     is_delete?: boolean;
-  }
+}
 
-  export interface SearchClaimLogsCondition {
+export interface SearchClaimLogsCondition {
     claim_id?: string;
     is_deleted?: boolean;
 }
