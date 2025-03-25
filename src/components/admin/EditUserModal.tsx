@@ -1,8 +1,10 @@
 import React from 'react';
-import { Modal, Form, Input, Button} from 'antd';
+import { Modal, Form, Button } from 'antd';
 import { userService } from '../../services/user.service';
 import { UserData } from '../../models/UserModel';
 import { toast } from 'react-toastify';
+import { InputVaild } from '../../constants/InputVaild';
+import CommonField from './CommonFieldAddUser';
 
 interface EditUserModalProps {
   visible: boolean;
@@ -75,19 +77,19 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
         onFinish={handleSave}
       >
         <div className="grid grid-cols-2 gap-4">
-          <Form.Item
+          <CommonField
             name="user_name"
             label="Username"
-          >
-            <Input className="bg-gray-100" />
-          </Form.Item>
+            rules={InputVaild.username}
+            
+          />
 
-          <Form.Item
+          <CommonField
             name="email"
             label="Email"
-          >
-            <Input />
-          </Form.Item>
+            type="email"
+            rules={InputVaild.email}
+          />
         </div>
       </Form>
     </Modal>
