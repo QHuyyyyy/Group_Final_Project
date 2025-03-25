@@ -1,9 +1,18 @@
 export const InputVaild = {
   required: (message: string) => [{ required: true, message }],
+  
+  username: [
+    { required: true, message: "Please input username!" },
+    { max: 20, message: "Username cannot exceed 20 characters!" },
+  ],
 
   email: [
     { required: true, message: "Please input email!" },
-    { type: "email", message: "Please enter a valid email!" },
+    
+    { 
+      pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+      message: "Email must contain valid special characters (@, ., etc)!"
+    },
   ],
 
   oldPassword: [
@@ -62,9 +71,9 @@ export const InputVaild = {
     },
   ],
 
-
-
-
-
+  projectCode: [
+    { required: true, message: "Please input project code!" },
+    { max: 20, message: "Project code cannot exceed 20 characters!" },
+  ],
   
 };

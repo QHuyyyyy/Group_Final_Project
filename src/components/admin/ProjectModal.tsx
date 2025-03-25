@@ -5,6 +5,9 @@ import { ProjectData } from '../../models/ProjectModel';
 import { CalendarOutlined,  ClockCircleOutlined } from '@ant-design/icons';
 import { PlusOutlined } from '@ant-design/icons';
 import { toast } from 'react-toastify';
+import { InputVaild } from '../../constants/InputVaild';
+import CommonField from './CommonFieldAddUser';
+
 
 interface ProjectModalProps {
   visible: boolean;
@@ -139,13 +142,9 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
           </h3>
           
           <div className="grid grid-cols-3 gap-x-6 mb-4">
-            <Form.Item name="project_code" label="Project Code" rules={[{ required: true }]}>
-              <Input placeholder="Enter project code" className="hover:border-blue-400 focus:border-blue-500" />
-            </Form.Item>
+            <CommonField name="project_code" label="Project Code" rules={InputVaild.projectCode} />
 
-            <Form.Item name="project_name" label="Project Name" rules={[{ required: true }]}>
-              <Input placeholder="Enter project name" className="hover:border-blue-400 focus:border-blue-500" />
-            </Form.Item>
+            <CommonField name="project_name" label="Project Name" rules={[{ required: true }]} />
 
             <Form.Item name="project_department" label="Department" rules={[{ required: true }]}>
               <Select 
