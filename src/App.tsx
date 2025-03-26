@@ -23,10 +23,11 @@ const AdminProfile = lazy(() => import('./pages/admin/AdminProfile'));
 const ApprovalPage = lazy(() => import('./pages/user/Approval'));
 const Claim = lazy(() => import('./pages/user/Request'));
 const Finance = lazy(() => import('./pages/user/Finance'));
-const IndustriesPage = lazy(() => import('./pages/InductriesPage'));
 const ViewClaimRequest = lazy(() => import('./pages/admin/ViewClaimRequest'));
 const Project= lazy(() => import('./pages/user/Project'));
 const UserSpinner = lazy(() => import('./components/user/UserSpinner'));
+
+
 const Loading = () => (
   <UserSpinner />
 );
@@ -37,7 +38,6 @@ const App = () => {
       <Suspense fallback={<Loading />}>
         <Routes>
           <Route path='/' element={<Homepage />} />
-          <Route path='/industries' element={<IndustriesPage />} />
           <Route path='/aboutus' element={<AboutUs />} />
           <Route path='/services' element={<Services />} />
           <Route path='/forgot-password' element={<ForgotPassword />} />
