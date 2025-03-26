@@ -3,7 +3,6 @@ import React from 'react';
 const Footer: React.FC = () => {
   const navigationLinks = [
     { name: 'About', href: '#' },
-    { name: 'Industries', href: '#' },
     { name: 'Careers', href: '#' },
     { name: 'Services', href: '#' },
   ];
