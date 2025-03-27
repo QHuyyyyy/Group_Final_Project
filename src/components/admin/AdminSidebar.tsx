@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ProjectOutlined, UserOutlined, HomeOutlined, ProfileOutlined, TeamOutlined, EyeOutlined, StarOutlined, UserAddOutlined, DownOutlined, RightOutlined, LogoutOutlined } from '@ant-design/icons';
+import { ProjectOutlined, UserOutlined, HomeOutlined, ProfileOutlined, TeamOutlined, EyeOutlined, StarOutlined, UserAddOutlined, DownOutlined, RightOutlined, LogoutOutlined, StarFilled } from '@ant-design/icons';
 import { useState, useEffect } from 'react';
 import ProjectModal from '../admin/ProjectModal';
 import projectService from '../../services/project.service';
@@ -24,6 +24,7 @@ const AdminSidebar = () => {
   const [isAddUserModalVisible, setIsAddUserModalVisible] = useState(false);
   const [roles, setRoles] = useState<Array<{label: string, value: string}>>([]);
   const { logout } = useAuth();
+  const [isFavoriteActive, setIsFavoriteActive] = useState(false);
 
   const projectMenuItems = [
     {
@@ -33,9 +34,10 @@ const AdminSidebar = () => {
     },
     {
       title: "Favorites",
-      icon: <StarOutlined />,
+      icon: isFavoriteActive ? <StarFilled className="text-yellow-400" /> : <StarOutlined />,
       path: "/dashboard/project-manager",
       onClick: () => {
+        setIsFavoriteActive(!isFavoriteActive);
         window.dispatchEvent(new CustomEvent('toggleFavorites'));
       }
     }
