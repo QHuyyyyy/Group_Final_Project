@@ -48,7 +48,7 @@ export default function Login() {
           >
             <Form.Item
               name="email"
-              rules={[{ required: true, message: 'Vui lòng nhập email!' }]}
+              rules={[{ required: true, message: 'Please input your email!' }]}
             >
               <Input 
                 prefix={<UserOutlined className="text-white/60" />}
@@ -61,7 +61,7 @@ export default function Login() {
 
             <Form.Item
               name="password"
-              rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' },
+              rules={[{ required: true, message: 'Please input your password!' },
                 { min: 6, message: 'Password must be at least 6 characters!' }
               ]}
               validateDebounce={400}
