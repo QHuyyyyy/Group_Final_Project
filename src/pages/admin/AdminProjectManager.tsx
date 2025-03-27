@@ -28,7 +28,6 @@ const AdminProjectManager: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedProject, setSelectedProject] = useState<ProjectData | null>(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-  const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [editForm] = Form.useForm();
   const [createForm] = Form.useForm();
@@ -42,7 +41,7 @@ const AdminProjectManager: React.FC = () => {
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
   const [users, setUsers] = useState<any[]>([]);
-  const [teamMembers, setTeamMembers] = useState<Array<{userId: string, role: string}>>([]);
+
   const [editTeamMembers, setEditTeamMembers] = useState<Array<{userId: string, role: string}>>([]);
   const [departments, setDepartments] = useState<Array<{
     value: string;
@@ -80,16 +79,7 @@ const AdminProjectManager: React.FC = () => {
   };
 
   // Hàm xử lý thay đổi ngày bắt đầu cho form tạo mới
-  const handleCreateStartDateChange = (date: dayjs.Dayjs | null) => {
-    if (date) {
-      const endDate = createForm.getFieldValue('endDate');
-      if (endDate && date.isAfter(endDate)) {
-        createForm.setFieldValue('endDate', null);
-        toast.warning('Start date cannot be after end date');
-      }
-    }
-    createForm.setFieldValue('startDate', date);
-  };
+  
 
   // Hàm xử lý thay đổi ngày bắt đầu cho form chỉnh sửa
   const handleEditStartDateChange = (date: dayjs.Dayjs | null) => {
@@ -103,18 +93,7 @@ const AdminProjectManager: React.FC = () => {
     editForm.setFieldValue('startDate', date);
   };
 
-  // Thêm hàm xử lý thay đổi endDate cho form tạo mới
-  const handleCreateEndDateChange = (date: dayjs.Dayjs | null) => {
-    if (date) {
-      const startDate = createForm.getFieldValue('startDate');
-      if (startDate && date.isBefore(startDate)) {
-        toast.warning('End date cannot be before start date');
-        createForm.setFieldValue('endDate', null);
-      } else {
-        createForm.setFieldValue('endDate', date);
-      }
-    }
-  };
+  
 
   // Thêm hàm xử lý thay đổi endDate cho form chỉnh sửa
   const handleEditEndDateChange = (date: dayjs.Dayjs | null) => {
@@ -335,52 +314,7 @@ const AdminProjectManager: React.FC = () => {
     }
   };
 
-  const handleCreateModalClose = () => {
-    createForm.resetFields();
-    setTeamMembers([]); // Reset team members khi đóng modal
-    setIsCreateModalVisible(false);
-  };
-
-  // Sửa lại hàm handleCreateSubmit
-  const handleCreateSubmit = async (values: any) => {
-    try {
-      if (!validateTeamMembersData(teamMembers)) {
-        return;
-      }
-
-      setLoading(true);
-      const projectData = {
-        project_name: values.project_name,
-        project_code: values.project_code,
-        project_department: values.project_department,
-        project_description: values.project_description,
-        project_status: values.project_status,
-        project_start_date: dayjs(values.startDate).utc().format('YYYY-MM-DD'),
-        project_end_date: dayjs(values.endDate).utc().format('YYYY-MM-DD'),
-        project_members: teamMembers.map(member => ({
-          user_id: member.userId,
-          project_role: member.role,
-          employee_id: '',
-          user_name: '',
-          full_name: ''
-        }))
-      };
-
-      const response = await projectService.createProject(projectData);
-      if (response.success) {
-        toast.success('Project created successfully');
-        setIsCreateModalVisible(false);
-        createForm.resetFields();
-        setTeamMembers([]); // Reset team members
-        fetchProjects(); // Refresh danh sách
-      }
-    } catch (error) {
-      
-      toast.error('An error occurred while creating the project');
-    } finally {
-      setLoading(false);
-    }
-  };
+ 
 
   // Thêm hàm để fetch users
   const fetchUsers = async (searchText: string = '') => {
@@ -656,20 +590,6 @@ const AdminProjectManager: React.FC = () => {
             )}
           </Modal>
 
-          <ProjectModal
-            visible={isCreateModalVisible}
-            onCancel={handleCreateModalClose}
-            onSubmit={handleCreateSubmit}
-            isEditMode={false}
-            users={users}
-            departments={departments}
-            disabledStartDate={disabledStartDate}
-            disabledEndDate={disabledEndDate}
-            teamMembers={teamMembers}
-            setTeamMembers={setTeamMembers}
-            handleStartDateChange={(date: dayjs.Dayjs | null) => handleCreateStartDateChange(date)}
-            handleEndDateChange={(date: dayjs.Dayjs | null) => handleCreateEndDateChange(date)}
-          />
 
           <ProjectModal
             visible={isEditModalVisible}
