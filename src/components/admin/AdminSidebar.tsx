@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ProjectOutlined, UserOutlined, HomeOutlined, ProfileOutlined, TeamOutlined, EyeOutlined, StarOutlined, UserAddOutlined, DownOutlined, RightOutlined, LogoutOutlined, StarFilled } from '@ant-design/icons';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import ProjectModal from '../admin/ProjectModal';
 import projectService from '../../services/project.service';
 import { userService } from '../../services/user.service';
@@ -10,6 +10,7 @@ import { toast } from 'react-toastify';
 import AddUserModal from './AddUserModal';
 import { roleService } from '../../services/role.service';
 import { useAuth } from '../../contexts/AuthContext';
+import { FormInstance } from 'antd';
 
 const AdminSidebar = () => {
   const location = useLocation();
@@ -25,6 +26,7 @@ const AdminSidebar = () => {
   const [roles, setRoles] = useState<Array<{label: string, value: string}>>([]);
   const { logout } = useAuth();
   const [isFavoriteActive, setIsFavoriteActive] = useState(false);
+  const addUserFormRef = useRef<FormInstance>(null);
 
   const projectMenuItems = [
     {
@@ -124,6 +126,9 @@ const AdminSidebar = () => {
       const response = await userService.createUser(values);
       if (response.success) {
         toast.success('User created successfully');
+        if (addUserFormRef.current) {
+          addUserFormRef.current.resetFields();
+        }
         handleAddUserModalClose();
         navigate('/dashboard/user-manager');
       }
@@ -342,6 +347,7 @@ const AdminSidebar = () => {
         onCancel={handleAddUserModalClose}
         onSuccess={handleAddUserSubmit}
         roleOptions={roles}
+        formRef={addUserFormRef}
       />
 
       <ProjectModal
