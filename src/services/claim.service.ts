@@ -11,7 +11,7 @@ export const claimService = {
   },
 
   // Tìm kiếm claims với phân trang
-  searchClaims: async (params: SearchParams, config={}) /*Promise<ApiResponse<SearchResponse>> */ => {
+  searchClaims: async (params: SearchParams, config={}):Promise<ApiResponse<SearchResponse>>  => {
     const response = await api.post('/api/claims/search', params || {}, config);
     
     return response.data;

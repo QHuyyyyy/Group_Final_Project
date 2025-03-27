@@ -76,7 +76,9 @@ function ApprovalPage() {
     const response = await claimService.searchClaimsForApproval(params);
     
     if (response?.data?.pageData) {
-      const claimsData = response.data.pageData;
+      const claimsData = response.data.pageData.sort((a, b) => 
+        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+      );
 
       const filteredData = claimsData.filter(claim => {
         if (!searchText) return true;
@@ -121,6 +123,7 @@ function ApprovalPage() {
         ...prev,
         current: 1,
       }));
+      refreshNotifications();
     }, 1000),
     []
   );
@@ -133,6 +136,7 @@ function ApprovalPage() {
         ...prev,
         current: 1,
       }));
+      refreshNotifications();
     }
   };
 
@@ -219,6 +223,10 @@ function ApprovalPage() {
           searchType={searchType}
           onSearchTypeChange={handleSearchTypeChange}
           searchPlaceholder={`Search by ${searchType === 'claim_name' ? 'claim name' : 'staff name'}`}
+          onSearchClick={() => {
+            fetchClaims(pagination.current);
+            refreshNotifications();
+          }}
         />
 
         <ClaimTable
