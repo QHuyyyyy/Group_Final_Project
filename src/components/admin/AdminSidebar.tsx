@@ -125,6 +125,9 @@ const AdminSidebar = () => {
       setLoading(true);
       const response = await userService.createUser(values);
       if (response.success) {
+        // Dispatch a custom event to notify AdminUserManager
+        window.dispatchEvent(new CustomEvent('userAdded'));
+        
         toast.success('User created successfully');
         if (addUserFormRef.current) {
           addUserFormRef.current.resetFields();

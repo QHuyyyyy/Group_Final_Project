@@ -60,6 +60,18 @@ const AdminUserManager: React.FC = () => {
     fetchRoles();
   }, [pagination.current, pagination.pageSize, searchText, isBlockedFilter, roleFilter]);
 
+  // Add event listener for user added
+  useEffect(() => {
+    const handleUserAdded = () => {
+      fetchUsers(1); // Reset to first page and fetch latest data
+    };
+     
+    window.addEventListener('userAdded', handleUserAdded);
+    return () => {
+      window.removeEventListener('userAdded', handleUserAdded);
+    };
+  }, []);
+
   const fetchUsers = async (page: number) => {
     try {
       setLoading(true);
