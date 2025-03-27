@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Table, Tag, Button, Modal, Form, Input,  Spin, Empty, Select } from 'antd';
+import { Card, Table, Tag, Button, Modal, Form, Input,  Spin, Empty } from 'antd';
 import {  ArrowLeftOutlined, SearchOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import projectService from '../../services/project.service';
@@ -28,7 +28,6 @@ const AdminProjectManager: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedProject, setSelectedProject] = useState<ProjectData | null>(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-  const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [editForm] = Form.useForm();
   const [createForm] = Form.useForm();
@@ -42,15 +41,12 @@ const AdminProjectManager: React.FC = () => {
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
   const [users, setUsers] = useState<any[]>([]);
-  const [teamMembers, setTeamMembers] = useState<Array<{userId: string, role: string}>>([]);
+
   const [editTeamMembers, setEditTeamMembers] = useState<Array<{userId: string, role: string}>>([]);
   const [departments, setDepartments] = useState<Array<{
     value: string;
     label: string;
   }>>([]);
-  const [isStatusModalVisible, setIsStatusModalVisible] = useState(false);
-  const [selectedStatusProject, setSelectedStatusProject] = useState<ProjectData | null>(null);
-  const [newStatus, setNewStatus] = useState<string>('');
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
 
   const { favoriteProjects, toggleFavorite } = useFavoriteProjects();
@@ -83,16 +79,7 @@ const AdminProjectManager: React.FC = () => {
   };
 
   // Hàm xử lý thay đổi ngày bắt đầu cho form tạo mới
-  const handleCreateStartDateChange = (date: dayjs.Dayjs | null) => {
-    if (date) {
-      const endDate = createForm.getFieldValue('endDate');
-      if (endDate && date.isAfter(endDate)) {
-        createForm.setFieldValue('endDate', null);
-        toast.warning('Start date cannot be after end date');
-      }
-    }
-    createForm.setFieldValue('startDate', date);
-  };
+  
 
   // Hàm xử lý thay đổi ngày bắt đầu cho form chỉnh sửa
   const handleEditStartDateChange = (date: dayjs.Dayjs | null) => {
@@ -106,18 +93,7 @@ const AdminProjectManager: React.FC = () => {
     editForm.setFieldValue('startDate', date);
   };
 
-  // Thêm hàm xử lý thay đổi endDate cho form tạo mới
-  const handleCreateEndDateChange = (date: dayjs.Dayjs | null) => {
-    if (date) {
-      const startDate = createForm.getFieldValue('startDate');
-      if (startDate && date.isBefore(startDate)) {
-        toast.warning('End date cannot be before start date');
-        createForm.setFieldValue('endDate', null);
-      } else {
-        createForm.setFieldValue('endDate', date);
-      }
-    }
-  };
+  
 
   // Thêm hàm xử lý thay đổi endDate cho form chỉnh sửa
   const handleEditEndDateChange = (date: dayjs.Dayjs | null) => {
@@ -338,52 +314,7 @@ const AdminProjectManager: React.FC = () => {
     }
   };
 
-  const handleCreateModalClose = () => {
-    createForm.resetFields();
-    setTeamMembers([]); // Reset team members khi đóng modal
-    setIsCreateModalVisible(false);
-  };
-
-  // Sửa lại hàm handleCreateSubmit
-  const handleCreateSubmit = async (values: any) => {
-    try {
-      if (!validateTeamMembersData(teamMembers)) {
-        return;
-      }
-
-      setLoading(true);
-      const projectData = {
-        project_name: values.project_name,
-        project_code: values.project_code,
-        project_department: values.project_department,
-        project_description: values.project_description,
-        project_status: values.project_status,
-        project_start_date: dayjs(values.startDate).utc().format('YYYY-MM-DD'),
-        project_end_date: dayjs(values.endDate).utc().format('YYYY-MM-DD'),
-        project_members: teamMembers.map(member => ({
-          user_id: member.userId,
-          project_role: member.role,
-          employee_id: '',
-          user_name: '',
-          full_name: ''
-        }))
-      };
-
-      const response = await projectService.createProject(projectData);
-      if (response.success) {
-        toast.success('Project created successfully');
-        setIsCreateModalVisible(false);
-        createForm.resetFields();
-        setTeamMembers([]); // Reset team members
-        fetchProjects(); // Refresh danh sách
-      }
-    } catch (error) {
-      
-      toast.error('An error occurred while creating the project');
-    } finally {
-      setLoading(false);
-    }
-  };
+ 
 
   // Thêm hàm để fetch users
   const fetchUsers = async (searchText: string = '') => {
@@ -441,28 +372,17 @@ const AdminProjectManager: React.FC = () => {
   };
 
   // Thêm hàm xử lý mở modal change status
-  const handleChangeStatus = (record: ProjectData) => {
-    setSelectedStatusProject(record);
-    setNewStatus(record.project_status);
-    setIsStatusModalVisible(true);
-  };
-
-  // Thêm hàm xử lý submit change status
-  const handleStatusSubmit = async () => {
-    if (!selectedStatusProject || !newStatus) return;
-
+  const handleChangeStatus = async (record: ProjectData, newStatus: string) => {
     try {
       setLoading(true);
       await projectService.changeProjectStatus({
-        _id: selectedStatusProject._id,
+        _id: record._id,
         project_status: newStatus,
       });
       
       toast.success('Project status updated successfully');
-      setIsStatusModalVisible(false);
       fetchProjects();
     } catch (error) {
-      
       toast.error('An error occurred while updating the project status');
     } finally {
       setLoading(false);
@@ -546,7 +466,6 @@ const AdminProjectManager: React.FC = () => {
                 columns={columns}
                 dataSource={getFilteredProjects()}
                 rowKey="_id"
-                loading={loading}
                 pagination={{
                   current: pagination.current,
                   pageSize: pagination.pageSize,
@@ -671,20 +590,6 @@ const AdminProjectManager: React.FC = () => {
             )}
           </Modal>
 
-          <ProjectModal
-            visible={isCreateModalVisible}
-            onCancel={handleCreateModalClose}
-            onSubmit={handleCreateSubmit}
-            isEditMode={false}
-            users={users}
-            departments={departments}
-            disabledStartDate={disabledStartDate}
-            disabledEndDate={disabledEndDate}
-            teamMembers={teamMembers}
-            setTeamMembers={setTeamMembers}
-            handleStartDateChange={(date: dayjs.Dayjs | null) => handleCreateStartDateChange(date)}
-            handleEndDateChange={(date: dayjs.Dayjs | null) => handleCreateEndDateChange(date)}
-          />
 
           <ProjectModal
             visible={isEditModalVisible}
@@ -716,38 +621,6 @@ const AdminProjectManager: React.FC = () => {
           >
             <p>Are you sure you want to delete this project?</p>
             <p>This action cannot be undone.</p>
-          </Modal>
-
-          <Modal
-            title="Change Project Status"
-            open={isStatusModalVisible}
-            onOk={handleStatusSubmit}
-            onCancel={() => setIsStatusModalVisible(false)}
-            okText="Update"
-            cancelText="Cancel"
-          >
-            <div className="mb-4">
-              <p>Current Status: <Tag color={
-                selectedStatusProject?.project_status === 'New' ? 'blue' :
-                selectedStatusProject?.project_status === 'Active' ? 'green' :
-                selectedStatusProject?.project_status === 'Pending' ? 'orange' :
-                selectedStatusProject?.project_status === 'Closed' ? 'red' :
-                'default'
-              }>{selectedStatusProject?.project_status}</Tag></p>
-            </div>
-            <div>
-              <p className="mb-2">Select New Status:</p>
-              <Select
-                value={newStatus}
-                onChange={setNewStatus}
-                style={{ width: '100%' }}
-              >
-                <Select.Option value="New">New</Select.Option>
-                <Select.Option value="Active">Active</Select.Option>
-                <Select.Option value="Pending">Pending</Select.Option>
-                <Select.Option value="Closed">Closed</Select.Option>
-              </Select>
-            </div>
           </Modal>
         </div>
       </div>
