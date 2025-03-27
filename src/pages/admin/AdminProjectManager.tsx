@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Table, Tag, Button, Modal, Form, Input,  Spin, Empty, Select } from 'antd';
-import {  ArrowLeftOutlined, SearchOutlined,  } from '@ant-design/icons';
+import {  ArrowLeftOutlined, SearchOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import projectService from '../../services/project.service';
 import { userService } from '../../services/user.service';
@@ -14,6 +14,7 @@ import ProjectModal from '../../components/admin/ProjectModal';
 import { departmentService } from '../../services/Department.service';
 import { debounce } from 'lodash';
 import AdminSidebar from '../../components/admin/AdminSidebar';
+import { useFavoriteProjects } from '../../hooks/useFavoriteProjects';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -27,7 +28,6 @@ const AdminProjectManager: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedProject, setSelectedProject] = useState<ProjectData | null>(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-  const [favoriteProjects, setFavoriteProjects] = useState<string[]>([]);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [editForm] = Form.useForm();
@@ -51,6 +51,9 @@ const AdminProjectManager: React.FC = () => {
   const [isStatusModalVisible, setIsStatusModalVisible] = useState(false);
   const [selectedStatusProject, setSelectedStatusProject] = useState<ProjectData | null>(null);
   const [newStatus, setNewStatus] = useState<string>('');
+  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
+
+  const { favoriteProjects, toggleFavorite } = useFavoriteProjects();
 
   const handleSearch = debounce((value: string) => {
     setSearchText(value);
@@ -219,7 +222,7 @@ const AdminProjectManager: React.FC = () => {
       setIsModalVisible(true);
     } catch (error) {
     
-      toast.error('Đã xảy ra lỗi khi lấy thông tin dự án');
+      toast.error(' An error occurred while fetching the project details');
     } finally {
       setLoading(false);
     }
@@ -246,7 +249,7 @@ const AdminProjectManager: React.FC = () => {
 
     } catch (error) {
     
-      toast.error('Có lỗi xảy ra khi mở form chỉnh sửa');
+      toast.error(' An error occurred while opening the edit form');
     } finally {
       setLoading(false);
     }
@@ -335,15 +338,6 @@ const AdminProjectManager: React.FC = () => {
     }
   };
 
-  const handleToggleFavorite = (projectId: string) => {
-    setFavoriteProjects(prev => {
-      if (prev.includes(projectId)) {
-        return prev.filter(id => id !== projectId);
-      }
-      return [...prev, projectId];
-    });
-  };
-
   const handleCreateModalClose = () => {
     createForm.resetFields();
     setTeamMembers([]); // Reset team members khi đóng modal
@@ -416,7 +410,7 @@ const AdminProjectManager: React.FC = () => {
         setUsers(formattedUsers);
       }
     } catch (error) {
-     toast.error('Không thể tải danh sách người dùng');
+     toast.error(' Cannot load user data');
     }
   };
 
@@ -442,7 +436,7 @@ const AdminProjectManager: React.FC = () => {
         setDepartments(formattedDepartments);
       }
     } catch (error) {
-     toast.error('Không thể tải danh sách phòng ban');
+     toast.error(' Cannot load department data');
     }
   };
 
@@ -475,12 +469,45 @@ const AdminProjectManager: React.FC = () => {
     }
   };
 
+  // Thêm effect để lắng nghe event toggle favorites
+  useEffect(() => {
+    const handleToggleFavorites = () => {
+      setShowOnlyFavorites(prev => !prev);
+    };
+
+    window.addEventListener('toggleFavorites', handleToggleFavorites);
+    
+    return () => {
+      window.removeEventListener('toggleFavorites', handleToggleFavorites);
+    };
+  }, []);
+
+  // Sửa lại hàm getFilteredProjects để xử lý favorites
+  const getFilteredProjects = useCallback(() => {
+    let filtered = [...projects];
+    
+    // Filter by search text
+    if (searchText) {
+      filtered = filtered.filter(project => 
+        project.project_name.toLowerCase().includes(searchText.toLowerCase()) ||
+        project.project_code.toLowerCase().includes(searchText.toLowerCase())
+      );
+    }
+
+    // Filter favorites if enabled
+    if (showOnlyFavorites) {
+      filtered = filtered.filter(project => favoriteProjects.includes(project._id));
+    }
+
+    return filtered;
+  }, [projects, searchText, showOnlyFavorites, favoriteProjects]);
+
   // Di chuyển khai báo columns xuống sau khi đã định nghĩa đầy đủ các hàm xử lý
   const columns = getProjectColumns({
     handleViewDetails,
     handleEdit,
     handleDelete,
-    handleToggleFavorite,
+    handleToggleFavorite: toggleFavorite,
     handleChangeStatus,
     favoriteProjects,
   });
@@ -503,9 +530,11 @@ const AdminProjectManager: React.FC = () => {
 
           <Card className="shadow-md">
             <div className="flex items-center justify-between mb-6">
-              <h1 className="text-2xl font-bold text-gray-800">Projects Overview</h1>
+              <div className="flex items-center gap-4">
+                <h1 className="text-2xl font-bold text-gray-800">Project Management</h1>
+              </div>
               <Input
-                placeholder="Tìm kiếm dự án..."
+                placeholder="Search project..."
                 prefix={<SearchOutlined className="text-gray-400" />}
                 onChange={(e) => handleSearch(e.target.value)}
                 style={{ width: 300 }}
@@ -515,7 +544,7 @@ const AdminProjectManager: React.FC = () => {
             <div className="overflow-auto custom-scrollbar">
               <Table
                 columns={columns}
-                dataSource={projects}
+                dataSource={getFilteredProjects()}
                 rowKey="_id"
                 loading={loading}
                 pagination={{
@@ -524,7 +553,7 @@ const AdminProjectManager: React.FC = () => {
                   total: pagination.total,
                   showSizeChanger: true,
                   showQuickJumper: true,
-                  showTotal: (total) => `Tổng ${total} dự án`
+                  showTotal: (total) => `Total: ${total} projects`
                 }}
                 onChange={handleTableChange}
                 className="overflow-hidden"

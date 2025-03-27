@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ProjectOutlined, UserOutlined, HomeOutlined, ProfileOutlined, TeamOutlined, EyeOutlined,ClockCircleOutlined, StarOutlined, PlusOutlined, UserAddOutlined, DownOutlined, RightOutlined, LogoutOutlined } from '@ant-design/icons';
+import { ProjectOutlined, UserOutlined, HomeOutlined, ProfileOutlined, TeamOutlined, EyeOutlined, StarOutlined, UserAddOutlined, DownOutlined, RightOutlined, LogoutOutlined, StarFilled } from '@ant-design/icons';
 import { useState, useEffect } from 'react';
 import ProjectModal from '../admin/ProjectModal';
 import projectService from '../../services/project.service';
@@ -24,6 +24,7 @@ const AdminSidebar = () => {
   const [isAddUserModalVisible, setIsAddUserModalVisible] = useState(false);
   const [roles, setRoles] = useState<Array<{label: string, value: string}>>([]);
   const { logout } = useAuth();
+  const [isFavoriteActive, setIsFavoriteActive] = useState(false);
 
   const projectMenuItems = [
     {
@@ -32,14 +33,13 @@ const AdminSidebar = () => {
       path: "/dashboard/project-manager"
     },
     {
-      title: "Recents",
-      icon: <ClockCircleOutlined />,
-      path: "/dashboard/project-manager/recents"
-    },
-    {
       title: "Favorites",
-      icon: <StarOutlined />,
-      path: "/dashboard/project-manager/favorites"
+      icon: isFavoriteActive ? <StarFilled className="text-yellow-400" /> : <StarOutlined />,
+      path: "/dashboard/project-manager",
+      onClick: () => {
+        setIsFavoriteActive(!isFavoriteActive);
+        window.dispatchEvent(new CustomEvent('toggleFavorites'));
+      }
     }
   ];
 
@@ -195,6 +195,53 @@ const AdminSidebar = () => {
     navigate('/login');
   };
 
+  const ProjectsSection = () => (
+    <div>
+      <div
+        className={`flex items-center justify-between px-4 py-2.5 cursor-pointer rounded-lg transition-all duration-200 ${
+          isProjectExpanded ? 'bg-[#2E3754] text-white' : 'text-gray-300 hover:bg-[#2E3754]/50'
+        }`}
+        onClick={() => setIsProjectExpanded(!isProjectExpanded)}
+      >
+        <div className="flex items-center gap-2">
+          <ProjectOutlined className={`text-xl ${isProjectExpanded ? 'text-white' : 'text-gray-300'}`} />
+          <span className={`font-medium text-base ${isProjectExpanded ? 'text-white' : 'text-gray-300'}`}>Project Management</span>
+        </div>
+        {isProjectExpanded ? (
+          <DownOutlined className={`text-xs ${isProjectExpanded ? 'text-white' : 'text-gray-300'}`} />
+        ) : (
+          <RightOutlined className={`text-xs ${isProjectExpanded ? 'text-white' : 'text-gray-300'}`} />
+        )}
+      </div>
+      {isProjectExpanded && (
+        <div className="mt-2">
+          {projectMenuItems.map((item) => (
+            <Link
+              key={item.path + item.title}
+              to={item.path}
+              onClick={item.onClick}
+              className={`flex items-center gap-3 px-8 py-2 rounded-lg transition-all duration-200 ${
+                location.pathname === item.path && !item.onClick
+                  ? "bg-[#2E3754] text-white"
+                  : "text-gray-300 hover:bg-[#2E3754]/50"
+              }`}
+            >
+              <span className="text-lg">{item.icon}</span>
+              <span className="text-sm">{item.title}</span>
+            </Link>
+          ))}
+          <button
+            onClick={handleCreateModalOpen}
+            className="flex items-center gap-3 px-8 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 text-white w-full shadow-sm"
+          >
+            <span className="text-lg">+</span>
+            <span>Create New Project</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="bg-[#1E2640] min-h-screen w-[260px] fixed left-0 top-0 text-white z-50">
       <div className="p-4 flex flex-col h-full">
@@ -226,12 +273,12 @@ const AdminSidebar = () => {
               </button>
 
               {isUserExpanded && (
-                <div className="mt-2 ml-4 space-y-1.5">
+                <div className="mt-2">
                   {userMenuItems.map((item, index) => (
                     <Link
                       key={index}
                       to={item.path}
-                      className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 ${
+                      className={`flex items-center gap-3 px-8 py-2 rounded-lg transition-all duration-200 whitespace-nowrap ${
                         location.pathname === item.path
                           ? 'bg-[#2E3754] text-white font-medium shadow-sm'
                           : 'text-gray-300 hover:bg-[#2E3754]/50'
@@ -243,10 +290,10 @@ const AdminSidebar = () => {
                   ))}
                   <button
                     onClick={handleAddUserModalOpen}
-                    className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 transition-colors text-white w-full shadow-sm"
+                    className="flex items-center gap-3 px-8 py-2.5 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 text-white w-full shadow-sm"
                   >
                     <UserAddOutlined className="text-lg" />
-                    <span className="font-medium">Add User</span>
+                    <span>Add User</span>
                   </button>
                 </div>
               )}
@@ -254,47 +301,7 @@ const AdminSidebar = () => {
 
             {/* Project Management Section */}
             <div>
-              <button
-                onClick={() => setIsProjectExpanded(!isProjectExpanded)}
-                className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg transition-all duration-200 ${
-                  isProjectExpanded ? 'bg-[#2E3754] text-white' : 'text-gray-300 hover:bg-[#2E3754]/50'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <ProjectOutlined className="text-xl" />
-                  <span className="font-medium">Project Management</span>
-                </div>
-                {isProjectExpanded ? 
-                  <DownOutlined className="text-xs opacity-60" /> : 
-                  <RightOutlined className="text-xs opacity-60" />
-                }
-              </button>
-              
-              {isProjectExpanded && (
-                <div className="mt-2 ml-4 space-y-1.5">
-                  {projectMenuItems.map((item, index) => (
-                    <Link
-                      key={index}
-                      to={item.path}
-                      className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 ${
-                        location.pathname === item.path
-                          ? 'bg-[#2E3754] text-white font-medium shadow-sm'
-                          : 'text-gray-300 hover:bg-[#2E3754]/50'
-                      }`}
-                    >
-                      <span className="text-lg">{item.icon}</span>
-                      <span>{item.title}</span>
-                    </Link>
-                  ))}
-                  <button
-                    onClick={handleCreateModalOpen}
-                    className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 transition-colors text-white w-full shadow-sm"
-                  >
-                    <PlusOutlined className="text-lg" />
-                    <span className="font-medium">Create New Project</span>
-                  </button>
-                </div>
-              )}
+              <ProjectsSection />
             </div>
 
             {/* Other Items */}
