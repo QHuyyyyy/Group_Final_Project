@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Tag, Spin, Avatar, Switch, Tooltip } from 'antd';
+import { Modal, Tag, Avatar, Switch, Tooltip } from 'antd';
 import { 
   UserOutlined, 
   TeamOutlined, 
@@ -32,7 +32,6 @@ interface StaffDetailsProps {
 
 const StaffDetails: React.FC<StaffDetailsProps> = ({ visible, staff, onClose }) => {
   const [employeeData, setEmployeeData] = useState<Employee | null>(null);
-  const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'account' | 'employee'>('account');
   const [showSensitiveInfo, setShowSensitiveInfo] = useState(false);
   const [hiddenFields, setHiddenFields] = useState<Record<string, boolean>>({
@@ -57,13 +56,10 @@ const StaffDetails: React.FC<StaffDetailsProps> = ({ visible, staff, onClose }) 
 
   const fetchEmployeeData = async (userId: string) => {
     try {
-      setLoading(true);
-      const response = await employeeService.getEmployeeById(userId, {showSpinner: false});
+      const response = await employeeService.getEmployeeById(userId);
       setEmployeeData(response.data);
     } catch (error) {
      
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -91,14 +87,14 @@ const StaffDetails: React.FC<StaffDetailsProps> = ({ visible, staff, onClose }) 
   const copyToClipboard = (text: string, fieldName: string) => {
     navigator.clipboard.writeText(text)
       .then(() => {
-        toast.success(`${fieldName} đã được sao chép vào clipboard`);
+        toast.success(`${fieldName} has been copied to clipboard`);
       })
       .catch(() => {
-        toast.error('Không thể sao chép. Vui lòng thử lại.');
+        toast.error('Unable to copy. Please try again.');
       });
   };
 
-  // Hiển thị thông tin ẩn/hiện
+  // Display hidden/visible information
   const renderSensitiveField = (value: string | undefined, fieldName: string, fieldKey: string) => {
     if (!value) return 'N/A';
     
@@ -108,7 +104,7 @@ const StaffDetails: React.FC<StaffDetailsProps> = ({ visible, staff, onClose }) 
           {hiddenFields[fieldKey] ? '••••••••••••' : value}
         </div>
         <div className="flex items-center ml-2">
-          <Tooltip title={hiddenFields[fieldKey] ? "Hiện thông tin" : "Ẩn thông tin"}>
+          <Tooltip title={hiddenFields[fieldKey] ? "Show information" : "Hide information"}>
             <button
               onClick={() => toggleFieldVisibility(fieldKey)}
               className="text-blue-500 hover:text-blue-700 p-1 rounded-full hover:bg-blue-50 transition-colors"
@@ -116,7 +112,7 @@ const StaffDetails: React.FC<StaffDetailsProps> = ({ visible, staff, onClose }) 
               {hiddenFields[fieldKey] ? <EyeOutlined /> : <EyeInvisibleOutlined />}
             </button>
           </Tooltip>
-          <Tooltip title={`Sao chép ${fieldName}`}>
+          <Tooltip title={`Copy ${fieldName}`}>
             <button
               onClick={() => copyToClipboard(value, fieldName)}
               className="text-blue-500 hover:text-blue-700 p-1 rounded-full hover:bg-blue-50 transition-colors ml-1"
@@ -148,11 +144,7 @@ const StaffDetails: React.FC<StaffDetailsProps> = ({ visible, staff, onClose }) 
       className="custom-modal"
     >
       <div className="py-4">
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <Spin size="large" />
-          </div>
-        ) : (
+        { (
           <div className="flex flex-col gap-6">
             {/* Profile Header with Avatar */}
             <div className="flex flex-col items-center mb-6">
@@ -210,7 +202,7 @@ const StaffDetails: React.FC<StaffDetailsProps> = ({ visible, staff, onClose }) 
                       <h4 className="text-base font-semibold text-gray-700">Account Information</h4>
                     </div>
                     <div className="flex items-center">
-                      <span className="text-sm text-gray-500 mr-2">Hiện tất cả thông tin</span>
+                      <span className="text-sm text-gray-500 mr-2">Show all information</span>
                       <Switch 
                         size="small" 
                         checked={showSensitiveInfo}
@@ -304,7 +296,7 @@ const StaffDetails: React.FC<StaffDetailsProps> = ({ visible, staff, onClose }) 
                       <h4 className="text-base font-semibold text-gray-700">Employee Information</h4>
                     </div>
                     <div className="flex items-center">
-                      <span className="text-sm text-gray-500 mr-2">Hiện tất cả thông tin</span>
+                      <span className="text-sm text-gray-500 mr-2">Show all information</span>
                       <Switch 
                         size="small" 
                         checked={showSensitiveInfo}
