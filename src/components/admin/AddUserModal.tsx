@@ -13,6 +13,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ visible, onCancel, onSucces
   const [form] = Form.useForm();
 
   const handleCancel = () => {
+    form.resetFields();
     onCancel();
   };
 
