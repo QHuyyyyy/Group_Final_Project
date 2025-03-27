@@ -175,7 +175,7 @@ const AdminSidebar = () => {
         if (usersResponse && usersResponse.data.pageData) {
           const formattedUsers = usersResponse.data.pageData.map((user: any) => ({
             value: user._id,
-            label: `${user.full_name || user.user_name} (${user.email})`,
+            label: `${user.full_name || user.user_name}`,
             role_code: user.role_code
           }));
           setUsers(formattedUsers);
