@@ -1,23 +1,31 @@
-import { Modal, Form, Button } from "antd";
+import { Modal, Form, Button, FormInstance } from "antd";
 import { InputVaild } from "../../constants/InputVaild";
 import CommonField from "./CommonFieldAddUser";
+import { useEffect } from "react";
 
 interface AddUserModalProps {
   visible: boolean;
   onCancel: () => void;
   onSuccess: (values: any) => void;
   roleOptions: Array<{label: string, value: string}>;
+  formRef?: React.RefObject<FormInstance | null>;
 }
 
-const AddUserModal: React.FC<AddUserModalProps> = ({ visible, onCancel, onSuccess, roleOptions }) => {
+const AddUserModal: React.FC<AddUserModalProps> = ({ visible, onCancel, onSuccess, roleOptions, formRef  }) => {
   const [form] = Form.useForm();
-
+  useEffect(() => {
+    if (formRef) {
+      formRef.current = form;
+    }
+  }, [form, formRef]);
   const handleCancel = () => {
+    form.resetFields();
     onCancel();
   };
 
   const handleSave = async (values: any) => {
-    onSuccess(values);
+      onSuccess(values);
+    
   };
 
   return (
