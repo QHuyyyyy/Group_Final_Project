@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Table, Tag, Button, Modal, Form, Input,  Spin, Empty, Select } from 'antd';
+import { Card, Table, Tag, Button, Modal, Form, Input,  Spin, Empty } from 'antd';
 import {  ArrowLeftOutlined, SearchOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import projectService from '../../services/project.service';
@@ -48,9 +48,6 @@ const AdminProjectManager: React.FC = () => {
     value: string;
     label: string;
   }>>([]);
-  const [isStatusModalVisible, setIsStatusModalVisible] = useState(false);
-  const [selectedStatusProject, setSelectedStatusProject] = useState<ProjectData | null>(null);
-  const [newStatus, setNewStatus] = useState<string>('');
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
 
   const { favoriteProjects, toggleFavorite } = useFavoriteProjects();
@@ -441,28 +438,17 @@ const AdminProjectManager: React.FC = () => {
   };
 
   // Thêm hàm xử lý mở modal change status
-  const handleChangeStatus = (record: ProjectData) => {
-    setSelectedStatusProject(record);
-    setNewStatus(record.project_status);
-    setIsStatusModalVisible(true);
-  };
-
-  // Thêm hàm xử lý submit change status
-  const handleStatusSubmit = async () => {
-    if (!selectedStatusProject || !newStatus) return;
-
+  const handleChangeStatus = async (record: ProjectData, newStatus: string) => {
     try {
       setLoading(true);
       await projectService.changeProjectStatus({
-        _id: selectedStatusProject._id,
+        _id: record._id,
         project_status: newStatus,
       });
       
       toast.success('Project status updated successfully');
-      setIsStatusModalVisible(false);
       fetchProjects();
     } catch (error) {
-      
       toast.error('An error occurred while updating the project status');
     } finally {
       setLoading(false);
@@ -546,7 +532,6 @@ const AdminProjectManager: React.FC = () => {
                 columns={columns}
                 dataSource={getFilteredProjects()}
                 rowKey="_id"
-                loading={loading}
                 pagination={{
                   current: pagination.current,
                   pageSize: pagination.pageSize,
@@ -716,38 +701,6 @@ const AdminProjectManager: React.FC = () => {
           >
             <p>Are you sure you want to delete this project?</p>
             <p>This action cannot be undone.</p>
-          </Modal>
-
-          <Modal
-            title="Change Project Status"
-            open={isStatusModalVisible}
-            onOk={handleStatusSubmit}
-            onCancel={() => setIsStatusModalVisible(false)}
-            okText="Update"
-            cancelText="Cancel"
-          >
-            <div className="mb-4">
-              <p>Current Status: <Tag color={
-                selectedStatusProject?.project_status === 'New' ? 'blue' :
-                selectedStatusProject?.project_status === 'Active' ? 'green' :
-                selectedStatusProject?.project_status === 'Pending' ? 'orange' :
-                selectedStatusProject?.project_status === 'Closed' ? 'red' :
-                'default'
-              }>{selectedStatusProject?.project_status}</Tag></p>
-            </div>
-            <div>
-              <p className="mb-2">Select New Status:</p>
-              <Select
-                value={newStatus}
-                onChange={setNewStatus}
-                style={{ width: '100%' }}
-              >
-                <Select.Option value="New">New</Select.Option>
-                <Select.Option value="Active">Active</Select.Option>
-                <Select.Option value="Pending">Pending</Select.Option>
-                <Select.Option value="Closed">Closed</Select.Option>
-              </Select>
-            </div>
           </Modal>
         </div>
       </div>
