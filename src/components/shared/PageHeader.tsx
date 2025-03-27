@@ -11,6 +11,7 @@ interface PageHeaderProps {
   searchType?: string;
   onSearchTypeChange?: (value: string) => void;
   searchPlaceholder?: string;
+  onSearchClick?: () => void;
 }
 
 const PageHeader = ({ 
@@ -20,7 +21,8 @@ const PageHeader = ({
   rightContent, 
   searchType = "claim_name",
   onSearchTypeChange,
-  searchPlaceholder = "Search by claim name"
+  searchPlaceholder = "Search by claim name",
+  onSearchClick
 }: PageHeaderProps) => {
   return (
     <div className="mb-4">
@@ -53,7 +55,13 @@ const PageHeader = ({
             <div className="h-6 w-px bg-gray-300"></div>
             <Search
               placeholder={searchPlaceholder}
-              onSearch={onSearch}
+              onSearch={(value, e) => {
+                if (e?.type === 'click' && onSearchClick) {
+                  onSearchClick();
+                } else {
+                  onSearch(value);
+                }
+              }}
               onChange={onChange}
               className="!w-80"
               variant="borderless"

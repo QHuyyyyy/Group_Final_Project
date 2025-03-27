@@ -123,7 +123,10 @@ const Claim = () => {
   
       if (filteredClaimsResponse?.data?.pageData) {
         const claimsData = filteredClaimsResponse.data.pageData;
-        setFilteredClaims(claimsData);
+        const sortedClaimsData = [...claimsData].sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        setFilteredClaims(sortedClaimsData);
   
         setPagination((prev) => ({
           ...prev,
