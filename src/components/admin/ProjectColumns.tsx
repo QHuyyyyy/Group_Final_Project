@@ -1,5 +1,5 @@
 import { Button, Space, Tag,  Dropdown, Popconfirm } from 'antd';
-import { EditOutlined, DeleteOutlined, EyeOutlined, StarOutlined, StarFilled, SyncOutlined, DownOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, EyeOutlined, StarOutlined, StarFilled, DownOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { Project, ProjectData } from '../../models/ProjectModel';
 
