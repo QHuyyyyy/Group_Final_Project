@@ -52,7 +52,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
 
   const fetchEmployeeData = async (employeeId: string) => {
     try {
-      const response = await employeeService.getEmployeeById(employeeId, {showSpinner:false});
+      const response = await employeeService.getEmployeeById(employeeId);
       const employeeData = response.data;
       
       setAvatarPreview(employeeData.avatar_url || '');
@@ -83,7 +83,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
         full_name: values.full_name?.trim(),
       };
   
-      await employeeService.updateEmployee(employeeId, updateData, {showSpinner:false});
+      await employeeService.updateEmployee(employeeId, updateData);
       toast.success('Update employee information successfully!');
       onClose();
     } catch (error) {
@@ -174,8 +174,8 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
               <CommonField 
                 name="account"
                 label="Account"
-                disabled
-                className="bg-gray-100"
+
+                rules={InputVaild.required("Please input account!")}
               />
               <CommonField 
                 name="phone"
