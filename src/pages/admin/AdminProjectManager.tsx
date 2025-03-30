@@ -112,7 +112,55 @@ const AdminProjectManager: React.FC = () => {
   useEffect(() => {
     fetchProjects();
   }, [pagination.current, pagination.pageSize, searchText]); // Thêm dependencies
+ //// Thêm dependencies
+  useEffect(() => {
+    const handleProjectAdded = () => {
+      fetchProjectsByAdd (1); // Reset to first page and fetch latest data
+    };
+     
+    window.addEventListener('projectAdded', handleProjectAdded );
+    return () => {
+      window.removeEventListener('projectAdded', handleProjectAdded );
+    };
+  }, []);
 
+  const fetchProjectsByAdd = async (page: number) => {
+    try {
+      setLoading(true);
+
+      const response = await projectService.searchProjects({
+        searchCondition: {
+          keyword: searchText || "",
+          is_delete: false
+        },
+        pageInfo: {
+          pageNum: page,
+          pageSize: pagination.pageSize,
+          totalItems: 0,
+          totalPages: 0
+        }
+      });
+
+
+
+      // Kiểm tra cấu trúc response và cập nhật state
+      if (response && response.data) {
+        setProjects(response.data.pageData || []);
+        setPagination(prev => ({
+          ...prev,
+          total: response.data.pageInfo?.totalItems || 0,
+          current: page
+        }));
+       
+      } else {
+        toast.error(' Cannot load project data');
+      }
+    } catch (error) {
+      toast.error(' An error occurred while fetching the project data');
+    } finally {
+      setLoading(false);
+    }
+  };
   // Cập nhật lại hàm fetchProjects
   const fetchProjects = async () => {
     try {

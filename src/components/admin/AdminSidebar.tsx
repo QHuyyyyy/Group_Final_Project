@@ -78,11 +78,23 @@ const AdminSidebar = () => {
 
   const handleCreateModalClose = () => {
     setTeamMembers([]);
+    // Reset form data
+    const projectModal = document.querySelector('form'); // Get the form element
+    if (projectModal) {
+      projectModal.reset(); // Reset all form fields
+    }
     setIsCreateModalVisible(false);
   };
 
   const handleCreateSubmit = async (values: any) => {
     try {
+      // Check if there is a Project Manager in team members
+      const hasProjectManager = teamMembers.some(member => member.role === 'Project Manager');
+      if (!hasProjectManager) {
+        toast.error('Project must have Project Manager');
+        return;
+      }
+
       setLoading(true);
       const projectData = {
         project_name: values.project_name,
@@ -101,12 +113,13 @@ const AdminSidebar = () => {
       const response = await projectService.createProject(projectData);
       if (response.success) {
         toast.success('Project created successfully');
+        window.dispatchEvent(new CustomEvent('projectAdded'));
         handleCreateModalClose();
+        
         navigate('/dashboard/project-manager');
       }
     } catch (error: any) {
       toast.error('Error creating project:', error);
-      
     } finally {
       setLoading(false);
     }
