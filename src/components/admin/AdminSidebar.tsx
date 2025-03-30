@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ProjectOutlined, UserOutlined, HomeOutlined, ProfileOutlined, TeamOutlined, EyeOutlined, StarOutlined, UserAddOutlined, DownOutlined, RightOutlined, LogoutOutlined, StarFilled } from '@ant-design/icons';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import ProjectModal from '../admin/ProjectModal';
 import projectService from '../../services/project.service';
 import { userService } from '../../services/user.service';
@@ -10,6 +10,7 @@ import { toast } from 'react-toastify';
 import AddUserModal from './AddUserModal';
 import { roleService } from '../../services/role.service';
 import { useAuth } from '../../contexts/AuthContext';
+import { FormInstance } from 'antd';
 
 const AdminSidebar = () => {
   const location = useLocation();
@@ -25,6 +26,7 @@ const AdminSidebar = () => {
   const [roles, setRoles] = useState<Array<{label: string, value: string}>>([]);
   const { logout } = useAuth();
   const [isFavoriteActive, setIsFavoriteActive] = useState(false);
+  const addUserFormRef = useRef<FormInstance>(null);
 
   const projectMenuItems = [
     {
@@ -76,11 +78,23 @@ const AdminSidebar = () => {
 
   const handleCreateModalClose = () => {
     setTeamMembers([]);
+    // Reset form data
+    const projectModal = document.querySelector('form'); // Get the form element
+    if (projectModal) {
+      projectModal.reset(); // Reset all form fields
+    }
     setIsCreateModalVisible(false);
   };
 
   const handleCreateSubmit = async (values: any) => {
     try {
+      // Check if there is a Project Manager in team members
+      const hasProjectManager = teamMembers.some(member => member.role === 'Project Manager');
+      if (!hasProjectManager) {
+        toast.error('Project must have Project Manager');
+        return;
+      }
+
       setLoading(true);
       const projectData = {
         project_name: values.project_name,
@@ -99,12 +113,13 @@ const AdminSidebar = () => {
       const response = await projectService.createProject(projectData);
       if (response.success) {
         toast.success('Project created successfully');
+        window.dispatchEvent(new CustomEvent('projectAdded'));
         handleCreateModalClose();
+        
         navigate('/dashboard/project-manager');
       }
     } catch (error: any) {
       toast.error('Error creating project:', error);
-      
     } finally {
       setLoading(false);
     }
@@ -123,7 +138,13 @@ const AdminSidebar = () => {
       setLoading(true);
       const response = await userService.createUser(values);
       if (response.success) {
+        // Dispatch a custom event to notify AdminUserManager
+        window.dispatchEvent(new CustomEvent('userAdded'));
+        
         toast.success('User created successfully');
+        if (addUserFormRef.current) {
+          addUserFormRef.current.resetFields();
+        }
         handleAddUserModalClose();
         navigate('/dashboard/user-manager');
       }
@@ -167,7 +188,7 @@ const AdminSidebar = () => {
         if (usersResponse && usersResponse.data.pageData) {
           const formattedUsers = usersResponse.data.pageData.map((user: any) => ({
             value: user._id,
-            label: `${user.full_name || user.user_name} (${user.email})`,
+            label: `${user.full_name || user.user_name}`,
             role_code: user.role_code
           }));
           setUsers(formattedUsers);
@@ -342,6 +363,7 @@ const AdminSidebar = () => {
         onCancel={handleAddUserModalClose}
         onSuccess={handleAddUserSubmit}
         roleOptions={roles}
+        formRef={addUserFormRef}
       />
 
       <ProjectModal
