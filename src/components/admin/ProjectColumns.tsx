@@ -1,4 +1,4 @@
-import { Button, Space, Tag,  Dropdown, Popconfirm } from 'antd';
+import { Button, Space, Tag,  Dropdown } from 'antd';
 import { EditOutlined, DeleteOutlined, EyeOutlined, StarOutlined, StarFilled, DownOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { Project, ProjectData } from '../../models/ProjectModel';
@@ -81,15 +81,12 @@ export const getProjectColumns = ({
       ].map(option => ({
         key: option.value,
         label: (
-          <Popconfirm
-            title="Change Status"
-            description={`Are you sure to change status to ${option.label}?`}
-            onConfirm={() => handleChangeStatus(record, option.value)}
-            okText="Yes"
-            cancelText="No"
+          <div
+            style={{ padding: '4px 8px' }}
+            onClick={() => handleChangeStatus(record, option.value)}
           >
-            <div style={{ padding: '4px 8px' }}>{option.label}</div>
-          </Popconfirm>
+            {option.label}
+          </div>
         )
       }));
 

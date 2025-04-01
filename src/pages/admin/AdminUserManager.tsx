@@ -18,7 +18,6 @@ import StaffDetails from '../../components/admin/StaffDetails';
 import { userService } from '../../services/user.service';
 import { roleService } from '../../services/role.service';
 import { UserData } from '../../models/UserModel';
-
 import AddUserModal from '../../components/admin/AddUserModal';
 import DeleteUserButton from '../../components/admin/DeleteUserButton';
 import EditUserModal from '../../components/admin/EditUserModal';
@@ -40,7 +39,6 @@ const AdminUserManager: React.FC = () => {
   const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<UserData | null>(null);
   const [searchText, setSearchText] = useState('');
-  const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -52,7 +50,6 @@ const AdminUserManager: React.FC = () => {
   const [isBlockedFilter, setIsBlockedFilter] = useState<boolean | undefined>(undefined);
   const [isEmployeeModalVisible, setIsEmployeeModalVisible] = useState(false);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('');
-
   const [roleFilter, setRoleFilter] = useState<string | null>(null);
 
   useEffect(() => {
@@ -63,7 +60,7 @@ const AdminUserManager: React.FC = () => {
   // Add event listener for user added
   useEffect(() => {
     const handleUserAdded = () => {
-      fetchUsers(1); // Reset to first page and fetch latest data
+      fetchUsers(1); 
     };
      
     window.addEventListener('userAdded', handleUserAdded);
@@ -74,7 +71,6 @@ const AdminUserManager: React.FC = () => {
 
   const fetchUsers = async (page: number) => {
     try {
-      setLoading(true);
       const searchParams: SearchParams = {
         searchCondition: {
           keyword: searchText || "",
@@ -103,7 +99,6 @@ const AdminUserManager: React.FC = () => {
     } catch (error) {
       toast.error('An error occurred while fetching users.');
     } finally {
-      setLoading(false);
     }
   };
 
@@ -165,7 +160,6 @@ const AdminUserManager: React.FC = () => {
 
   const handleRoleChange = async (userId: string, newRoleCode: string) => {
     try {
-      setLoading(true);
       await userService.changeRole({
         user_id: userId,
         role_code: newRoleCode
@@ -174,9 +168,7 @@ const AdminUserManager: React.FC = () => {
       toast.success('User role updated successfully');
       fetchUsers(pagination.current);
     } catch (error) {
-      toast.error('Failed to update user role');
-    } finally {
-      setLoading(false);
+      toast.error('Failed to update user role'); 
     }
   };
 
@@ -310,7 +302,7 @@ const AdminUserManager: React.FC = () => {
                   />
                 </Space>
                 <Input
-                  placeholder="Search by name..."
+                  placeholder="Search by username or email..."
                   prefix={<SearchOutlined className="text-gray-400" />}
                   onChange={(e) => handleSearch(e.target.value)}
                   style={{ width: 300 }}
@@ -322,7 +314,6 @@ const AdminUserManager: React.FC = () => {
               <Table
                 columns={columns}
                 dataSource={staffData}
-                loading={loading}
                 onChange={handleTableChange}
                 pagination={{
                   current: pagination.current,

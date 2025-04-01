@@ -51,6 +51,12 @@ const AdminProjectManager: React.FC = () => {
 
   const { favoriteProjects, toggleFavorite } = useFavoriteProjects();
 
+  const [isStatusModalVisible, setIsStatusModalVisible] = useState(false);
+  const [statusChangeInfo, setStatusChangeInfo] = useState<{
+    project: ProjectData | null;
+    newStatus: string;
+  }>({ project: null, newStatus: '' });
+
   const handleSearch = debounce((value: string) => {
     setSearchText(value);
     setPagination(prev => ({
@@ -420,12 +426,20 @@ const AdminProjectManager: React.FC = () => {
   };
 
   // Thêm hàm xử lý mở modal change status
-  const handleChangeStatus = async (record: ProjectData, newStatus: string) => {
+  const handleChangeStatus = (record: ProjectData, newStatus: string) => {
+    setStatusChangeInfo({ project: record, newStatus });
+    setIsStatusModalVisible(true);
+  };
+
+  // Thêm hàm mới để xử lý khi user xác nhận thay đổi status
+  const handleConfirmChangeStatus = async () => {
+    if (!statusChangeInfo.project || !statusChangeInfo.newStatus) return;
+
     try {
       setLoading(true);
       await projectService.changeProjectStatus({
-        _id: record._id,
-        project_status: newStatus,
+        _id: statusChangeInfo.project._id,
+        project_status: statusChangeInfo.newStatus,
       });
       
       toast.success('Project status updated successfully');
@@ -434,6 +448,8 @@ const AdminProjectManager: React.FC = () => {
       toast.error('An error occurred while updating the project status');
     } finally {
       setLoading(false);
+      setIsStatusModalVisible(false);
+      setStatusChangeInfo({ project: null, newStatus: '' });
     }
   };
 
@@ -669,6 +685,29 @@ const AdminProjectManager: React.FC = () => {
           >
             <p>Are you sure you want to delete this project?</p>
             <p>This action cannot be undone.</p>
+          </Modal>
+
+          <Modal
+            title="Confirm Status Change"
+            open={isStatusModalVisible}
+            onOk={handleConfirmChangeStatus}
+            onCancel={() => {
+              setIsStatusModalVisible(false);
+              setStatusChangeInfo({ project: null, newStatus: '' });
+            }}
+            okText="Change Status"
+            cancelText="Cancel"
+            okButtonProps={{
+              style: {
+                backgroundColor: 
+                  statusChangeInfo.newStatus === 'Active' ? '#52c41a' :
+                  statusChangeInfo.newStatus === 'Pending' ? '#faad14' :
+                  statusChangeInfo.newStatus === 'Closed' ? '#ff4d4f' : '#1890ff'
+              }
+            }}
+          >
+            <p>Are you sure you want to change the status of project "{statusChangeInfo.project?.project_name}" to {statusChangeInfo.newStatus}?</p>
+            <p>This action will update the project's status immediately.</p>
           </Modal>
         </div>
       </div>
