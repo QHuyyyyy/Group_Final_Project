@@ -281,6 +281,9 @@ const Claim = () => {
           title="My Claims"
           onSearch={handleSearch}
           onChange={(e) => handleSearch(e.target.value)}
+          onSearchClick={() => {
+            fetchClaims(pagination.current);
+          }}
         />
 
         <div className="flex items-center justify-between">
