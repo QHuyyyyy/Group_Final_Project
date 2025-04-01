@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Card,  Button, notification } from "antd";
+import { Card,  Button } from "antd";
 import { claimService } from "../../services/claim.service";
 import UpdateRequest from "../../components/user/UpdateRequest";
 import {
