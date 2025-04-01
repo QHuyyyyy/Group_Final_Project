@@ -302,7 +302,7 @@ const AdminUserManager: React.FC = () => {
                   />
                 </Space>
                 <Input
-                  placeholder="Search by name..."
+                  placeholder="Search by username or email..."
                   prefix={<SearchOutlined className="text-gray-400" />}
                   onChange={(e) => handleSearch(e.target.value)}
                   style={{ width: 300 }}
