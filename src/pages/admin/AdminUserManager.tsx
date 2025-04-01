@@ -60,7 +60,7 @@ const AdminUserManager: React.FC = () => {
   // Add event listener for user added
   useEffect(() => {
     const handleUserAdded = () => {
-      fetchUsers(1); // Reset to first page and fetch latest data
+      fetchUsers(1); 
     };
      
     window.addEventListener('userAdded', handleUserAdded);
