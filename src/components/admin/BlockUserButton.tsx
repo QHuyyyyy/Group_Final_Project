@@ -16,7 +16,7 @@ const BlockUserButton: React.FC<BlockUserButtonProps> = ({ userId, isBlocked, on
       await userService.changeStatus({
         user_id: userId,
         is_blocked: !isBlocked
-      }, {showSpinner:false});
+      });
       
       toast.success(`User successfully ${isBlocked ? 'unblocked' : 'blocked'}`);
       onSuccess();
