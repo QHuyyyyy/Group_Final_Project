@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { DollarOutlined, DownloadOutlined, FileExcelOutlined } from '@ant-design/icons';
 import { Button, Card } from 'antd';
-import { exportToExcel } from '../../utils/xlsxUtils';
+import { exportToExcel, formatClaimForExcel } from '../../utils/xlsxUtils';
 import type { Claim, SearchParams } from "../../models/ClaimModel";
 import { claimService } from "../../services/claim.service";
-import dayjs from "dayjs";
 import ClaimDetailsModal from '../../components/shared/ClaimDetailsModal';
 import ClaimTable from '../../components/shared/ClaimTable';
 import PageHeader from "../../components/shared/PageHeader";
@@ -21,6 +20,7 @@ const Finance = () => {
   const [selectedClaimForInfo, setSelectedClaimForInfo] = useState<Claim | null>(null);
   const [isViewModalVisible, setIsViewModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [allClaims, setAllClaims] = useState<Claim[]>([]);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -50,7 +50,7 @@ const Finance = () => {
       },
       pageInfo: {
         pageNum: pageNum,
-        pageSize: pagination.pageSize,
+        pageSize: pageNum === 1 ? 1000 : pagination.pageSize,
       },
     };
 
@@ -61,7 +61,15 @@ const Finance = () => {
           new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
         );
 
-        const filteredData = claimsData.filter(claim => {
+        if (pageNum === 1) {
+          setAllClaims(claimsData);
+        }
+
+        const displayData = pageNum === 1 
+          ? claimsData.slice(0, pagination.pageSize)
+          : claimsData;
+
+        const filteredData = displayData.filter(claim => {
           if (!searchTerm) return true;
           if (searchType === 'claim_name') {
             return claim.claim_name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -86,7 +94,6 @@ const Finance = () => {
     }
   };
 
-
   useEffect(() => {
     fetchClaims(pagination.current);
   }, [pagination.current, pagination.pageSize, searchTerm, searchType]);
@@ -98,9 +105,11 @@ const Finance = () => {
         ...prev,
         current: 1,
       }));
+      setTimeout(() => refreshNotifications(), 500);
     }, 1000),
     []
   );
+
   const handleSearchTypeChange = (value: string) => {
     setSearchType(value);
     if (searchTerm) {
@@ -109,6 +118,7 @@ const Finance = () => {
         ...prev,
         current: 1,
       }));
+      setTimeout(() => refreshNotifications(), 500);
     }
   };
 
@@ -117,51 +127,29 @@ const Finance = () => {
     setIsViewModalVisible(true);
   };
 
-  const handleViewModalClose = () => {
-    setIsViewModalVisible(false);
-    setSelectedClaimForInfo(null);
-  };
-
   const handleDownloadClaim = (claim: Claim) => {
     if (!claim) {
         toast.error('No claim data available for download.');
         return;
     }
     
-    const claimData = [
-        {
-            "Claim ID": claim._id,
-            "Staff Name": claim.staff_name,
-            "Project": claim.project_info?.project_name || 'N/A',
-            "From": dayjs(claim.claim_start_date).format('DD/MM/YYYY'),
-            "To": dayjs(claim.claim_end_date).format('DD/MM/YYYY'),
-            "Total Hours": claim.total_work_time,
-            "Amount": claim.total_work_time * 50,
-            "Status": claim.claim_status
-        }
-    ];
-
+    const claimData = [formatClaimForExcel(claim)];
     exportToExcel(claimData, `Claim_${claim._id}`, `${claim._id}`);
+    toast.success(`Successfully downloaded claims`);
   };
 
   const handleDownloadAllClaims = () => {
-    if (displayClaims.length === 0) {
-        toast.error('No claims available for download.');
-        return;
+    if (allClaims.length === 0) {
+      toast.error('No claims available for download.');
+      return;
     }
 
-    const allClaimsData = displayClaims.map(claim => ({
-        "Claim ID": claim._id,
-        "Staff Name": claim.staff_name,
-        "Project": claim.project_info?.project_name || 'N/A',
-        "From": dayjs(claim.claim_start_date).format('DD/MM/YYYY'),
-        "To": dayjs(claim.claim_end_date).format('DD/MM/YYYY'),
-        "Total Hours": claim.total_work_time,
-        "Amount": claim.total_work_time * 50,
-        "Status": claim.claim_status
-    }));
+    const allClaimsData = allClaims
+      .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+      .map(formatClaimForExcel);
 
     exportToExcel(allClaimsData, 'ListClaims', 'List Claims');
+    toast.success(`Successfully downloaded ${allClaims.length} claims`);
   };
 
   const handlePayClaim = async (claim: Claim) => {
@@ -191,7 +179,7 @@ const Finance = () => {
       );
       
       setShowConfirmDialog(false);
-      fetchClaims();
+      fetchClaims(pagination.current);
       refreshNotifications(); 
     } catch (error) {
       toast.error('Failed to process payment. Please try again.', {
@@ -253,16 +241,7 @@ const Finance = () => {
     const selectedClaimsData = displayClaims
       .filter(claim => selectedRowKeys.includes(claim._id))
       .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
-      .map(claim => ({
-        "Claim ID": claim._id,
-        "Staff Name": claim.staff_name,
-        "Project": claim.project_info?.project_name || 'N/A',
-        "From": dayjs(claim.claim_start_date).format('DD/MM/YYYY'),
-        "To": dayjs(claim.claim_end_date).format('DD/MM/YYYY'),
-        "Total Hours": claim.total_work_time,
-        "Amount": claim.total_work_time * 50,
-        "Status": claim.claim_status
-      }));
+      .map(formatClaimForExcel);
 
     exportToExcel(selectedClaimsData, 'Selected_Claims', 'Selected Claims');
     toast.success(`Successfully downloaded ${selectedRowKeys.length} claims`);
@@ -310,6 +289,10 @@ const Finance = () => {
           searchType={searchType}
           onSearchTypeChange={handleSearchTypeChange}
           searchPlaceholder={`Search by ${searchType === 'claim_name' ? 'claim name' : 'staff name'}`}
+          onSearchClick={() => {
+            fetchClaims(pagination.current);
+            refreshNotifications();
+          }}
         />
 
         <div className="flex items-center justify-end mb-6">
@@ -362,7 +345,7 @@ const Finance = () => {
                 current: page,
                 pageSize: pageSize || 10
               }));
-              fetchClaims();
+              fetchClaims(page);
             },
           }}
           onView={handleViewClaim}
@@ -410,7 +393,7 @@ const Finance = () => {
       <ClaimDetailsModal
         visible={isViewModalVisible}
         claim={selectedClaimForInfo}
-        onClose={handleViewModalClose}
+        onClose={() => setIsViewModalVisible(false)}
       />
     </div>
   );

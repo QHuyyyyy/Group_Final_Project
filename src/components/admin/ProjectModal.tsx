@@ -144,9 +144,17 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
           <div className="grid grid-cols-3 gap-x-6 mb-4">
             <CommonField name="project_code" label="Project Code" rules={InputVaild.projectCode} />
 
-            <CommonField name="project_name" label="Project Name" rules={[{ required: true }]} />
+            <CommonField 
+              name="project_name" 
+              label="Project Name" 
+              rules={[{ required: true, message: "Please input project name!" }]} 
+            />
 
-            <Form.Item name="project_department" label="Department" rules={[{ required: true }]}>
+            <Form.Item 
+              name="project_department" 
+              label="Department" 
+              rules={[{ required: true, message: "Please select department!" }]}
+            >
               <Select 
                 placeholder="Select department"
                 className="hover:border-green-400 focus:border-green-500"
@@ -160,7 +168,11 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
             </Form.Item>
           </div>
 
-          <Form.Item name="project_description" label="Description" rules={[{ required: true }]}>
+          <Form.Item 
+            name="project_description" 
+            label="Description" 
+            rules={[{ required: true, message: "Please input project description!" }]}
+          >
             <Input.TextArea 
               rows={4} 
               placeholder="Enter project description" 
@@ -172,12 +184,16 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
           <div className="relative mt-8 mb-8">
             <div className="flex items-center justify-between">
               <div className="w-4/12">
-                <Form.Item label={
-                  <div className="flex items-center gap-2">
-                    <CalendarOutlined className="text-blue-500" />
-                    <span>Start Date</span>
-                  </div>
-                } name="startDate" rules={[{ required: true }]}>
+                <Form.Item 
+                  label={
+                    <div className="flex items-center gap-2">
+                      <CalendarOutlined className="text-blue-500" />
+                      <span>Start Date</span>
+                    </div>
+                  } 
+                  name="startDate" 
+                  rules={[{ required: true, message: "Please select start date!" }]}
+                >
                   <DatePicker
                     style={{ width: '100%' }}
                     className="hover:border-blue-400 focus:border-blue-500 rounded-lg"
@@ -218,12 +234,15 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
               </div>
 
               <div className="w-4/12">
-                <Form.Item label={
-                  <div className="flex items-center gap-2">
+                <Form.Item 
+                  label={
+                    <div className="flex items-center gap-2">
                     <CalendarOutlined className="text-purple-500" />
                     <span>End Date</span>
                   </div>
-                } name="endDate" rules={[{ required: true }]}>
+                } name="endDate"
+                  rules={[{ required: true, message: "Please select end date!" }]}
+                >
                   <DatePicker
                     style={{ width: '100%' }}
                     className="hover:border-purple-400 focus:border-purple-500 rounded-lg"

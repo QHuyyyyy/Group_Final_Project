@@ -119,7 +119,7 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
 
     const handleSubmit = async (values: CreateClaim) => {
         try {
-            setLoading(true);
+            setLoading(false);
             const response = await claimService.createClaim({
                 ...values,
                 claim_start_date: dayjs(values.claim_start_date).format("YYYY-MM-DD"),

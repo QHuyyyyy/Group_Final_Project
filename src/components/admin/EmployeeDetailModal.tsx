@@ -174,8 +174,8 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
               <CommonField 
                 name="account"
                 label="Account"
-                disabled
-                className="bg-gray-100"
+
+                rules={InputVaild.required("Please input account!")}
               />
               <CommonField 
                 name="phone"

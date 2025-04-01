@@ -18,7 +18,6 @@ import StaffDetails from '../../components/admin/StaffDetails';
 import { userService } from '../../services/user.service';
 import { roleService } from '../../services/role.service';
 import { UserData } from '../../models/UserModel';
-
 import AddUserModal from '../../components/admin/AddUserModal';
 import DeleteUserButton from '../../components/admin/DeleteUserButton';
 import EditUserModal from '../../components/admin/EditUserModal';
@@ -40,7 +39,6 @@ const AdminUserManager: React.FC = () => {
   const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<UserData | null>(null);
   const [searchText, setSearchText] = useState('');
-  const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -52,12 +50,27 @@ const AdminUserManager: React.FC = () => {
   const [isBlockedFilter, setIsBlockedFilter] = useState<boolean | undefined>(undefined);
   const [isEmployeeModalVisible, setIsEmployeeModalVisible] = useState(false);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('');
-
   const [roleFilter, setRoleFilter] = useState<string | null>(null);
 
-  const fetchData = async (page: number) => {
+  useEffect(() => {
+    fetchUsers(pagination.current);
+    fetchRoles();
+  }, [pagination.current, pagination.pageSize, searchText, isBlockedFilter, roleFilter]);
+
+  // Add event listener for user added
+  useEffect(() => {
+    const handleUserAdded = () => {
+      fetchUsers(1); 
+    };
+     
+    window.addEventListener('userAdded', handleUserAdded);
+    return () => {
+      window.removeEventListener('userAdded', handleUserAdded);
+    };
+  }, []);
+
+  const fetchUsers = async (page: number) => {
     try {
-      setLoading(true);
       const searchParams: SearchParams = {
         searchCondition: {
           keyword: searchText || "",
@@ -71,42 +84,41 @@ const AdminUserManager: React.FC = () => {
         }
       };
 
-      const [usersResponse, rolesResponse] = await Promise.all([
-        userService.searchUsers(searchParams),
-        roleService.getAllRoles(),
-        
-      ]);
-
-      if (usersResponse && usersResponse.data) {
-        setStaffData(usersResponse.data.pageData as UserData[]);
+      const response = await userService.searchUsers(searchParams);
+    
+      
+      if (response && response.data) {
+        setStaffData(response.data.pageData as UserData[]);
         setPagination(prev => ({
           ...prev,
-          totalItems: usersResponse.data.pageInfo.totalItems,
-          totalPages: usersResponse.data.pageInfo.totalPages,
+          totalItems: response.data.pageInfo.totalItems,
+          totalPages: response.data.pageInfo.totalPages,
           current: page
         }));
       }
-
-      if (rolesResponse && rolesResponse.data) {
-        const options = rolesResponse.data.map(role => ({
-          label: role.role_name,
-          value: role.role_code
-        }));
-        setRoleOptions(options);
-      }
     } catch (error) {
-      toast.error('An error occurred while fetching data.');
+      toast.error('An error occurred while fetching users.');
     } finally {
-      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchData(pagination.current);
-  }, [pagination.current, pagination.pageSize, searchText, isBlockedFilter, roleFilter]);
+  const fetchRoles = async () => {
+    try {
+      const roles = await roleService.getAllRoles();
+      const options = roles.data.map(role => ({
+        label: role.role_name,
+        value: role.role_code
+      }));
+      setRoleOptions(options);
+    } catch (error) {
+      toast.error('Error fetching roles');
+    }
+  };
 
+  // Add a debounced search handler
   const handleSearch = debounce((value: string) => {
     setSearchText(value);
+    // Reset to first page when searching
     setPagination(prev => ({
       ...prev,
       current: 1
@@ -148,18 +160,15 @@ const AdminUserManager: React.FC = () => {
 
   const handleRoleChange = async (userId: string, newRoleCode: string) => {
     try {
-      setLoading(true);
       await userService.changeRole({
         user_id: userId,
         role_code: newRoleCode
       });
       
       toast.success('User role updated successfully');
-      fetchData(pagination.current);
+      fetchUsers(pagination.current);
     } catch (error) {
-      toast.error('Failed to update user role');
-    } finally {
-      setLoading(false);
+      toast.error('Failed to update user role'); 
     }
   };
 
@@ -249,13 +258,13 @@ const AdminUserManager: React.FC = () => {
           />
           <DeleteUserButton
             userId={record._id}
-            onSuccess={() => fetchData(pagination.current)}
+            onSuccess={() => fetchUsers(pagination.current)}
             isBlocked={record.is_blocked}
           />
           <BlockUserButton
             userId={record._id}
             isBlocked={record.is_blocked}
-            onSuccess={() => fetchData(pagination.current)}
+            onSuccess={() => fetchUsers(pagination.current)}
           />
         </Space>
       ),
@@ -293,7 +302,7 @@ const AdminUserManager: React.FC = () => {
                   />
                 </Space>
                 <Input
-                  placeholder="Search by name..."
+                  placeholder="Search by username or email..."
                   prefix={<SearchOutlined className="text-gray-400" />}
                   onChange={(e) => handleSearch(e.target.value)}
                   style={{ width: 300 }}
@@ -305,7 +314,6 @@ const AdminUserManager: React.FC = () => {
               <Table
                 columns={columns}
                 dataSource={staffData}
-                loading={loading}
                 onChange={handleTableChange}
                 pagination={{
                   current: pagination.current,
@@ -327,7 +335,7 @@ const AdminUserManager: React.FC = () => {
           onCancel={() => setIsAddModalVisible(false)}
           onSuccess={() => {
             setIsAddModalVisible(false);
-            fetchData(pagination.current);
+            fetchUsers(pagination.current);
           }}
           roleOptions={roleOptions}
         />
@@ -340,7 +348,7 @@ const AdminUserManager: React.FC = () => {
           }}
           onSuccess={() => {
             setIsEditModalVisible(false);
-            fetchData(pagination.current);
+            fetchUsers(pagination.current);
           }}
           editingRecord={editingRecord}
           roleOptions={roleOptions}
