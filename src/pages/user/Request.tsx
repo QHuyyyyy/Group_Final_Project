@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Card,  Button, notification } from "antd";
+import { Card,  Button } from "antd";
 import { claimService } from "../../services/claim.service";
 import UpdateRequest from "../../components/user/UpdateRequest";
 import {
@@ -17,7 +17,8 @@ import StatusTabs from '../../components/shared/StatusTabs';
 import ClaimTable from '../../components/shared/ClaimTable';
 import PageHeader from '../../components/shared/PageHeader';
 import ClaimHistoryModal from '../../components/shared/ClaimHistoryModal';
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 const Claim = () => {
   const [loading, setLoading] = useState(false);
@@ -185,19 +186,11 @@ const Claim = () => {
         claim_status: "Canceled",
         comment: comment
       });
-      notification.success({
-        message: 'Success',
-        description: 'Request has been canceled successfully.',
-        placement: 'topRight'
-      });
+      toast.success('Request has been canceled successfully');
       fetchClaims(pagination.current);
     } catch (error: unknown) {
       if (error instanceof Error) {
-        notification.error({
-          message: 'Error',
-          description: error.message || 'Failed to cancel the request.',
-          placement: 'topRight'
-        });
+        toast.error(error.message || 'Failed to cancel the request');
       }
     }
   };
@@ -227,19 +220,11 @@ const Claim = () => {
         claim_status: "Pending Approval",
         comment: comment
       });
-      notification.success({
-        message: 'Success',
-        description: 'Request has been sent for approval successfully.',
-        placement: 'topRight'
-      });
+      toast.success('Request has been sent for approval successfully');
       fetchClaims(pagination.current);
     } catch (error: unknown) {
       if (error instanceof Error) {
-        notification.error({
-          message: 'Error',
-          description: error.message || 'Failed to send request for approval.',
-          placement: 'topRight'
-        });
+        toast.error(error.message || 'Failed to send request for approval');
       }
     }
   };
@@ -276,6 +261,19 @@ const Claim = () => {
 
   return (
     <div className="overflow-x-auto">
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        limit={1}
+      />
       <Card className="shadow-md">
         <PageHeader
           title="My Claims"

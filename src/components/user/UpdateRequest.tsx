@@ -113,7 +113,7 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, claim, onClose, 
     );
 
     const handleSubmit = async (values: FormValues) => {
-        setLoading(true);
+        setLoading(false);
         try {
             const updatedRequest: UpdateClaimRequest = {
                 project_id: claim.project_id,

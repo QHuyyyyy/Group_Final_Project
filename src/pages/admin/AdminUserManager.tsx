@@ -303,7 +303,14 @@ const AdminUserManager: React.FC = () => {
                 </Space>
                 <Input
                   placeholder="Search by username or email..."
-                  prefix={<SearchOutlined className="text-gray-400" />}
+                  prefix={
+                    <SearchOutlined 
+                      className="text-gray-400 cursor-pointer" 
+                      onClick={() => {
+                        fetchUsers(pagination.current);
+                      }}
+                    />
+                  }
                   onChange={(e) => handleSearch(e.target.value)}
                   style={{ width: 300 }}
                   className="ml-4"
