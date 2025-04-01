@@ -542,8 +542,6 @@ export default function AdminClaimStats() {
                                             innerRadius={60}
                                             outerRadius={100}
                                             paddingAngle={2}
-                                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                                            labelLine={{ stroke: '#ccc', strokeWidth: 1, strokeDasharray: '2 2' }}
                                         >
                                             {claimCategories.map((_, index) => (
                                                 <Cell 
