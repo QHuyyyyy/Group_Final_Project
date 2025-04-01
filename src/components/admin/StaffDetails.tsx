@@ -56,10 +56,6 @@ const StaffDetails: React.FC<StaffDetailsProps> = ({ visible, staff, onClose }) 
 
   const fetchEmployeeData = async (userId: string) => {
     try {
-<<<<<<< HEAD
-      setLoading(true);
-=======
->>>>>>> b2b6b1ea36a4418634c413dce0f8b89f640a1a21
       const response = await employeeService.getEmployeeById(userId);
       setEmployeeData(response.data);
     } catch (error) {
