@@ -158,9 +158,7 @@ function ApprovalPage() {
       setSelectedClaim(null);
       setConfirmationType(null);
     } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      }
+      toast.error("An error occurred while processing the claim");
     } finally {
       setActionLoading(false);
     }
@@ -342,11 +340,11 @@ function ApprovalPage() {
 
             <Form.Item
               name="comment"
-              label="Comment"
+              label="Comment (Optional)"
             >
               <Input.TextArea 
                 rows={4}
-                placeholder={`Please provide a reason for ${
+                placeholder={`Optional: Add a comment about ${
                   confirmationType === "Approved" 
                     ? "approving" 
                     : confirmationType === "Rejected"
@@ -363,4 +361,4 @@ function ApprovalPage() {
   );
 }
 
-export default ApprovalPage;  
+export default ApprovalPage;
