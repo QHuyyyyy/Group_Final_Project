@@ -46,8 +46,8 @@ export const userService = {
   },
 
   // Xóa người dùng
-  deleteUser: async (id: string, config = {showSpinner:false}): Promise<ApiResponse<null>> => {
-    const response = await apiUtils.delete<ApiResponse<null>>(`${USERS_ENDPOINT}/${id}`, config);
+  deleteUser: async (id: string): Promise<ApiResponse<null>> => {
+    const response = await apiUtils.delete<ApiResponse<null>>(`${USERS_ENDPOINT}/${id}`);
 
     return response.data;
   },

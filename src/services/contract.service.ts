@@ -8,7 +8,7 @@ export const contractService = {
     getAllContracts: async (keyword?: string): Promise<ApiResponse<Contract[]>> => {
         const response = await apiUtils.get<ApiResponse<Contract[]>>(`${CONTRACTS_ENDPOINT}/get-all`, {
             params: keyword ? { keyword } : {},
-        }, {showSpinner:false});
+        });
         return response.data;
     },
 };

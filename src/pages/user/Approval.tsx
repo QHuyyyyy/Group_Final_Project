@@ -14,6 +14,7 @@ import ClaimDetailsModal from "../../components/shared/ClaimDetailsModal";
 import dayjs from "dayjs";
 import { toast } from 'react-toastify';
 import ClaimHistoryModal from "../../components/shared/ClaimHistoryModal";
+
 interface PaginationState {
   current: number;
   pageSize: number;
@@ -44,15 +45,8 @@ function ApprovalPage() {
     "Approved" | "Rejected" | "Draft" | null
   >(null);
   const [isDetailsModalVisible, setDetailsModalVisible] = useState(false);
-  const [form] = Form.useForm();
   const [actionLoading, setActionLoading] = useState(false);
   const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
-  const [searchType, setSearchType] = useState<string>("claim_name");
-  const refreshNotifications = () => {
-    const event = new CustomEvent('refreshNotifications');
-    window.dispatchEvent(event);
-  };
-  
   const handleViewHistory = (record: Claim) => {
     setSelectedClaim(record);
     setIsHistoryModalVisible(true);
@@ -61,8 +55,8 @@ function ApprovalPage() {
     setLoading(true);
     const params: SearchParams = {
       searchCondition: {
-        keyword:"",
-        claim_status:"",
+        keyword: searchText || "",
+        claim_status: statusFilter || "",
         claim_start_date: "",
         claim_end_date: "",
         is_delete: false,
@@ -76,19 +70,9 @@ function ApprovalPage() {
     const response = await claimService.searchClaimsForApproval(params);
     
     if (response?.data?.pageData) {
+      
       const claimsData = response.data.pageData;
-
-      const filteredData = claimsData.filter(claim => {
-        if (!searchText) return true;
-        if (searchType === 'claim_name') {
-          return claim.claim_name.toLowerCase().includes(searchText.toLowerCase());
-        } else if (searchType === 'staff_name') {
-          return claim.staff_name.toLowerCase().includes(searchText.toLowerCase());
-        }
-        return true;
-      });
-
-      setClaims(filteredData);
+      setClaims(claimsData);
 
       const newCounts = {
         all: claimsData.length,
@@ -103,8 +87,8 @@ function ApprovalPage() {
 
       setPagination((prev) => ({
         ...prev,
-        totalItems: response.data.pageInfo.totalItems,
-        totalPages: response.data.pageInfo.totalPages,
+        total: response.data.pageInfo.totalItems || 0,
+        current: pageNum
       }));
     }
     setLoading(false);
@@ -112,7 +96,7 @@ function ApprovalPage() {
 
   useEffect(() => {
     fetchClaims(pagination.current);
-  }, [statusFilter, searchText, pagination.current, pagination.pageSize, searchType]);
+  }, [statusFilter, searchText, pagination.current, pagination.pageSize]);
 
   const handleSearch = useCallback(
     debounce((query: string) => {
@@ -121,20 +105,9 @@ function ApprovalPage() {
         ...prev,
         current: 1,
       }));
-    }, 1000),
+    }, 500),
     []
   );
-
-  const handleSearchTypeChange = (value: string) => {
-    setSearchType(value);
-    if (searchText) {
-      setSearchText(searchText);
-      setPagination((prev) => ({
-        ...prev,
-        current: 1,
-      }));
-    }
-  };
 
   const showConfirmation = (
     claim: Claim,
@@ -149,7 +122,6 @@ function ApprovalPage() {
 
     setSelectedClaim(claim);
     setConfirmationType(type);
-    form.resetFields();
   };
 
   const showDetails = (claim: Claim) => {
@@ -161,13 +133,10 @@ function ApprovalPage() {
     if (!selectedClaim || !confirmationType) return;
 
     try {
-      setActionLoading(true);
-      const values = await form.validateFields();
-      
+      setActionLoading(true);      
       const requestBody = {
         _id: selectedClaim._id,
         claim_status: confirmationType,
-        comment: values.comment,
       };
       
       const response = await claimService.changeClaimStatus(requestBody);
@@ -185,9 +154,7 @@ function ApprovalPage() {
       toast.success(`The claim "${selectedClaim.claim_name}" has been successfully ${actionText}.`);
       
       fetchClaims(pagination.current);
-      refreshNotifications();
 
-      form.resetFields();
       setSelectedClaim(null);
       setConfirmationType(null);
     } catch (error) {
@@ -216,9 +183,6 @@ function ApprovalPage() {
           title="Approval Management"
           onSearch={handleSearch}
           onChange={(e) => handleSearch(e.target.value)}
-          searchType={searchType}
-          onSearchTypeChange={handleSearchTypeChange}
-          searchPlaceholder={`Search by ${searchType === 'claim_name' ? 'claim name' : 'staff name'}`}
         />
 
         <ClaimTable
@@ -324,7 +288,6 @@ function ApprovalPage() {
       >
         <div className="p-2">
           <Form 
-            form={form} 
             layout="vertical"
             initialValues={{ comment: "" }}
           >
@@ -380,10 +343,6 @@ function ApprovalPage() {
             <Form.Item
               name="comment"
               label="Comment"
-              rules={[
-                { required: true, message: 'Please enter a comment' },
-                { min: 3, message: 'Comment must be at least 3 characters' }
-              ]}
             >
               <Input.TextArea 
                 rows={4}

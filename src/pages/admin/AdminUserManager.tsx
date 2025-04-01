@@ -55,12 +55,7 @@ const AdminUserManager: React.FC = () => {
 
   const [roleFilter, setRoleFilter] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchUsers(pagination.current);
-    fetchRoles();
-  }, [pagination.current, pagination.pageSize, searchText, isBlockedFilter, roleFilter]);
-
-  const fetchUsers = async (page: number) => {
+  const fetchData = async (page: number) => {
     try {
       setLoading(true);
       const searchParams: SearchParams = {
@@ -76,42 +71,42 @@ const AdminUserManager: React.FC = () => {
         }
       };
 
-      const response = await userService.searchUsers(searchParams);
-    
-      
-      if (response && response.data) {
-        setStaffData(response.data.pageData as UserData[]);
+      const [usersResponse, rolesResponse] = await Promise.all([
+        userService.searchUsers(searchParams),
+        roleService.getAllRoles(),
+        
+      ]);
+
+      if (usersResponse && usersResponse.data) {
+        setStaffData(usersResponse.data.pageData as UserData[]);
         setPagination(prev => ({
           ...prev,
-          totalItems: response.data.pageInfo.totalItems,
-          totalPages: response.data.pageInfo.totalPages,
+          totalItems: usersResponse.data.pageInfo.totalItems,
+          totalPages: usersResponse.data.pageInfo.totalPages,
           current: page
         }));
       }
+
+      if (rolesResponse && rolesResponse.data) {
+        const options = rolesResponse.data.map(role => ({
+          label: role.role_name,
+          value: role.role_code
+        }));
+        setRoleOptions(options);
+      }
     } catch (error) {
-      toast.error('An error occurred while fetching users.');
+      toast.error('An error occurred while fetching data.');
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchRoles = async () => {
-    try {
-      const roles = await roleService.getAllRoles();
-      const options = roles.data.map(role => ({
-        label: role.role_name,
-        value: role.role_code
-      }));
-      setRoleOptions(options);
-    } catch (error) {
-      toast.error('Error fetching roles');
-    }
-  };
+  useEffect(() => {
+    fetchData(pagination.current);
+  }, [pagination.current, pagination.pageSize, searchText, isBlockedFilter, roleFilter]);
 
-  // Add a debounced search handler
   const handleSearch = debounce((value: string) => {
     setSearchText(value);
-    // Reset to first page when searching
     setPagination(prev => ({
       ...prev,
       current: 1
@@ -160,7 +155,7 @@ const AdminUserManager: React.FC = () => {
       });
       
       toast.success('User role updated successfully');
-      fetchUsers(pagination.current);
+      fetchData(pagination.current);
     } catch (error) {
       toast.error('Failed to update user role');
     } finally {
@@ -254,13 +249,13 @@ const AdminUserManager: React.FC = () => {
           />
           <DeleteUserButton
             userId={record._id}
-            onSuccess={() => fetchUsers(pagination.current)}
+            onSuccess={() => fetchData(pagination.current)}
             isBlocked={record.is_blocked}
           />
           <BlockUserButton
             userId={record._id}
             isBlocked={record.is_blocked}
-            onSuccess={() => fetchUsers(pagination.current)}
+            onSuccess={() => fetchData(pagination.current)}
           />
         </Space>
       ),
@@ -332,7 +327,7 @@ const AdminUserManager: React.FC = () => {
           onCancel={() => setIsAddModalVisible(false)}
           onSuccess={() => {
             setIsAddModalVisible(false);
-            fetchUsers(pagination.current);
+            fetchData(pagination.current);
           }}
           roleOptions={roleOptions}
         />
@@ -345,7 +340,7 @@ const AdminUserManager: React.FC = () => {
           }}
           onSuccess={() => {
             setIsEditModalVisible(false);
-            fetchUsers(pagination.current);
+            fetchData(pagination.current);
           }}
           editingRecord={editingRecord}
           roleOptions={roleOptions}
@@ -370,4 +365,3 @@ const AdminUserManager: React.FC = () => {
 };
 
 export default AdminUserManager;
-            
