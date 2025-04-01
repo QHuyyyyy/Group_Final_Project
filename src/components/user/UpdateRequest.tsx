@@ -10,7 +10,6 @@ import { ClockCircleOutlined } from "@ant-design/icons";
 import { userService } from "../../services/user.service";
 import type { User } from "../../models/UserModel";
 import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 interface UpdateRequestProps {
     visible: boolean;
@@ -131,8 +130,6 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, claim, onClose, 
         } catch (error) {
             
             toast.error('Failed to update claim');
-        } finally {
-            setLoading(false);
         }
     };
 
