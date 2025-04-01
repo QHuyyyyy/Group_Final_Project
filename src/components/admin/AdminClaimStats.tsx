@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { User } from "../../models/UserModel";
 import { Claim } from "../../models/ClaimModel";
 import dayjs from "dayjs"
-import { Bar, BarChart, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell } from "recharts";
+import { Bar, BarChart, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Cell, Legend } from "recharts";
 import { userService } from "../../services/user.service";
 import { claimService } from "../../services/claim.service";
 import { toast } from "react-toastify";
@@ -483,20 +483,55 @@ export default function AdminClaimStats() {
                     }}>
                     <Row gutter={[16, 16]}>
                         <Col lg={12} md={24}>
-                            <Card title="Claim Request Overview">
-                                <ResponsiveContainer width="100%" height={300} >
-                                    <BarChart data={claimsData}>
-                                        <XAxis dataKey="status" />
-                                        <YAxis />
-                                        <Tooltip contentStyle={{ backgroundColor: "#fff", borderRadius: 8 }} />
-                                        <Bar dataKey="count" fill="#4faadb" barSize={40} radius={[5, 5, 0, 0]} />
+                            <Card 
+                                title={<span className="text-base font-medium">Claim Status Distribution</span>}
+                                className="rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300"
+                                headStyle={{ borderBottom: "1px solid #f0f0f0", padding: "12px 16px" }}
+                                bodyStyle={{ padding: "0 0 16px 0" }}
+                            >
+                                <ResponsiveContainer width="100%" height={320}>
+                                    <BarChart 
+                                        data={claimsData}
+                                        margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
+                                    >
+                                        <XAxis 
+                                            dataKey="status" 
+                                            tick={{ fill: '#6B778C', fontSize: 12 }}
+                                        />
+                                        <YAxis 
+                                            tick={{ fill: '#6B778C', fontSize: 12 }}
+                                        />
+                                        <Tooltip 
+                                            contentStyle={{ 
+                                                backgroundColor: "#fff", 
+                                                borderRadius: 8,
+                                                boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                                                border: "none"
+                                            }} 
+                                        />
+                                        <Bar 
+                                            dataKey="count" 
+                                            name="Claims" 
+                                            barSize={40} 
+                                            radius={[6, 6, 0, 0]}
+                                        >
+                                            {claimsData.map((entry, index) => {
+                                                const status = entry.status as ClaimStatus["status"];
+                                                return <Cell key={`cell-${index}`} fill={statusColors[status] || COLORS[index % COLORS.length]} />
+                                            })}
+                                        </Bar>
                                     </BarChart>
                                 </ResponsiveContainer>
                             </Card>
                         </Col>
                         <Col lg={12} md={24}>
-                            <Card title="Claims By Department">
-                                <ResponsiveContainer width="100%" height={300}>
+                            <Card 
+                                title={<span className="text-base font-medium">Claims By Department</span>}
+                                className="rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300"
+                                headStyle={{ borderBottom: "1px solid #f0f0f0", padding: "12px 16px" }}
+                                bodyStyle={{ padding: "0 0 16px 0" }}
+                            >
+                                <ResponsiveContainer width="100%" height={320}>
                                     <PieChart>
                                         <Pie
                                             data={claimCategories}
@@ -504,15 +539,34 @@ export default function AdminClaimStats() {
                                             nameKey="name"
                                             cx="50%"
                                             cy="50%"
+                                            innerRadius={60}
                                             outerRadius={100}
-                                            fill="#8884d8"
-                                            label
+                                            paddingAngle={2}
+                                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                                            labelLine={{ stroke: '#ccc', strokeWidth: 1, strokeDasharray: '2 2' }}
                                         >
                                             {claimCategories.map((_, index) => (
-                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                <Cell 
+                                                    key={`cell-${index}`} 
+                                                    fill={COLORS[index % COLORS.length]}
+                                                    stroke="#fff"
+                                                    strokeWidth={2}
+                                                />
                                             ))}
                                         </Pie>
-                                        <Tooltip />
+                                        <Tooltip 
+                                            contentStyle={{ 
+                                                backgroundColor: "#fff", 
+                                                borderRadius: 8, 
+                                                boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                                                border: "none"
+                                            }}
+                                        />
+                                        <Legend 
+                                            layout="horizontal" 
+                                            verticalAlign="bottom" 
+                                            align="center"
+                                        />
                                     </PieChart>
                                 </ResponsiveContainer>
                             </Card>
