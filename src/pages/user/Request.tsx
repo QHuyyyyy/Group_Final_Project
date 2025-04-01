@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Card,  Button } from "antd";
+import { Card, Button } from "antd";
 import { claimService } from "../../services/claim.service";
 import UpdateRequest from "../../components/user/UpdateRequest";
 import {
@@ -10,15 +10,15 @@ import {
 import type { Claim, ClaimById, SearchParams } from "../../models/ClaimModel";
 import CreateRequest from "../../components/user/CreateRequest";
 import SendRequest from "../../components/user/SendRequest";
-import CancelRequest from "../../components/user/CancelRequest"; 
+import CancelRequest from "../../components/user/CancelRequest";
 import { debounce } from "lodash";
 import ClaimDetailsModal from '../../components/shared/ClaimDetailsModal';
 import StatusTabs from '../../components/shared/StatusTabs';
 import ClaimTable from '../../components/shared/ClaimTable';
 import PageHeader from '../../components/shared/PageHeader';
 import ClaimHistoryModal from '../../components/shared/ClaimHistoryModal';
-import { toast, ToastContainer } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from "react-toastify";
+
 
 const Claim = () => {
   const [loading, setLoading] = useState(false);
@@ -50,7 +50,7 @@ const Claim = () => {
     canceled: 0,
     paid: 0
   });
-  const [isCancelModalVisible, setIsCancelModalVisible] = useState(false); 
+  const [isCancelModalVisible, setIsCancelModalVisible] = useState(false);
   const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
   const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
 
@@ -64,7 +64,7 @@ const Claim = () => {
     }, 500),
     []
   );
-  
+
   useEffect(() => {
     fetchClaims(pagination.current);
   }, [pagination.current, pagination.pageSize, searchText, selectedStatus]);
@@ -72,7 +72,7 @@ const Claim = () => {
   const fetchClaims = async (pageNum: number) => {
     try {
       setLoading(true);
-  
+
       const allClaimsParams: SearchParams = {
         searchCondition: {
           keyword: searchText || "",
@@ -86,7 +86,7 @@ const Claim = () => {
           pageSize: 1000,
         },
       };
-  
+
       const filteredClaimsParams: SearchParams = {
         searchCondition: {
           keyword: searchText || "",
@@ -100,16 +100,16 @@ const Claim = () => {
           pageSize: pagination.pageSize,
         },
       };
-  
+
       const [allClaimsResponse, filteredClaimsResponse] = await Promise.all([
         claimService.searchClaimsByClaimer(allClaimsParams),
         claimService.searchClaimsByClaimer(filteredClaimsParams),
       ]);
-  
+
       if (allClaimsResponse?.data?.pageData) {
         const allClaimsData = allClaimsResponse.data.pageData;
         setAllClaims(allClaimsData);
-  
+
         const newCounts = {
           all: allClaimsData.length,
           draft: allClaimsData.filter(claim => claim.claim_status === "Draft").length,
@@ -121,14 +121,14 @@ const Claim = () => {
         };
         setStatusCounts(newCounts);
       }
-  
+
       if (filteredClaimsResponse?.data?.pageData) {
         const claimsData = filteredClaimsResponse.data.pageData;
-        const sortedClaimsData = [...claimsData].sort((a, b) => 
+        const sortedClaimsData = [...claimsData].sort((a, b) =>
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         );
         setFilteredClaims(sortedClaimsData);
-  
+
         setPagination((prev) => ({
           ...prev,
           totalItems: filteredClaimsResponse.data.pageInfo.totalItems,
@@ -136,9 +136,9 @@ const Claim = () => {
           current: pageNum,
         }));
       }
-  
+
     } catch (error) {
-    
+
       toast.error("An error occurred while fetching claims.");
     } finally {
       setLoading(false);
@@ -251,7 +251,6 @@ const Claim = () => {
   const handleUpdateSuccess = () => {
     setIsUpdateModalVisible(false);
     fetchClaims(pagination.current);
-    toast.success("Claim updated successfully");
   };
 
   const handleViewHistory = (record: Claim) => {
@@ -261,19 +260,7 @@ const Claim = () => {
 
   return (
     <div className="overflow-x-auto">
-      <ToastContainer
-        position="bottom-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-        limit={1}
-      />
+      
       <Card className="shadow-md">
         <PageHeader
           title="My Claims"
@@ -298,8 +285,8 @@ const Claim = () => {
               { key: "Paid", label: "Paid", count: statusCounts.paid || 0 },
             ]}
           />
-          <button 
-            type="button" 
+          <button
+            type="button"
             onClick={handleOpenCreateModal}
             className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           >
@@ -325,7 +312,7 @@ const Claim = () => {
           }}
           onView={handleView}
           onViewHistory={handleViewHistory}
-          actionButtons={(record) => 
+          actionButtons={(record) =>
             record.claim_status === "Draft" && (
               <div className="flex items-center gap-2">
                 <Button
