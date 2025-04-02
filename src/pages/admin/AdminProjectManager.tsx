@@ -61,7 +61,7 @@ const AdminProjectManager: React.FC = () => {
     setSearchText(value);
     setPagination(prev => ({
       ...prev,
-      current: 1 
+      current: 1
     }));
   }, 2000);
 
@@ -518,10 +518,18 @@ const AdminProjectManager: React.FC = () => {
                 <h1 className="text-2xl font-bold text-gray-800">Project Management</h1>
               </div>
               <Input
-                placeholder="Search project..."
-                prefix={<SearchOutlined className="text-gray-400" />}
+                placeholder="Search by project name..."
+                prefix={
+                  <SearchOutlined 
+                    className="text-gray-400 cursor-pointer" 
+                    onClick={() => {
+                      fetchProjects();
+                    }}
+                  />
+                }
                 onChange={(e) => handleSearch(e.target.value)}
                 style={{ width: 300 }}
+                className="ml-4"
               />
             </div>
             

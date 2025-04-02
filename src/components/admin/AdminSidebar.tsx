@@ -183,7 +183,7 @@ const AdminSidebar = () => {
             pageNum: 1,
             pageSize: 100
           }
-        }, {showSpinner:false});
+        });
 
         if (usersResponse && usersResponse.data.pageData) {
           const formattedUsers = usersResponse.data.pageData.map((user: any) => ({

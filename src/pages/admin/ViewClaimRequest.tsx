@@ -10,6 +10,7 @@ import debounce from 'lodash/debounce';
 import ClaimTable from '../../components/shared/ClaimTable';
 import StatusTabs from '../../components/shared/StatusTabs';
 import ClaimHistoryModal from '../../components/shared/ClaimHistoryModal';
+import { toast } from 'react-toastify';
 
 const ViewClaimRequest: React.FC = () => {
   const navigate = useNavigate();
@@ -59,36 +60,34 @@ const ViewClaimRequest: React.FC = () => {
   const fetchClaims = async (pageNum: number) => {
     try {
       setLoading(true);
-      // Fetch status counts
-      const countPromises = claimStatuses.map(async (status) => {
-        if (status.value !== '') {
-          const countParams = {
+      
+      // Prepare params for all API calls
+      const baseParams = {
+        searchCondition: {
+          keyword: searchText || "",
+        },
+        pageInfo: {
+          pageNum: 1,
+          pageSize: 1,
+        },
+      };
+  
+      // Create array of promises for status counts
+      const statusPromises = claimStatuses
+        .filter(status => status.value !== '')
+        .map(status => {
+          const params = {
+            ...baseParams,
             searchCondition: {
-              keyword: searchText || "",
+              ...baseParams.searchCondition,
               claim_status: status.value,
-            },
-            pageInfo: {
-              pageNum: 1,
-              pageSize: 1,
-            },
+            }
           };
-          const countResponse = await claimService.searchClaims(countParams);
-          return { status: status.value, count: countResponse.data.pageInfo.totalItems };
-        }
-        return null;
-      });
-
-      const counts = await Promise.all(countPromises);
-      const newStatusCounts = counts.reduce((acc, curr) => {
-        if (curr) {
-          acc[curr.status] = curr.count;
-        }
-        return acc;
-      }, {} as Record<string, number>);
-      setStatusCounts(newStatusCounts);
-
-      // Fetch claims with selected status
-      const params = {
+          return claimService.searchClaims(params);
+        });
+  
+      // Add the main claims fetch promise
+      const mainClaimsParams = {
         searchCondition: {
           keyword: searchText || "",
           claim_status: selectedStatus || "",
@@ -98,18 +97,34 @@ const ViewClaimRequest: React.FC = () => {
           pageSize: pagination.pageSize,
         },
       };
-
-      const response = await claimService.searchClaims(params);
-      if (response?.data?.pageData) {
-        setFilteredClaims(response.data.pageData);
+  
+      const [mainClaimsResponse, ...statusResponses] = await Promise.all([
+        claimService.searchClaims(mainClaimsParams),
+        ...statusPromises
+      ]);
+  
+      // Process status counts
+      const newStatusCounts = statusResponses.reduce((acc, response, index) => {
+        const status = claimStatuses[index + 1].value; // +1 because we filtered out the first "All" status
+        acc[status] = response.data.pageInfo.totalItems;
+        return acc;
+      }, {} as Record<string, number>);
+      setStatusCounts(newStatusCounts);
+  
+      // Process main claims data
+      if (mainClaimsResponse?.data?.pageData) {
+        setFilteredClaims(mainClaimsResponse.data.pageData);
         setPagination(prev => ({
           ...prev,
-          totalItems: response.data.pageInfo.totalItems,
-          totalPages: response.data.pageInfo.totalPages,
+          totalItems: mainClaimsResponse.data.pageInfo.totalItems,
+          totalPages: mainClaimsResponse.data.pageInfo.totalPages,
           current: pageNum
         }));
       }
-    }  finally {
+    } catch (error) {
+      console.error("Error fetching claims:", error);
+      toast.error("Failed to fetch claims data");
+    } finally {
       setLoading(false);
     }
   };

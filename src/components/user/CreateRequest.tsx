@@ -56,7 +56,7 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                 userService.searchUsers({
                     searchCondition: { role_code: 'A003', is_delete: false },
                     pageInfo: { pageNum: 1, pageSize: 100 }
-                }, {showSpinner:false})
+                })
             ]);
 
             if (projectsResponse.success) {
@@ -128,7 +128,6 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
             }, {showSpinner:false});
             
             if (response.success) {
-                toast.success("Claim created successfully");
                 form.resetFields();
                 onSuccess();
                 onClose();
@@ -146,7 +145,18 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
 
     return (
         <>
-            <ToastContainer />
+            <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
             <Modal
                 className="justify text-center"
                 title="Create New Claim"

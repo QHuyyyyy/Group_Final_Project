@@ -42,7 +42,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
         user_name: values.user_name,
       };
       
-      await userService.updateUser(editingRecord._id, userInfo, {showSpinner:false});
+      await userService.updateUser(editingRecord._id, userInfo);
       
       toast.success('Staff updated successfully');
       onSuccess();

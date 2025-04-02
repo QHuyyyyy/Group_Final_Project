@@ -9,7 +9,7 @@ export const roleService = {
     try {
       const response = await apiUtils.get<ApiResponse<Role[]>>(`${ROLES_ENDPOINT}/get-all`, {
         params: keyword ? { keyword } : {}
-      }, {showSpinner:false});
+      });
    
       return response.data;
     } catch (error) {
