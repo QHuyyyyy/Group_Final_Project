@@ -10,7 +10,6 @@ import ChangePasswordModal from '../../components/user/ChangePasswordModal';
 import { Employee, EmployeeUpdateData } from '../../models/EmployeeModel';
 import { InputVaild } from '../../constants/InputVaild';
 import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 
 
@@ -127,18 +126,6 @@ const SettingUser = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <ToastContainer
-        position="bottom-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
       <div className="container mx-auto py-10 px-4">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Left Column - Profile Card */}
