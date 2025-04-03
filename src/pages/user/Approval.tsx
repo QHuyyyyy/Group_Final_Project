@@ -20,7 +20,6 @@ interface PaginationState {
   pageSize: number;
   total: number;
 }
-
 function ApprovalPage() {
   const [claims, setClaims] = useState<Claim[]>([]);
   const [loading, setLoading] = useState(false);
@@ -45,6 +44,7 @@ function ApprovalPage() {
     "Approved" | "Rejected" | "Draft" | null
   >(null);
   const [isDetailsModalVisible, setDetailsModalVisible] = useState(false);
+  const [form] = Form.useForm();
   const [actionLoading, setActionLoading] = useState(false);
   const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
   const handleViewHistory = (record: Claim) => {
@@ -70,7 +70,6 @@ function ApprovalPage() {
     const response = await claimService.searchClaimsForApproval(params);
     
     if (response?.data?.pageData) {
-      
       const claimsData = response.data.pageData;
       setClaims(claimsData);
 
@@ -122,6 +121,7 @@ function ApprovalPage() {
 
     setSelectedClaim(claim);
     setConfirmationType(type);
+    form.resetFields();
   };
 
   const showDetails = (claim: Claim) => {
@@ -133,10 +133,13 @@ function ApprovalPage() {
     if (!selectedClaim || !confirmationType) return;
 
     try {
-      setActionLoading(true);      
+      setActionLoading(true);
+      const values = await form.validateFields();
+      
       const requestBody = {
         _id: selectedClaim._id,
         claim_status: confirmationType,
+        comment: values.comment,
       };
       
       const response = await claimService.changeClaimStatus(requestBody);
@@ -157,8 +160,8 @@ function ApprovalPage() {
 
       setSelectedClaim(null);
       setConfirmationType(null);
-    } catch (error) {
-      toast.error("An error occurred while processing the claim");
+      form.resetFields();
+
     } finally {
       setActionLoading(false);
     }
@@ -167,6 +170,7 @@ function ApprovalPage() {
   const handleConfirmationCancel = () => {
     setSelectedClaim(null);
     setConfirmationType(null);
+    form.resetFields();
   };
 
   const handleDetailsModalClose = () => {
@@ -286,6 +290,7 @@ function ApprovalPage() {
       >
         <div className="p-2">
           <Form 
+            form={form} 
             layout="vertical"
             initialValues={{ comment: "" }}
           >
@@ -340,11 +345,14 @@ function ApprovalPage() {
 
             <Form.Item
               name="comment"
-              label="Comment (Optional)"
+              label="Comment"
+              rules={[
+                { required: false},
+                { max: 255, message: 'Comment cannot exceed 255 characters' },]}
             >
               <Input.TextArea 
                 rows={4}
-                placeholder={`Optional: Add a comment about ${
+                placeholder={`Please provide a reason for ${
                   confirmationType === "Approved" 
                     ? "approving" 
                     : confirmationType === "Rejected"
