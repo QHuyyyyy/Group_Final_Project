@@ -78,6 +78,11 @@ const ClaimTable = ({
       key: "claim_name",
       width: "15%",
       className: "text-gray-800 font-medium",
+      render: (claim_name: string) => (
+        <div className="truncate" style={{ maxWidth: 150 }}>
+          <span title={claim_name}>{claim_name}</span>
+        </div>
+      ),
     },
     {
       title: "Period",
