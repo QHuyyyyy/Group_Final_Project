@@ -175,10 +175,13 @@ const ViewClaimRequest: React.FC = () => {
             <h1 className="text-2xl font-bold text-gray-800">View Claim Requests</h1>
             <Input
               placeholder="Search by claim name..."
-              prefix={<SearchOutlined className="text-gray-400" />}
+              prefix={<SearchOutlined className="text-gray-400"  onClick={() => {
+                fetchClaims(pagination.current);
+              }}/>}
               defaultValue={searchText}
               onChange={(e) => debouncedSearch(e.target.value)}
               style={{ width: 300 }}
+             
             />
           </div>
           

@@ -220,13 +220,17 @@ const UpdateRequest: React.FC<UpdateRequestProps> = ({ visible, claim, onClose, 
                             </Form.Item>
 
                             <Form.Item
-                                label="Claim Name"
-                                name="claim_name"
-                                style={{ marginBottom: '16px' }}
-                                rules={[{ required: true, message: "Please enter claim name!" }]}
-                            >
-                                <Input placeholder="Enter claim name" />
-                            </Form.Item>
+                              
+                                  label="Claim Name"
+                                  name="claim_name"
+                                  style={{ marginBottom: '16px' }}
+                                  rules={[
+                                    { required: true, message: "Please enter claim name!" },
+                                    { max: 50, message: "Claim name cannot exceed 50 characters!" }
+                                  ]}
+                                >
+                                  <Input placeholder="Enter claim name" />
+                                </Form.Item>
 
                             <Form.Item
                                 label="Project Name"
