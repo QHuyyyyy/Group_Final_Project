@@ -3,8 +3,7 @@ import { Form, Input, Button, Modal } from 'antd';
 import { userService } from '../../services/user.service';
 import { InputVaild } from '../../constants/InputVaild';
 import { KeyOutlined, SecurityScanOutlined } from '@ant-design/icons';
-import { ToastContainer,toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
 
 interface ChangePasswordModalProps {
   visible: boolean;
@@ -36,18 +35,6 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ visible, onCa
 
   return (
     <>
-    <ToastContainer
-        position="bottom-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
     <Modal
       title={<div style={{ textAlign: 'center', width: '100%' }}>Change Password</div>}
       open={visible}
