@@ -3,7 +3,7 @@ import { Form, Input, Button, Modal } from 'antd';
 import { userService } from '../../services/user.service';
 import { InputVaild } from '../../constants/InputVaild';
 import { KeyOutlined, SecurityScanOutlined } from '@ant-design/icons';
-import { ToastContainer,toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 
 interface ChangePasswordModalProps {
   visible: boolean;
