@@ -4,7 +4,6 @@ import { userService } from '../../services/user.service';
 import { InputVaild } from '../../constants/InputVaild';
 import { KeyOutlined, SecurityScanOutlined } from '@ant-design/icons';
 import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 interface ChangePasswordModalProps {
   visible: boolean;
@@ -35,6 +34,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ visible, onCa
   };
 
   return (
+    <>
     <Modal
       title={<div style={{ textAlign: 'center', width: '100%' }}>Change Password</div>}
       open={visible}
@@ -79,6 +79,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ visible, onCa
         </Form.Item>
       </Form>
     </Modal>
+    </>
   );
 };
 
