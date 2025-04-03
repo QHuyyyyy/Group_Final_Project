@@ -125,7 +125,7 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                 claim_start_date: dayjs(values.claim_start_date).format("YYYY-MM-DD"),
                 claim_end_date: dayjs(values.claim_end_date).format("YYYY-MM-DD"),
                 total_work_time: Number(values.total_work_time)
-            }, {showSpinner:false});
+            });
             
             if (response.success) {
                 form.resetFields();
