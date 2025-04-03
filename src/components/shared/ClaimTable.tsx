@@ -77,7 +77,7 @@ const ClaimTable = ({
       dataIndex: "claim_name",
       key: "claim_name",
       width: "15%",
-      className: "text-gray-800 font-medium",
+      className: "text-gray-800 font-medium truncate",
     },
     {
       title: "Period",
