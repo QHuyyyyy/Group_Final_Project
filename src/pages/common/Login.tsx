@@ -68,7 +68,7 @@ export default function Login() {
             >
               <Input.Password
                 prefix={<LockOutlined className="text-white/60" />}
-                placeholder="Mật khẩu" 
+                placeholder="Password" 
                 size="large"
                 className="h-12 bg-white/20 border-white/30 text-white placeholder:text-white/60
                   focus:bg-white/30 hover:bg-white/30 transition-all"
