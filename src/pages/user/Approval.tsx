@@ -185,6 +185,9 @@ function ApprovalPage() {
           title="Approval Management"
           onSearch={handleSearch}
           onChange={(e) => handleSearch(e.target.value)}
+          onSearchClick={() => {
+            fetchClaims(pagination.current);
+          }}
         />
 
         <ClaimTable

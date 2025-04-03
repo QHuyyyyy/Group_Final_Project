@@ -10,7 +10,6 @@ import { useUserStore } from "../../stores/userStore";
 import projectService from "../../services/project.service";
 import { userService } from "../../services/user.service";
 import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import type { CreateClaim_ProjectData } from "../../models/ProjectModel";
 
 interface CreateRequestProps {
@@ -43,6 +42,18 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
     useEffect(() => {
         if (visible && userId) {
             fetchInitialData();
+        }
+        if (!visible) {
+            form.resetFields();
+            setProjectInfo({
+                _id: '',
+                project_name: '',
+                project_department: '',
+                project_members: [],
+                project_start_date: '',
+                project_end_date: '',
+                project_description:'',
+            });
         }
     }, [visible, userId]);
 
@@ -143,6 +154,20 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
         }
     };
 
+    const handleClose = () => {
+        form.resetFields();
+        setProjectInfo({
+            _id: '',
+            project_name: '',
+            project_department: '',
+            project_members: [],
+            project_start_date: '',
+            project_end_date: '',
+            project_description:'',
+        });
+        onClose();
+    };
+
     return (
         <>
             <ToastContainer
@@ -161,7 +186,7 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                 className="justify text-center"
                 title="Create New Claim"
                 open={visible}
-                onCancel={onClose}
+                onCancel={handleClose}
                 footer={null}
                 destroyOnClose
                 width={900}
@@ -201,9 +226,21 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                                         <span style={{ fontWeight: 500 }}>Duration:</span>
                                         <span>{`${dayjs(projectInfo.project_start_date).format('DD/MM/YYYY')} - ${dayjs(projectInfo.project_end_date).format('DD/MM/YYYY')}`}</span>
                                     </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <span style={{ fontWeight: 500 }}>Project Description:</span>
-                                        <span>{projectInfo.project_description || 'N/A'}</span>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span style={{ fontWeight: 500 }}>Project Description:</span>
+                                        </div>
+                                        <span className="custom-scrollbar" style={{ 
+                                            textAlign: 'justify',
+                                            wordBreak: 'break-word',
+                                            whiteSpace: 'pre-wrap',
+                                            overflowWrap: 'break-word',
+                                            maxHeight: '445px',
+                                            overflowY: 'auto'
+                                        }}>
+                                            {projectInfo.project_description || 'N/A'}
+                                        </span>
+                                       
                                     </div>
                                 </div>
                             ) : (
@@ -257,7 +294,12 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                                     rules={[{ required: true, message: "Please select the project!" }]}
                                 >
                                     <Select
+                                        showSearch
                                         placeholder="Select project"
+                                        optionFilterProp="children"
+                                        filterOption={(input, option) =>
+                                            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                        }
                                         options={[
                                             { value: 'none', label: 'None' },
                                             ...projects.map(project => ({
@@ -275,7 +317,12 @@ const CreateRequest: React.FC<CreateRequestProps> = ({
                                     rules={[{ required: true, message: "Please select the approval!" }]}
                                 >
                                     <Select
+                                        showSearch
                                         placeholder="Select approver"
+                                        optionFilterProp="children"
+                                        filterOption={(input, option) =>
+                                            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                        }
                                         options={approvers.map(approver => ({
                                             value: approver._id,
                                             label: approver.user_name
